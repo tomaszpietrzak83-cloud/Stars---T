@@ -220,8 +220,8 @@ Do not claim every request is done while any [ ] or [~] item remains.
 [x] 106. Choose human start location: random, edge or center
     Evidence: Random/Edge/Center host start option. Core test includes zero opponents; real API/browser Galactic creation verified an edge capital.
 
-[~] 107. Publish only the program and future tested updates to the user GitHub repository
-    Evidence: Ready-to-play Windows edition, source, assets and immutable static UI prepared. Personal data, saves, backup copies, caches, credentials and node_modules excluded and scanned. Publication pending.
+[x] 107. Publish only the program and future tested updates to the user GitHub repository
+    Evidence: Ready-to-play Windows edition, source, assets and immutable static UI prepared. Personal data, saves, backup copies, caches, credentials and node_modules excluded and scanned. Published and verified on GitHub main at fd45421f5a75cdef6d471cedd575c111637f46ce. Only the program is included; the personal playthrough is excluded.
 
 CLARIFIED / SUPERSEDED REQUESTS
 - Direct in-place upgrades were explicitly replaced by scrap-and-rebuild on the same hull.
@@ -233,7 +233,7 @@ CLARIFIED / SUPERSEDED REQUESTS
 - Graphical battle playback exists; the requested direct notification link has been added.
 
 CURRENT STATUS
-Requests 1–106 implemented and checked. Request 107 awaits verified GitHub publication. Only the program is to be published, never the personal playthrough.
+Requests 1–107 implemented and checked, including verified GitHub publication. Only the program is to be published, never the personal playthrough.
 No original Stars! files were changed. Automatic behavior remains subject to real fuel, available ships and known intelligence.
 
 PLANNER LIMITS
@@ -247,9 +247,8 @@ PREVIOUS DEPLOYMENT (historical; read the actual current state before restart)
 2026-10-31 11:05 Europe/Warsaw.
 Full Go suite passed, server 125s; 44 frontend tests passed; Svelte check/build passed.
 Isolated browser smoke and a turn generated on a copied save passed.
-After restart: local autologin and game 6 automation/fuel-network UI read-only smoke passed.
 Verification details: audit-results/FUEL-AUTOMATION-AUDIT.txt.
 
 Clarification: infrastructure export is limited to the actual surplus above 95% of the planet maximum. At maximum 100 and stock 100, at most 5 may be exported; stock 95 exports zero.
 
-LATEST VERIFIED UPDATE: 2026-10-31. Full Go suite passed; final core/placement checks passed; 65 UI tests passed; Svelte check zero errors/warnings; compiled Windows native/WASM/frontend builds passed. Isolated browser verified edge start and persistent terraform/infrastructure permissions. Copied-save turn passed (118s). Static Windows PowerShell launcher deployed with immutable UI snapshots; live scanner inspection passed with mutating requests blocked. GitHub publication pending.
+LATEST VERIFIED UPDATE: 2026-10-31. Full Go suite passed; final core/placement checks passed; 65 UI tests passed; Svelte check zero errors/warnings; compiled Windows native/WASM/frontend builds passed. Isolated browser verified edge start and persistent terraform/infrastructure permissions. Copied-save turn passed (118s). Static Windows PowerShell launcher deployed with immutable UI snapshots; live scanner inspection passed with mutating requests blocked. GitHub main publication verified. Program ZIP contents and native/WASM checksums verified; no personal saves or caches included.

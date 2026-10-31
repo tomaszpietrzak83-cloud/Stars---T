@@ -11,3 +11,6 @@ PASS: source/build candidate scan excluded personal databases, .env files, crede
 The committed program includes the native Windows executable, compiled interface, WASM module, source and artwork. SHA-256 values are in windows/SHA256SUMS.txt.
 
 Only the program is published. Personal saves remain local in data/data.db. No personal game or backup is included.
+
+PASS: program-only ZIP archive inspected (70.3 MiB), required launch/UI/native files present, no personal data/caches, SHA-256 verified and compiled WASM matches its source build artifact.
+PASS: GitHub main points to fd45421f5a75cdef6d471cedd575c111637f46ce, preserving the repository initialization commit. Later tested corrections are configured to publish to the same repository.
