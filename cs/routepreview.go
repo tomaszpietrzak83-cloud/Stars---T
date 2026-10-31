@@ -25,7 +25,7 @@ type AutomaticRoutesPreview struct {
 // Preview replans a private snapshot. It does not advance time, move a ship,
 // spend fuel, resolve combat or change the source game's cargo/production.
 // Only waypoints/tags are returned; callers must never save this scratch game.
-func (g *FullGame) PreviewAutomaticRoutes(playerNum int) (*AutomaticRoutesPreview, error) {
+func (g *FullGame) cloneAutomationState(playerNum int) (*FullGame, error) {
 	type snapshot struct {
 		Game     *Game
 		Universe *Universe
@@ -53,6 +53,14 @@ func (g *FullGame) PreviewAutomaticRoutes(playerNum int) (*AutomaticRoutesPrevie
 	work.Rules = g.Rules
 	work.Universe.setLogger(slog.Default())
 	if err = work.computeSpecs(); err != nil {
+		return nil, err
+	}
+	return work, nil
+}
+
+func (g *FullGame) PreviewAutomaticRoutes(playerNum int) (*AutomaticRoutesPreview, error) {
+	work, err := g.cloneAutomationState(playerNum)
+	if err != nil {
 		return nil, err
 	}
 	p := work.getPlayer(playerNum)

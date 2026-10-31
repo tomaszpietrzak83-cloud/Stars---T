@@ -1,4 +1,4 @@
-Late starbase proposals - implemented in 0.3.0; audited against native hull capacities
+Late starbase proposals - implemented in 0.3.0, Sanctuary strengthened in 0.4.0; audited against native hull capacities
 
 EEE Bastion Station (all races)
 Research: Construction 22, Energy 20, Electronics 16.
@@ -17,13 +17,13 @@ Research: Construction 24, Energy 23, Electronics 20.
 Hull cost: 160 ironium / 110 boranium / 460 germanium / 1050 resources.
 Unlimited dock; armor 1875; initiative 19; range bonus 1; repair bonus 0.15.
 Population limit 3.75 million versus Death Star's 3 million (+25%).
-Keep the Death Star's four separate 32-weapon batteries (128 total).
-Shield banks 36+36; shield/armor banks 24+24; six electrical banks of 4;
-two orbital slots of 1. Keep the 0.5 innate penetrating-scanner multiplier.
+Four separate 40-weapon batteries (160 total, versus Death Star 128).
+Shield banks 44+44; shield/armor banks 32+32; six electrical banks of 6;
+three orbital slots of 1 (Death Star has two). Keep the 0.5 innate penetrating-scanner multiplier.
 Prioritize population, resilience and a clear symmetric station silhouette,
 rather than combining every offensive bonus in a universal best hull.
 
-Balance validation required before implementation:
+Further balance evaluation:
 Same-cost station builds using identical tech; fleet-versus-station battles;
 AR population/resource scaling and ISB/US costs; no slot overlaps; destruction
-must retain native AR population rules. These are proposals, not live content.
+must retain native AR population rules. These hulls are implemented; capacities, restrictions and slot separation are covered by native tests.

@@ -12,10 +12,10 @@ func EEEStationHulls() []TechHull {
 	s := DeathStar
 	s.Tech = NewTech("EEE Sanctuary Star", NewCost(160, 110, 460, 1050), TechRequirements{TechLevel: TechLevel{Construction: 24, Energy: 23, Electronics: 20}, PRTsRequired: []PRT{AR}}, 70, TechCategoryStarbaseHull)
 	s.Armor, s.Initiative, s.MaxPopulation = 1875, 19, 3_750_000
-	s.Slots = slices.Clone(DeathStar.Slots)
+	s.Slots = append(slices.Clone(DeathStar.Slots), TechHullSlot{Type: HullSlotTypeOrbitalElectrical, Capacity: 1})
 	for _, h := range []*TechHull{&b, &s} {
 		positions := map[HullSlotType][]VectorFloat64{
-			HullSlotTypeOrbitalElectrical: {{0, -2}, {0, 2}},
+			HullSlotTypeOrbitalElectrical: {{0, -2}, {0, 2}, {0, -1}},
 			HullSlotTypeWeapon:            {{-2, -2}, {2, 2}, {2, -2}, {-2, 2}, {-2, 0}, {2, 0}},
 			HullSlotTypeShield:            {{-1, -2}, {1, 2}},
 			HullSlotTypeShieldArmor:       {{1, -2}, {-1, 2}},
@@ -30,17 +30,27 @@ func EEEStationHulls() []TechHull {
 			case HullSlotTypeWeapon:
 				if h == &b {
 					slot.Capacity = 20
+				} else {
+					slot.Capacity = 40
 				}
 			case HullSlotTypeShield:
 				if h == &b {
 					slot.Capacity = 24
 				} else {
-					slot.Capacity = 36
+					slot.Capacity = 44
 				}
 			case HullSlotTypeShieldArmor:
-				slot.Capacity = 24
+				if h == &b {
+					slot.Capacity = 24
+				} else {
+					slot.Capacity = 32
+				}
 			case HullSlotTypeElectrical:
-				slot.Capacity = 4
+				if h == &b {
+					slot.Capacity = 4
+				} else {
+					slot.Capacity = 6
+				}
 			}
 		}
 	}

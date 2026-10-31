@@ -74,6 +74,12 @@ func (t *turnGenerator) planAutomaticPackets() {
 					continue
 				}
 				need := t.productionMinerals(player, yard, true).ToCost().Subtract(yard.Cargo.ToMineral().ToCost()).Subtract(yard.Spec.MiningOutput.ToCost()).Subtract(incoming[yard.Num].ToCost()).ToMineral()
+				fullNeed := committedManufacturingMinerals(&t.game.Rules, player, yard).ToCost().Subtract(yard.Cargo.ToMineral().ToCost()).Subtract(yard.Spec.MiningOutput.ToCost()).Subtract(incoming[yard.Num].ToCost()).MinZero().ToMineral()
+				for _, kind := range MineralTypes {
+					if need.GetAmount(kind) > 0 && fullNeed.GetAmount(kind) >= unit {
+						need.Set(kind, max(unit, need.GetAmount(kind)))
+					}
+				}
 				candidate := Mineral{}
 				for _, kind := range MineralTypes {
 					count := min(10, max(0, need.GetAmount(kind))/unit, max(0, spare.GetAmount(kind))/costPer)

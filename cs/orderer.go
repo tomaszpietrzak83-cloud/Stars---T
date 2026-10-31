@@ -107,7 +107,9 @@ func (o *orders) UpdatePlanetOrders(rules *Rules, player *Player, planet *Planet
 		return err
 	}
 	planet.PlanetOrders = orders
-	o.updatePlanetSpec(rules, player, planet)
+	if err := o.updatePlanetSpec(rules, player, planet); err != nil {
+		return err
+	}
 	planet.MarkDirty()
 
 	slog.Info("update planet orders",

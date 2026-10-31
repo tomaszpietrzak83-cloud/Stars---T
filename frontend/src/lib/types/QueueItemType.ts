@@ -96,13 +96,13 @@ export function getFullName(item: ProductionQueueItem, designFinder: DesignFinde
 		case QueueItemType.SHIP_TOKEN:
 			return designFinder.getMyDesign(item.designNum)?.name ?? '';
 		case QueueItemType.AUTO_MINERAL_ALCHEMY:
-			return 'Alchemy (Auto)';
+			return item.tags['starbase-boost'] ? 'Alchemy (Production boost)' : 'Alchemy (Auto)';
 		case QueueItemType.MINERAL_ALCHEMY:
 			return 'Alchemy';
 		case QueueItemType.AUTO_MINES:
-			return item.tags['starbase-boost']?'Mine (Starbase boost)':item.tags.defaultauto?'Mine (defaultauto)':'Mine (Auto Build)';
+			return item.tags['starbase-boost']?'Mine (Production boost)':item.tags.defaultauto?'Mine (defaultauto)':'Mine (Auto Build)';
 		case QueueItemType.AUTO_FACTORIES:
-			return item.tags['starbase-boost']?'Factory (Starbase boost)':item.tags.defaultauto?'Factory (defaultauto)':'Factory (Auto Build)';
+			return item.tags['starbase-boost']?'Factory (Production boost)':item.tags.defaultauto?'Factory (defaultauto)':'Factory (Auto Build)';
 		case QueueItemType.AUTO_DEFENSES:
 			return 'Defense (Auto Build)';
 		case QueueItemType.AUTO_MIN_TERRAFORM:
@@ -144,7 +144,7 @@ export function getShortName(item: ProductionQueueItem, designFinder: DesignFind
 		case QueueItemType.AUTO_DEFENSES:
 			return 'Defenses (Auto)';
 		case QueueItemType.AUTO_MINERAL_ALCHEMY:
-			return 'Alchemy (Auto)';
+			return item.tags['starbase-boost'] ? 'Alchemy (Production boost)' : 'Alchemy (Auto)';
 		case QueueItemType.AUTO_MAX_TERRAFORM:
 			return 'Max Terraform (Auto)';
 		case QueueItemType.AUTO_MIN_TERRAFORM:

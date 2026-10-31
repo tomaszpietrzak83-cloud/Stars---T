@@ -50,6 +50,7 @@ func developmentForecast(rules *Rules, player *Player, original *Planet, queue [
 
 func PlanDefaultAuto(rules *Rules, player *Player, planet *Planet) {
 	if player.AIControlled || player.Race.Spec.InnateResources && player.Race.Spec.InnateMining {
+		PlanProductionBoost(rules, player, planet)
 		return
 	}
 	queue := make([]ProductionQueueItem, 0, len(planet.ProductionQueue))
@@ -76,6 +77,7 @@ func PlanDefaultAuto(rules *Rules, player *Player, planet *Planet) {
 	}
 	if !managed || first < 0 {
 		planet.ProductionQueue = queue
+		PlanProductionBoost(rules, player, planet)
 		return
 	}
 	projection := *planet
@@ -118,51 +120,7 @@ func PlanDefaultAuto(rules *Rules, player *Player, planet *Planet) {
 		}
 	}
 	planet.ProductionQueue = best
-	planStarbaseBoost(rules, player, planet, baseF, baseM)
-}
-
-func planStarbaseBoost(rules *Rules, player *Player, planet *Planet, baseF, baseM int) {
-	if len(planet.ProductionQueue) == 0 || planet.ProductionQueue[0].Type != QueueItemTypeStarbase {
-		return
-	}
-	// Evaluate the actual starbase completion, including Germanium allocation,
-	// mine depletion, research allocation, factory growth and its existing payments.
-	eta := func(queue []ProductionQueueItem, starbaseIndex int) int {
-		copy := *planet
-		copy.ProductionQueue = queue
-		estimates, _, err := NewCompletionEstimator().GetProductionWithEstimates(rules, player, copy)
-		if err != nil || starbaseIndex >= len(estimates) {
-			return math.MaxInt
-		}
-		years := estimates[starbaseIndex].YearsToBuildAll
-		if years == Infinite {
-			return math.MaxInt
-		}
-		return years
-	}
-	original := planet.ProductionQueue
-	best, bestETA := original, eta(original, 0)
-	for _, f := range []int{0, 1, baseF, baseF * 2} {
-		for _, m := range []int{0, 1, baseM, baseM * 2} {
-			if f == 0 && m == 0 {
-				continue
-			}
-			q := []ProductionQueueItem{}
-			if f > 0 && !player.Race.Spec.InnateResources {
-				q = append(q, autoDevelopmentItem(QueueItemTypeAutoFactories, f, starbaseBoostTag))
-			}
-			if m > 0 && !player.Race.Spec.InnateMining {
-				q = append(q, autoDevelopmentItem(QueueItemTypeAutoMines, m, starbaseBoostTag))
-			}
-			index := len(q)
-			q = append(q, original...)
-			years := eta(q, index)
-			if years < bestETA {
-				best, bestETA = q, years
-			}
-		}
-	}
-	planet.ProductionQueue = best
+	PlanProductionBoost(rules, player, planet)
 }
 
 func (t *turnGenerator) replanDefaultAuto() {

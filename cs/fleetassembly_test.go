@@ -176,7 +176,17 @@ func TestFleetAssemblyDistributesProductionAndPrioritizesBeforeRecurringOrders(t
 	u.Run((*turnGenerator).planFleetAssemblies)
 	require.Equal(t, 98, queueAssemblyCount(u))
 	for _, planet := range u.Game.Planets {
-		require.Equal(t, "1", planet.ProductionQueue[0].Tags[assemblyTag], "both yards must receive work ahead of recurring infrastructure")
+		at := -1
+		for i, item := range planet.ProductionQueue {
+			if item.Tags[assemblyTag] == "1" {
+				at = i
+				break
+			}
+		}
+		require.GreaterOrEqual(t, at, 0, "both yards must receive manufacturing work")
+		for _, item := range planet.ProductionQueue[:at] {
+			require.NotEmpty(t, item.GetTag(starbaseBoostTag), "only forecast-approved temporary investment may precede the assembly")
+		}
 	}
 }
 func TestFleetAssemblyRejectsForgedStateAndInvalidOrders(t *testing.T) {

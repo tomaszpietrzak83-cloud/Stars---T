@@ -302,6 +302,12 @@ func (t *turnGenerator) routeAssemblyFleet(player *Player, fleet *Fleet, positio
 }
 
 func (t *turnGenerator) queueAssemblyShips(player *Player, id int, plan *FleetAssembly, counts map[int]int, rally *Planet) {
+	touched := map[*Planet]bool{}
+	defer func() {
+		for planet := range touched {
+			PlanDefaultAuto(&t.game.Rules, player, planet)
+		}
+	}()
 	need := map[int]int{}
 	for d, n := range plan.Designs {
 		need[d] = max(0, n-counts[d])
@@ -318,6 +324,9 @@ func (t *turnGenerator) queueAssemblyShips(player *Player, id int, plan *FleetAs
 				}
 			}
 			queue = append(queue, item)
+		}
+		if len(queue) != len(planet.ProductionQueue) {
+			touched[planet] = true
 		}
 		planet.ProductionQueue = queue
 	}
@@ -391,8 +400,14 @@ func (t *turnGenerator) queueAssemblyShips(player *Player, id int, plan *FleetAs
 			// Keep explicit work ahead of this order, but insert before recurring
 			// auto-factory/mine orders which can otherwise consume every year's budget.
 			at := len(chosen.ProductionQueue)
+			lastExplicit := -1
 			for i, queued := range chosen.ProductionQueue {
-				if queued.Type.IsAuto() {
+				if !queued.Type.IsAuto() {
+					lastExplicit = i
+				}
+			}
+			for i := lastExplicit + 1; i < len(chosen.ProductionQueue); i++ {
+				if chosen.ProductionQueue[i].Type.IsAuto() && chosen.ProductionQueue[i].GetTag(starbaseBoostTag) == "" {
 					at = i
 					break
 				}
@@ -402,6 +417,7 @@ func (t *turnGenerator) queueAssemblyShips(player *Player, id int, plan *FleetAs
 			} else {
 				chosen.ProductionQueue = slices.Insert(chosen.ProductionQueue, at, *item)
 			}
+			touched[chosen] = true
 			load[chosen.Num] += float64(design.Spec.Cost.Resources)
 		}
 	}

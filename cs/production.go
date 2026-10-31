@@ -373,6 +373,10 @@ func (p *producer) produce() (productionResult, error) {
 		}
 	}
 
+	if !p.estimating && !slices.ContainsFunc(queue, manufacturingItem) {
+		queue = slices.DeleteFunc(queue, func(item ProductionQueueItem) bool { return item.Type.IsAuto() && item.GetTag(starbaseBoostTag) != "" })
+		delete(planet.Tags, productionBoostCacheTag)
+	}
 	planet.ProductionQueue = queue
 	planet.Cargo = Cargo{available.Ironium, available.Boranium, available.Germanium, planet.Cargo.Colonists}
 	if planet.Cargo.MinZero() != planet.Cargo {

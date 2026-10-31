@@ -10315,7 +10315,7 @@
         },
         {
           "type": 2048,
-          "capacity": 32,
+          "capacity": 40,
           "position": {
             "x": -2,
             "y": -2
@@ -10323,7 +10323,7 @@
         },
         {
           "type": 64,
-          "capacity": 4,
+          "capacity": 6,
           "position": {
             "x": -2,
             "y": -1
@@ -10331,7 +10331,7 @@
         },
         {
           "type": 64,
-          "capacity": 4,
+          "capacity": 6,
           "position": {
             "x": 2,
             "y": 1
@@ -10339,7 +10339,7 @@
         },
         {
           "type": 128,
-          "capacity": 36,
+          "capacity": 44,
           "position": {
             "x": -1,
             "y": -2
@@ -10347,7 +10347,7 @@
         },
         {
           "type": 128,
-          "capacity": 36,
+          "capacity": 44,
           "position": {
             "x": 1,
             "y": 2
@@ -10355,7 +10355,7 @@
         },
         {
           "type": 64,
-          "capacity": 4,
+          "capacity": 6,
           "position": {
             "x": 2,
             "y": -1
@@ -10363,7 +10363,7 @@
         },
         {
           "type": 2048,
-          "capacity": 32,
+          "capacity": 40,
           "position": {
             "x": 2,
             "y": 2
@@ -10371,7 +10371,7 @@
         },
         {
           "type": 64,
-          "capacity": 4,
+          "capacity": 6,
           "position": {
             "x": -2,
             "y": 1
@@ -10379,7 +10379,7 @@
         },
         {
           "type": 2048,
-          "capacity": 32,
+          "capacity": 40,
           "position": {
             "x": 2,
             "y": -2
@@ -10394,7 +10394,7 @@
         },
         {
           "type": 384,
-          "capacity": 24,
+          "capacity": 32,
           "position": {
             "x": 1,
             "y": -2
@@ -10402,14 +10402,14 @@
         },
         {
           "type": 64,
-          "capacity": 4,
+          "capacity": 6,
           "position": {
             "x": -2
           }
         },
         {
           "type": 384,
-          "capacity": 24,
+          "capacity": 32,
           "position": {
             "x": -1,
             "y": 2
@@ -10417,17 +10417,24 @@
         },
         {
           "type": 64,
-          "capacity": 4,
+          "capacity": 6,
           "position": {
             "x": 2
           }
         },
         {
           "type": 2048,
-          "capacity": 32,
+          "capacity": 40,
           "position": {
             "x": -2,
             "y": 2
+          }
+        },
+        {
+          "type": 4160,
+          "capacity": 1,
+          "position": {
+            "y": -1
           }
         }
       ]

@@ -68,15 +68,25 @@ func Test_shipDesignService_DeleteShipDesign_removesQueuedItems(t *testing.T) {
 	// the deleted design is gone from the saved queue, everything else is left in order
 	saved, err := client.GetPlanetByNum(ctx, fullGame.ID, planet.Num)
 	require.NoError(t, err)
-	require.Len(t, saved.ProductionQueue, 2)
-	assert.Equal(t, cs.QueueItemTypeMine, saved.ProductionQueue[0].Type)
-	assert.Equal(t, kept.Num, saved.ProductionQueue[1].DesignNum)
+	explicit := []cs.ProductionQueueItem{}
+	for _, item := range saved.ProductionQueue {
+		if item.GetTag("starbase-boost") == "" {
+			explicit = append(explicit, item)
+		}
+	}
+	require.Len(t, explicit, 2)
+	assert.Equal(t, cs.QueueItemTypeMine, explicit[0].Type)
+	assert.Equal(t, kept.Num, explicit[1].DesignNum)
 
 	// the response has the updated queue with estimates for the remaining items
 	var responseQueue []*craig_starsv1.ProductionQueueItem
 	for _, p := range response.Msg.Planets {
 		if int(p.MapObject.Num) == planet.Num {
-			responseQueue = p.PlanetOrders.ProductionQueue
+			for _, item := range p.PlanetOrders.ProductionQueue {
+				if item.Tags["starbase-boost"] == "" {
+					responseQueue = append(responseQueue, item)
+				}
+			}
 		}
 	}
 	require.Len(t, responseQueue, 2)

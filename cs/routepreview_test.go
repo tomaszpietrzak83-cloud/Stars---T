@@ -84,7 +84,9 @@ func TestLateStationsAreAvailableToCorrectRacesAndPreserveNativeLimits(t *testin
 		return n
 	}
 	require.Equal(t, 120, count(b, HullSlotTypeWeapon))
-	require.Equal(t, 128, count(s, HullSlotTypeWeapon))
+	require.Equal(t, 160, count(s, HullSlotTypeWeapon))
+	require.Equal(t, 36, count(s, HullSlotTypeElectrical))
+	require.Equal(t, 3, count(s, HullSlotTypeOrbitalElectrical))
 	require.Equal(t, 3_750_000, s.MaxPopulation)
 	require.Equal(t, []PRT{AR}, s.Requirements.PRTsRequired)
 	require.Empty(t, b.Requirements.LRTsRequired)
@@ -138,4 +140,22 @@ func TestImpossibleSalvageCoverReleasesEscortsAndPassengersPreemptWaitingSalvage
 	u.Run(func(tg *turnGenerator) { tg.prepareConvoy(p, f, job, MapObjectTarget{}) })
 	require.Empty(t, e.GetTag(escortTag), "an impossible mission must not reserve all free escorts indefinitely")
 	require.Contains(t, job.Status, "Waiting")
+}
+
+func TestSanctuaryAcceptsFullFortyWeaponBatteries(t *testing.T) {
+	u := logisticsUniverse(t)
+	race := u.Player(1).Race
+	race.PRT = AR
+	spec := ComputeRaceSpec(&race, &u.Game.Rules)
+	hull := StaticTechStore.GetHull("EEE Sanctuary Star")
+	design := ShipDesign{Hull: hull.Name, Name: "Sanctuary full weapons"}
+	for i, slot := range hull.Slots {
+		if slot.Type == HullSlotTypeWeapon {
+			design.Slots = append(design.Slots, ShipDesignSlot{HullComponent: Laser.Name, HullSlotIndex: i + 1, Quantity: 40})
+		}
+	}
+	result, err := ComputeShipDesignSpec(&u.Game.Rules, TechLevel{Energy: 26, Weapons: 26, Propulsion: 26, Construction: 26, Electronics: 26, Biotechnology: 26}, spec, &design)
+	require.NoError(t, err)
+	require.True(t, result.Starbase)
+	require.Positive(t, result.Cost.Resources)
 }

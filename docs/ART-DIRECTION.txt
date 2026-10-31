@@ -1,0 +1,11 @@
+tomek-stars: original EEE artwork, revision 2
+
+Scope: 2 stations, 7 mobile hulls and all 35 EEE components, including trader tiers and late engines. Forty-four distinct generated foregrounds, not copies of native station shapes. Each asset has a role-specific silhouette, metallic materials, restrained color, upper-left lighting and a slightly elevated three-quarter view. Major forms must survive 32/64 px display; avoid cinematic clouds, emissive halos, text, frames and vector-icon styling.
+
+Stars! references: frontend/static/images/techhulls01.png, starbases.png and techs01.png. The originals are reference material and remain unchanged. The common black starfield uses actual isolated star pixels recovered from an original scout cell, stored as frontend/static/images/eee/native-starfield.svg. Every new foreground is genuinely transparent and receives this same background layer. Station and ship galleries retain eight palette variants of the new geometry.
+
+The new ships emphasize role: Pathfinder sensor booms; Bulk Carrier cargo spine; Fleet Tender workshop gantry; Expedition Cruiser narrow armored spearhead; Linebreaker heavy wedge; Expedition Bomber parallel bomb pods; Prospector articulated mining cutters. Bastion is a four-bastion fortress. Sanctuary is a vertical inhabited arcology with three broken habitat rings.
+
+New component families use physical hardware: green-board targeting computers with red processor blocks, articulated drill modules, compact storage cells, ceramic laminates, gimbaled emitters and multi-stage drive assemblies. Higher tiers receive changed hardware architecture, not just a color shift. Native icon colors/materials guided the new generation.
+
+Generation: built-in image_gen, transparent-background mode. Full component/hull prompts and station design specifications are in docs/artwork-v2-manifest.json. Final files are versioned under frontend/static/images/eee/hulls, stations and components; consuming CSS is frontend/src/css/eee-original-art.css. The browser scales the original PNGs; no alternate image-editing model or raster retouching script was used.

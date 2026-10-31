@@ -47,6 +47,17 @@ func TestLocalAutomationOnCopiedSave(t *testing.T) {
 	runner := NewGameRunner(database, cfg)
 	before, err := database.NewReadClient().GetFullGame(t.Context(), gameID)
 	require.NoError(t, err)
+	if os.Getenv("STARS_COPY_PREVIEW_PRODUCTION") != "" {
+		plan, err := before.PreviewProductionOrders(1)
+		require.NoError(t, err)
+		require.Equal(t, before.Year, plan.Year)
+		for _, change := range plan.Planets {
+			planet := before.Planets[change.Num-1]
+			planet.ProductionQueue = change.ProductionQueue
+			require.NoError(t, database.NewReadWriteClient().SavePlanet(t.Context(), planet))
+		}
+		t.Logf("Applied production-only preview to %d planets on a temporary copy", len(plan.Planets))
+	}
 	if os.Getenv("STARS_COPY_PREVIEW_ROUTES") != "" {
 		preview, err := before.PreviewAutomaticRoutes(1)
 		require.NoError(t, err)
