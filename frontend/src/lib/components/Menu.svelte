@@ -17,7 +17,7 @@
 <div class="navbar bg-base-100 flex flex-row">
 	<div class="flex-1">
 		<a class="btn btn-ghost text-xl text-accent" href="/"
-			><span class="hidden md:block">craig-stars</span><span class="md:hidden">cs</span></a
+			><span class="hidden md:block">tomek-stars</span><span class="md:hidden">ts</span></a
 		>
 	</div>
 	<div class="flex-none">
@@ -28,6 +28,7 @@
 					<li><a href="/races">Races</a></li>
 				{/if}
 				<li><a href="/techs">Techs</a></li>
+ <li><a href="/credits">Credits</a></li>
 			</ul>
 		</div>
 
@@ -63,6 +64,7 @@
 					<li class="md:hidden"><a href="/races">Races</a></li>
 					<li><a href="/settings">Settings</a></li>
 					<li class="md:hidden"><a href="/techs">Techs</a></li>
+ <li class="md:hidden"><a href="/credits">Credits</a></li>
 					{#if user.isAdmin()}
 						<li><div class="divider"></div></li>
 						<li>
@@ -89,6 +91,7 @@
 					<li class="text-center">version {PKG.version}</li>
 				{:else}
 					<li class="md:hidden"><a href="/techs">Techs</a></li>
+ <li class="md:hidden"><a href="/credits">Credits</a></li>
 				{/if}
 			</ul>
 		</div>

@@ -302,6 +302,7 @@ func Test_computeFleetSpec(t *testing.T) {
 			},
 		}}, FleetSpec{
 			ShipDesignSpec: ShipDesignSpec{
+				PowerRating:    192,
 				Starbase:       true,
 				Cost:           Cost{114, 150, 228, 624},
 				Mass:           48,
@@ -502,6 +503,7 @@ func Test_computeFleetSpec(t *testing.T) {
 			},
 		}}, FleetSpec{
 			ShipDesignSpec: ShipDesignSpec{
+				PowerRating:    32,
 				Cost:           Cost{23, 43, 10, 45},
 				FuelCapacity:   120,
 				Mass:           112,
@@ -540,6 +542,7 @@ func Test_computeFleetSpec(t *testing.T) {
 			},
 		}}, FleetSpec{
 			ShipDesignSpec: ShipDesignSpec{
+				PowerRating:    64,
 				Cost:           Cost{46, 86, 20, 90},
 				FuelCapacity:   240,
 				Mass:           224,
@@ -581,6 +584,7 @@ func Test_computeFleetSpec(t *testing.T) {
 			},
 		}}, FleetSpec{
 			ShipDesignSpec: ShipDesignSpec{
+				PowerRating:    1408,
 				Cost:           Cost{348, 782, 228, 1392},
 				FuelCapacity:   1500,
 				Mass:           1764,

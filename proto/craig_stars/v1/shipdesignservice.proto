@@ -5,6 +5,7 @@ package craig_stars.v1;
 import "craig_stars/v1/fleet.proto";
 import "craig_stars/v1/planet.proto";
 import "craig_stars/v1/shipdesign.proto";
+import "craig_stars/v1/player.proto";
 
 service ShipDesignService {
   rpc GetShipDesign(GetShipDesignRequest) returns (GetShipDesignResponse) {
@@ -39,10 +40,12 @@ message GetShipDesignsResponse {
 }
 
 message CreateShipDesignRequest {
+  int32 upgrade_from_design_num = 3;
   int64 game_id = 1;
   ShipDesign design = 2;
 }
 message CreateShipDesignResponse {
+  PlayerOrders player_orders = 2;
   ShipDesign design = 1;
 }
 message UpdateShipDesignRequest {

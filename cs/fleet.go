@@ -44,6 +44,7 @@ type Fleet struct {
 	Tokens            []ShipToken   `json:"tokens"`
 	Heading           VectorFloat64 `json:"heading"`
 	WarpSpeed         int           `json:"warpSpeed,omitempty"`
+	ObservedSpeed     float64       `json:"observedSpeed,omitempty"`
 	PreviousPosition  *Vector       `json:"previousPosition,omitempty"`
 	OrbitingPlanetNum int           `json:"orbitingPlanetNum,omitempty"`
 	Starbase          bool          `json:"starbase,omitempty"`
@@ -407,13 +408,23 @@ func (f *Fleet) resetDefaultName(other *Fleet) {
 // clearUnusableTasks removes waypoint tasks this fleet can no longer do, like remote mining
 // after its miners were split off into another fleet.
 func (f *Fleet) clearUnusableTasks() {
-	if f.Spec.MiningRate > 0 {
-		return
-	}
 	for i := range f.Waypoints {
-		if f.Waypoints[i].Task == WaypointTaskRemoteMining {
+		if !f.CanPerformWaypointTask(f.Waypoints[i].Task) {
 			f.Waypoints[i].Task = WaypointTaskNone
 		}
+	}
+}
+
+func (f *Fleet) CanPerformWaypointTask(task WaypointTask) bool {
+	switch task {
+	case WaypointTaskColonize:
+		return f.Spec.Colonizer || f.Spec.OrbitalConstructionModule
+	case WaypointTaskRemoteMining:
+		return f.Spec.MiningRate > 0
+	case WaypointTaskLayMinefield:
+		return f.Spec.CanLayMines
+	default:
+		return true
 	}
 }
 
@@ -565,7 +576,7 @@ func ComputeFleetSpec(rules *Rules, player *Player, fleet *Fleet) FleetSpec {
 		},
 		Purposes: map[ShipDesignPurpose]bool{},
 	}
-	spec.Mass = fleet.Cargo.Total()
+	spec.Mass = fleet.CargoMass()
 
 	for _, token := range fleet.Tokens {
 
@@ -589,10 +600,15 @@ func ComputeFleetSpec(rules *Rules, player *Player, fleet *Fleet) FleetSpec {
 				spec.Engine.IdealSpeed = token.design.Spec.Engine.IdealSpeed
 				spec.Engine.FreeSpeed = token.design.Spec.Engine.FreeSpeed
 				spec.Engine.MaxSafeSpeed = token.design.Spec.Engine.MaxSafeSpeed
+				spec.Engine.StrategicSpeedFactor = token.design.Spec.Engine.StrategicSpeedFactor
 			} else {
 				spec.Engine.IdealSpeed = min(spec.Engine.IdealSpeed, token.design.Spec.Engine.IdealSpeed)
 				spec.Engine.FreeSpeed = min(spec.Engine.FreeSpeed, token.design.Spec.Engine.FreeSpeed)
 				spec.Engine.MaxSafeSpeed = min(spec.Engine.MaxSafeSpeed, token.design.Spec.Engine.MaxSafeSpeed)
+				spec.Engine.StrategicSpeedFactor = min(spec.Engine.strategicFactor(), token.design.Spec.Engine.strategicFactor())
+				if spec.Engine.StrategicSpeedFactor == 1 {
+					spec.Engine.StrategicSpeedFactor = 0 // preserve legacy serialized specs
+				}
 			}
 		}
 		// cost
@@ -602,6 +618,9 @@ func ComputeFleetSpec(rules *Rules, player *Player, fleet *Fleet) FleetSpec {
 		spec.Mass += token.design.Spec.Mass * token.Quantity
 		spec.MassEmpty += token.design.Spec.Mass * token.Quantity
 
+		// Fleet combat strength must scale with the number of ships.
+		spec.PowerRating += token.design.Spec.PowerRating * token.Quantity
+
 		// armor
 		spec.Armor += token.design.Spec.Armor * token.Quantity
 
@@ -610,6 +629,7 @@ func ComputeFleetSpec(rules *Rules, player *Player, fleet *Fleet) FleetSpec {
 
 		// cargo
 		spec.CargoCapacity += token.design.Spec.CargoCapacity * token.Quantity
+		spec.MineralCargoBonus += token.design.Spec.MineralCargoBonus * token.Quantity
 
 		// fuel
 		spec.FuelCapacity += token.design.Spec.FuelCapacity * token.Quantity
@@ -724,7 +744,7 @@ func ComputeFleetSpec(rules *Rules, player *Player, fleet *Fleet) FleetSpec {
 	}
 
 	// compute the cloaking based on the cloak units and cargo
-	spec.CloakPercent = computeFleetCloakPercent(&spec, fleet.Cargo.Total()+spec.BaseCloakedCargo, player.Race.Spec.FreeCargoCloaking)
+	spec.CloakPercent = computeFleetCloakPercent(&spec, fleet.CargoMass()+spec.BaseCloakedCargo, player.Race.Spec.FreeCargoCloaking)
 
 	if !spec.Starbase {
 		spec.EstimatedRange = fleet.getEstimatedRange(player, spec.Engine.IdealSpeed)
@@ -786,7 +806,26 @@ func (fleet *Fleet) reduceFuelToMax() {
 // make sure we don't overflow our cargo. After a battle, we might have more cargo than our fleet can hold
 // return any dropped cargo
 func (fleet *Fleet) reduceCargoToMax() Cargo {
-	capacity := fleet.Spec.CargoCapacity
+	packed := readInfrastructure(fleet)
+	// A smaller surviving hold cannot keep installations belonging to destroyed
+	// cargo space. Never hide extra mass outside native capacity accounting.
+	for packed.mass() > fleet.Spec.CargoCapacity {
+		if packed.Defenses > 0 {
+			packed.Defenses--
+			continue
+		}
+		if packed.Mines > 0 {
+			packed.Mines--
+			continue
+		}
+		if packed.Factories > 0 {
+			packed.Factories--
+			continue
+		}
+		break
+	}
+	saveInfrastructure(fleet, packed)
+	capacity := max(0, fleet.Spec.CargoCapacity-packed.mass())
 	cargo := fleet.Cargo
 
 	// no capacity, no cargo
@@ -794,6 +833,7 @@ func (fleet *Fleet) reduceCargoToMax() Cargo {
 		fleet.Cargo = Cargo{}
 		return cargo
 	}
+	fleet.Cargo.Colonists = min(fleet.Cargo.Colonists, max(0, capacity-fleet.Spec.MineralCargoBonus))
 
 	// check if we have more cargo than we can hold
 	total := fleet.Cargo.Total()
@@ -846,7 +886,11 @@ func (fleet *Fleet) willAttack(fleetPlayer *Player, otherPlayerNum int) bool {
 }
 
 func (f *Fleet) availableCargoSpace() int {
-	return Clamp(f.Spec.CargoCapacity-f.Cargo.Total(), 0, f.Spec.CargoCapacity)
+	return Clamp(f.Spec.CargoCapacity-f.CargoMass(), 0, f.Spec.CargoCapacity)
+}
+
+func (f *Fleet) availableColonistSpace() int {
+	return min(f.availableCargoSpace(), max(0, f.Spec.CargoCapacity-f.Spec.MineralCargoBonus-f.Cargo.Colonists-readInfrastructure(f).mass()))
 }
 
 func (f *Fleet) availableFuelSpace() int {
@@ -913,7 +957,7 @@ func newFleetMove(fleet *Fleet) *fleetMove {
 	return &fleetMove{
 		fleet:  fleet,
 		start:  fleet.Position,
-		budget: float64(wp1.WarpSpeed * wp1.WarpSpeed),
+		budget: fleet.StrategicSpeed(wp1.WarpSpeed),
 	}
 }
 
@@ -986,7 +1030,13 @@ func (fleet *Fleet) moveStep(rules *Rules, mapObjectGetter mapObjectGetter, play
 	}
 
 	// collide with minefields on route, but don't hit a minefield if we run out of fuel beforehand
-	hitMinefield, actualDist := checkForMinefieldCollision(rules, playerGetter, mapObjectGetter, fleet, wp1, dist)
+	// Fast strategic drives cannot turn their pursuit substeps into safe slow
+	// travel through mines. Ordinary engines retain the classic collision rules.
+	mineWarp := 0
+	if fleet.Spec.Engine.strategicFactor() > 1 && wp1.WarpSpeed >= 9 {
+		mineWarp = wp1.WarpSpeed
+	}
+	hitMinefield, actualDist := checkForMinefieldCollision(rules, playerGetter, mapObjectGetter, fleet, wp1, dist, mineWarp)
 	if hitMinefield != nil {
 		interrupted = &fleetMoveInterrupted{reason: fleetMoveInterruptedHitMinefield, minefield: hitMinefield}
 	}
@@ -1157,7 +1207,7 @@ func (fleet *Fleet) gateFleet(rules *Rules, mapObjectGetter mapObjectGetter, pla
 	}
 
 	// dump cargo if we aren't IT or using a jump gate
-	if !useJumpgate && fleet.Cargo.Total() > 0 && !player.Race.Spec.CanGateCargo {
+	if !useJumpgate && fleet.CargoMass() > 0 && !player.Race.Spec.CanGateCargo {
 		messager.fleetStargateDumpedCargo(player, fleet, wp0, wp1, fleet.Cargo)
 		if !sourcePlanet.OwnedBy(player.Num) {
 			// let our ally know we dumped cargo on their planet
@@ -1325,7 +1375,7 @@ func (fleet *Fleet) fuelUsage(player *Player, warpSpeed int, distance float64) f
 		return a.design.Spec.Engine.fuelUsageAt(warpSpeed) - b.design.Spec.Engine.fuelUsageAt(warpSpeed)
 	})
 
-	cargo := fleet.Cargo.Total()
+	cargo := fleet.CargoMass()
 	fuel := 0.0
 	for _, token := range tokens {
 		tokenCargo := min(cargo, token.design.Spec.CargoCapacity*token.Quantity)
@@ -1534,6 +1584,9 @@ func (fleet *Fleet) getScrapAmount(rules *Rules, player *Player, planet *Planet,
 	}
 
 	// figure out much cargo and resources we get
+	if player.Race.HasEEE(EEEMaterialRecovery) && planet != nil && !colonize {
+		scrapMineralFactor = min(0.95, scrapMineralFactor+0.05)
+	}
 	scrappedCost = MultiplyCost(scrappedCost, scrapMineralFactor)
 
 	if scrapResourceFactor > 0 {
@@ -1578,7 +1631,7 @@ func (fleet *Fleet) repairFleet(log *slog.Logger, rules *Rules, player *Player, 
 	}
 
 	repairRate := rules.RepairRates[rate]
-	if repairRate <= 0 {
+	if repairRate <= 0 && !(player.Race.HasEEE(EEEFieldWorkshops) && rate != RepairRateMoving && (orbiting == nil || orbiting.Starbase == nil || orbiting.Starbase.Delete)) {
 		return
 	}
 
@@ -1590,6 +1643,15 @@ func (fleet *Fleet) repairFleet(log *slog.Logger, rules *Rules, player *Player, 
 	}
 
 	repairRate = repairRate*player.Race.Spec.RepairFactor + fleet.Spec.RepairBonus
+	if player.Race.HasEEE(EEEMaintenanceCrews) {
+		repairRate += fleet.Spec.RepairBonus * 0.25
+	}
+	if player.Race.HasEEE(EEESlowMaintenance) {
+		repairRate -= fleet.Spec.RepairBonus * 0.25
+	}
+	if player.Race.HasEEE(EEEFieldWorkshops) && rate != RepairRateMoving && (orbiting == nil || orbiting.Starbase == nil || orbiting.Starbase.Delete) {
+		repairRate += 0.01
+	}
 	for i := range fleet.Tokens {
 		token := &fleet.Tokens[i]
 
@@ -1695,7 +1757,7 @@ func (f *Fleet) CanJump(player *Player, dist float64, orbiting *Planet, target *
 		sourceSafeHullMass := orbiting.Spec.SafeHullMass
 		sourceSafeRange := orbiting.Spec.SafeRange
 		sourceStargateSafe :=
-			(canGateCargo || f.Cargo.Total() == 0) &&
+			(canGateCargo || f.CargoMass() == 0) &&
 				orbiting.Owned() &&
 				player.IsFriend(target.PlayerNum) &&
 				float64(sourceSafeRange) >= dist &&
@@ -2004,12 +2066,12 @@ func (f *Fleet) GetMinimalWarp(
 	freeSpeed int,
 	maxSafeSpeed int,
 ) int {
-	idealYears := int(math.Ceil(float64(dist) / float64(startSpeed*startSpeed)))
+	idealYears := int(math.Ceil(float64(dist) / f.StrategicSpeed(startSpeed)))
 	speed := startSpeed
 
 	// Prefer slower speeds if they take the same time
 	for i := startSpeed; i > freeSpeed; i-- {
-		years := int(math.Ceil(float64(dist) / float64(i*i)))
+		years := int(math.Ceil(float64(dist) / f.StrategicSpeed(i)))
 		if years == idealYears {
 			speed = i
 		}
@@ -2080,7 +2142,7 @@ func (f *Fleet) getYearsToWaypoint(player *Player, waypointIndex int) int {
 			years++
 		} else if wp.WarpSpeed > 0 {
 			dist := wp.Position.DistanceTo(f.waypointDeparturePosition(player, i-1))
-			years += int(math.Ceil(dist / float64(wp.WarpSpeed*wp.WarpSpeed)))
+			years += int(math.Ceil(dist / f.StrategicSpeed(wp.WarpSpeed)))
 		}
 	}
 	return years
@@ -2089,7 +2151,10 @@ func (f *Fleet) getYearsToWaypoint(player *Player, waypointIndex int) int {
 // pursue returns how many years it takes, and how far we travel, to catch a target moving at a constant heading
 // and speed. Each year the target moves, then we move straight at it. caught is false if we never catch it.
 func pursue(from, targetPosition, targetVelocity VectorFloat64, warpSpeed int) (years int, dist float64, caught bool) {
-	budget := float64(warpSpeed * warpSpeed)
+	return pursueAtSpeed(from, targetPosition, targetVelocity, float64(warpSpeed*warpSpeed))
+}
+
+func pursueAtSpeed(from, targetPosition, targetVelocity VectorFloat64, budget float64) (years int, dist float64, caught bool) {
 	for years = 1; years <= pursuitMaxYears; years++ {
 		targetPosition = targetPosition.Add(targetVelocity)
 		toTarget := targetPosition.Subtract(from)
@@ -2116,7 +2181,7 @@ func (f *Fleet) getPursuitWarp(
 	fallback int,
 ) int {
 	engine := f.Spec.Engine
-	targetVelocity := target.Heading.Normalized().Scale(float64(target.WarpSpeed * target.WarpSpeed))
+	targetVelocity := target.Heading.Normalized().Scale(target.observedStrategicSpeed())
 	targetPosition := target.Position.ToFloat64().Add(targetVelocity.Scale(float64(headStart)))
 
 	startSpeed := engine.IdealSpeed
@@ -2127,7 +2192,7 @@ func (f *Fleet) getPursuitWarp(
 	// go through speeds fastest to slowest so we end up with the slowest speed that catches the target soonest
 	warpSpeed, bestYears := 0, 0
 	for i := startSpeed; i >= max(engine.FreeSpeed, 1); i-- {
-		years, dist, caught := pursue(from.ToFloat64(), targetPosition, targetVelocity, i)
+		years, dist, caught := pursueAtSpeed(from.ToFloat64(), targetPosition, targetVelocity, f.StrategicSpeed(i))
 		if !caught || f.GetFuelCost(player, i, math.Ceil(dist))+fuelAlreadyAllocated > f.Fuel {
 			continue
 		}

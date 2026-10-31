@@ -81,6 +81,7 @@ func (s *shipDesignService) CreateShipDesign(ctx context.Context, req *connect.R
 		}
 	}
 
+	design.ID = 0 // Creating or upgrading always inserts a new design, even if a client copied its database identity.
 	design.PlayerNum = player.Num
 	design.GameID = game.ID
 	design.Num = player.GetNextDesignNum(player.Designs)
@@ -92,20 +93,38 @@ func (s *shipDesignService) CreateShipDesign(ctx context.Context, req *connect.R
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := dbWriteClient.SaveShipDesign(ctx, design); err != nil {
-		slog.Error("save new player design", slog.Any("error", err), slog.Int64("GameID", game.ID), slog.Int("PlayerNum", gamePlayer.Num), slog.String("DesignName", design.Name))
+	if req.Msg.UpgradeFromDesignNum != 0 {
+		source := player.GetDesign(int(req.Msg.UpgradeFromDesignNum))
+		if err := player.RegisterDesignUpgrade(source, design); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if err := s.db.WrapInTransaction(func(c db.Client) error {
+			if err := c.SaveShipDesign(ctx, design); err != nil {
+				return err
+			}
+			return c.UpdatePlayerOrders(ctx, player)
+		}); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	} else if err := dbWriteClient.SaveShipDesign(ctx, design); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	slog.Info("created player design", slog.Int64("GameID", design.GameID), slog.Int("PlayerNum", player.Num), slog.String("DesignName", design.Name))
 
 	return connect.NewResponse(&craig_starsv1.CreateShipDesignResponse{
-		Design: converter.C.ConvertCSShipDesign(design),
+		Design:       converter.C.ConvertCSShipDesign(design),
+		PlayerOrders: converter.C.ConvertCSPlayer(player).PlayerOrders,
 	}), nil
 }
 
 // UpdateShipDesign updates an existing design if not in use or transferred.
 func (s *shipDesignService) UpdateShipDesign(ctx context.Context, req *connect.Request[craig_starsv1.UpdateShipDesignRequest]) (*connect.Response[craig_starsv1.UpdateShipDesignResponse], error) {
+	if req.Msg.Design != nil {
+		if err := checkDesignMaintenanceLock(ctx, int(req.Msg.Design.Num)); err != nil {
+			return nil, err
+		}
+	}
 	dbClient := contextDb(ctx)
 	dbWriteClient := contextDbWrite(ctx)
 	game := contextGame(ctx)
@@ -205,6 +224,9 @@ func (s *shipDesignService) UpdateShipDesignDescription(ctx context.Context, req
 
 // DeleteShipDesign removes a design and updates fleets/planets accordingly.
 func (s *shipDesignService) DeleteShipDesign(ctx context.Context, req *connect.Request[craig_starsv1.DeleteShipDesignRequest]) (*connect.Response[craig_starsv1.DeleteShipDesignResponse], error) {
+	if err := checkDesignMaintenanceLock(ctx, int(req.Msg.Num)); err != nil {
+		return nil, err
+	}
 	dbClient := contextDb(ctx)
 	game := contextGame(ctx)
 	gamePlayer := contextGamePlayer(ctx)
@@ -343,6 +365,10 @@ func (s *shipDesignService) DeleteShipDesign(ctx context.Context, req *connect.R
 
 		}
 
+		delete(player.Automation.DesignFamilies, design.Num)
+		if err := c.UpdatePlayerOrders(ctx, player); err != nil {
+			return err
+		}
 		if err := c.DeleteShipDesign(ctx, design.ID); err != nil {
 			return fmt.Errorf("delete design from database: %w", err)
 		}

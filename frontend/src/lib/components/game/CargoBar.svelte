@@ -6,11 +6,12 @@
 	type Props = {
 		value: Cargo | undefined;
 		capacity: number | undefined;
+ extraMass?:number;
 		canTransferCargo?: boolean;
 		onPointerDown?: (e: PointerEvent) => void | undefined;
 	};
 
-	let { value, capacity, canTransferCargo = false, onPointerDown }: Props = $props();
+	let { value, capacity, extraMass=0, canTransferCargo = false, onPointerDown }: Props = $props();
 
 	let percent = $derived(cargoPercent(value ?? emptyCargo(), capacity));
 </script>
@@ -29,11 +30,12 @@
 	<div
 		class="font-semibold text-sm text-center align-middle text-white mix-blend-difference w-full bg-blend-difference absolute"
 	>
-		{totalCargo(value)} of {capacity ?? 0}kT
+		{totalCargo(value)+extraMass} of {capacity ?? 0}kT
 	</div>
 	<!-- Each share keeps its exact width. Rounded to whole percents, three thirds left a 1% gap in a
 	     full hold, and a small share could vanish. -->
 	<div class="flex h-full" data-type="cargo-fill">
+		{#if extraMass>0}<div style={`width: ${capacity?100*extraMass/capacity:0}%`} class="bg-gray-400 h-full"></div>{/if}
 		<div style={`width: ${percent.ironium}%`} class="ironium-bar h-full"></div>
 		<div style={`width: ${percent.boranium}%`} class="boranium-bar h-full"></div>
 		<div style={`width: ${percent.germanium}%`} class="germanium-bar h-full"></div>

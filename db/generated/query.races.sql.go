@@ -47,12 +47,16 @@ INSERT INTO
         research_cost_electronics,
         research_cost_biotechnology,
         techs_start_high,
-        description
+        description,
+        eee_traits,
+        eee_research_field
     )
 VALUES
     (
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
+        ?,
+        ?,
         ?,
         ?,
         ?,
@@ -123,6 +127,8 @@ type CreateRaceParams struct {
 	ResearchCostBiotechnology cs.ResearchCostLevel
 	TechsStartHigh            bool
 	Description               string
+	EeeTraits                 int64
+	EeeResearchField          string
 }
 
 func (q *Queries) CreateRace(ctx context.Context, arg CreateRaceParams) (int64, error) {
@@ -159,6 +165,8 @@ func (q *Queries) CreateRace(ctx context.Context, arg CreateRaceParams) (int64, 
 		arg.ResearchCostBiotechnology,
 		arg.TechsStartHigh,
 		arg.Description,
+		arg.EeeTraits,
+		arg.EeeResearchField,
 	)
 	if err != nil {
 		return 0, err
@@ -196,7 +204,7 @@ func (q *Queries) DeleteUserRaces(ctx context.Context, userID int64) (int64, err
 
 const GetRace = `-- name: GetRace :one
 SELECT
-    id, created_at, updated_at, user_id, name, plural_name, spend_leftover_points_on, prt, lrts, hab_low_grav, hab_low_temp, hab_low_rad, hab_high_grav, hab_high_temp, hab_high_rad, growth_rate, pop_efficiency, factory_output, factory_cost, num_factories, factories_cost_less, immune_grav, immune_temp, immune_rad, mine_output, mine_cost, num_mines, research_cost_energy, research_cost_weapons, research_cost_propulsion, research_cost_construction, research_cost_electronics, research_cost_biotechnology, techs_start_high, description
+    id, created_at, updated_at, user_id, name, plural_name, spend_leftover_points_on, prt, lrts, eee_traits, eee_research_field, hab_low_grav, hab_low_temp, hab_low_rad, hab_high_grav, hab_high_temp, hab_high_rad, growth_rate, pop_efficiency, factory_output, factory_cost, num_factories, factories_cost_less, immune_grav, immune_temp, immune_rad, mine_output, mine_cost, num_mines, research_cost_energy, research_cost_weapons, research_cost_propulsion, research_cost_construction, research_cost_electronics, research_cost_biotechnology, techs_start_high, description
 FROM
     races
 WHERE
@@ -217,6 +225,8 @@ func (q *Queries) GetRace(ctx context.Context, id int64) (Race, error) {
 		&i.SpendLeftoverPointsOn,
 		&i.Prt,
 		&i.Lrts,
+		&i.EeeTraits,
+		&i.EeeResearchField,
 		&i.HabLowGrav,
 		&i.HabLowTemp,
 		&i.HabLowRad,
@@ -249,7 +259,7 @@ func (q *Queries) GetRace(ctx context.Context, id int64) (Race, error) {
 
 const GetRaces = `-- name: GetRaces :many
 SELECT
-    id, created_at, updated_at, user_id, name, plural_name, spend_leftover_points_on, prt, lrts, hab_low_grav, hab_low_temp, hab_low_rad, hab_high_grav, hab_high_temp, hab_high_rad, growth_rate, pop_efficiency, factory_output, factory_cost, num_factories, factories_cost_less, immune_grav, immune_temp, immune_rad, mine_output, mine_cost, num_mines, research_cost_energy, research_cost_weapons, research_cost_propulsion, research_cost_construction, research_cost_electronics, research_cost_biotechnology, techs_start_high, description
+    id, created_at, updated_at, user_id, name, plural_name, spend_leftover_points_on, prt, lrts, eee_traits, eee_research_field, hab_low_grav, hab_low_temp, hab_low_rad, hab_high_grav, hab_high_temp, hab_high_rad, growth_rate, pop_efficiency, factory_output, factory_cost, num_factories, factories_cost_less, immune_grav, immune_temp, immune_rad, mine_output, mine_cost, num_mines, research_cost_energy, research_cost_weapons, research_cost_propulsion, research_cost_construction, research_cost_electronics, research_cost_biotechnology, techs_start_high, description
 FROM
     races
 `
@@ -273,6 +283,8 @@ func (q *Queries) GetRaces(ctx context.Context) ([]Race, error) {
 			&i.SpendLeftoverPointsOn,
 			&i.Prt,
 			&i.Lrts,
+			&i.EeeTraits,
+			&i.EeeResearchField,
 			&i.HabLowGrav,
 			&i.HabLowTemp,
 			&i.HabLowRad,
@@ -315,7 +327,7 @@ func (q *Queries) GetRaces(ctx context.Context) ([]Race, error) {
 
 const GetRacesForUser = `-- name: GetRacesForUser :many
 SELECT
-    id, created_at, updated_at, user_id, name, plural_name, spend_leftover_points_on, prt, lrts, hab_low_grav, hab_low_temp, hab_low_rad, hab_high_grav, hab_high_temp, hab_high_rad, growth_rate, pop_efficiency, factory_output, factory_cost, num_factories, factories_cost_less, immune_grav, immune_temp, immune_rad, mine_output, mine_cost, num_mines, research_cost_energy, research_cost_weapons, research_cost_propulsion, research_cost_construction, research_cost_electronics, research_cost_biotechnology, techs_start_high, description
+    id, created_at, updated_at, user_id, name, plural_name, spend_leftover_points_on, prt, lrts, eee_traits, eee_research_field, hab_low_grav, hab_low_temp, hab_low_rad, hab_high_grav, hab_high_temp, hab_high_rad, growth_rate, pop_efficiency, factory_output, factory_cost, num_factories, factories_cost_less, immune_grav, immune_temp, immune_rad, mine_output, mine_cost, num_mines, research_cost_energy, research_cost_weapons, research_cost_propulsion, research_cost_construction, research_cost_electronics, research_cost_biotechnology, techs_start_high, description
 FROM
     races
 WHERE
@@ -341,6 +353,8 @@ func (q *Queries) GetRacesForUser(ctx context.Context, userID int64) ([]Race, er
 			&i.SpendLeftoverPointsOn,
 			&i.Prt,
 			&i.Lrts,
+			&i.EeeTraits,
+			&i.EeeResearchField,
 			&i.HabLowGrav,
 			&i.HabLowTemp,
 			&i.HabLowRad,
@@ -416,7 +430,9 @@ SET
     research_cost_electronics = ?,
     research_cost_biotechnology = ?,
     techs_start_high = ?,
-    description = ?
+    description = ?,
+    eee_traits = ?,
+    eee_research_field = ?
 WHERE
     id = ? RETURNING updated_at
 `
@@ -454,6 +470,8 @@ type UpdateRaceParams struct {
 	ResearchCostBiotechnology cs.ResearchCostLevel
 	TechsStartHigh            bool
 	Description               string
+	EeeTraits                 int64
+	EeeResearchField          string
 	ID                        int64
 }
 
@@ -491,6 +509,8 @@ func (q *Queries) UpdateRace(ctx context.Context, arg UpdateRaceParams) (int64, 
 		arg.ResearchCostBiotechnology,
 		arg.TechsStartHigh,
 		arg.Description,
+		arg.EeeTraits,
+		arg.EeeResearchField,
 		arg.ID,
 	)
 	if err != nil {

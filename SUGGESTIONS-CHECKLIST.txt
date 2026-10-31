@@ -1,0 +1,255 @@
+TOMEK-STARS — REQUEST CHECKLIST
+Updated: 2026-10-31
+
+Legend: [x] implemented and tested (evidence below); [~] partial / current audit; [ ] still missing.
+Historical questions, corrections and withdrawn alternatives are recorded separately below.
+Never modify D:/gry/Stars! WineDVM. Tests use isolated databases or audit backups.
+Do not claim every request is done while any [ ] or [~] item remains.
+
+[x] 01. Original game is read-only; develop and test copies only
+    Evidence: Workspace is separate from D:/gry/Stars! WineDVM; copied-save tests use audit-results and temporary databases.
+[x] 02. Audit feasibility and choose implementation language
+    Evidence: Go game engine and Svelte client based on sirgwain/craig-stars; no binary conversion of the original executable.
+[x] 03. Single-player launcher, no login screen
+    Evidence: Start-Stars.ps1, local sign-in; browser smoke test.
+[x] 04. Shortcut in Developer/Stars!; clicking again stops the old project processes
+    Evidence: Start-Stars.ps1 validates process paths and promotes dist/stars-local.pending.exe.
+[x] 05. Rename to tomek-stars and credit Craig
+    Evidence: Launch UI and credits; content-smoke.mjs.
+[x] 06. Fix Create Game collapsing and stale map-server errors
+    Evidence: New game API and large-map browser smoke test.
+[x] 07. Restore all original race presets and add different races
+    Evidence: 17 presets, exercised by browser smoke.
+[x] 08. EEE race wizard traits, mutual exclusions, costs and IFE/ARM/UR synergy
+    Evidence: cs/eeetraits.go and eeetraits_test.go; frontend race wizard.
+[x] 09. Keep the existing research fields; add experimental technologies
+    Evidence: cs/eeetechs.go, eeetechs_test.go; English descriptions.
+[x] 10. More Mystery Trader technologies with II/III prerequisite tiers
+    Evidence: cs/eeetrader.go, eeetrader_test.go.
+[x] 11. Rebalance all trader II/III effects and excessive resource costs
+    Evidence: cs/eeetrader.go; explicit component-stat tests.
+[x] 12. Improve technology artwork to resemble Stars!
+    Evidence: 32 component icons plus seven unique hull and three engine sprites; late-art-preview-v1.png and alpha validation. Art manifest in craig-stars/audit-results.
+[x] 13. Rational new hulls and late-game engines for huge maps
+    Evidence: cs/eeelate.go: seven hulls and three strategic engines, tested movement/fuel/ETA.
+[x] 14. English text for all introduced game features
+    Evidence: English audit of new Go/Svelte/TypeScript content: no Polish text or encoding damage found.
+[x] 15. Larger and even larger galaxies, proportional opponent limits
+    Evidence: Galaxies up to side 6000, 12600 stars and 144 empires; browser smoke.
+[x] 16. Show estimated star count during universe setup
+    Evidence: NewGame.svelte; largest-map estimate exercised by browser smoke.
+[x] 17. Game-name randomizer
+    Evidence: NewGame.svelte and browser smoke.
+[x] 18. Classic Stars! styled main menu
+    Evidence: Launch page, desktop/mobile screenshots and browser smoke.
+[x] 19. Mass AI difficulty changes
+    Evidence: NewGame.svelte; browser smoke.
+[x] 20. Intermediate difficulty levels and weighted variations around a chosen level
+    Evidence: Seven levels; aiDifficulty.ts/tests and Go AI tests.
+[x] 21. Explain difficulty effects
+    Evidence: NewGame difficulty help table documents actual expansion/production/attack/research settings and Elite/Cheater behavior; browser test passed.
+[x] 22. Hide impossible orders (mines, colony, etc.) for incapable fleets
+    Evidence: Fleet order capability filters and component tests.
+[x] 23. Preserve zoom, pan and selected object across turns
+    Evidence: scannerViewport.ts, GameContext tests and real browser generated-turn check.
+[x] 24. Allow much greater zoom
+    Evidence: Maximum 60x; browser smoke checks above 15x.
+[x] 25. Hold an invention notification to preview; release closes; no navigation
+    Evidence: TechnologyPressPreview.svelte, unit tests and browser smoke.
+[x] 26. Watch battle directly from individual and summary notifications
+    Evidence: BattleMessageDetail.svelte, PlayerMessageDetail.svelte; direct-link unit tests.
+[x] 27. Automation configuration window
+    Evidence: FleetAutomation.svelte and ResearchTaxSettings.svelte.
+[x] 28. List all automated ships, multi-select and batch upgrade
+    Evidence: FleetAutomation.svelte, UpgradeAll.svelte and unit tests.
+[x] 29. Sort by Automatic role
+    Evidence: FleetAutomation.svelte; both-direction browser unit test.
+[x] 30. Auto Orders alongside Orders when selecting a ship
+    Evidence: FleetAutoOrdersTile.svelte; desktop/mobile layout and tests.
+[x] 31. Automatic roles survive errors and temporarily unsuitable equipment
+    Evidence: Sticky role validation, pruning only missing/deleted fleets; core tests.
+[x] 32. Split All inherits colonizer, scout, escort and other automatic roles
+    Evidence: InheritAutomaticRole and server automationinheritance_test.go.
+[x] 33. One-shot fleet composition using existing ships and/or new production
+    Evidence: cs/fleetassembly.go, UI composer, browser real-API test.
+[x] 34. Distribute fleet production among shipyards
+    Evidence: Fleet assembly production and core tests.
+[x] 35. Reinforcements follow a moving fleet and merge
+    Evidence: Fleet assembly routing and core tests.
+[x] 36. Notify at 70% and 100% completion
+    Evidence: Fleet assembly and rebuild distribution notifications.
+[x] 37. Edit an existing fleet composition with the same mechanism
+    Evidence: Composer edit persisted through real API browser test.
+[x] 38. Obsolete means scrapping
+    Evidence: RetireDesign policy, designmaintenance tests.
+[x] 39. A successor means scrap old ship and build a full replacement
+    Evidence: cs/designmaintenance.go; no in-place retrofits.
+[x] 40. Show scrap recovery and use normal recovered minerals
+    Evidence: getScrapAmount used by maintenance; core tests.
+[x] 41. Split giant fleets and distribute replacement among shipyards
+    Evidence: cs/rebuilddistribution.go, maintenance tests.
+[x] 42. Design Upgrade creates a family and redirects earlier versions
+    Evidence: DesignCard/editor, server API tests for two upgrades.
+[x] 43. Upgrade all from Ship Designs
+    Evidence: UpgradeAll.svelte; eligibility, role preservation and rollback tests.
+[x] 44. Replacement ships inherit automation immediately and after regrouping
+    Evidence: inheritReplacementRole; all automatic-role regression tests.
+[x] 45. Automatic repair threshold, whole-fleet withdrawal, resume after repair
+    Evidence: cs/automaticsafety.go and automaticsafety_test.go.
+[x] 46. Explain per-token damage, repair and upgrade mechanics
+    Evidence: Implemented per-stack damage, native turn repair and scrap/rebuild; answers supplied.
+[x] 47. Logistics supplies minerals to shipyard planets
+    Evidence: cs/shipyardsupply.go and logistics tests.
+[x] 48. Automatic mineral packets only from capable bases to capable receivers
+    Evidence: cs/automaticpackets.go, opt-in configuration, queue/recovery tests.
+[x] 49. Automatic debris collection; wait for escorts in danger
+    Evidence: Logistics salvage jobs and escort tests.
+[x] 50. Victorious combat fleets collect available debris
+    Evidence: collectBattleSalvage; preserves cargo capacity.
+[x] 51. Free transports empty combat fleets mineral holds
+    Evidence: OffloadCombatCargo logistics jobs.
+[x] 52. Bombers need escorts; transports near borders can request escorts
+    Evidence: cs/bomberautomation.go, escort strength and rendezvous tests.
+[x] 53. Escort count scales with bombers/threat
+    Evidence: prepareConvoyWithMinimum and bomber tests.
+[x] 54. Automatic scouts visit only unexplored planets
+    Evidence: cs/scoutautomation.go and scoutpetal tests.
+[x] 55. Scouts spread outward from home; many scouts avoid duplicate targets
+    Evidence: Golden-angle petals, reservations, per-fleet missions; tests.
+[x] 56. An obsolete scout finishes its trip before returning for scrap/rebuild
+    Evidence: Scout mission completion gate in maintenance; core tests.
+[x] 57. Plan a full fuel-efficient scout petal, scanning on the return arm
+    Evidence: cs/scoutpetal.go and full-trip fuel tests.
+[x] 58. No multiyear scout return on warp 1-3; timely fuel return
+    Evidence: Cruise floor, return-turn budget, refill before relaunch; tests.
+[x] 59. Automatic remote mining follows economic mineral needs
+    Evidence: cs/miningautomation.go, shortage scoring.
+[x] 60. Miners stay long enough; moving considers mining lost in transit
+    Evidence: Mining lease and opportunity-cost tests.
+[x] 61. Automatic terraforming ships
+    Evidence: cs/terraformautomation.go; capability validation and turn tests.
+[x] 62. Fix invalid automatic fleet assignment for terraforming/patrol
+    Evidence: Backend accepts roles; server API regression; launcher deploys matching binary.
+[x] 63. Automatic colony modes: nearest, farthest, best, engine-aware auto
+    Evidence: cs/colonizationautomation.go; reservation and reachability tests.
+[x] 64. Colonizers load maximum colonists automatically
+    Evidence: Cargo top-up, mineral unloading and source population reserve; tests.
+[x] 65. An unreachable best colony falls back to the best reachable colony
+    Evidence: Reservation release and alternate-target tests.
+[x] 66. Reject absurd colony trips above 50 turns and multiyear warp 2
+    Evidence: Common route policy and tests.
+[x] 67. Currently red planets are eligible after instant terraforming
+    Evidence: prospectivePlanetQuality uses the race terraforming ability; regression test.
+[x] 68. Review research budget and diagnose leftovers-only blocking research
+    Evidence: Research warning; actual save diagnosis without generating a turn.
+[x] 69. Automatic research tax by population OR annual resources
+    Evidence: ResearchTaxPolicy, three size bands, cutoff, rates and zero-rate tests.
+[x] 70. Transport colonists from crowded planets near peak absolute growth
+    Evidence: Default 35% source reserve, configurable manual thresholds.
+[x] 71. Supply young colonies up to 20% population
+    Evidence: Default target 20%, incoming reservations and conservation tests.
+[x] 72. Every third passenger trip varies the destination
+    Evidence: Persistent trip counter, bounded alternate destinations and test.
+[x] 73. Any owned planet with surplus can supply passengers
+    Evidence: All source/destination pairs considered; alternate-source regression.
+[x] 74. Prefer high-growth passenger destinations over weak nearby ones
+    Evidence: Habitability-weighted score and regression test.
+[x] 75. Plan pickup, loaded delivery and fuel return before boarding passengers
+    Evidence: passengerTripSafe, full cargo reserve, unreachable-trip rejection test.
+[x] 76. Freighters reclaim valuable weak enemy colonies
+    Evidence: cs/automaticinvasion.go; fresh reports, limited raiders, native combat and changed-garrison tests.
+[x] 77. Auto Patrol searches for weak visible targets
+    Evidence: cs/patrolautomation.go, report-strength estimates and closest-patrol priority.
+[x] 78. Patrols gather/merge to overpower stronger units, then split
+    Evidence: Core group/merge/survivor split and fuel conservation tests.
+[x] 79. Patrols resume patrol or repair after combat
+    Evidence: Maintenance and safety interaction tests.
+[x] 80. Fix nearby scouts ignored by patrols during actual turn generation
+    Evidence: Keep visible intel until end-of-turn scan; full-turn and copied-save regression.
+[x] 81. Real interception rather than overshooting a scout that stops early
+    Evidence: Native one-turn pursuit with dynamic fuel/range/mine checks; regression.
+[x] 82. Patrol fuel reserve and return within 8 turns at cruise speed
+    Evidence: Cruise reserve, return limit and low-fuel return regression.
+[x] 83. Nearby patrols share spare fuel with stranded automatic ships
+    Evidence: Fuel donor role without changing patrol role; own-return reserve and transfer tests.
+[x] 84. Partial rescue can involve multiple deliveries; never depart without enough fuel
+    Evidence: Partial-donation request persists; donor/receiver conservation regression.
+[x] 85. Common route planning for every automatic role and mixed convoys
+    Evidence: Common fuel guard for all automatic roles and mixed convoys; timely return policy, whole-convoy stock and full payload budgets; core tests and copied game passed.
+[x] 86. Choose fastest feasible route using actual engine economy and payload
+    Evidence: fuelnetworkroute.go: Pareto time/fuel/visited-state search with actual engine costs; later-arrival regression and real multi-stop turn test passed. See bounded-search limits below.
+[x] 87. Respect engine safe speed, minefields, mixed engine strategic boosts
+    Evidence: automaticLegSafe, automaticMaxWarp, actual movement/ETA and mine tests.
+[x] 88. Use starbases as permanent fuel nodes; ordinary colonies do not refuel
+    Evidence: expeditionStations and fuel tests.
+[x] 89. Automatic tankers spread around the empire with slow network patrols
+    Evidence: cs/tankernetwork.go and spreading/rendezvous tests.
+[x] 90. Plan fastest paths through several tanker rendezvous and docks
+    Evidence: fuelnetworkroute.go + fuelnetwork.go: multi-stop dock/tanker itineraries, real finite stocks, exclusive atomic reservations; three-tanker native-turn regression passed.
+[x] 91. Tanker deliveries retain donor return fuel and account for receivers/escorts
+    Evidence: Own-return reserves protected; mixed-member budgets; duplicate reservations and failed-commit atomicity tests; tankers/docks loss cancellation tests passed.
+[x] 92. Recover already stranded ships and safely resume their original missions
+    Evidence: Timely dock return and chained tankers; forced rescue above 25% and at full tank when intermediate stops are required; mission/role restoration regressions passed.
+[x] 93. Avoid detected intercept courses and flee without silently disabling automation
+    Evidence: automaticescape.go + automaticsafety tests: observed interceptor courses, combined threats, open-space escape, meaningful armed escort assessment, mission retained.
+[x] 94. Unique Stars!-style graphics for the new hulls
+    Evidence: Seven dedicated transparent Stars!-inspired metallic hull sprites, visually checked at 64px/128px; all four racial sets currently share each unique new hull sprite.
+[x] 95. Explain engine/fuel, rescue status and route limitations in Auto Orders
+    Evidence: FuelRouteDetails.svelte shows reserved legs, dock stops, tanker names/amounts and protected donor fuel in selected Auto Orders and global automation; UI tests passed.
+[x] 96. End-to-end tests and copied-save tests without modifying the real turn
+    Evidence: Final Go suite, 44 frontend tests, isolated browser smoke and copied-save turn all passed; see audit-results/FUEL-AUTOMATION-AUDIT.txt.
+[x] 97. Keep this request inventory and tick items only after verified deployment
+    Evidence: All 97 numbered requests audited and recorded here. Final tested build deployed 2026-10-31 11:05 Europe/Warsaw; post-deploy read-only UI passed.
+
+[x] 98. Clarify Orbital Adjuster, Retro Bomb and planetary terraforming
+    Evidence: Source audit: Orbital Adjuster is a CA ship component (Biotechnology 6); Retro Bomb unterraforms; ordinary planets use paid terraforming queue items. README updated.
+[x] 99. Optional colonizer/passenger service for worlds requiring future terraforming, with automatic CA instaforming
+    Evidence: ServeTerraformingWorlds option round-trips through the real API. CA evaluates instaforming automatically; other races opt into recoverable red worlds and paid minimum terraforming. Core and browser tests passed.
+[x] 100. Transport actual factories, mines and defenses; retain 95% of current operating capacity
+    Evidence: Actual factory/mine/defense counts move opportunistically; source retains ceil(95% of current operating capacity). Tests cover stock 110 / capacity 100 exporting 15, conservation, packed mass, unloading and damaged-hold limits.
+[x] 101. Fill mixed freighter cargo and unload promptly without repeated residual-load trips
+    Evidence: Installations never create a collection route. Needed minerals fill spare room; long token-load trips are filtered; committed passenger deliveries empty to the peak-growth band and prioritize quick residual delivery.
+[x] 102. AI count slider 0–144 under Fill map
+    Evidence: AI slider 0–144 under Fill map; supports drag/input and exact counts. UI tests cover zero and maximum.
+[x] 103. All AI prioritize a declared human victor while defending existing territory
+    Evidence: After public declaration of a human victor: AI relations, military production and reachable attack/invasion preferences focus that victor, retaining other enemies and normal defense. Test proves preference over an easier nearby target.
+[x] 104. Show the entire fuel-budgeted scout petal and every stop on the map
+    Evidence: Entire fuel-budgeted scout petal displayed from the persisted mission plan, including return dock; native orders remain safety-revalidated. Canvas scene regression passed.
+[x] 105. Remember all previous new-game settings and add Reset to defaults
+    Evidence: New-game GameSettings, host race, opponent races/difficulties and bulk level persist locally. Reset restores defaults; HostPlayer no longer overwrites restored race. UI remount/reset tests passed.
+[x] 106. Choose human start location: random, edge or center
+    Evidence: Random/Edge/Center host start option. Core test includes zero opponents; real API/browser Galactic creation verified an edge capital.
+
+[~] 107. Publish only the program and future tested updates to the user GitHub repository
+    Evidence: Ready-to-play Windows edition, source, assets and immutable static UI prepared. Personal data, saves, backup copies, caches, credentials and node_modules excluded and scanned. Publication pending.
+
+CLARIFIED / SUPERSEDED REQUESTS
+- Direct in-place upgrades were explicitly replaced by scrap-and-rebuild on the same hull.
+- Population transfer should follow absolute growth, not percentage growth: source reserve 35%, destination target 20%.
+- Invention previews are hold/release tooltips, not navigation to another page.
+- Original Stars! activation does not apply to the independent remake; local automatic sign-in fulfills immediate launch.
+- A complete Python rewrite was not requested after choosing the Go/Svelte fork.
+- Zig is the native build compiler. Its caches are placed in temporary build directories outside Documents.
+- Graphical battle playback exists; the requested direct notification link has been added.
+
+CURRENT STATUS
+Requests 1–106 implemented and checked. Request 107 awaits verified GitHub publication. Only the program is to be published, never the personal playthrough.
+No original Stars! files were changed. Automatic behavior remains subject to real fuel, available ships and known intelligence.
+
+PLANNER LIMITS
+- Search is bounded at 20,000 states; assisted colony fallback evaluates 32 promising targets.
+- Non-one-way mission endpoints require a funded return to an actual owned fuel dock.
+- Unknown enemies/future orders cannot be predicted. No future tanker fuel is invented.
+- No reachable service means wait/request rescue, not travel without fuel.
+- Four racial hull sets currently share each new hull's dedicated sprite.
+
+PREVIOUS DEPLOYMENT (historical; read the actual current state before restart)
+2026-10-31 11:05 Europe/Warsaw.
+Full Go suite passed, server 125s; 44 frontend tests passed; Svelte check/build passed.
+Isolated browser smoke and a turn generated on a copied save passed.
+After restart: local autologin and game 6 automation/fuel-network UI read-only smoke passed.
+Verification details: audit-results/FUEL-AUTOMATION-AUDIT.txt.
+
+Clarification: infrastructure export is limited to the actual surplus above 95% of the planet maximum. At maximum 100 and stock 100, at most 5 may be exported; stock 95 exports zero.
+
+LATEST VERIFIED UPDATE: 2026-10-31. Full Go suite passed; final core/placement checks passed; 65 UI tests passed; Svelte check zero errors/warnings; compiled Windows native/WASM/frontend builds passed. Isolated browser verified edge start and persistent terraform/infrastructure permissions. Copied-save turn passed (118s). Static Windows PowerShell launcher deployed with immutable UI snapshots; live scanner inspection passed with mutating requests blocked. GitHub publication pending.

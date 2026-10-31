@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -29,6 +31,9 @@ var aiRegressionShips = []string{"scout", "colonizer", "freighter", "miner", "mi
 //
 // `serve --ai-mode` plays the same games into a database to view in the app.
 func TestAIRegression(t *testing.T) {
+	oldLog := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
+	t.Cleanup(func() { slog.SetDefault(oldLog) })
 	opponent := aiGameOpponent()
 	// AI_REGRESSION_WITHOUT plays without some behaviors, to see what they change in the recordings
 	if without := strings.Split(os.Getenv("AI_REGRESSION_WITHOUT"), ","); without[0] != "" {
@@ -42,7 +47,12 @@ func TestAIRegression(t *testing.T) {
 			actual := playAIRegressionGame(t, race, opponent)
 			path := filepath.Join(aiRegressionDir, fmt.Sprintf("%s.csv", race.PRT))
 			if os.Getenv("AI_REGRESSION_UPDATE") != "" {
-				require.NoError(t, os.MkdirAll(aiRegressionDir, 0755))
+				// An optional temporary destination supports antivirus-protected
+				// workspaces; review generated recordings before copying them back.
+				if directory := os.Getenv("AI_REGRESSION_OUTPUT_DIR"); directory != "" {
+					path = filepath.Join(directory, fmt.Sprintf("%s.csv", race.PRT))
+				}
+				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0755))
 				require.NoError(t, os.WriteFile(path, []byte(actual.String()), 0644))
 				return
 			}

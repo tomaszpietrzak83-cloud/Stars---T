@@ -38,6 +38,8 @@ type producer struct {
 	// true when simulating production for estimates. We don't know how a genesis device
 	// will reroll the planet, so estimates leave the environment alone.
 	estimating bool
+	// Only actual turn production supplies this; estimates never mutate fleets.
+	maintainShips func(*Cost)
 }
 
 type QueueItemCompletionEstimate struct {
@@ -247,12 +249,23 @@ func (p *producer) produce() (productionResult, error) {
 	planet := p.planet
 	result := productionResult{}
 	available := Cost{Resources: planet.Spec.ResourcesPerYearAvailable}.AddMineral(planet.Cargo.ToMineral())
+	if p.maintainShips != nil {
+		p.maintainShips(&available)
+	}
 
 	// work on a copy of the queue, removing items as they complete
 	queue := slices.Clone(planet.ProductionQueue)
 	alchemy := false // true if the previous item is auto alchemy
 	for i := 0; i < len(queue); {
 		item := queue[i]
+		if item.Type == QueueItemTypeShipToken && p.player.DesignMaintenance[item.DesignNum] != 0 {
+			// Do not build old ships only to scrap or refit them immediately.
+			available = available.Add(item.Allocated)
+			result.messages = append(result.messages, PlayerMessage{Type: PlayerMessageInfo, Text: "Canceled production of a retired or replaced ship design; its allocation was returned."})
+			queue, i = removeQueueItem(queue, i, alchemy)
+			alchemy = false
+			continue
+		}
 		if item.Quantity <= 0 {
 			queue, i = removeQueueItem(queue, i, alchemy)
 			alchemy = false

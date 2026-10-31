@@ -108,6 +108,11 @@
 
 		if ('hullSlotType' in techLike) {
 			const hullComponent = techLike as TechHullComponent;
+			if ((hullComponent.strategicSpeedFactor ?? 0) > 1) {
+				const factor = hullComponent.strategicSpeedFactor;
+				stats.push({ label: 'Strategic speed at warp 10', text: `${100 * factor} ly/year` });
+				descriptions.push(`At warp 9–10, travels ${factor}× the ordinary distance per year. Every ship in a fleet must support this speed. Fuel is charged for the actual distance; combat movement and stargates are unchanged.`);
+			}
 			if (category === TechCategory.MINE_LAYER && hullComponent.minefieldType) {
 				const minefieldStats = rules.minefieldStatsByType[hullComponent.minefieldType];
 				stats.push({ label: 'Mines laid / year', text: `${hullComponent.mineLayingRate}` });

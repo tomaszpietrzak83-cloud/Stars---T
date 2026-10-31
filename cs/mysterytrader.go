@@ -563,35 +563,38 @@ func getMysteryTraderPart(rng rng, player *Player, reward MysteryTraderRewardTyp
 	// for the initial check, don't include the jump gate and genesis device
 	// in the techs the player can get. Those are more rare
 	for _, tech := range MysteryTraderRandomTechs {
+		if !eligibleTraderPart(player, &tech) {
+			continue
+		}
 		techsByCategory[tech.Category] = append(techsByCategory[tech.Category], tech)
 	}
 
 	category := reward.Category()
-	if category == TechCategoryNone || len(techsByCategory[category]) == 0 {
+	if category == TechCategoryNone {
 		// no techs for this category, they get ships
 		return nil, MysteryTraderRewardLifeboat
 	}
-
-	tech := &techsByCategory[category][rng.Intn(len(techsByCategory[category]))]
-	if player.HasAcquiredTech(tech) {
-		// the player already has this tech, get a new random one from all techs (including jump gate and genesis device)
-		for i := 0; i < 25; i++ {
-			tech = &MysteryTraderTechs[rng.Intn(len(MysteryTraderTechs))]
-			if !player.HasAcquiredTech(tech) {
-				return tech, MysteryTraderRewardTypeForTech(tech)
+	if len(techsByCategory[category]) == 0 {
+		var available []Tech
+		for _, candidate := range MysteryTraderTechs {
+			if eligibleTraderPart(player, &candidate) {
+				available = append(available, candidate)
 			}
 		}
-
-		// couldn't find a tech the player didn't already have, they get ships
-		return nil, MysteryTraderRewardLifeboat
+		if len(available) == 0 {
+			return nil, MysteryTraderRewardLifeboat
+		}
+		choice := available[rng.Intn(len(available))]
+		return &choice, MysteryTraderRewardTypeForTech(&choice)
 	}
 
+	tech := &techsByCategory[category][rng.Intn(len(techsByCategory[category]))]
 	// pick a random tech to aware for this category
 	return tech, reward
 }
 
 // a list of all Mystery Trader Techs
-var MysteryTraderTechs = []Tech{
+var MysteryTraderTechs = append([]Tech{
 	HushABoom.Tech,
 	EnigmaPulsar.Tech,
 	MegaPolyShell.Tech,
@@ -604,10 +607,10 @@ var MysteryTraderTechs = []Tech{
 	MiniMorph.Tech,
 	JumpGate.Tech,
 	GenesisDevice.Tech,
-}
+}, eeeTraderTechs()...)
 
 // a list of mystery trader techs that can be randomly given
-var MysteryTraderRandomTechs = []Tech{
+var MysteryTraderRandomTechs = append([]Tech{
 	HushABoom.Tech,
 	EnigmaPulsar.Tech,
 	MegaPolyShell.Tech,
@@ -618,7 +621,7 @@ var MysteryTraderRandomTechs = []Tech{
 	AlienMiner.Tech,
 	MultiCargoPod.Tech,
 	MiniMorph.Tech,
-}
+}, eeeTraderTechs()...)
 
 var HushABoom = TechHullComponent{Tech: NewTechWithOrigin("Hush-a-Boom", NewCost(1, 5, 0, 5), TechRequirements{Acquirable: true, TechLevel: TechLevel{Weapons: 12, Electronics: 12, Biotechnology: 12}}, 95, TechCategoryBomb, OriginMysteryTrader, TechTagBomb),
 	Mass:                 5,

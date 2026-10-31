@@ -294,6 +294,8 @@ func (c *client) UpdateLightPlayer(ctx context.Context, player *cs.Player) error
 func (c *client) UpdatePlayerOrders(ctx context.Context, player *cs.Player) error {
 
 	_, err := c.writer.UpdatePlayerOrders(ctx, generated.UpdatePlayerOrdersParams{
+		Automation:        GameAutomationToAutomation(player.Automation),
+		DesignMaintenance: GameMaintenanceToMaintenance(player.DesignMaintenance),
 		ID:                player.ID,
 		SubmittedTurn:     player.SubmittedTurn,
 		DefaultHullSet:    int64(player.DefaultHullSet),

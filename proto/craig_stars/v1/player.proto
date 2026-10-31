@@ -116,10 +116,65 @@ message PlayerPlans {
 }
 
 message PlayerOrders {
+  LogisticsAutomation automation = 6;
+  // -1 retires a design; a positive value names its same-hull replacement.
+  map<int32, int32> design_maintenance = 5;
   TechField researching = 1;
   NextResearchField next_research_field = 2;
   int32 research_amount = 3;
   map<string, CargoTransfers> cargo_transfers = 4;
+}
+
+message LogisticsAutomation {
+  bool serve_terraforming_worlds = 23;
+  bool infrastructure_transport = 24;
+  bool manual_passenger_thresholds = 22;
+  bool disable_passenger_transport = 21;
+  map<int32,int32> design_families = 20;
+  ResearchTaxPolicy research_tax = 18;
+  int32 scout_max_return_turns = 19;
+  int32 repair_threshold_percent = 14;
+  bool disable_automatic_repair = 15;
+  bool disable_interception_evasion = 16;
+  bool automatic_packets = 17;
+  map<int32, FleetAssembly> fleet_assemblies = 13;
+  bool passenger_transport = 5;
+  int32 source_population_percent = 6;
+  int32 destination_population_percent = 7;
+  int32 escort_margin_ly = 8;
+  int32 escort_strength_percent = 9;
+  bool disable_salvage = 10;
+  bool disable_mineral_supply = 11;
+  bool single_shipyard_rebuild = 12;
+  map<int32, string> fleet_roles = 1;
+  map<int32, bool> rebuild_fleets = 2;
+  bool battle_salvage = 3;
+  bool offload_combat_cargo = 4;
+}
+
+message ResearchTaxPolicy {
+ bool enabled = 1;
+ int32 leftover_until = 2;
+ int32 medium_threshold = 3;
+ int32 large_threshold = 4;
+ int32 small_percent = 5;
+ int32 medium_percent = 6;
+ int32 large_percent = 7;
+ string basis = 8;
+}
+
+message FleetAssembly {
+  string name = 1;
+  int32 rally_planet_num = 2;
+  map<int32, int32> designs = 3;
+  map<int32, bool> source_fleets = 4;
+  bool build_missing = 5;
+  int32 revision = 6;
+  // Progress is server-owned; editing a composition increments revision.
+  int32 leader_fleet_num = 7;
+  int32 completed_revision = 8;
+  int32 notified_revision = 9;
+  string status = 10;
 }
 
 message PlayerStats {

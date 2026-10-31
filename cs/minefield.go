@@ -243,7 +243,7 @@ type minefieldStretch struct {
 // The fleet's speed for the check comes from how far it actually moves, not its warp, so a fleet arriving or
 // making a short pursuit step is checked at a lower speed. Overlapping fields of the same type are one stretch
 // of the path, checked once per ly in path order, and the last ly before arriving at dest isn't checked.
-func checkForMinefieldCollision(rules *Rules, playerGetter playerGetter, mapObjectGetter mapObjectGetter, fleet *Fleet, dest Waypoint, distance float64) (minefield *Minefield, distanceTravelled float64) {
+func checkForMinefieldCollision(rules *Rules, playerGetter playerGetter, mapObjectGetter mapObjectGetter, fleet *Fleet, dest Waypoint, distance float64, minimumWarp ...int) (minefield *Minefield, distanceTravelled float64) {
 	totalDist := fleet.Position.DistanceTo(dest.Position)
 	if distance <= 0 || totalDist == 0 {
 		return nil, distance
@@ -256,6 +256,9 @@ func checkForMinefieldCollision(rules *Rules, playerGetter playerGetter, mapObje
 	warp := 3
 	for warp < 10 && float64(warp*warp) < checkDist-1 {
 		warp++
+	}
+	if len(minimumWarp) > 0 {
+		warp = max(warp, min(10, minimumWarp[0]))
 	}
 
 	fleetPlayer := playerGetter.getPlayer(fleet.PlayerNum)

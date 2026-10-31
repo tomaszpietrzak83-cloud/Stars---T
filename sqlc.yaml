@@ -78,6 +78,14 @@ sql:
               import: "github.com/sirgwain/craig-stars/cs"
               type: Bitmask
           # players
+          - column: players.automation
+            go_type:
+              type: LogisticsAutomation
+              pointer: true
+          - column: players.design_maintenance
+            go_type:
+              type: DesignMaintenance
+              pointer: true
           - column: players.ai_difficulty
             go_type:
               import: "github.com/sirgwain/craig-stars/cs"

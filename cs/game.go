@@ -22,16 +22,20 @@ const (
 type AIDifficulty string
 
 const (
-	AIDifficultyNone    AIDifficulty = ""
-	AIDifficultyEasy    AIDifficulty = "Easy"
-	AIDifficultyNormal  AIDifficulty = "Normal"
-	AIDifficultyHard    AIDifficulty = "Hard"
-	AIDifficultyCheater AIDifficulty = "Cheater"
+	AIDifficultyNone     AIDifficulty = ""
+	AIDifficultyEasy     AIDifficulty = "Easy"
+	AIDifficultyNormal   AIDifficulty = "Normal"
+	AIDifficultyHard     AIDifficulty = "Hard"
+	AIDifficultyCheater  AIDifficulty = "Cheater"
+	AIDifficultySkilled  AIDifficulty = "Skilled"
+	AIDifficultyAdvanced AIDifficulty = "Advanced"
+	AIDifficultyElite    AIDifficulty = "Elite"
 )
 
 // The Game itself tracks some settings, the Rules, the Host and the current state (year/victory declared)
 // All other parts of a Game are stored in the Universe
 type Game struct {
+	HostStartPosition string `json:"hostStartPosition,omitempty"`
 	DBObject
 	HostID                       int64             `json:"hostId"`
 	Name                         string            `json:"name" header:"Name"`
@@ -70,6 +74,7 @@ type NewGamePlayer struct {
 
 // The settings for a new game, used during game setup
 type GameSettings struct {
+	HostStartPosition            string            `json:"hostStartPosition,omitempty"`
 	Name                         string            `json:"name"`
 	Public                       bool              `json:"public"`
 	QuickStartTurns              int               `json:"quickStartTurns"`
@@ -153,6 +158,11 @@ const (
 	SizeLargeWide   Size = "LargeWide"
 	SizeHuge        Size = "Huge"
 	SizeHugeWide    Size = "HugeWide"
+	SizeVast        Size = "Vast"
+	SizeImmense     Size = "Immense"
+	SizeColossal    Size = "Colossal"
+	SizeTitanic     Size = "Titanic"
+	SizeGalactic    Size = "Galactic"
 )
 
 type Density string
@@ -359,6 +369,7 @@ func (g *Game) WithSettings(settings GameSettings) *Game {
 	g.MaxMinerals = settings.MaxMinerals
 	g.GalaxyClumping = settings.GalaxyClumping
 	g.StartMode = settings.StartMode
+	g.HostStartPosition = settings.HostStartPosition
 	g.VictoryConditions = settings.VictoryConditions
 
 	// use custom rules for this game

@@ -92,6 +92,7 @@ message TechRequirements {
   repeated string hulls_allowed = 11;
   repeated string hulls_denied = 12;
   bool acquirable = 13;
+  string acquired_tech_prerequisite = 14;
 }
 
 message TechHullComponent {
@@ -149,6 +150,7 @@ message TechHullComponent {
   int32 free_speed = 57;
   int32 max_safe_speed = 58;
   repeated int32 fuel_usage = 59;
+  double strategic_speed_factor = 60;
 }
 
 message TechHull {
@@ -254,6 +256,7 @@ message Engine {
   int32 free_speed = 2;
   int32 max_safe_speed = 3;
   repeated int32 fuel_usage = 4;
+  double strategic_speed_factor = 5;
 }
 
 message Bomb {

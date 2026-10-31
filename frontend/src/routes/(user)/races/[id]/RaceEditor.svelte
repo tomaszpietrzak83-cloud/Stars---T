@@ -12,6 +12,7 @@
 
 	import Habitability from './Habitability.svelte';
 	import LRTs from './LRTs.svelte';
+	import EEETraits from '#lib/components/game/race/EEETraits.svelte';
 	import PlanetaryProduction from './PlanetaryProduction.svelte';
 	import Research from './Research.svelte';
 
@@ -95,6 +96,8 @@
 <SectionHeader>Lesser Racial Traits</SectionHeader>
 <LRTs bind:race />
 <LRTsDescriptions {race} />
+<SectionHeader>EEE — Dodatkowe cechy rasy</SectionHeader>
+<EEETraits bind:race />
 
 <SectionHeader>Habitability</SectionHeader>
 <Habitability bind:race />

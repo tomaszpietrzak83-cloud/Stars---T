@@ -24,6 +24,7 @@
 	import FleetSummaryTile from './FleetSummaryTile.svelte';
 	import FleetWaypointTaskTile from './FleetWaypointTaskTile.svelte';
 	import FleetWaypointsTile from './FleetWaypointsTile.svelte';
+ import FleetAutoOrdersTile from './FleetAutoOrdersTile.svelte';
 	import PlanetFleetsInOrbitTile from './PlanetFleetsInOrbitTile.svelte';
 	import PlanetMineralsOnHandTile from './PlanetMineralsOnHandTile.svelte';
 	import PlanetProductionTile from './PlanetProductionTile.svelte';
@@ -126,7 +127,8 @@
 	</div>
 	<div class="lg:flex lg:flex-col">
 		<FleetFuelAndCargoTile fleet={$commandedFleet} {onShowCargoTransferDialog} />
-		<FleetWaypointsTile
+		<FleetAutoOrdersTile fleet={$commandedFleet} />
+ <FleetWaypointsTile
 			fleet={$commandedFleet}
 			selectedWaypointIndex={$currentSelectedWaypointIndex}
 			{onSelectWaypoint}

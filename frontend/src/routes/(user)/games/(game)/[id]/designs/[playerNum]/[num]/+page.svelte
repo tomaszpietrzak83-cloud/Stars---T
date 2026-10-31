@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import Breadcrumb from '#lib/components/game/Breadcrumb.svelte';
 	import Design from '#lib/components/game/design/Design.svelte';
+	import DesignMaintenance from '#lib/components/game/design/DesignMaintenance.svelte';
 	import NotFound from '#lib/components/NotFound.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
 
@@ -28,6 +29,7 @@
 	<div class="bg-base-200 rounded-md p-2">
 		<Design {design} />
 	</div>
+	<DesignMaintenance {design} />
 {:else}
 	<NotFound />
 {/if}

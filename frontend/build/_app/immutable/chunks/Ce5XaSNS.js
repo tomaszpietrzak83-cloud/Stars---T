@@ -1,0 +1,1 @@
+import{d as e,l as t}from"./Dgn-K8f2.js";import"./B3izITrL.js";var n=e();function r(e){t(n)!=e&&n.update(()=>e)}export{r as n,n as t};

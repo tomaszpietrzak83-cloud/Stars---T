@@ -97,6 +97,11 @@ func (gr *gameRunner) getGuestNum(u *cs.User) (int, error) {
 
 // host a new game
 func (gr *gameRunner) HostGame(hostID int64, settings *cs.GameSettings) (*cs.FullGame, error) {
+	for _, slot := range settings.Players {
+		if err := slot.Race.ValidateEEE(); err != nil {
+			return nil, err
+		}
+	}
 	game := gr.client.CreateGame(hostID, *settings)
 	var fullGame *cs.FullGame
 
@@ -170,6 +175,7 @@ func (gr *gameRunner) HostGame(hostID int64, settings *cs.GameSettings) (*cs.Ful
 				if playerSetting.Race.Name != "" {
 					race = playerSetting.Race
 				}
+				race = ai.RaceForDifficulty(race, playerSetting.AIDifficulty)
 				player := gr.client.NewPlayer(0, race, &game.Rules)
 				player.GameID = game.ID
 				player.Num = i + 1
@@ -639,6 +645,7 @@ func (gr *gameRunner) DeletePlayerSlot(gameID int64, playerNum int) error {
 func (gr *gameRunner) AddOpenPlayerSlot(game *cs.GameWithPlayers) (*cs.Player, error) {
 
 	race := *cs.NewRace()
+
 	player := gr.client.NewPlayer(0, race, &game.Rules)
 	player.GameID = game.ID
 	player.Num = len(game.Players) + 1
@@ -671,6 +678,7 @@ func (gr *gameRunner) AddOpenPlayerSlot(game *cs.GameWithPlayers) (*cs.Player, e
 func (gr *gameRunner) AddGuestPlayer(game *cs.GameWithPlayers) (*cs.Player, error) {
 
 	race := *cs.NewRace()
+
 	player := gr.client.NewPlayer(0, race, &game.Rules)
 	player.GameID = game.ID
 	player.Num = len(game.Players) + 1
@@ -731,6 +739,7 @@ func (gr *gameRunner) AddGuestPlayer(game *cs.GameWithPlayers) (*cs.Player, erro
 func (gr *gameRunner) AddAIPlayer(game *cs.GameWithPlayers) (*cs.Player, error) {
 
 	race := *cs.NewRace()
+
 	player := gr.client.NewPlayer(0, race, &game.Rules)
 	player.GameID = game.ID
 	player.Num = len(game.Players) + 1
@@ -781,7 +790,7 @@ func (gr *gameRunner) StartGame(game *cs.Game) error {
 				player.Race = cheaterAIRaces[cheaterAIPlayerNumber]
 				cheaterAIPlayerNumber++
 			} else {
-				player.Race = aiRaces[aiPlayerNumber]
+				player.Race = ai.RaceForDifficulty(aiRaces[aiPlayerNumber], player.AIDifficulty)
 				aiPlayerNumber++
 			}
 		}
@@ -945,6 +954,12 @@ func (gr *gameRunner) generateUniverse(fullGame *cs.FullGame) error {
 
 // process an ai player's turns
 func (gr *gameRunner) processAITurns(fullGame *cs.FullGame) {
+	victors := []int{}
+	for _, p := range fullGame.Players {
+		if p.Victor && !p.AIControlled {
+			victors = append(victors, p.Num)
+		}
+	}
 	for _, player := range fullGame.Players {
 		if !player.AIControlled {
 			continue
@@ -952,7 +967,7 @@ func (gr *gameRunner) processAITurns(fullGame *cs.FullGame) {
 		// TODO: make this use copies to ensure the ai only updates orders?
 		// TODO: ai only ai processing
 		pmo := fullGame.Universe.GetPlayerMapObjects(player.Num)
-		ai := ai.NewAIPlayer(fullGame.Game, fullGame.TechStore, player, pmo)
+		ai := ai.NewAIPlayer(fullGame.Game, fullGame.TechStore, player, pmo, victors...)
 		if err := ai.ProcessTurn(); err != nil {
 			slog.Error("AI process turn error", slog.Any("error", err), slog.Int64("GameID", fullGame.ID), slog.Int("PlayerNum", player.Num))
 		}

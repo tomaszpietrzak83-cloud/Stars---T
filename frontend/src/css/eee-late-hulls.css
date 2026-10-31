@@ -1,0 +1,92 @@
+/* Dedicated transparent bitmap art; shared across the four selectable hull sets. */
+.hull-eee-pathfinder-0,
+.hull-eee-pathfinder-1,
+.hull-eee-pathfinder-2,
+.hull-eee-pathfinder-3 {
+ background-image: url('/images/eee/hulls/eee-pathfinder-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.hull-eee-bulk-carrier-0,
+.hull-eee-bulk-carrier-1,
+.hull-eee-bulk-carrier-2,
+.hull-eee-bulk-carrier-3 {
+ background-image: url('/images/eee/hulls/eee-bulk-carrier-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.hull-eee-fleet-tender-0,
+.hull-eee-fleet-tender-1,
+.hull-eee-fleet-tender-2,
+.hull-eee-fleet-tender-3 {
+ background-image: url('/images/eee/hulls/eee-fleet-tender-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.hull-eee-expedition-cruiser-0,
+.hull-eee-expedition-cruiser-1,
+.hull-eee-expedition-cruiser-2,
+.hull-eee-expedition-cruiser-3 {
+ background-image: url('/images/eee/hulls/eee-expedition-cruiser-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.hull-eee-linebreaker-0,
+.hull-eee-linebreaker-1,
+.hull-eee-linebreaker-2,
+.hull-eee-linebreaker-3 {
+ background-image: url('/images/eee/hulls/eee-linebreaker-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.hull-eee-expedition-bomber-0,
+.hull-eee-expedition-bomber-1,
+.hull-eee-expedition-bomber-2,
+.hull-eee-expedition-bomber-3 {
+ background-image: url('/images/eee/hulls/eee-expedition-bomber-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.hull-eee-prospector-0,
+.hull-eee-prospector-1,
+.hull-eee-prospector-2,
+.hull-eee-prospector-3 {
+ background-image: url('/images/eee/hulls/eee-prospector-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.eee-horizon-drive {
+ background-image: url('/images/eee/components/eee-horizon-drive-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.eee-deep-space-drive {
+ background-image: url('/images/eee/components/eee-deep-space-drive-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+
+.eee-galactic-drive {
+ background-image: url('/images/eee/components/eee-galactic-drive-v1.png');
+ background-position: center;
+ background-size: 64px 64px;
+ background-repeat: no-repeat;
+}
+

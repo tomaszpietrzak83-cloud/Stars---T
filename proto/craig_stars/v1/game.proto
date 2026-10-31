@@ -60,6 +60,7 @@ message NewGamePlayer {
 }
 
 message GameSettings {
+  string host_start_position = 15;
   string name = 1;
   bool public = 2;
   int32 quick_start_turns = 3;

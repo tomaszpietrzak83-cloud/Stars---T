@@ -15,7 +15,7 @@ func (ai *aiPlayer) layMines() error {
 	// TODO: Add support for remote detonating minefield perimeters X years out in space if playing SD
 
 	// Maintain the starting layers on every difficulty; hard replenishes them.
-	hard := ai.AIDifficulty == cs.AIDifficultyHard || ai.AIDifficulty == cs.AIDifficultyCheater
+	hard := cs.IsAdvancedAI(ai.AIDifficulty)
 	maintain := ai.doctrine.mineLayers || (hard && (ai.Race.PRT == cs.SD || ai.Race.PRT == cs.IS))
 	if design == nil && !maintain {
 		return nil

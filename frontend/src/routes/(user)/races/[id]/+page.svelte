@@ -37,6 +37,10 @@
 		} else {
 			// create a new humanoid
 			race = humanoid();
+			const template=page.url.searchParams.get('template');
+			if (template && /^-\d+$/.test(template)) {
+				try { const response=await raceClient.getRace({raceId:BigInt(template)}); if(response.race) {race=response.race;race.id=0n;race.userId=0n;} } catch(error) {addError(error as ConnectError);}
+			}
 		}
 		loaded = true;
 	});

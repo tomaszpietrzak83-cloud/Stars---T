@@ -2,7 +2,7 @@
 	import Select from '#lib/components/Select.svelte';
 	import { humanoid } from '#lib/types/Race.js';
 	import { onMount } from 'svelte';
-	import { raceClient } from '#lib/services/connect.js';
+	import { loadRaceLibrary } from './raceLibrary';
 	import type { Race } from '#lib/types/cs-proto.js';
 	import type { NewGamePlayer } from '#lib/types/cs-proto.js';
 
@@ -14,13 +14,14 @@
 	};
 
 	let { player = $bindable() }: Props = $props();
+	$effect(() => { if (!player.race && hostRaces.length) player.race = hostRaces[0]; });
 
 	onMount(async () => {
-		player.race = hostRaces[0];
-		const { races } = await raceClient.getRaces({});
+		if (!player.race) player.race = hostRaces[0];
+		const races = await loadRaceLibrary();
 		if (races.length > 0) {
 			hostRaces = races;
-			player.race = hostRaces[0];
+			if (!player.race) player.race = hostRaces[0];
 		}
 	});
 

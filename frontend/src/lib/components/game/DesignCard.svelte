@@ -14,6 +14,10 @@
 		design: ShipDesign;
 		href: string;
 		copyhref: string;
+ upgradehref?:string;
+ familyLabel?:string;
+ onRebuildFamily?:()=>Promise<void>;
+ familyFleetCount?:number;
 		onDelete?: (design: ShipDesign) => Promise<void>;
 		// how many of this design are in production queues, they're removed along with the design
 		numQueued?: number;
@@ -21,7 +25,7 @@
 		readOnly?: boolean;
 	};
 
-	let { design, href, copyhref, onDelete, numQueued = 0, readOnly = false }: Props = $props();
+	let { design, href, copyhref, upgradehref, familyLabel, onRebuildFamily, familyFleetCount=0, onDelete, numQueued = 0, readOnly = false }: Props = $props();
 
 	// deleting a design scraps everything built from it and removes it from every production queue,
 	// so that gets a louder confirmation
@@ -97,14 +101,17 @@
 				{/if}
 				{#if design.originalPlayerNum == None && !design.mysteryTrader && !readOnly}
 					<a class="btn btn-outline btn-secondary joint-item" href={copyhref}>Copy</a>
+     {#if upgradehref}<a class="btn btn-outline btn-primary joint-item" href={upgradehref}>Upgrade</a>{/if}
 					<!-- cannotDelete = true is for designs that are reserved for the system -->
 					{#if !design.spec?.numInstances && !design.cannotDelete}
-						<a class="btn btn-outline btn-secondary joint-item" href={`${href}}/edit`}>Edit</a>
+						<a class="btn btn-outline btn-secondary joint-item" href={`${href}/edit`}>Edit</a>
 					{/if}
 				{/if}
 			</div>
 		</div>
 	</div>
+ {#if familyLabel}<p class="text-xs px-3 pb-2">{familyLabel}</p>{/if}
+ {#if onRebuildFamily && !readOnly}<button class="btn btn-sm btn-outline m-2" disabled={!familyFleetCount} onclick={onRebuildFamily}>Rebuild family fleets ({familyFleetCount})</button>{/if}
 </div>
 
 <ConfirmDialog

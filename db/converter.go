@@ -16,6 +16,10 @@ var c Converter
 // goverter:name GameConverter
 // goverter:output:package github.com/sirgwain/craig-stars/db
 // goverter:output:file ./converter.generated.go
+// goverter:extend GameMaintenanceToMaintenance
+// goverter:extend GameAutomationToAutomation
+// goverter:extend AutomationToGameAutomation
+// goverter:extend MaintenanceToGameMaintenance
 // goverter:extend AcquiredTechsToGameAcquiredTechs
 // goverter:extend PlayerNoteTagsToGamePlayerNoteTags
 // goverter:extend GamePlayerNoteTagsToPlayerNoteTags
@@ -190,6 +194,7 @@ type Converter interface {
 	// goverter:map . VictoryConditions | ExtendVictoryConditions
 	// goverter:map . Area | ExtendArea
 	// goverter:ignore Rules
+	// goverter:ignore HostStartPosition
 	ConvertGame(source generated.Game) cs.Game
 
 	ConvertGames(source []generated.Game) []cs.Game

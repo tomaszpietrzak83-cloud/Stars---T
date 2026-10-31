@@ -224,10 +224,14 @@ func (t *cargoTransferer) invade(player *Player, fleet *Fleet, planet *Planet, c
 // waitAtWaypoint is true when a set amount task can't get enough from the dest, or a wait for percent
 // task didn't fill the hold to its percent
 func (t *cargoTransferer) getCargoLoadAmount(fleet *Fleet, dest CargoHolder, cargoType CargoType, task WaypointTransportTask) (transferAmount int, wantToTransfer int, waitAtWaypoint bool) {
-	availableCapacity := fleet.Spec.CargoCapacity - fleet.Cargo.Total()
+	availableCapacity := fleet.Spec.CargoCapacity - fleet.CargoMass()
 	availableToLoad := dest.GetCargo().GetAmount(cargoType)
 	currentAmount := fleet.Cargo.GetAmount(cargoType)
 	totalCapacity := fleet.Spec.CargoCapacity
+	if cargoType == Colonists {
+		availableCapacity = fleet.availableColonistSpace()
+		totalCapacity -= fleet.Spec.MineralCargoBonus
+	}
 
 	// fuel transfers use different tanks
 	if cargoType == Fuel {
@@ -322,6 +326,9 @@ func (t *cargoTransferer) getCargoLoadAmount(fleet *Fleet, dest CargoHolder, car
 func (t *cargoTransferer) getCargoUnloadAmount(fleet *Fleet, dest CargoHolder, cargoType CargoType, task WaypointTransportTask) (transferAmount int, wantToTransfer int) {
 
 	capacity := dest.GetCargoCapacity()
+	if receiving, ok := dest.(*Fleet); ok && cargoType == Colonists {
+		capacity = receiving.Cargo.Total() + receiving.availableColonistSpace()
+	}
 	if capacity != Infinite {
 		capacity = capacity - dest.GetCargo().Total()
 	}
@@ -441,6 +448,14 @@ func (t *cargoTransferer) checkTransferToDest(fleet *Fleet, dest CargoHolder, ca
 	}
 
 	destCargo := dest.GetCargo()
+	if cargoType == Colonists {
+		if transferAmount < 0 && fleet.availableColonistSpace() < -transferAmount {
+			return CargoTransferStatusCargoCapacity
+		}
+		if receiving, ok := dest.(*Fleet); ok && transferAmount > receiving.availableColonistSpace() {
+			return CargoTransferStatusDestCargoCapacity
+		}
+	}
 	switch {
 	case transferAmount > 0 && !fleet.Cargo.CanTransferAmount(cargoType, transferAmount):
 		return CargoTransferStatusCargo

@@ -74,7 +74,7 @@ func (ctr CargoTransferRequest) HasPositive() bool {
 
 // update a player's orders
 func (o *orders) UpdatePlayerOrders(player *Player, playerPlanets []*Planet, orders PlayerOrders, rules *Rules) {
-	researchAmountUpdated := orders.ResearchAmount != player.ResearchAmount
+	researchAmountUpdated := orders.ResearchAmount != player.ResearchAmount || orders.Automation.ResearchTax != nil || player.Automation.ResearchTax != nil
 
 	// save the new orders
 	player.PlayerOrders = orders
@@ -83,6 +83,7 @@ func (o *orders) UpdatePlayerOrders(player *Player, playerPlanets []*Planet, ord
 	if researchAmountUpdated {
 		for _, planet := range playerPlanets {
 			if planet.PlayerNum == player.Num {
+				planet.applyResearchTax(player)
 				spec := &planet.Spec
 				spec.computeResourcesPerYearAvailable(player, planet)
 				planet.MarkDirty()
@@ -99,6 +100,9 @@ func (o *orders) UpdatePlayerOrders(player *Player, playerPlanets []*Planet, ord
 
 // update a planet orders
 func (o *orders) UpdatePlanetOrders(rules *Rules, player *Player, planet *Planet, orders PlanetOrders) error {
+	if err := validateMaintenanceQueueEdits(planet.ProductionQueue, orders.ProductionQueue); err != nil {
+		return err
+	}
 	if err := cleanProductionQueueNotes(orders.ProductionQueue); err != nil {
 		return err
 	}
@@ -131,6 +135,9 @@ func (o *orders) updatePlanetSpec(rules *Rules, player *Player, planet *Planet) 
 
 	// make sure we can actually build this stuff
 	for _, item := range planet.ProductionQueue {
+		if item.Type == QueueItemTypeShipToken && player.DesignMaintenance[item.DesignNum] != 0 {
+			return fmt.Errorf("cannot build a retired or replaced ship design")
+		}
 		if item.design != nil && item.design.OriginalPlayerNum != None {
 			return fmt.Errorf("cannot build %s, it was transferred from another player", item.design.Name)
 		}
@@ -167,6 +174,7 @@ func (o *orders) UpdateFleetOrders(player *Player, fleet *Fleet, orders FleetOrd
 	wp0.TransferToPlayer = newWP0.TransferToPlayer
 
 	fleet.Waypoints = append(fleet.Waypoints[:1], orders.Waypoints[1:]...)
+	fleet.clearUnusableTasks()
 	if len(fleet.Waypoints) > 1 {
 		fleet.Heading = (fleet.Waypoints[1].Position.Subtract(fleet.Position)).Normalized()
 	}
@@ -221,6 +229,12 @@ func (o *orders) TransferByHand(rules *Rules, player *Player, fleet *Fleet, dest
 
 	if fleet.availableCargoSpace() < transferAmount.Total() {
 		return fmt.Errorf("fleet %s has %d cargo space available, cannot transfer %dkT from %s", fleet.Name, fleet.availableCargoSpace(), transferAmount.Total(), destName)
+	}
+	if transferAmount.Colonists > fleet.availableColonistSpace() {
+		return fmt.Errorf("insufficient colonist capacity")
+	}
+	if receiving, ok := dest.(*Fleet); ok && -transferAmount.Colonists > receiving.availableColonistSpace() {
+		return fmt.Errorf("insufficient destination colonist capacity")
 	}
 
 	if !dest.CanTransfer(fleet, transferAmount) {
@@ -295,6 +309,15 @@ func (o *orders) TransferByHand(rules *Rules, player *Player, fleet *Fleet, dest
 
 // split a fleet into two fleets based on a request
 func (o *orders) SplitFleet(rules *Rules, player *Player, playerFleets []*Fleet, request SplitFleetRequest) (source, dest *Fleet, err error) {
+	if request.Source.carriesInfrastructure() || request.Dest.carriesInfrastructure() {
+		return nil, nil, fmt.Errorf("unload packed installations before splitting")
+	}
+	if fuelNetworkReserved(request.Source) || fuelNetworkReserved(request.Dest) {
+		return nil, nil, fmt.Errorf("finish the reserved fuel route, or disable its automatic role and advance a turn, before splitting")
+	}
+	if request.Source != nil && request.Source.InDesignMaintenance() || request.Dest != nil && request.Dest.InDesignMaintenance() {
+		return nil, nil, fmt.Errorf("cancel design maintenance before splitting a fleet")
+	}
 	defer func() {
 		if err != nil {
 			return
@@ -417,7 +440,7 @@ func (o *orders) SplitFleet(rules *Rules, player *Player, playerFleets []*Fleet,
 			if fleet.Cargo.HasNegative() || fleet.Fuel < 0 {
 				return nil, nil, fmt.Errorf("cannot transfer %v, fleet %s does not have enough of the required cargo or fuel", transfer, fleet.Name)
 			}
-			if fleet.Cargo.Total() > fleet.Spec.CargoCapacity {
+			if fleet.CargoMass() > fleet.Spec.CargoCapacity {
 				return nil, nil, fmt.Errorf("fleet %s would exceed its cargo capacity after splitting", fleet.Name)
 			}
 			if fleet.Fuel > fleet.Spec.FuelCapacity {
@@ -476,6 +499,15 @@ func (o *orders) SplitFleet(rules *Rules, player *Player, playerFleets []*Fleet,
 
 // split all fleets
 func (o *orders) SplitAll(rules *Rules, player *Player, playerFleets []*Fleet, source *Fleet) ([]*Fleet, error) {
+	if source.carriesInfrastructure() {
+		return nil, fmt.Errorf("unload packed installations before splitting")
+	}
+	if fuelNetworkReserved(source) {
+		return nil, fmt.Errorf("finish the reserved fuel route, or disable its automatic role and advance a turn, before splitting")
+	}
+	if source != nil && source.InDesignMaintenance() {
+		return nil, fmt.Errorf("cancel design maintenance before splitting a fleet")
+	}
 	// call split on each of these tokens
 	newFleets := []*Fleet{}
 	for index := 0; index < len(source.Tokens); index++ {
@@ -500,6 +532,7 @@ func (o *orders) SplitAll(rules *Rules, player *Player, playerFleets []*Fleet, s
 			if err != nil {
 				return nil, err
 			}
+			player.InheritAutomaticRole(source, fleet)
 			newFleets = append(newFleets, fleet)
 			// add this new fleet to our player fleets so the fleet num increment goes up
 			playerFleets = append(playerFleets, fleet)
@@ -672,12 +705,12 @@ func (o *orders) splitFleetTokens(rules *Rules, player *Player, playerFleets []*
 	}
 	source.Tokens = updatedTokens
 
-	// record the cargo the new fleet took so by hand transfers can follow it
-	player.transferByHand(source, fleet.MapObject.ToTarget(), fleet.Cargo, fleet.Fuel)
-
 	// update fleet specs
 	fleet.Spec = ComputeFleetSpec(rules, player, &fleet)
 	source.Spec = ComputeFleetSpec(rules, player, source)
+	rebalanceEEEColonists(source, &fleet)
+	// Record the final cargo so by-hand transfers follow the actual split.
+	player.transferByHand(source, fleet.MapObject.ToTarget(), fleet.Cargo, fleet.Fuel)
 	fleet.clearUnusableTasks()
 	source.clearUnusableTasks()
 
@@ -690,6 +723,19 @@ func (o *orders) splitFleetTokens(rules *Rules, player *Player, playerFleets []*
 
 // merge fleets into a single fleet
 func (o *orders) Merge(rules *Rules, player *Player, fleets []*Fleet) (*Fleet, error) {
+	for _, fleet := range fleets {
+		if fleet.carriesInfrastructure() {
+			return nil, fmt.Errorf("unload packed installations before merging")
+		}
+		if fuelNetworkReserved(fleet) {
+			return nil, fmt.Errorf("finish reserved fuel routes before merging fleets")
+		}
+	}
+	for _, fleet := range fleets {
+		if fleet != nil && fleet.InDesignMaintenance() {
+			return nil, fmt.Errorf("cancel design maintenance before merging fleets")
+		}
+	}
 	if len(fleets) <= 1 {
 		return nil, fmt.Errorf("no fleets to merge")
 	}

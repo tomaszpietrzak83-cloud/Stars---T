@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { designFamilyMembers, upgradeDesignName } from '#lib/types/designFamilies.js';
+ import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Breadcrumb from '#lib/components/game/Breadcrumb.svelte';
 	import ShipDesigner from '#lib/components/game/design/ShipDesigner.svelte';
@@ -18,6 +19,7 @@
 	let design: ShipDesign | undefined = $state();
 
 	let error = $state('');
+ let upgradeFrom=$state(0);
 
 	onMount(() => {
 		design = create(ShipDesignSchema, {
@@ -28,13 +30,15 @@
 			hull: hullName
 		});
 
-		const copyParam = page.url.searchParams.get('copy');
+		upgradeFrom=Number(page.url.searchParams.get('upgrade')??0);
+ const copyParam = page.url.searchParams.get('copy')??(upgradeFrom?String(upgradeFrom):null);
 		if (copyParam) {
 			const copyDesign = $universe.getMyDesign(parseInt(copyParam));
 			if (copyDesign) {
 				design = clone(ShipDesignSchema, copyDesign);
 				design.gameDbObject = create(GameDBObjectSchema);
 				design.version++;
+    if(upgradeFrom){const members=designFamilyMembers($universe.getMyDesigns(),$player.playerOrders.automation?.designFamilies??{},upgradeFrom);design.version=Math.max(1,...members.map(d=>d.version))+1;design.name=upgradeDesignName(copyDesign,design.version);}
 			}
 		}
 	});
@@ -47,7 +51,7 @@
 		try {
 			const { valid, reason } = $universe.validateDesign(design);
 			if (valid) {
-				const created = await createDesign(design);
+				const created = await createDesign(design,upgradeFrom);
 				goto(`/games/${$game.id}/designer/${created.num}`);
 			} else {
 				error = reason ?? 'invalid design';
@@ -73,5 +77,6 @@
 	{/snippet}
 </Breadcrumb>
 {#if hull && design}
-	<ShipDesigner bind:design {hull} onSave={save} {error} />
+	{#if upgradeFrom}<div class="alert alert-info my-3 block">Creating a new version of this design family on the same hull. All previous family versions will point to this successor. Existing ships are replaced by scrapping and rebuilding when you order a fleet or family rebuild; scouts finish their current expedition first.</div>{/if}
+ <ShipDesigner bind:design {hull} onSave={save} {error} />
 {/if}

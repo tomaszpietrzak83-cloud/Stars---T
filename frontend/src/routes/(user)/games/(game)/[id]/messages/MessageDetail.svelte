@@ -7,14 +7,15 @@
 		PlayerMessageType
 	} from '#lib/types/cs-proto.js';
 	import { getMapObjectTarget } from '#lib/types/Message.js';
-	import BattleMessageDetail from './BattleMessageDetail.svelte';
+	import TechnologyPressPreview from '#lib/components/tech/TechnologyPressPreview.svelte';
+ import BattleMessageDetail from './BattleMessageDetail.svelte';
 	import FleetMessageDetail from './FleetMessageDetail.svelte';
 	import MineralPacketMessageDetail from './MineralPacketMessageDetail.svelte';
 	import MysteryTraderMessageDetail from './MysteryTraderMessageDetail.svelte';
 	import PlanetMessageDetail from './PlanetMessageDetail.svelte';
 	import PlayerMessageDetail from './PlayerMessageDetail.svelte';
 
-	const { universe } = getGameContext();
+	const { universe, game } = getGameContext();
 
 	let { message }: { message: PlayerMessage } = $props();
 
@@ -47,4 +48,9 @@
 	<FleetMessageDetail {message} />
 {:else}
 	<PlayerMessageDetail {message} />
+{/if}
+
+{#if message.type!==PlayerMessageType.PLAYER_TECH_GAINED && (message.spec?.techGained || message.spec?.mysteryTrader?.tech)}
+ {@const name=message.spec?.techGained || message.spec?.mysteryTrader?.tech || ''}
+ <TechnologyPressPreview {name} />
 {/if}

@@ -77,6 +77,11 @@ func generateWormhole(mapObjectGetter mapObjectGetter, area Vector, random rng, 
 	position = Vector{X: random.Intn(width), Y: random.Intn(height)}
 
 	minWormholeDistance := (height + width) / 2 / 4
+	// Expanded maps add pairs in proportion to area; scaling spacing with
+	// map width as well would make the requested packing impossible.
+	if width > 2500 || height > 2000 {
+		minWormholeDistance = min(minWormholeDistance, 400)
+	}
 	posCheckCount := 0
 	for !mapObjectGetter.isPositionValid(position, &planetPositions, minDistanceFromPlanets) ||
 		!mapObjectGetter.isPositionValid(position, &wormholePositions, minWormholeDistance) {

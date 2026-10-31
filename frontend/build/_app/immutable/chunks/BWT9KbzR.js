@@ -1,0 +1,1 @@
+function e(e,t){return e.filter(e=>!e.aiControlled&&e.userId===t)}function t(t,n){return e(t,n).length>1}function n(t,n){let r=e(t,n);return r.find(e=>!e.submittedTurn)??r[0]}export{e as n,t as r,n as t};

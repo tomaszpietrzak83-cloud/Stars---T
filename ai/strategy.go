@@ -15,7 +15,7 @@ func (ai *aiPlayer) configureStrategy() {
 		ai.config.colonizerPopulationDensity = .33
 		ai.config.colonistTransportDensity = .33
 		ai.config.startAttackingYear += 10
-	case cs.AIDifficultyHard, cs.AIDifficultyCheater:
+	case cs.AIDifficultyAdvanced, cs.AIDifficultyHard, cs.AIDifficultyElite, cs.AIDifficultyCheater:
 		ai.config.colonyPipeline = 8
 		ai.config.pace = 1.5
 		ai.config.researchReserve = 15
@@ -46,11 +46,26 @@ func (ai *aiPlayer) configureStrategy() {
 		}
 		ai.config.researchOrder = append(goals, ai.config.researchOrder...)
 	}
+	// Intermediate levels interpolate budgets and launch thresholds, not income.
+	switch ai.AIDifficulty {
+	case cs.AIDifficultySkilled:
+		ai.config.colonyPipeline = 3
+		ai.config.pace = .75
+		ai.config.colonizerPopulationDensity = .29
+		ai.config.colonistTransportDensity = .29
+		ai.config.startAttackingYear += 5
+	case cs.AIDifficultyAdvanced:
+		ai.config.colonyPipeline = 6
+		ai.config.pace = 1.25
+		ai.config.researchReserve = 8
+		ai.config.bomberProductionCutoff = .775
+		ai.config.startAttackingYear += 3
+	}
 	ai.config.startAttackingYear = max(0, ai.config.startAttackingYear+ai.doctrine.attackYears)
 
 	// AR needs energy for income and remote miners for a sustainable mineral
 	// supply on every difficulty, even when research is otherwise conservative.
-	if ai.Race.PRT == cs.AR && ai.AIDifficulty != cs.AIDifficultyHard && ai.AIDifficulty != cs.AIDifficultyCheater {
+	if ai.Race.PRT == cs.AR && !cs.IsAdvancedAI(ai.AIDifficulty) {
 		ai.config.researchOrder = append([]cs.TechLevel{{Energy: 3}, {Construction: 2, Electronics: 1}}, ai.config.researchOrder...)
 	}
 	if ai.Race.PRT == cs.AR {
@@ -60,7 +75,11 @@ func (ai *aiPlayer) configureStrategy() {
 		switch ai.AIDifficulty {
 		case cs.AIDifficultyEasy:
 			ai.config.colonizerPopulationDensity = .25
-		case cs.AIDifficultyHard, cs.AIDifficultyCheater:
+		case cs.AIDifficultySkilled:
+			ai.config.colonizerPopulationDensity = .20
+		case cs.AIDifficultyAdvanced:
+			ai.config.colonizerPopulationDensity = .125
+		case cs.AIDifficultyHard, cs.AIDifficultyElite, cs.AIDifficultyCheater:
 			ai.config.colonizerPopulationDensity = .10
 		default:
 			ai.config.colonizerPopulationDensity = .15

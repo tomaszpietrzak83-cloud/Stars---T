@@ -62,3 +62,7 @@ describe('CargoBar', () => {
 		expect(segments[3].width).toBeGreaterThan(0);
 	});
 });
+it('includes packed installation mass in the occupied hold display',async()=>{
+ render(CargoBar,{value:create(CargoSchema,{ironium:25}),capacity:200,extraMass:75});
+ await expect.element(page.getByText('100 of 200kT',{exact:true})).toBeVisible();
+});

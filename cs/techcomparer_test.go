@@ -348,7 +348,7 @@ func Test_techCompare_getMostNeededComponent_ArmorChecks(t *testing.T) {
 			args: args{
 				hullSlotType: HullSlotTypeArmor,
 				qty:          1,
-			}, want: &Organic, wantErr: false,
+			}, want: StaticTechStore.GetHullComponent("EEE Ceramic Armor"), wantErr: false,
 		},
 		{
 			name: "Best shield/armor item with tech 14 and RS",

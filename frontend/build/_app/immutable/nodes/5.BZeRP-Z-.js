@@ -1,0 +1,1 @@
+import{H as e,Ht as t,J as n,X as r,vt as i,zt as a}from"../chunks/Dgn-K8f2.js";var o=r(`<div class="w-full mx-auto md:max-w-2xl"><!></div>`);function s(r,s){var c=o(),l=i(c);e(l,()=>s.children??t),a(c),n(r,c)}export{s as component};

@@ -1,0 +1,68 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "name": "EEE Pathfinder",
+      "key": "eee-pathfinder",
+      "prompt": "Use case: game-sprite. Asset type: one square spaceship hull sprite for a classic 1995 Windows space strategy game, displayed at 64x64 pixels. Subject: EEE Pathfinder, a small long-range exploration ship. Long thin metallic spine, swept shallow triangular wings, one small offset radar dish, two compact inset cylindrical rear engine nacelles and a faceted forward sensor nose. Entire ship visible, centered with 12 percent transparent margins. Three-quarter orthographic camera from above, bow pointing lower-right and stern upper-left. Match old Stars! spacecraft sprites: restrained pre-rendered low-poly silver and warm gray metal, pale cyan plating highlights, dark gunmetal recesses, hard white upper-left highlights, chunky bevels and few broad readable geometric shapes, a subtle 1990s dithered raytraced look. Keep silhouette clear at 64 pixels. Real metallic volume, not flat vector art or line art. No cinematic blue glow, no bloom, no lens flare, no flames or trails, no text, letters, logos, borders, stars or scenery. Genuine transparent alpha everywhere outside the spacecraft; no ground shadow, no checkerboard and no opaque matte. Only one spacecraft.",
+      "asset": "frontend/static/images/eee/hulls/eee-pathfinder-v1.png"
+    },
+    {
+      "name": "EEE Bulk Carrier",
+      "key": "eee-bulk-carrier",
+      "prompt": "Use case: game-sprite. Asset type: ONE square spacecraft hull sprite displayed at 64x64 pixels in a classic Stars! 1995 Windows strategy game. Entire ship visible, centered with generous transparent margin, bow lower-right and stern upper-left, three-quarter orthographic view from above. Old pre-rendered low-poly geometric silver and warm-gray metal, pale cyan accents, chunky bevels, hard upper-left white highlights, dark gunmetal recesses, subtle 1990s raytraced/dithered surface. Large forms readable at 64 pixels, few broad panels, restrained industrial machinery. No flat vector art, no cinematic glow, bloom, flames or trails, no text, logos, UI, tile, ground shadow, checkerboard, stars or scenery. Genuine transparent alpha outside the ship. Only one spacecraft. Subject: a heavy civilian bulk freighter: six large rectangular cargo containers in two rows on a straight industrial spine, a small tapered tug-like command bow and three squared engine units at the stern. Broad modular silhouette, functional cargo hauler, no weapons.",
+      "asset": "frontend/static/images/eee/hulls/eee-bulk-carrier-v1.png"
+    },
+    {
+      "name": "EEE Fleet Tender",
+      "key": "eee-fleet-tender",
+      "prompt": "Use case: game-sprite. Asset type: ONE square spacecraft hull sprite displayed at 64x64 pixels in a classic Stars! 1995 Windows strategy game. Entire ship visible, centered with generous transparent margin, bow lower-right and stern upper-left, three-quarter orthographic view from above. Old pre-rendered low-poly geometric silver and warm-gray metal, pale cyan accents, chunky bevels, hard upper-left white highlights, dark gunmetal recesses, subtle 1990s raytraced/dithered surface. Large forms readable at 64 pixels, few broad panels, restrained industrial machinery. No flat vector art, no cinematic glow, bloom, flames or trails, no text, logos, UI, tile, ground shadow, checkerboard, stars or scenery. Genuine transparent alpha outside the ship. Only one spacecraft. Subject: a fleet fuel tender: three big parallel silver cylindrical fuel reservoirs attached to a narrow angular service frame, compact forward bridge, short side radiator panels and three small recessed stern engines. Wide unmistakable tanker silhouette with visible simple piping; no weapons.",
+      "asset": "frontend/static/images/eee/hulls/eee-fleet-tender-v1.png"
+    },
+    {
+      "name": "EEE Expedition Cruiser",
+      "key": "eee-expedition-cruiser",
+      "prompt": "Use case: game-sprite. Asset type: ONE square spacecraft hull sprite displayed at 64x64 pixels in a classic Stars! 1995 Windows strategy game. Entire ship visible, centered with generous transparent margin, bow lower-right and stern upper-left, three-quarter orthographic view from above. Old pre-rendered low-poly geometric silver and warm-gray metal, pale cyan accents, chunky bevels, hard upper-left white highlights, dark gunmetal recesses, subtle 1990s raytraced/dithered surface. Large forms readable at 64 pixels, few broad panels, restrained industrial machinery. No flat vector art, no cinematic glow, bloom, flames or trails, no text, logos, UI, tile, ground shadow, checkerboard, stars or scenery. Genuine transparent alpha outside the ship. Only one spacecraft. Subject: a compact expedition cruiser: broad shallow metallic wedge, forked armored prow, two swept plated side wings with small restrained gun emplacements, raised faceted center bridge and three short inset rear engine blocks. A practical medium warship, bold angular silhouette.",
+      "asset": "frontend/static/images/eee/hulls/eee-expedition-cruiser-v1.png"
+    },
+    {
+      "name": "EEE Linebreaker",
+      "key": "eee-linebreaker",
+      "prompt": "Use case: game-sprite. Asset type: ONE square spacecraft hull sprite displayed at 64x64 pixels in a classic Stars! 1995 Windows strategy game. Entire ship visible, centered with generous transparent margin, bow lower-right and stern upper-left, three-quarter orthographic view from above. Old pre-rendered low-poly geometric silver and warm-gray metal, pale cyan accents, chunky bevels, hard upper-left white highlights, dark gunmetal recesses, subtle 1990s raytraced/dithered surface. Large forms readable at 64 pixels, few broad panels, restrained industrial machinery. No flat vector art, no cinematic glow, bloom, flames or trails, no text, logos, UI, tile, ground shadow, checkerboard, stars or scenery. Genuine transparent alpha outside the ship. Only one spacecraft. Subject: a heavy capital warship: broad compact armored trapezoid hull, thick forked twin forward prows, four distinct large gun turrets mounted symmetrically, raised low armored command bridge, five small engine apertures along the wide stern. Heavy stepped silver armor plates, pale blue thin inset accents. Distinctly heavier and broader than an ordinary cruiser.",
+      "asset": "frontend/static/images/eee/hulls/eee-linebreaker-v1.png"
+    },
+    {
+      "name": "EEE Expedition Bomber",
+      "key": "eee-expedition-bomber",
+      "prompt": "Use case: game-sprite. Asset type: ONE square spacecraft hull sprite displayed at 64x64 pixels in a classic Stars! 1995 Windows strategy game. Entire ship visible, centered with generous transparent margin, bow lower-right and stern upper-left, three-quarter orthographic view from above. Old pre-rendered low-poly geometric silver and warm-gray metal, pale cyan accents, chunky bevels, hard upper-left white highlights, dark gunmetal recesses, subtle 1990s raytraced/dithered surface. Large forms readable at 64 pixels, few broad panels, restrained industrial machinery. No flat vector art, no cinematic glow, bloom, flames or trails, no text, logos, UI, tile, ground shadow, checkerboard, stars or scenery. Genuine transparent alpha outside the ship. Only one spacecraft. Subject: a long-range strategic bomber spacecraft: broad flat rectangular central hull with three clearly segmented dark inset bomb-bay housings under plated side sponsons, small wedge-like forward cockpit, four compact rear engine pods. Functional slow armored bomber, warm gray silver plating with a little muted bronze, no large guns or fighter-jet wings.",
+      "asset": "frontend/static/images/eee/hulls/eee-expedition-bomber-v1.png"
+    },
+    {
+      "name": "EEE Prospector",
+      "key": "eee-prospector",
+      "prompt": "Use case: game-sprite. Asset type: ONE square spacecraft hull sprite displayed at 64x64 pixels in a classic Stars! 1995 Windows strategy game. Entire ship visible, centered with generous transparent margin, bow lower-right and stern upper-left, three-quarter orthographic view from above. Old pre-rendered low-poly geometric silver and warm-gray metal, pale cyan accents, chunky bevels, hard upper-left white highlights, dark gunmetal recesses, subtle 1990s raytraced/dithered surface. Large forms readable at 64 pixels, few broad panels, restrained industrial machinery. No flat vector art, no cinematic glow, bloom, flames or trails, no text, logos, UI, tile, ground shadow, checkerboard, stars or scenery. Genuine transparent alpha outside the ship. Only one spacecraft. Subject: a rugged remote mining spaceship: squat open rectangular industrial frame, two paired large square extraction rigs and short folded mechanical mining arms along its sides, compact central control box, three short rear engine blocks. Gray silver metal and very restrained olive machinery accents; utilitarian mining equipment, no weapons, drills contained within the ship silhouette.",
+      "asset": "frontend/static/images/eee/hulls/eee-prospector-v1.png"
+    },
+    {
+      "name": "EEE Horizon Drive",
+      "key": "eee-horizon-drive",
+      "kind": "engine",
+      "prompt": "Use case: game-equipment-sprite. ONE square technology icon for an old 1995 Stars! Windows strategy game, to remain recognizable at 64x64 pixels. Centered entire object with 15 percent transparent margin, three-quarter orthographic camera from above, front toward lower-right. Low-poly pre-rendered 1990s raytraced silver metal, chunky bevels, hard upper-left white highlights and dark gunmetal recesses, few big readable forms, slightly dithered surface. This is an isolated engine module, not a whole spaceship. No cinematic glow, bloom, flames, trails, symbols, text, labels, border, scenery, stars or platform; no line art or flat vector illustration. Genuine transparent alpha outside the object, no checkerboard or opaque matte. Subject: one compact interstellar engine component, a short thick silver hexagonal thrust nozzle joined to a single ribbed cylindrical reactor coil and a dark rectangular mounting block, restrained muted amber core detail",
+      "asset": "frontend/static/images/eee/components/eee-horizon-drive-v1.png"
+    },
+    {
+      "name": "EEE Deep-Space Drive",
+      "key": "eee-deep-space-drive",
+      "kind": "engine",
+      "prompt": "Use case: game-equipment-sprite. ONE square technology icon for an old 1995 Stars! Windows strategy game, to remain recognizable at 64x64 pixels. Centered entire object with 15 percent transparent margin, three-quarter orthographic camera from above, front toward lower-right. Low-poly pre-rendered 1990s raytraced silver metal, chunky bevels, hard upper-left white highlights and dark gunmetal recesses, few big readable forms, slightly dithered surface. This is an isolated engine module, not a whole spaceship. No cinematic glow, bloom, flames, trails, symbols, text, labels, border, scenery, stars or platform; no line art or flat vector illustration. Genuine transparent alpha outside the object, no checkerboard or opaque matte. Subject: one advanced interstellar engine component, two short silver octagonal exhaust nozzles coupled to a double blue-gray segmented cylindrical induction chamber, small dark mounting frame, restrained pale blue inset details",
+      "asset": "frontend/static/images/eee/components/eee-deep-space-drive-v1.png"
+    },
+    {
+      "name": "EEE Galactic Drive",
+      "key": "eee-galactic-drive",
+      "kind": "engine",
+      "prompt": "Use case: game-equipment-sprite. ONE square technology icon for an old 1995 Stars! Windows strategy game, to remain recognizable at 64x64 pixels. Centered entire object with 15 percent transparent margin, three-quarter orthographic camera from above, front toward lower-right. Low-poly pre-rendered 1990s raytraced silver metal, chunky bevels, hard upper-left white highlights and dark gunmetal recesses, few big readable forms, slightly dithered surface. This is an isolated engine module, not a whole spaceship. No cinematic glow, bloom, flames, trails, symbols, text, labels, border, scenery, stars or platform; no line art or flat vector illustration. Genuine transparent alpha outside the object, no checkerboard or opaque matte. Subject: one late-game interstellar engine component, a compact triangular cluster of three silver hexagonal exhaust nozzles with thick stacked gunmetal induction rings, central faceted reactor housing and tiny pale violet inset details, heavy technical geometry",
+      "asset": "frontend/static/images/eee/components/eee-galactic-drive-v1.png"
+    }
+  ]
+}

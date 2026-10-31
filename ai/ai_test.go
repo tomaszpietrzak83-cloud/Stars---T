@@ -100,8 +100,9 @@ func Test_aiPlayer_updateWarfleets(t *testing.T) {
 			year:      75, // 50 years after attack start yr
 			want: []fleetShip{
 				{purpose: cs.ShipDesignPurposeBomber, quantity: 40},
-				{purpose: cs.ShipDesignPurposeBeamFighter, quantity: 36},
-				{purpose: cs.ShipDesignPurposeTorpedoFighter, quantity: 24},
+				// Late expedition hulls slightly change cost-weighted weapon ratios.
+				{purpose: cs.ShipDesignPurposeBeamFighter, quantity: 35},
+				{purpose: cs.ShipDesignPurposeTorpedoFighter, quantity: 25},
 				{purpose: cs.ShipDesignPurposeFuelFreighter, quantity: 17}, // one for every 6 of 100, rounded up
 			},
 		},

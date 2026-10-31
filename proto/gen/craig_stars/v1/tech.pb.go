@@ -607,17 +607,18 @@ func (x *Tech) GetTags() map[string]bool {
 }
 
 type TechRequirements struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TechLevel     *TechLevel             `protobuf:"bytes,1,opt,name=tech_level,json=techLevel,proto3" json:"tech_level,omitempty"`
-	PrtsDenied    []Prt                  `protobuf:"varint,7,rep,packed,name=prts_denied,json=prtsDenied,proto3,enum=craig_stars.v1.Prt" json:"prts_denied,omitempty"`
-	LrtsRequired  uint32                 `protobuf:"varint,8,opt,name=lrts_required,json=lrtsRequired,proto3" json:"lrts_required,omitempty"`
-	LrtsDenied    uint32                 `protobuf:"varint,9,opt,name=lrts_denied,json=lrtsDenied,proto3" json:"lrts_denied,omitempty"`
-	PrtsRequired  []Prt                  `protobuf:"varint,10,rep,packed,name=prts_required,json=prtsRequired,proto3,enum=craig_stars.v1.Prt" json:"prts_required,omitempty"`
-	HullsAllowed  []string               `protobuf:"bytes,11,rep,name=hulls_allowed,json=hullsAllowed,proto3" json:"hulls_allowed,omitempty"`
-	HullsDenied   []string               `protobuf:"bytes,12,rep,name=hulls_denied,json=hullsDenied,proto3" json:"hulls_denied,omitempty"`
-	Acquirable    bool                   `protobuf:"varint,13,opt,name=acquirable,proto3" json:"acquirable,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                    protoimpl.MessageState `protogen:"open.v1"`
+	TechLevel                *TechLevel             `protobuf:"bytes,1,opt,name=tech_level,json=techLevel,proto3" json:"tech_level,omitempty"`
+	PrtsDenied               []Prt                  `protobuf:"varint,7,rep,packed,name=prts_denied,json=prtsDenied,proto3,enum=craig_stars.v1.Prt" json:"prts_denied,omitempty"`
+	LrtsRequired             uint32                 `protobuf:"varint,8,opt,name=lrts_required,json=lrtsRequired,proto3" json:"lrts_required,omitempty"`
+	LrtsDenied               uint32                 `protobuf:"varint,9,opt,name=lrts_denied,json=lrtsDenied,proto3" json:"lrts_denied,omitempty"`
+	PrtsRequired             []Prt                  `protobuf:"varint,10,rep,packed,name=prts_required,json=prtsRequired,proto3,enum=craig_stars.v1.Prt" json:"prts_required,omitempty"`
+	HullsAllowed             []string               `protobuf:"bytes,11,rep,name=hulls_allowed,json=hullsAllowed,proto3" json:"hulls_allowed,omitempty"`
+	HullsDenied              []string               `protobuf:"bytes,12,rep,name=hulls_denied,json=hullsDenied,proto3" json:"hulls_denied,omitempty"`
+	Acquirable               bool                   `protobuf:"varint,13,opt,name=acquirable,proto3" json:"acquirable,omitempty"`
+	AcquiredTechPrerequisite string                 `protobuf:"bytes,14,opt,name=acquired_tech_prerequisite,json=acquiredTechPrerequisite,proto3" json:"acquired_tech_prerequisite,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
 }
 
 func (x *TechRequirements) Reset() {
@@ -706,6 +707,13 @@ func (x *TechRequirements) GetAcquirable() bool {
 	return false
 }
 
+func (x *TechRequirements) GetAcquiredTechPrerequisite() string {
+	if x != nil {
+		return x.AcquiredTechPrerequisite
+	}
+	return ""
+}
+
 type TechHullComponent struct {
 	state                     protoimpl.MessageState `protogen:"open.v1"`
 	Tech                      *Tech                  `protobuf:"bytes,1,opt,name=tech,proto3" json:"tech,omitempty"`
@@ -758,12 +766,13 @@ type TechHullComponent struct {
 	CapitalShipMissile        bool                   `protobuf:"varint,48,opt,name=capital_ship_missile,json=capitalShipMissile,proto3" json:"capital_ship_missile,omitempty"`
 	CanJump                   bool                   `protobuf:"varint,49,opt,name=can_jump,json=canJump,proto3" json:"can_jump,omitempty"`
 	// engine
-	IdealSpeed    int32   `protobuf:"varint,56,opt,name=ideal_speed,json=idealSpeed,proto3" json:"ideal_speed,omitempty"`
-	FreeSpeed     int32   `protobuf:"varint,57,opt,name=free_speed,json=freeSpeed,proto3" json:"free_speed,omitempty"`
-	MaxSafeSpeed  int32   `protobuf:"varint,58,opt,name=max_safe_speed,json=maxSafeSpeed,proto3" json:"max_safe_speed,omitempty"`
-	FuelUsage     []int32 `protobuf:"varint,59,rep,packed,name=fuel_usage,json=fuelUsage,proto3" json:"fuel_usage,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	IdealSpeed           int32   `protobuf:"varint,56,opt,name=ideal_speed,json=idealSpeed,proto3" json:"ideal_speed,omitempty"`
+	FreeSpeed            int32   `protobuf:"varint,57,opt,name=free_speed,json=freeSpeed,proto3" json:"free_speed,omitempty"`
+	MaxSafeSpeed         int32   `protobuf:"varint,58,opt,name=max_safe_speed,json=maxSafeSpeed,proto3" json:"max_safe_speed,omitempty"`
+	FuelUsage            []int32 `protobuf:"varint,59,rep,packed,name=fuel_usage,json=fuelUsage,proto3" json:"fuel_usage,omitempty"`
+	StrategicSpeedFactor float64 `protobuf:"fixed64,60,opt,name=strategic_speed_factor,json=strategicSpeedFactor,proto3" json:"strategic_speed_factor,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *TechHullComponent) Reset() {
@@ -1165,6 +1174,13 @@ func (x *TechHullComponent) GetFuelUsage() []int32 {
 		return x.FuelUsage
 	}
 	return nil
+}
+
+func (x *TechHullComponent) GetStrategicSpeedFactor() float64 {
+	if x != nil {
+		return x.StrategicSpeedFactor
+	}
+	return 0
 }
 
 type TechHull struct {
@@ -1720,13 +1736,14 @@ func (x *TechTerraform) GetHabType() TerraformHabType {
 }
 
 type Engine struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	IdealSpeed    int32                  `protobuf:"varint,1,opt,name=ideal_speed,json=idealSpeed,proto3" json:"ideal_speed,omitempty"`
-	FreeSpeed     int32                  `protobuf:"varint,2,opt,name=free_speed,json=freeSpeed,proto3" json:"free_speed,omitempty"`
-	MaxSafeSpeed  int32                  `protobuf:"varint,3,opt,name=max_safe_speed,json=maxSafeSpeed,proto3" json:"max_safe_speed,omitempty"`
-	FuelUsage     []int32                `protobuf:"varint,4,rep,packed,name=fuel_usage,json=fuelUsage,proto3" json:"fuel_usage,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	IdealSpeed           int32                  `protobuf:"varint,1,opt,name=ideal_speed,json=idealSpeed,proto3" json:"ideal_speed,omitempty"`
+	FreeSpeed            int32                  `protobuf:"varint,2,opt,name=free_speed,json=freeSpeed,proto3" json:"free_speed,omitempty"`
+	MaxSafeSpeed         int32                  `protobuf:"varint,3,opt,name=max_safe_speed,json=maxSafeSpeed,proto3" json:"max_safe_speed,omitempty"`
+	FuelUsage            []int32                `protobuf:"varint,4,rep,packed,name=fuel_usage,json=fuelUsage,proto3" json:"fuel_usage,omitempty"`
+	StrategicSpeedFactor float64                `protobuf:"fixed64,5,opt,name=strategic_speed_factor,json=strategicSpeedFactor,proto3" json:"strategic_speed_factor,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *Engine) Reset() {
@@ -1785,6 +1802,13 @@ func (x *Engine) GetFuelUsage() []int32 {
 		return x.FuelUsage
 	}
 	return nil
+}
+
+func (x *Engine) GetStrategicSpeedFactor() float64 {
+	if x != nil {
+		return x.StrategicSpeedFactor
+	}
+	return 0
 }
 
 type Bomb struct {
@@ -1878,7 +1902,7 @@ const file_craig_stars_v1_tech_proto_rawDesc = "" +
 	"\x04tags\x18\a \x03(\v2\x1e.craig_stars.v1.Tech.TagsEntryR\x04tags\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xea\x02\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xa8\x03\n" +
 	"\x10TechRequirements\x128\n" +
 	"\n" +
 	"tech_level\x18\x01 \x01(\v2\x19.craig_stars.v1.TechLevelR\ttechLevel\x124\n" +
@@ -1893,7 +1917,8 @@ const file_craig_stars_v1_tech_proto_rawDesc = "" +
 	"\fhulls_denied\x18\f \x03(\tR\vhullsDenied\x12\x1e\n" +
 	"\n" +
 	"acquirable\x18\r \x01(\bR\n" +
-	"acquirable\"\xae\x0f\n" +
+	"acquirable\x12<\n" +
+	"\x1aacquired_tech_prerequisite\x18\x0e \x01(\tR\x18acquiredTechPrerequisite\"\xe4\x0f\n" +
 	"\x11TechHullComponent\x12(\n" +
 	"\x04tech\x18\x01 \x01(\v2\x14.craig_stars.v1.TechR\x04tech\x12$\n" +
 	"\x0ehull_slot_type\x18\x02 \x01(\rR\fhullSlotType\x12\x12\n" +
@@ -1960,7 +1985,8 @@ const file_craig_stars_v1_tech_proto_rawDesc = "" +
 	"free_speed\x189 \x01(\x05R\tfreeSpeed\x12$\n" +
 	"\x0emax_safe_speed\x18: \x01(\x05R\fmaxSafeSpeed\x12\x1d\n" +
 	"\n" +
-	"fuel_usage\x18; \x03(\x05R\tfuelUsage\"\xa8\n" +
+	"fuel_usage\x18; \x03(\x05R\tfuelUsage\x124\n" +
+	"\x16strategic_speed_factor\x18< \x01(\x01R\x14strategicSpeedFactor\"\xa8\n" +
 	"\n" +
 	"\bTechHull\x12(\n" +
 	"\x04tech\x18\x01 \x01(\v2\x14.craig_stars.v1.TechR\x04tech\x120\n" +
@@ -2015,7 +2041,7 @@ const file_craig_stars_v1_tech_proto_rawDesc = "" +
 	"\rTechTerraform\x12(\n" +
 	"\x04tech\x18\x01 \x01(\v2\x14.craig_stars.v1.TechR\x04tech\x12\x18\n" +
 	"\aability\x18\x02 \x01(\x05R\aability\x12;\n" +
-	"\bhab_type\x18\x03 \x01(\x0e2 .craig_stars.v1.TerraformHabTypeR\ahabType\"\x8d\x01\n" +
+	"\bhab_type\x18\x03 \x01(\x0e2 .craig_stars.v1.TerraformHabTypeR\ahabType\"\xc3\x01\n" +
 	"\x06Engine\x12\x1f\n" +
 	"\videal_speed\x18\x01 \x01(\x05R\n" +
 	"idealSpeed\x12\x1d\n" +
@@ -2023,7 +2049,8 @@ const file_craig_stars_v1_tech_proto_rawDesc = "" +
 	"free_speed\x18\x02 \x01(\x05R\tfreeSpeed\x12$\n" +
 	"\x0emax_safe_speed\x18\x03 \x01(\x05R\fmaxSafeSpeed\x12\x1d\n" +
 	"\n" +
-	"fuel_usage\x18\x04 \x03(\x05R\tfuelUsage\"\xc4\x01\n" +
+	"fuel_usage\x18\x04 \x03(\x05R\tfuelUsage\x124\n" +
+	"\x16strategic_speed_factor\x18\x05 \x01(\x01R\x14strategicSpeedFactor\"\xc4\x01\n" +
 	"\x04Bomb\x12\x1a\n" +
 	"\bquantity\x18\x01 \x01(\x05R\bquantity\x12\x1b\n" +
 	"\tkill_rate\x18\x02 \x01(\x01R\bkillRate\x12\"\n" +

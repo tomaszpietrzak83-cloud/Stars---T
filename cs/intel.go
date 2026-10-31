@@ -394,6 +394,10 @@ func (d *discover) discoverFleet(fleet *Fleet, discoverName bool) {
 	intel.OrbitingPlanetNum = fleet.OrbitingPlanetNum
 	intel.Heading = fleet.Heading
 	intel.WarpSpeed = fleet.WarpSpeed
+	intel.ObservedSpeed = 0
+	if fleet.Spec.Engine.strategicFactor() > 1 && fleet.WarpSpeed >= 9 && fleet.WarpSpeed < StargateWarpSpeed {
+		intel.ObservedSpeed = fleet.StrategicSpeed(fleet.WarpSpeed)
+	}
 	intel.Spec.Mass = fleet.Spec.Mass // TODO: remove this old intel.Mass
 	intel.Spec.Mass = fleet.Spec.Mass
 	intel.Tokens = fleet.Tokens

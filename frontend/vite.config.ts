@@ -8,15 +8,22 @@ import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
+import { localSingleplayer } from './local-singleplayer.ts';
 
 const file = fileURLToPath(new URL('package.json', import.meta.url));
 const json = readFileSync(file, 'utf8');
 const pkg = JSON.parse(json);
 
 export default defineConfig({
+	cacheDir: process.env.STARS_TEST_KIT_DIR ? 'node_modules/.vite-content-test' : 'node_modules/.vite',
+	// Screens are loaded on demand. Prebundle their shared dependencies together
+	// so a cold local launch does not replace client modules during navigation.
+	optimizeDeps: { noDiscovery: true, include: ['@connectrpc/connect-web', '@connectrpc/connect', '@bufbuild/protobuf', '@bufbuild/protobuf/codegenv2', '@bufbuild/protobuf/wkt', 'lodash-es', '@steeze-ui/heroicons', '@steeze-ui/svelte-icon', '@floating-ui/dom', 'ts-enum-util', 'd3-array', 'd3-format', 'd3-selection', 'd3-zoom', 'd3-scale', 'd3-quadtree', 'hotkeys-js', 'layercake'] },
 	plugins: [
+		localSingleplayer(),
 		tailwindcss(),
 		sveltekit({
+			outDir: process.env.STARS_TEST_KIT_DIR ?? '.svelte-kit',
 			preprocess: vitePreprocess(),
 			adapter: adapter({ fallback: 'index.html' }),
 			prerender: { entries: [] },
@@ -93,7 +100,7 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'http://localhost:8080',
+				target: process.env.STARS_LOCAL_BACKEND ?? 'http://localhost:8080',
 				changeOrigin: true
 			}
 		}

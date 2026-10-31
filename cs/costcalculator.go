@@ -203,7 +203,7 @@ func (c *costCalculate) StarbaseUpgradeCost(rules *Rules, techLevels TechLevel, 
 				cost = cost.Add(MultiplyCost(getItemCost(item.Tech), float64(leftoverQty)*rules.StarbaseComponentCostReduction))
 			}
 		}
-		return MultiplyCost(cost, raceSpec.StarbaseCostFactor).Round(math.Ceil).ToCost().MinZero(), nil
+		return eeeResourceCost(MultiplyCost(cost, raceSpec.StarbaseCostFactor), raceSpec, true).Round(math.Ceil).ToCost().MinZero(), nil
 	} else {
 		// We have some leftovers to take care of...
 		// Loop through any remaining items from the old base and add them to our category list
@@ -255,7 +255,7 @@ func (c *costCalculate) StarbaseUpgradeCost(rules *Rules, techLevels TechLevel, 
 		minCost = minCost.Add(adjCost)
 	}
 
-	return MultiplyCost(cost.Max(minCost), raceSpec.StarbaseCostFactor).Round(math.Ceil).ToCost().MinZero(), nil
+	return eeeResourceCost(MultiplyCost(cost.Max(minCost), raceSpec.StarbaseCostFactor), raceSpec, true).Round(math.Ceil).ToCost().MinZero(), nil
 }
 
 // Get the cost of one item in a production queue, for a player
@@ -303,7 +303,7 @@ func (c *costCalculate) GetDesignCost(rules *Rules, techLevels TechLevel, raceSp
 	if starbase {
 		costTally = MultiplyCost(costTally, raceSpec.StarbaseCostFactor)
 	}
-	return costTally.Round(math.Ceil).ToCost(), nil
+	return eeeResourceCost(costTally, raceSpec, starbase).Round(math.Ceil).ToCost(), nil
 }
 
 // sortedComponents returns the components in a fixed order. Costs are summed

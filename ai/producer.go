@@ -50,8 +50,12 @@ func (ai *aiPlayer) produce() error {
 	}
 	// Each order goes to the top of its queue, so handle the most important
 	// purposes last. Unlisted purposes are handled first.
+	priority := fleetBuildPriority
+	if len(ai.priorityVictors) > 0 {
+		priority = []cs.FleetPurpose{cs.FleetPurposeCapitalShip, cs.FleetPurposeBomber, cs.FleetPurposeMineLayer, cs.FleetPurposeColonistFreighter, cs.FleetPurposeColonizer, cs.FleetPurposeMiner, cs.FleetPurposeScout}
+	}
 	slices.SortFunc(purposes, func(a, b cs.FleetPurpose) int {
-		if d := slices.Index(fleetBuildPriority, b) - slices.Index(fleetBuildPriority, a); d != 0 {
+		if d := slices.Index(priority, b) - slices.Index(priority, a); d != 0 {
 			return d
 		}
 		return cmp.Compare(a, b)

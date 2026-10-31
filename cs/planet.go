@@ -516,6 +516,8 @@ func (p *Planet) getMineralOutput(rules *Rules, numMines int, mineOutput int) (o
 // Get how much a player will grow on a planet, given the max population the player can have on the planet.
 //
 // Returns exact value to nearest colonist.
+const PopulationGrowthSlowdownDensity = 0.25
+
 func (p *Planet) GetGrowthAmount(player *Player, maxPopulation int, populationOvercrowdDieoffRate, populationOvercrowdDieoffRateMax float64) int {
 	race := &player.Race
 	pop := p.GetPopulation()
@@ -541,7 +543,7 @@ func (p *Planet) GetGrowthAmount(player *Player, maxPopulation int, populationOv
 	// perform normal pop growth calcs, applying penalty for partially crowded planets
 	popGrowth := math.Round(float64(pop*race.GrowthRate*habValue) * race.Spec.GrowthFactor / 10000) // divide by 10000 as growthRate and habValue are both percents
 
-	if capacity > 0.25 {
+	if capacity > PopulationGrowthSlowdownDensity {
 		crowdingFactor := math.Pow(1-capacity, 2) * 16 / 9
 		popGrowth *= crowdingFactor
 	}
@@ -701,11 +703,15 @@ func (spec *PlanetSpec) ComputeResourcesPerYear(player *Player, numFacts, produc
 // This is called by the main ComputePlanetSpec function as well as anytime a player
 // changes research contribution amounts
 func (spec *PlanetSpec) computeResourcesPerYearAvailable(player *Player, planet *Planet) {
-	if planet.ContributesOnlyLeftoverToResearch {
+	percent, leftoversOnly := player.ResearchAmount, planet.ContributesOnlyLeftoverToResearch
+	if policy := player.Automation.ResearchTax; policy != nil && policy.Enabled {
+		percent, leftoversOnly = policy.Contribution(policy.value(planet.Cargo.Colonists*100, spec.ResourcesPerYear))
+	}
+	if leftoversOnly {
 		spec.ResourcesPerYearAvailable = spec.ResourcesPerYear
 		spec.ResourcesPerYearResearch = 0
 	} else {
-		spec.ResourcesPerYearResearch = spec.ResourcesPerYear * player.ResearchAmount / 100
+		spec.ResourcesPerYearResearch = spec.ResourcesPerYear * percent / 100
 		spec.ResourcesPerYearAvailable = spec.ResourcesPerYear - spec.ResourcesPerYearResearch
 	}
 }

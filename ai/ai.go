@@ -9,6 +9,7 @@ import (
 )
 
 type aiPlayer struct {
+	priorityVictors map[int]bool
 	*cs.Player
 	cs.PlayerMapObjects
 	requests
@@ -111,10 +112,19 @@ var defaultCutoffs = aiCutoffsByStartMode{
 }
 
 // Create a new AI player
-func NewAIPlayer(game *cs.Game, techStore *cs.TechStore, player *cs.Player, playerMapObjects cs.PlayerMapObjects) *aiPlayer {
+func NewAIPlayer(game *cs.Game, techStore *cs.TechStore, player *cs.Player, playerMapObjects cs.PlayerMapObjects, declaredHumanVictors ...int) *aiPlayer {
+	victors := map[int]bool{}
+	if game.VictorDeclared {
+		for _, num := range declaredHumanVictors {
+			if num != player.Num {
+				victors[num] = true
+			}
+		}
+	}
 	aiPlayer := aiPlayer{
-		Player: player,
-		game:   game,
+		Player:          player,
+		priorityVictors: victors,
+		game:            game,
 		log: slog.With(
 			slog.Int64("GameID", game.ID),
 			slog.String("Game", game.Name),
@@ -473,6 +483,7 @@ func (ai *aiPlayer) updateWarshipAmounts(bombers, beamShips, torpedoShips, fuelT
 
 // process an AI player's turn
 func (ai *aiPlayer) ProcessTurn() error {
+	ai.applyVictorPressure()
 	ai.assignPurpose()
 	ai.gatherIntel()
 	if err := ai.plan(); err != nil {

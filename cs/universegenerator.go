@@ -533,6 +533,20 @@ retryFullPlacement:
 		if tries == 50 {
 			idx = bestIdx
 		}
+
+		if ug.HostStartPosition == "edge" || ug.HostStartPosition == "center" {
+			score := func(p pxy) int {
+				if ug.HostStartPosition == "edge" {
+					return min(p.x, width-p.x, p.y, height-p.y)
+				}
+				return distSquared(p.x, p.y, width/2, height/2)
+			}
+			for i, p := range pts {
+				if score(p) < score(pts[idx]) {
+					idx = i
+				}
+			}
+		}
 		chosen = append(chosen, idx)
 		used[idx] = true
 	}
@@ -637,6 +651,31 @@ retryFullPlacement:
 		out[i], out[j] = out[j], out[i]
 	}
 
+	if ug.HostStartPosition == "edge" || ug.HostStartPosition == "center" {
+		host := 0
+		for i, player := range ug.Players {
+			if player != nil && !player.AIControlled {
+				host = i
+				break
+			}
+		}
+		center := Vector{ug.area.X / 2, ug.area.Y / 2}
+		chosen := host
+		for i := range out {
+			distance := ug.Universe.Planets[out[i]].Position.DistanceTo(center)
+			current := ug.Universe.Planets[out[chosen]].Position.DistanceTo(center)
+			if ug.HostStartPosition == "edge" {
+				pos := ug.Universe.Planets[out[i]].Position
+				old := ug.Universe.Planets[out[chosen]].Position
+				distance = float64(min(pos.X, ug.area.X-pos.X, pos.Y, ug.area.Y-pos.Y))
+				current = float64(min(old.X, ug.area.X-old.X, old.Y, ug.area.Y-old.Y))
+			}
+			if distance < current {
+				chosen = i
+			}
+		}
+		out[host], out[chosen] = out[chosen], out[host]
+	}
 	return out, nil
 }
 
@@ -676,7 +715,10 @@ func (ug *universeGenerator) generatePlanets() error {
 	for i := range numPlanets {
 		// we found a good position; setup a new planet
 		planet := NewPlanet()
-		planet.Name = names[i]
+		planet.Name = names[i%len(names)]
+		if i >= len(names) {
+			planet.Name = fmt.Sprintf("%s [%d]", planet.Name, i/len(names)+1)
+		}
 		planet.Num = i + 1
 		planet.Position = Vector{positions[i].X, positions[i].Y}
 		planet.randomize(rules, ug.StartMode == GameStartModeAccBBS)

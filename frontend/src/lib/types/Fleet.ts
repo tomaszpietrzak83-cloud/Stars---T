@@ -44,6 +44,17 @@ export const WaypointTasks: WaypointTask[] = [
 	WaypointTask.TRANSFER_FLEET
 ] as const;
 
+export function canPerformWaypointTask(fleet: Fleet | undefined,task: WaypointTask): boolean {
+	const spec=fleet?.spec?.shipDesignSpec;
+	if (!spec) return task===WaypointTask.UNSPECIFIED;
+	switch(task) {
+		case WaypointTask.COLONIZE:return !!(spec.colonizer||spec.orbitalConstructionModule);
+		case WaypointTask.REMOTE_MINING:return spec.miningRate>0;
+		case WaypointTask.LAY_MINEFIELD:return spec.canLayMines;
+		default:return true;
+	}
+}
+
 export function emptyTransportTasks(): WaypointTransportTasks {
 	return create(WaypointTransportTasksSchema, {
 		fuel: {
@@ -84,6 +95,7 @@ export class CommandedFleet implements Fleet {
 	starbase = false;
 	tokens: ShipToken[] = [];
 	warpSpeed = 0;
+	observedSpeed = 0;
 	spec = create(FleetSpecSchema);
 
 	constructor(data?: Fleet) {
@@ -227,7 +239,7 @@ export class CommandedFleet implements Fleet {
 		}
 		const dist = Math.floor(this.getDistanceForLeg(universe, waypointIndex));
 		// even a leg shorter than a year of travel takes a year
-		return Math.max(1, Math.ceil(dist / (warpSpeed * warpSpeed)));
+		return Math.max(1, Math.ceil(dist / getStrategicSpeed(this, warpSpeed)));
 	}
 
 	/**
@@ -461,6 +473,19 @@ export const getTask = (fleet: Fleet) => {
 	return '(no task here)';
 };
 
+// Missing factors in older games are ordinary warp squared. Gates are handled
+// separately, and the strategic multiplier never affects combat movement.
+export function getStrategicSpeed(fleet: Fleet, warp: number): number {
+	if (warp <= 0 || warp >= StargateWarpSpeed) return 0;
+	const factor = fleet.spec?.shipDesignSpec?.engine?.strategicSpeedFactor ?? 1;
+	return warp * warp * (warp >= 9 && Number.isFinite(factor) ? Math.max(1, factor) : 1);
+}
+
+export function getObservedSpeed(fleet: Fleet): number {
+	if (fleet.warpSpeed <= 0 || fleet.warpSpeed >= StargateWarpSpeed) return 0;
+	return fleet.observedSpeed > 0 ? fleet.observedSpeed : getStrategicSpeed(fleet, fleet.warpSpeed);
+}
+
 export const getEta = (fleet: Fleet) => {
 	const wps = fleet.fleetOrders?.waypoints ?? [];
 	if (wps.length > 1) {
@@ -471,7 +496,7 @@ export const getEta = (fleet: Fleet) => {
 		} else {
 			return Math.ceil(
 				Math.floor(distance(wps[0].position ?? emptyVector(), wps[1].position ?? emptyVector())) /
-					(wps[1].warpSpeed * wps[1].warpSpeed)
+					getStrategicSpeed(fleet, wps[1].warpSpeed)
 			);
 		}
 	}

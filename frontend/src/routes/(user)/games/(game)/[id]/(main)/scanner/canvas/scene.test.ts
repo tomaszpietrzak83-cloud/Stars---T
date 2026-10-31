@@ -20,6 +20,7 @@ import {
 	buildNotes,
 	buildPlanets,
 	buildWaypointPaths,
+ scoutPetalWaypoints,
 	noteMapText,
 	packetColor
 } from './scene';
@@ -522,4 +523,12 @@ describe('notes', () => {
 		expect(noteMapText('  staging point\nfor the northern fleet')).toBe('staging point');
 		expect(noteMapText('a very long label that goes on and on')).toBe('a very long label that…');
 	});
+});
+
+it('shows every remaining scout petal stop including the return dock without mutating orders',()=>{
+ const fleet=create(FleetSchema,{mapObject:{num:1,playerNum:1,tags:{'scout-mission':JSON.stringify({plan:[2,3,4,1],leg:0})}},fleetOrders:{waypoints:[{position:{x:0,y:0}},{position:{x:20,y:0},mapObjectTarget:{targetType:MapObjectType.PLANET,targetNum:2}}]}});
+ const universe={getPlanet:(num:number)=>create(PlanetSchema,{mapObject:{num,name:`Planet ${num}`,position:{x:num===1?0:num*10,y:num===4?10:0}}})} as unknown as Universe;
+ const route=scoutPetalWaypoints(universe,fleet);
+ expect(route.map(w=>w.mapObjectTarget?.targetNum??0)).toEqual([0,2,3,4,1]);
+ expect(fleet.fleetOrders?.waypoints).toHaveLength(2);
 });

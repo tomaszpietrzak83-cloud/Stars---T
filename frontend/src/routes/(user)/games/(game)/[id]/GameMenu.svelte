@@ -41,7 +41,7 @@
 
 <div class="navbar bg-base-100 flex flex-row w-full">
 	<div class="min-w-0 flex-1">
-		<a class="btn btn-ghost shrink-0 text-xl text-primary" href="/">cs</a>
+		<a class="btn btn-ghost shrink-0 text-xl text-primary" href="/launch" title="tomek-stars main menu">ts</a>
 		<div class="min-w-0 flex-1 md:flex-initial">
 			<a
 				data-type="game-link"
@@ -92,6 +92,7 @@
 						<li><a href={`/games/${$game.id}/battle-plans`}>Battle Plans</a></li>
 						<li><a href={`/games/${$game.id}/production-plans`}>Production Plans</a></li>
 						<li><a href={`/games/${$game.id}/transport-plans`}>Transport Plans</a></li>
+						<li><a href={`/games/${$game.id}/automation`}>Automation</a></li>
 					</ul>
 				</div>
 
@@ -142,6 +143,7 @@
 							</li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/research`}>Research</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/designer`}>Ship Designer</a></li>
+							<li class="md:hidden"><a href={`/games/${$game.id}/automation`}>Automation</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/relations`}>Relations</a></li>
 							<li class="md:hidden">
 								<a href={`/games/${$game.id}/battle-plans`}>Battle Plans</a>

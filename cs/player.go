@@ -96,10 +96,12 @@ type PlayerPlans struct {
 }
 
 type PlayerOrders struct {
-	Researching       TechField         `json:"researching,omitempty"`
-	NextResearchField NextResearchField `json:"nextResearchField,omitempty"`
-	ResearchAmount    int               `json:"researchAmount,omitempty"`
-	CargoTransfers    CargoTransfers    `json:"cargoTransfers,omitempty"`
+	Automation        LogisticsAutomation `json:"automation,omitzero"`
+	DesignMaintenance DesignMaintenance   `json:"designMaintenance,omitempty"`
+	Researching       TechField           `json:"researching,omitempty"`
+	NextResearchField NextResearchField   `json:"nextResearchField,omitempty"`
+	ResearchAmount    int                 `json:"researchAmount,omitempty"`
+	CargoTransfers    CargoTransfers      `json:"cargoTransfers,omitempty"`
 }
 
 type PlayerStats struct {
@@ -468,7 +470,20 @@ func (p *Player) incrementReportAge() {
 }
 
 func (p *Player) GetPlanetIntel(num int) *Planet {
-	return p.PlanetIntels[num-1]
+	if num <= 0 {
+		return nil
+	}
+	if num <= len(p.PlanetIntels) {
+		if intel := p.PlanetIntels[num-1]; intel != nil && intel.Num == num {
+			return intel
+		}
+	}
+	for _, intel := range p.PlanetIntels {
+		if intel != nil && intel.Num == num {
+			return intel
+		}
+	}
+	return nil
 }
 
 func (p *Player) GetWormholeIntel(num int) *Wormhole {
@@ -597,7 +612,7 @@ func ComputePlayerResearchSpec(player *Player, rules *Rules, planets []*Planet) 
 		}
 	}
 
-	spec.CurrentResearchCost = researcher.getTotalCost(player.TechLevels, player.Race.ResearchCost.Get(player.Researching), player.TechLevels.Get(player.Researching))
+	spec.CurrentResearchCost = player.Race.eeeResearchCost(researcher.getTotalCost(player.TechLevels, player.Race.ResearchCost.Get(player.Researching), player.TechLevels.Get(player.Researching)), player.Researching)
 	return spec
 }
 
@@ -616,6 +631,9 @@ func (p *Player) HasAcquiredTech(tech *Tech) bool {
 
 func (p *Player) CanLearnTech(tech *Tech) bool {
 	requirements := tech.Requirements
+	if requirements.AcquiredTechPrerequisite != "" && !p.AcquiredTechs[requirements.AcquiredTechPrerequisite] {
+		return false
+	}
 	if len(requirements.PRTsRequired) != 0 && !slices.Contains(requirements.PRTsRequired, p.Race.PRT) {
 		return false
 	}
@@ -651,7 +669,7 @@ func (p *Player) GetResearchCost(rules *Rules, techLevel TechLevel) int {
 			resources -= spent
 			for i := 0; i < requiredLevel-playerLevel; i++ {
 				// find the cost for the next level in this field
-				resources += researcher.getTotalCost(techLevels, researchCostLevel, playerLevel+i)
+				resources += p.Race.eeeResearchCost(researcher.getTotalCost(techLevels, researchCostLevel, playerLevel+i), field)
 				// assume we gained this for future calcs
 				techLevels.Set(field, playerLevel+i+1)
 			}

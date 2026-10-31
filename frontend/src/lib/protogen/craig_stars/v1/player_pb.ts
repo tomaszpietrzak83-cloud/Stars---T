@@ -38,7 +38,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file craig_stars/v1/player.proto.
  */
 export const file_craig_stars_v1_player: GenFile = /*@__PURE__*/
-  fileDesc("ChtjcmFpZ19zdGFycy92MS9wbGF5ZXIucHJvdG8SDmNyYWlnX3N0YXJzLnYxIv0GCgZQbGF5ZXISNAoOZ2FtZV9kYl9vYmplY3QYASABKAsyHC5jcmFpZ19zdGFycy52MS5HYW1lREJPYmplY3QSMwoNcGxheWVyX29yZGVycxgCIAEoCzIcLmNyYWlnX3N0YXJzLnYxLlBsYXllck9yZGVycxIxCgxwbGF5ZXJfcGxhbnMYAyABKAsyGy5jcmFpZ19zdGFycy52MS5QbGF5ZXJQbGFucxIPCgd1c2VyX2lkGAQgASgDEgwKBG5hbWUYBSABKAkSCwoDbnVtGAYgASgFEg0KBXJlYWR5GAcgASgIEhUKDWFpX2NvbnRyb2xsZWQYCCABKAgSMwoNYWlfZGlmZmljdWx0eRgJIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkFpRGlmZmljdWx0eRINCgVndWVzdBgKIAEoCBIWCg5zdWJtaXR0ZWRfdHVybhgLIAEoCBINCgVjb2xvchgMIAEoCRIYChBkZWZhdWx0X2h1bGxfc2V0GA0gASgFEiIKBHJhY2UYDiABKAsyFC5jcmFpZ19zdGFycy52MS5SYWNlEi4KC3RlY2hfbGV2ZWxzGA8gASgLMhkuY3JhaWdfc3RhcnMudjEuVGVjaExldmVsEjQKEXRlY2hfbGV2ZWxzX3NwZW50GBAgASgLMhkuY3JhaWdfc3RhcnMudjEuVGVjaExldmVsEiAKGHJlc2VhcmNoX3NwZW50X2xhc3RfeWVhchgRIAEoBRI1CglyZWxhdGlvbnMYEiADKAsyIi5jcmFpZ19zdGFycy52MS5QbGF5ZXJSZWxhdGlvbnNoaXASLwoIbWVzc2FnZXMYEyADKAsyHS5jcmFpZ19zdGFycy52MS5QbGF5ZXJNZXNzYWdlEkEKDmFjcXVpcmVkX3RlY2hzGBQgAygLMikuY3JhaWdfc3RhcnMudjEuUGxheWVyLkFjcXVpcmVkVGVjaHNFbnRyeRIjChthY2hpZXZlZF92aWN0b3J5X2NvbmRpdGlvbnMYFSABKA0SDgoGdmljdG9yGBYgASgIEhAKCGFyY2hpdmVkGBcgASgIEioKBXN0YXRzGBggASgLMhsuY3JhaWdfc3RhcnMudjEuUGxheWVyU3RhdHMaNAoSQWNxdWlyZWRUZWNoc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCDoCOAEioAQKDlBsYXllclVuaXZlcnNlEjQKDmJhdHRsZV9yZWNvcmRzGAEgAygLMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlUmVjb3JkEjIKDXBsYXllcl9pbnRlbHMYAiADKAsyGy5jcmFpZ19zdGFycy52MS5QbGF5ZXJJbnRlbBIwCgxzY29yZV9pbnRlbHMYAyADKAsyGi5jcmFpZ19zdGFycy52MS5TY29yZUludGVsEisKB2Rlc2lnbnMYBCADKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduEicKB3BsYW5ldHMYBSADKAsyFi5jcmFpZ19zdGFycy52MS5QbGFuZXQSJQoGZmxlZXRzGAYgAygLMhUuY3JhaWdfc3RhcnMudjEuRmxlZXQSLQoKbWluZWZpZWxkcxgHIAMoCzIZLmNyYWlnX3N0YXJzLnYxLk1pbmVmaWVsZBI2Cg9taW5lcmFsX3BhY2tldHMYCCADKAsyHS5jcmFpZ19zdGFycy52MS5NaW5lcmFsUGFja2V0EjYKD215c3RlcnlfdHJhZGVycxgJIAMoCzIdLmNyYWlnX3N0YXJzLnYxLk15c3RlcnlUcmFkZXISKQoIc2FsdmFnZXMYCiADKAsyFy5jcmFpZ19zdGFycy52MS5TYWx2YWdlEisKCXdvcm1ob2xlcxgLIAMoCzIYLmNyYWlnX3N0YXJzLnYxLldvcm1ob2xlIp8BChNCeUhhbmRDYXJnb1RyYW5zZmVyEjoKEW1hcF9vYmplY3RfdGFyZ2V0GAEgASgLMh8uY3JhaWdfc3RhcnMudjEuTWFwT2JqZWN0VGFyZ2V0EhgKEHNvdXJjZV9mbGVldF9udW0YBiABKAUSJAoFY2FyZ28YByABKAsyFS5jcmFpZ19zdGFycy52MS5DYXJnbxIMCgRmdWVsGAggASgFIkgKDkNhcmdvVHJhbnNmZXJzEjYKCXRyYW5zZmVycxgBIAMoCzIjLmNyYWlnX3N0YXJzLnYxLkJ5SGFuZENhcmdvVHJhbnNmZXIiqQIKDFBsYXllclN0YXR1cxIKCgJpZBgBIAEoAxIuCgp1cGRhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIPCgd1c2VyX2lkGAMgASgDEgwKBG5hbWUYBCABKAkSCwoDbnVtGAUgASgFEg0KBXJlYWR5GAYgASgIEhUKDWFpX2NvbnRyb2xsZWQYByABKAgSMwoNYWlfZGlmZmljdWx0eRgIIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkFpRGlmZmljdWx0eRINCgVndWVzdBgJIAEoCBIWCg5zdWJtaXR0ZWRfdHVybhgKIAEoCBINCgVjb2xvchgLIAEoCRIOCgZ2aWN0b3IYDCABKAgSEAoIYXJjaGl2ZWQYDSABKAgizQQKBkludGVscxI0Cg5iYXR0bGVfcmVjb3JkcxgBIAMoCzIcLmNyYWlnX3N0YXJzLnYxLkJhdHRsZVJlY29yZBIyCg1wbGF5ZXJfaW50ZWxzGAIgAygLMhsuY3JhaWdfc3RhcnMudjEuUGxheWVySW50ZWwSMAoMc2NvcmVfaW50ZWxzGAMgAygLMhouY3JhaWdfc3RhcnMudjEuU2NvcmVJbnRlbBItCg1wbGFuZXRfaW50ZWxzGAQgAygLMhYuY3JhaWdfc3RhcnMudjEuUGxhbmV0EisKDGZsZWV0X2ludGVscxgFIAMoCzIVLmNyYWlnX3N0YXJzLnYxLkZsZWV0EjYKEnNoaXBfZGVzaWduX2ludGVscxgGIAMoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24SPAoVbWluZXJhbF9wYWNrZXRfaW50ZWxzGAcgAygLMh0uY3JhaWdfc3RhcnMudjEuTWluZXJhbFBhY2tldBIzChBtaW5lZmllbGRfaW50ZWxzGAggAygLMhkuY3JhaWdfc3RhcnMudjEuTWluZWZpZWxkEjEKD3dvcm1ob2xlX2ludGVscxgJIAMoCzIYLmNyYWlnX3N0YXJzLnYxLldvcm1ob2xlEjwKFW15c3RlcnlfdHJhZGVyX2ludGVscxgKIAMoCzIdLmNyYWlnX3N0YXJzLnYxLk15c3RlcnlUcmFkZXISLwoOc2FsdmFnZV9pbnRlbHMYCyADKAsyFy5jcmFpZ19zdGFycy52MS5TYWx2YWdlIrEBCgtQbGF5ZXJQbGFucxI4ChBwcm9kdWN0aW9uX3BsYW5zGAEgAygLMh4uY3JhaWdfc3RhcnMudjEuUHJvZHVjdGlvblBsYW4SMAoMYmF0dGxlX3BsYW5zGAIgAygLMhouY3JhaWdfc3RhcnMudjEuQmF0dGxlUGxhbhI2Cg90cmFuc3BvcnRfcGxhbnMYAyADKAsyHS5jcmFpZ19zdGFycy52MS5UcmFuc3BvcnRQbGFuIrkCCgxQbGF5ZXJPcmRlcnMSLgoLcmVzZWFyY2hpbmcYASABKA4yGS5jcmFpZ19zdGFycy52MS5UZWNoRmllbGQSPgoTbmV4dF9yZXNlYXJjaF9maWVsZBgCIAEoDjIhLmNyYWlnX3N0YXJzLnYxLk5leHRSZXNlYXJjaEZpZWxkEhcKD3Jlc2VhcmNoX2Ftb3VudBgDIAEoBRJJCg9jYXJnb190cmFuc2ZlcnMYBCADKAsyMC5jcmFpZ19zdGFycy52MS5QbGF5ZXJPcmRlcnMuQ2FyZ29UcmFuc2ZlcnNFbnRyeRpVChNDYXJnb1RyYW5zZmVyc0VudHJ5EgsKA2tleRgBIAEoCRItCgV2YWx1ZRgCIAEoCzIeLmNyYWlnX3N0YXJzLnYxLkNhcmdvVHJhbnNmZXJzOgI4ASJtCgtQbGF5ZXJTdGF0cxIUCgxmbGVldHNfYnVpbHQYASABKAUSFwoPc3RhcmJhc2VzX2J1aWx0GAIgASgFEhQKDHRva2Vuc19idWlsdBgDIAEoBRIZChFwbGFuZXRzX2NvbG9uaXplZBgEIAEoBSJZChJQbGF5ZXJSZWxhdGlvbnNoaXASMAoIcmVsYXRpb24YASABKA4yHi5jcmFpZ19zdGFycy52MS5QbGF5ZXJSZWxhdGlvbhIRCglzaGFyZV9tYXAYAiABKAgiowEKElBsYXllclJlc2VhcmNoU3BlYxIaChJyZXNvdXJjZXNfcGVyX3llYXIYASABKAUSIwobcmVzb3VyY2VzX3Blcl95ZWFyX3Jlc2VhcmNoGAIgASgFEi0KJXJlc291cmNlc19wZXJfeWVhcl9yZXNlYXJjaF9lc3RpbWF0ZWQYAyABKAUSHQoVY3VycmVudF9yZXNlYXJjaF9jb3N0GAQgASgFIowCCgpCYXR0bGVQbGFuEgsKA251bRgBIAEoBRIMCgRuYW1lGAIgASgJEjQKDnByaW1hcnlfdGFyZ2V0GAMgASgOMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlVGFyZ2V0EjYKEHNlY29uZGFyeV90YXJnZXQYBCABKA4yHC5jcmFpZ19zdGFycy52MS5CYXR0bGVUYXJnZXQSLAoGdGFjdGljGAUgASgOMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlVGFjdGljEjMKCmF0dGFja193aG8YBiABKA4yHy5jcmFpZ19zdGFycy52MS5CYXR0bGVBdHRhY2tXaG8SEgoKZHVtcF9jYXJnbxgHIAEoCCJhCg1UcmFuc3BvcnRQbGFuEgsKA251bRgBIAEoBRIMCgRuYW1lGAIgASgJEjUKBXRhc2tzGAMgASgLMiYuY3JhaWdfc3RhcnMudjEuV2F5cG9pbnRUcmFuc3BvcnRUYXNrcyKNAQoOUHJvZHVjdGlvblBsYW4SCwoDbnVtGAEgASgFEgwKBG5hbWUYAiABKAkSMQoFaXRlbXMYAyADKAsyIi5jcmFpZ19zdGFycy52MS5Qcm9kdWN0aW9uUGxhbkl0ZW0SLQolY29udHJpYnV0ZXNfb25seV9sZWZ0b3Zlcl90b19yZXNlYXJjaBgEIAEoCCJnChJQcm9kdWN0aW9uUGxhbkl0ZW0SKwoEdHlwZRgBIAEoDjIdLmNyYWlnX3N0YXJzLnYxLlF1ZXVlSXRlbVR5cGUSEgoKZGVzaWduX251bRgCIAEoBRIQCghxdWFudGl0eRgDIAEoBSqFAQoOUGxheWVyUmVsYXRpb24SHwobUExBWUVSX1JFTEFUSU9OX1VOU1BFQ0lGSUVEEAASGwoXUExBWUVSX1JFTEFUSU9OX05FVVRSQUwQARIaChZQTEFZRVJfUkVMQVRJT05fRlJJRU5EEAISGQoVUExBWUVSX1JFTEFUSU9OX0VORU1ZEANiBnByb3RvMw", [file_craig_stars_v1_battle, file_craig_stars_v1_common, file_craig_stars_v1_fleet, file_craig_stars_v1_intel, file_craig_stars_v1_message, file_craig_stars_v1_minefield, file_craig_stars_v1_mineralpacket, file_craig_stars_v1_mysterytrader, file_craig_stars_v1_planet, file_craig_stars_v1_race, file_craig_stars_v1_salvage, file_craig_stars_v1_shipdesign, file_craig_stars_v1_wormhole, file_google_protobuf_timestamp]);
+  fileDesc("ChtjcmFpZ19zdGFycy92MS9wbGF5ZXIucHJvdG8SDmNyYWlnX3N0YXJzLnYxIv0GCgZQbGF5ZXISNAoOZ2FtZV9kYl9vYmplY3QYASABKAsyHC5jcmFpZ19zdGFycy52MS5HYW1lREJPYmplY3QSMwoNcGxheWVyX29yZGVycxgCIAEoCzIcLmNyYWlnX3N0YXJzLnYxLlBsYXllck9yZGVycxIxCgxwbGF5ZXJfcGxhbnMYAyABKAsyGy5jcmFpZ19zdGFycy52MS5QbGF5ZXJQbGFucxIPCgd1c2VyX2lkGAQgASgDEgwKBG5hbWUYBSABKAkSCwoDbnVtGAYgASgFEg0KBXJlYWR5GAcgASgIEhUKDWFpX2NvbnRyb2xsZWQYCCABKAgSMwoNYWlfZGlmZmljdWx0eRgJIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkFpRGlmZmljdWx0eRINCgVndWVzdBgKIAEoCBIWCg5zdWJtaXR0ZWRfdHVybhgLIAEoCBINCgVjb2xvchgMIAEoCRIYChBkZWZhdWx0X2h1bGxfc2V0GA0gASgFEiIKBHJhY2UYDiABKAsyFC5jcmFpZ19zdGFycy52MS5SYWNlEi4KC3RlY2hfbGV2ZWxzGA8gASgLMhkuY3JhaWdfc3RhcnMudjEuVGVjaExldmVsEjQKEXRlY2hfbGV2ZWxzX3NwZW50GBAgASgLMhkuY3JhaWdfc3RhcnMudjEuVGVjaExldmVsEiAKGHJlc2VhcmNoX3NwZW50X2xhc3RfeWVhchgRIAEoBRI1CglyZWxhdGlvbnMYEiADKAsyIi5jcmFpZ19zdGFycy52MS5QbGF5ZXJSZWxhdGlvbnNoaXASLwoIbWVzc2FnZXMYEyADKAsyHS5jcmFpZ19zdGFycy52MS5QbGF5ZXJNZXNzYWdlEkEKDmFjcXVpcmVkX3RlY2hzGBQgAygLMikuY3JhaWdfc3RhcnMudjEuUGxheWVyLkFjcXVpcmVkVGVjaHNFbnRyeRIjChthY2hpZXZlZF92aWN0b3J5X2NvbmRpdGlvbnMYFSABKA0SDgoGdmljdG9yGBYgASgIEhAKCGFyY2hpdmVkGBcgASgIEioKBXN0YXRzGBggASgLMhsuY3JhaWdfc3RhcnMudjEuUGxheWVyU3RhdHMaNAoSQWNxdWlyZWRUZWNoc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCDoCOAEioAQKDlBsYXllclVuaXZlcnNlEjQKDmJhdHRsZV9yZWNvcmRzGAEgAygLMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlUmVjb3JkEjIKDXBsYXllcl9pbnRlbHMYAiADKAsyGy5jcmFpZ19zdGFycy52MS5QbGF5ZXJJbnRlbBIwCgxzY29yZV9pbnRlbHMYAyADKAsyGi5jcmFpZ19zdGFycy52MS5TY29yZUludGVsEisKB2Rlc2lnbnMYBCADKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduEicKB3BsYW5ldHMYBSADKAsyFi5jcmFpZ19zdGFycy52MS5QbGFuZXQSJQoGZmxlZXRzGAYgAygLMhUuY3JhaWdfc3RhcnMudjEuRmxlZXQSLQoKbWluZWZpZWxkcxgHIAMoCzIZLmNyYWlnX3N0YXJzLnYxLk1pbmVmaWVsZBI2Cg9taW5lcmFsX3BhY2tldHMYCCADKAsyHS5jcmFpZ19zdGFycy52MS5NaW5lcmFsUGFja2V0EjYKD215c3RlcnlfdHJhZGVycxgJIAMoCzIdLmNyYWlnX3N0YXJzLnYxLk15c3RlcnlUcmFkZXISKQoIc2FsdmFnZXMYCiADKAsyFy5jcmFpZ19zdGFycy52MS5TYWx2YWdlEisKCXdvcm1ob2xlcxgLIAMoCzIYLmNyYWlnX3N0YXJzLnYxLldvcm1ob2xlIp8BChNCeUhhbmRDYXJnb1RyYW5zZmVyEjoKEW1hcF9vYmplY3RfdGFyZ2V0GAEgASgLMh8uY3JhaWdfc3RhcnMudjEuTWFwT2JqZWN0VGFyZ2V0EhgKEHNvdXJjZV9mbGVldF9udW0YBiABKAUSJAoFY2FyZ28YByABKAsyFS5jcmFpZ19zdGFycy52MS5DYXJnbxIMCgRmdWVsGAggASgFIkgKDkNhcmdvVHJhbnNmZXJzEjYKCXRyYW5zZmVycxgBIAMoCzIjLmNyYWlnX3N0YXJzLnYxLkJ5SGFuZENhcmdvVHJhbnNmZXIiqQIKDFBsYXllclN0YXR1cxIKCgJpZBgBIAEoAxIuCgp1cGRhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIPCgd1c2VyX2lkGAMgASgDEgwKBG5hbWUYBCABKAkSCwoDbnVtGAUgASgFEg0KBXJlYWR5GAYgASgIEhUKDWFpX2NvbnRyb2xsZWQYByABKAgSMwoNYWlfZGlmZmljdWx0eRgIIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkFpRGlmZmljdWx0eRINCgVndWVzdBgJIAEoCBIWCg5zdWJtaXR0ZWRfdHVybhgKIAEoCBINCgVjb2xvchgLIAEoCRIOCgZ2aWN0b3IYDCABKAgSEAoIYXJjaGl2ZWQYDSABKAgizQQKBkludGVscxI0Cg5iYXR0bGVfcmVjb3JkcxgBIAMoCzIcLmNyYWlnX3N0YXJzLnYxLkJhdHRsZVJlY29yZBIyCg1wbGF5ZXJfaW50ZWxzGAIgAygLMhsuY3JhaWdfc3RhcnMudjEuUGxheWVySW50ZWwSMAoMc2NvcmVfaW50ZWxzGAMgAygLMhouY3JhaWdfc3RhcnMudjEuU2NvcmVJbnRlbBItCg1wbGFuZXRfaW50ZWxzGAQgAygLMhYuY3JhaWdfc3RhcnMudjEuUGxhbmV0EisKDGZsZWV0X2ludGVscxgFIAMoCzIVLmNyYWlnX3N0YXJzLnYxLkZsZWV0EjYKEnNoaXBfZGVzaWduX2ludGVscxgGIAMoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24SPAoVbWluZXJhbF9wYWNrZXRfaW50ZWxzGAcgAygLMh0uY3JhaWdfc3RhcnMudjEuTWluZXJhbFBhY2tldBIzChBtaW5lZmllbGRfaW50ZWxzGAggAygLMhkuY3JhaWdfc3RhcnMudjEuTWluZWZpZWxkEjEKD3dvcm1ob2xlX2ludGVscxgJIAMoCzIYLmNyYWlnX3N0YXJzLnYxLldvcm1ob2xlEjwKFW15c3RlcnlfdHJhZGVyX2ludGVscxgKIAMoCzIdLmNyYWlnX3N0YXJzLnYxLk15c3RlcnlUcmFkZXISLwoOc2FsdmFnZV9pbnRlbHMYCyADKAsyFy5jcmFpZ19zdGFycy52MS5TYWx2YWdlIrEBCgtQbGF5ZXJQbGFucxI4ChBwcm9kdWN0aW9uX3BsYW5zGAEgAygLMh4uY3JhaWdfc3RhcnMudjEuUHJvZHVjdGlvblBsYW4SMAoMYmF0dGxlX3BsYW5zGAIgAygLMhouY3JhaWdfc3RhcnMudjEuQmF0dGxlUGxhbhI2Cg90cmFuc3BvcnRfcGxhbnMYAyADKAsyHS5jcmFpZ19zdGFycy52MS5UcmFuc3BvcnRQbGFuIv0DCgxQbGF5ZXJPcmRlcnMSNwoKYXV0b21hdGlvbhgGIAEoCzIjLmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24STwoSZGVzaWduX21haW50ZW5hbmNlGAUgAygLMjMuY3JhaWdfc3RhcnMudjEuUGxheWVyT3JkZXJzLkRlc2lnbk1haW50ZW5hbmNlRW50cnkSLgoLcmVzZWFyY2hpbmcYASABKA4yGS5jcmFpZ19zdGFycy52MS5UZWNoRmllbGQSPgoTbmV4dF9yZXNlYXJjaF9maWVsZBgCIAEoDjIhLmNyYWlnX3N0YXJzLnYxLk5leHRSZXNlYXJjaEZpZWxkEhcKD3Jlc2VhcmNoX2Ftb3VudBgDIAEoBRJJCg9jYXJnb190cmFuc2ZlcnMYBCADKAsyMC5jcmFpZ19zdGFycy52MS5QbGF5ZXJPcmRlcnMuQ2FyZ29UcmFuc2ZlcnNFbnRyeRo4ChZEZXNpZ25NYWludGVuYW5jZUVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEaVQoTQ2FyZ29UcmFuc2ZlcnNFbnRyeRILCgNrZXkYASABKAkSLQoFdmFsdWUYAiABKAsyHi5jcmFpZ19zdGFycy52MS5DYXJnb1RyYW5zZmVyczoCOAEi7AkKE0xvZ2lzdGljc0F1dG9tYXRpb24SIQoZc2VydmVfdGVycmFmb3JtaW5nX3dvcmxkcxgXIAEoCBIgChhpbmZyYXN0cnVjdHVyZV90cmFuc3BvcnQYGCABKAgSIwobbWFudWFsX3Bhc3Nlbmdlcl90aHJlc2hvbGRzGBYgASgIEiMKG2Rpc2FibGVfcGFzc2VuZ2VyX3RyYW5zcG9ydBgVIAEoCBJQCg9kZXNpZ25fZmFtaWxpZXMYFCADKAsyNy5jcmFpZ19zdGFycy52MS5Mb2dpc3RpY3NBdXRvbWF0aW9uLkRlc2lnbkZhbWlsaWVzRW50cnkSNwoMcmVzZWFyY2hfdGF4GBIgASgLMiEuY3JhaWdfc3RhcnMudjEuUmVzZWFyY2hUYXhQb2xpY3kSHgoWc2NvdXRfbWF4X3JldHVybl90dXJucxgTIAEoBRIgChhyZXBhaXJfdGhyZXNob2xkX3BlcmNlbnQYDiABKAUSIAoYZGlzYWJsZV9hdXRvbWF0aWNfcmVwYWlyGA8gASgIEiQKHGRpc2FibGVfaW50ZXJjZXB0aW9uX2V2YXNpb24YECABKAgSGQoRYXV0b21hdGljX3BhY2tldHMYESABKAgSUgoQZmxlZXRfYXNzZW1ibGllcxgNIAMoCzI4LmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24uRmxlZXRBc3NlbWJsaWVzRW50cnkSGwoTcGFzc2VuZ2VyX3RyYW5zcG9ydBgFIAEoCBIhChlzb3VyY2VfcG9wdWxhdGlvbl9wZXJjZW50GAYgASgFEiYKHmRlc3RpbmF0aW9uX3BvcHVsYXRpb25fcGVyY2VudBgHIAEoBRIYChBlc2NvcnRfbWFyZ2luX2x5GAggASgFEh8KF2VzY29ydF9zdHJlbmd0aF9wZXJjZW50GAkgASgFEhcKD2Rpc2FibGVfc2FsdmFnZRgKIAEoCBIeChZkaXNhYmxlX21pbmVyYWxfc3VwcGx5GAsgASgIEh8KF3NpbmdsZV9zaGlweWFyZF9yZWJ1aWxkGAwgASgIEkgKC2ZsZWV0X3JvbGVzGAEgAygLMjMuY3JhaWdfc3RhcnMudjEuTG9naXN0aWNzQXV0b21hdGlvbi5GbGVldFJvbGVzRW50cnkSTgoOcmVidWlsZF9mbGVldHMYAiADKAsyNi5jcmFpZ19zdGFycy52MS5Mb2dpc3RpY3NBdXRvbWF0aW9uLlJlYnVpbGRGbGVldHNFbnRyeRIWCg5iYXR0bGVfc2FsdmFnZRgDIAEoCBIcChRvZmZsb2FkX2NvbWJhdF9jYXJnbxgEIAEoCBo1ChNEZXNpZ25GYW1pbGllc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEaVQoURmxlZXRBc3NlbWJsaWVzRW50cnkSCwoDa2V5GAEgASgFEiwKBXZhbHVlGAIgASgLMh0uY3JhaWdfc3RhcnMudjEuRmxlZXRBc3NlbWJseToCOAEaMQoPRmxlZXRSb2xlc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCToCOAEaNAoSUmVidWlsZEZsZWV0c0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoCOAEixAEKEVJlc2VhcmNoVGF4UG9saWN5Eg8KB2VuYWJsZWQYASABKAgSFgoObGVmdG92ZXJfdW50aWwYAiABKAUSGAoQbWVkaXVtX3RocmVzaG9sZBgDIAEoBRIXCg9sYXJnZV90aHJlc2hvbGQYBCABKAUSFQoNc21hbGxfcGVyY2VudBgFIAEoBRIWCg5tZWRpdW1fcGVyY2VudBgGIAEoBRIVCg1sYXJnZV9wZXJjZW50GAcgASgFEg0KBWJhc2lzGAggASgJIqsDCg1GbGVldEFzc2VtYmx5EgwKBG5hbWUYASABKAkSGAoQcmFsbHlfcGxhbmV0X251bRgCIAEoBRI7CgdkZXNpZ25zGAMgAygLMiouY3JhaWdfc3RhcnMudjEuRmxlZXRBc3NlbWJseS5EZXNpZ25zRW50cnkSRgoNc291cmNlX2ZsZWV0cxgEIAMoCzIvLmNyYWlnX3N0YXJzLnYxLkZsZWV0QXNzZW1ibHkuU291cmNlRmxlZXRzRW50cnkSFQoNYnVpbGRfbWlzc2luZxgFIAEoCBIQCghyZXZpc2lvbhgGIAEoBRIYChBsZWFkZXJfZmxlZXRfbnVtGAcgASgFEhoKEmNvbXBsZXRlZF9yZXZpc2lvbhgIIAEoBRIZChFub3RpZmllZF9yZXZpc2lvbhgJIAEoBRIOCgZzdGF0dXMYCiABKAkaLgoMRGVzaWduc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEaMwoRU291cmNlRmxlZXRzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ASJtCgtQbGF5ZXJTdGF0cxIUCgxmbGVldHNfYnVpbHQYASABKAUSFwoPc3RhcmJhc2VzX2J1aWx0GAIgASgFEhQKDHRva2Vuc19idWlsdBgDIAEoBRIZChFwbGFuZXRzX2NvbG9uaXplZBgEIAEoBSJZChJQbGF5ZXJSZWxhdGlvbnNoaXASMAoIcmVsYXRpb24YASABKA4yHi5jcmFpZ19zdGFycy52MS5QbGF5ZXJSZWxhdGlvbhIRCglzaGFyZV9tYXAYAiABKAgiowEKElBsYXllclJlc2VhcmNoU3BlYxIaChJyZXNvdXJjZXNfcGVyX3llYXIYASABKAUSIwobcmVzb3VyY2VzX3Blcl95ZWFyX3Jlc2VhcmNoGAIgASgFEi0KJXJlc291cmNlc19wZXJfeWVhcl9yZXNlYXJjaF9lc3RpbWF0ZWQYAyABKAUSHQoVY3VycmVudF9yZXNlYXJjaF9jb3N0GAQgASgFIowCCgpCYXR0bGVQbGFuEgsKA251bRgBIAEoBRIMCgRuYW1lGAIgASgJEjQKDnByaW1hcnlfdGFyZ2V0GAMgASgOMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlVGFyZ2V0EjYKEHNlY29uZGFyeV90YXJnZXQYBCABKA4yHC5jcmFpZ19zdGFycy52MS5CYXR0bGVUYXJnZXQSLAoGdGFjdGljGAUgASgOMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlVGFjdGljEjMKCmF0dGFja193aG8YBiABKA4yHy5jcmFpZ19zdGFycy52MS5CYXR0bGVBdHRhY2tXaG8SEgoKZHVtcF9jYXJnbxgHIAEoCCJhCg1UcmFuc3BvcnRQbGFuEgsKA251bRgBIAEoBRIMCgRuYW1lGAIgASgJEjUKBXRhc2tzGAMgASgLMiYuY3JhaWdfc3RhcnMudjEuV2F5cG9pbnRUcmFuc3BvcnRUYXNrcyKNAQoOUHJvZHVjdGlvblBsYW4SCwoDbnVtGAEgASgFEgwKBG5hbWUYAiABKAkSMQoFaXRlbXMYAyADKAsyIi5jcmFpZ19zdGFycy52MS5Qcm9kdWN0aW9uUGxhbkl0ZW0SLQolY29udHJpYnV0ZXNfb25seV9sZWZ0b3Zlcl90b19yZXNlYXJjaBgEIAEoCCJnChJQcm9kdWN0aW9uUGxhbkl0ZW0SKwoEdHlwZRgBIAEoDjIdLmNyYWlnX3N0YXJzLnYxLlF1ZXVlSXRlbVR5cGUSEgoKZGVzaWduX251bRgCIAEoBRIQCghxdWFudGl0eRgDIAEoBSqFAQoOUGxheWVyUmVsYXRpb24SHwobUExBWUVSX1JFTEFUSU9OX1VOU1BFQ0lGSUVEEAASGwoXUExBWUVSX1JFTEFUSU9OX05FVVRSQUwQARIaChZQTEFZRVJfUkVMQVRJT05fRlJJRU5EEAISGQoVUExBWUVSX1JFTEFUSU9OX0VORU1ZEANiBnByb3RvMw", [file_craig_stars_v1_battle, file_craig_stars_v1_common, file_craig_stars_v1_fleet, file_craig_stars_v1_intel, file_craig_stars_v1_message, file_craig_stars_v1_minefield, file_craig_stars_v1_mineralpacket, file_craig_stars_v1_mysterytrader, file_craig_stars_v1_planet, file_craig_stars_v1_race, file_craig_stars_v1_salvage, file_craig_stars_v1_shipdesign, file_craig_stars_v1_wormhole, file_google_protobuf_timestamp]);
 
 /**
  * A Player contains all intel, messages, tech levels, and research orders for a single empire in the game.
@@ -844,6 +844,18 @@ export const PlayerPlansSchema: GenMessage<PlayerPlans, {jsonType: PlayerPlansJs
  */
 export type PlayerOrders = Message<"craig_stars.v1.PlayerOrders"> & {
   /**
+   * @generated from field: craig_stars.v1.LogisticsAutomation automation = 6;
+   */
+  automation?: LogisticsAutomation | undefined;
+
+  /**
+   * -1 retires a design; a positive value names its same-hull replacement.
+   *
+   * @generated from field: map<int32, int32> design_maintenance = 5;
+   */
+  designMaintenance: { [key: number]: number };
+
+  /**
    * @generated from field: craig_stars.v1.TechField researching = 1;
    */
   researching: TechField;
@@ -868,6 +880,18 @@ export type PlayerOrders = Message<"craig_stars.v1.PlayerOrders"> & {
  * @generated from message craig_stars.v1.PlayerOrders
  */
 export type PlayerOrdersJson = {
+  /**
+   * @generated from field: craig_stars.v1.LogisticsAutomation automation = 6;
+   */
+  automation?: LogisticsAutomationJson;
+
+  /**
+   * -1 retires a design; a positive value names its same-hull replacement.
+   *
+   * @generated from field: map<int32, int32> design_maintenance = 5;
+   */
+  designMaintenance?: { [key: number]: number };
+
   /**
    * @generated from field: craig_stars.v1.TechField researching = 1;
    */
@@ -895,6 +919,481 @@ export type PlayerOrdersJson = {
  */
 export const PlayerOrdersSchema: GenMessage<PlayerOrders, {jsonType: PlayerOrdersJson}> = /*@__PURE__*/
   messageDesc(file_craig_stars_v1_player, 7);
+
+/**
+ * @generated from message craig_stars.v1.LogisticsAutomation
+ */
+export type LogisticsAutomation = Message<"craig_stars.v1.LogisticsAutomation"> & {
+  /**
+   * @generated from field: bool serve_terraforming_worlds = 23;
+   */
+  serveTerraformingWorlds: boolean;
+
+  /**
+   * @generated from field: bool infrastructure_transport = 24;
+   */
+  infrastructureTransport: boolean;
+
+  /**
+   * @generated from field: bool manual_passenger_thresholds = 22;
+   */
+  manualPassengerThresholds: boolean;
+
+  /**
+   * @generated from field: bool disable_passenger_transport = 21;
+   */
+  disablePassengerTransport: boolean;
+
+  /**
+   * @generated from field: map<int32, int32> design_families = 20;
+   */
+  designFamilies: { [key: number]: number };
+
+  /**
+   * @generated from field: craig_stars.v1.ResearchTaxPolicy research_tax = 18;
+   */
+  researchTax?: ResearchTaxPolicy | undefined;
+
+  /**
+   * @generated from field: int32 scout_max_return_turns = 19;
+   */
+  scoutMaxReturnTurns: number;
+
+  /**
+   * @generated from field: int32 repair_threshold_percent = 14;
+   */
+  repairThresholdPercent: number;
+
+  /**
+   * @generated from field: bool disable_automatic_repair = 15;
+   */
+  disableAutomaticRepair: boolean;
+
+  /**
+   * @generated from field: bool disable_interception_evasion = 16;
+   */
+  disableInterceptionEvasion: boolean;
+
+  /**
+   * @generated from field: bool automatic_packets = 17;
+   */
+  automaticPackets: boolean;
+
+  /**
+   * @generated from field: map<int32, craig_stars.v1.FleetAssembly> fleet_assemblies = 13;
+   */
+  fleetAssemblies: { [key: number]: FleetAssembly };
+
+  /**
+   * @generated from field: bool passenger_transport = 5;
+   */
+  passengerTransport: boolean;
+
+  /**
+   * @generated from field: int32 source_population_percent = 6;
+   */
+  sourcePopulationPercent: number;
+
+  /**
+   * @generated from field: int32 destination_population_percent = 7;
+   */
+  destinationPopulationPercent: number;
+
+  /**
+   * @generated from field: int32 escort_margin_ly = 8;
+   */
+  escortMarginLy: number;
+
+  /**
+   * @generated from field: int32 escort_strength_percent = 9;
+   */
+  escortStrengthPercent: number;
+
+  /**
+   * @generated from field: bool disable_salvage = 10;
+   */
+  disableSalvage: boolean;
+
+  /**
+   * @generated from field: bool disable_mineral_supply = 11;
+   */
+  disableMineralSupply: boolean;
+
+  /**
+   * @generated from field: bool single_shipyard_rebuild = 12;
+   */
+  singleShipyardRebuild: boolean;
+
+  /**
+   * @generated from field: map<int32, string> fleet_roles = 1;
+   */
+  fleetRoles: { [key: number]: string };
+
+  /**
+   * @generated from field: map<int32, bool> rebuild_fleets = 2;
+   */
+  rebuildFleets: { [key: number]: boolean };
+
+  /**
+   * @generated from field: bool battle_salvage = 3;
+   */
+  battleSalvage: boolean;
+
+  /**
+   * @generated from field: bool offload_combat_cargo = 4;
+   */
+  offloadCombatCargo: boolean;
+};
+
+/**
+ * @generated from message craig_stars.v1.LogisticsAutomation
+ */
+export type LogisticsAutomationJson = {
+  /**
+   * @generated from field: bool serve_terraforming_worlds = 23;
+   */
+  serveTerraformingWorlds?: boolean;
+
+  /**
+   * @generated from field: bool infrastructure_transport = 24;
+   */
+  infrastructureTransport?: boolean;
+
+  /**
+   * @generated from field: bool manual_passenger_thresholds = 22;
+   */
+  manualPassengerThresholds?: boolean;
+
+  /**
+   * @generated from field: bool disable_passenger_transport = 21;
+   */
+  disablePassengerTransport?: boolean;
+
+  /**
+   * @generated from field: map<int32, int32> design_families = 20;
+   */
+  designFamilies?: { [key: number]: number };
+
+  /**
+   * @generated from field: craig_stars.v1.ResearchTaxPolicy research_tax = 18;
+   */
+  researchTax?: ResearchTaxPolicyJson;
+
+  /**
+   * @generated from field: int32 scout_max_return_turns = 19;
+   */
+  scoutMaxReturnTurns?: number;
+
+  /**
+   * @generated from field: int32 repair_threshold_percent = 14;
+   */
+  repairThresholdPercent?: number;
+
+  /**
+   * @generated from field: bool disable_automatic_repair = 15;
+   */
+  disableAutomaticRepair?: boolean;
+
+  /**
+   * @generated from field: bool disable_interception_evasion = 16;
+   */
+  disableInterceptionEvasion?: boolean;
+
+  /**
+   * @generated from field: bool automatic_packets = 17;
+   */
+  automaticPackets?: boolean;
+
+  /**
+   * @generated from field: map<int32, craig_stars.v1.FleetAssembly> fleet_assemblies = 13;
+   */
+  fleetAssemblies?: { [key: number]: FleetAssemblyJson };
+
+  /**
+   * @generated from field: bool passenger_transport = 5;
+   */
+  passengerTransport?: boolean;
+
+  /**
+   * @generated from field: int32 source_population_percent = 6;
+   */
+  sourcePopulationPercent?: number;
+
+  /**
+   * @generated from field: int32 destination_population_percent = 7;
+   */
+  destinationPopulationPercent?: number;
+
+  /**
+   * @generated from field: int32 escort_margin_ly = 8;
+   */
+  escortMarginLy?: number;
+
+  /**
+   * @generated from field: int32 escort_strength_percent = 9;
+   */
+  escortStrengthPercent?: number;
+
+  /**
+   * @generated from field: bool disable_salvage = 10;
+   */
+  disableSalvage?: boolean;
+
+  /**
+   * @generated from field: bool disable_mineral_supply = 11;
+   */
+  disableMineralSupply?: boolean;
+
+  /**
+   * @generated from field: bool single_shipyard_rebuild = 12;
+   */
+  singleShipyardRebuild?: boolean;
+
+  /**
+   * @generated from field: map<int32, string> fleet_roles = 1;
+   */
+  fleetRoles?: { [key: number]: string };
+
+  /**
+   * @generated from field: map<int32, bool> rebuild_fleets = 2;
+   */
+  rebuildFleets?: { [key: number]: boolean };
+
+  /**
+   * @generated from field: bool battle_salvage = 3;
+   */
+  battleSalvage?: boolean;
+
+  /**
+   * @generated from field: bool offload_combat_cargo = 4;
+   */
+  offloadCombatCargo?: boolean;
+};
+
+/**
+ * Describes the message craig_stars.v1.LogisticsAutomation.
+ * Use `create(LogisticsAutomationSchema)` to create a new message.
+ */
+export const LogisticsAutomationSchema: GenMessage<LogisticsAutomation, {jsonType: LogisticsAutomationJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_player, 8);
+
+/**
+ * @generated from message craig_stars.v1.ResearchTaxPolicy
+ */
+export type ResearchTaxPolicy = Message<"craig_stars.v1.ResearchTaxPolicy"> & {
+  /**
+   * @generated from field: bool enabled = 1;
+   */
+  enabled: boolean;
+
+  /**
+   * @generated from field: int32 leftover_until = 2;
+   */
+  leftoverUntil: number;
+
+  /**
+   * @generated from field: int32 medium_threshold = 3;
+   */
+  mediumThreshold: number;
+
+  /**
+   * @generated from field: int32 large_threshold = 4;
+   */
+  largeThreshold: number;
+
+  /**
+   * @generated from field: int32 small_percent = 5;
+   */
+  smallPercent: number;
+
+  /**
+   * @generated from field: int32 medium_percent = 6;
+   */
+  mediumPercent: number;
+
+  /**
+   * @generated from field: int32 large_percent = 7;
+   */
+  largePercent: number;
+
+  /**
+   * @generated from field: string basis = 8;
+   */
+  basis: string;
+};
+
+/**
+ * @generated from message craig_stars.v1.ResearchTaxPolicy
+ */
+export type ResearchTaxPolicyJson = {
+  /**
+   * @generated from field: bool enabled = 1;
+   */
+  enabled?: boolean;
+
+  /**
+   * @generated from field: int32 leftover_until = 2;
+   */
+  leftoverUntil?: number;
+
+  /**
+   * @generated from field: int32 medium_threshold = 3;
+   */
+  mediumThreshold?: number;
+
+  /**
+   * @generated from field: int32 large_threshold = 4;
+   */
+  largeThreshold?: number;
+
+  /**
+   * @generated from field: int32 small_percent = 5;
+   */
+  smallPercent?: number;
+
+  /**
+   * @generated from field: int32 medium_percent = 6;
+   */
+  mediumPercent?: number;
+
+  /**
+   * @generated from field: int32 large_percent = 7;
+   */
+  largePercent?: number;
+
+  /**
+   * @generated from field: string basis = 8;
+   */
+  basis?: string;
+};
+
+/**
+ * Describes the message craig_stars.v1.ResearchTaxPolicy.
+ * Use `create(ResearchTaxPolicySchema)` to create a new message.
+ */
+export const ResearchTaxPolicySchema: GenMessage<ResearchTaxPolicy, {jsonType: ResearchTaxPolicyJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_player, 9);
+
+/**
+ * @generated from message craig_stars.v1.FleetAssembly
+ */
+export type FleetAssembly = Message<"craig_stars.v1.FleetAssembly"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: int32 rally_planet_num = 2;
+   */
+  rallyPlanetNum: number;
+
+  /**
+   * @generated from field: map<int32, int32> designs = 3;
+   */
+  designs: { [key: number]: number };
+
+  /**
+   * @generated from field: map<int32, bool> source_fleets = 4;
+   */
+  sourceFleets: { [key: number]: boolean };
+
+  /**
+   * @generated from field: bool build_missing = 5;
+   */
+  buildMissing: boolean;
+
+  /**
+   * @generated from field: int32 revision = 6;
+   */
+  revision: number;
+
+  /**
+   * Progress is server-owned; editing a composition increments revision.
+   *
+   * @generated from field: int32 leader_fleet_num = 7;
+   */
+  leaderFleetNum: number;
+
+  /**
+   * @generated from field: int32 completed_revision = 8;
+   */
+  completedRevision: number;
+
+  /**
+   * @generated from field: int32 notified_revision = 9;
+   */
+  notifiedRevision: number;
+
+  /**
+   * @generated from field: string status = 10;
+   */
+  status: string;
+};
+
+/**
+ * @generated from message craig_stars.v1.FleetAssembly
+ */
+export type FleetAssemblyJson = {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name?: string;
+
+  /**
+   * @generated from field: int32 rally_planet_num = 2;
+   */
+  rallyPlanetNum?: number;
+
+  /**
+   * @generated from field: map<int32, int32> designs = 3;
+   */
+  designs?: { [key: number]: number };
+
+  /**
+   * @generated from field: map<int32, bool> source_fleets = 4;
+   */
+  sourceFleets?: { [key: number]: boolean };
+
+  /**
+   * @generated from field: bool build_missing = 5;
+   */
+  buildMissing?: boolean;
+
+  /**
+   * @generated from field: int32 revision = 6;
+   */
+  revision?: number;
+
+  /**
+   * Progress is server-owned; editing a composition increments revision.
+   *
+   * @generated from field: int32 leader_fleet_num = 7;
+   */
+  leaderFleetNum?: number;
+
+  /**
+   * @generated from field: int32 completed_revision = 8;
+   */
+  completedRevision?: number;
+
+  /**
+   * @generated from field: int32 notified_revision = 9;
+   */
+  notifiedRevision?: number;
+
+  /**
+   * @generated from field: string status = 10;
+   */
+  status?: string;
+};
+
+/**
+ * Describes the message craig_stars.v1.FleetAssembly.
+ * Use `create(FleetAssemblySchema)` to create a new message.
+ */
+export const FleetAssemblySchema: GenMessage<FleetAssembly, {jsonType: FleetAssemblyJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_player, 10);
 
 /**
  * @generated from message craig_stars.v1.PlayerStats
@@ -951,7 +1450,7 @@ export type PlayerStatsJson = {
  * Use `create(PlayerStatsSchema)` to create a new message.
  */
 export const PlayerStatsSchema: GenMessage<PlayerStats, {jsonType: PlayerStatsJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_player, 8);
+  messageDesc(file_craig_stars_v1_player, 11);
 
 /**
  * @generated from message craig_stars.v1.PlayerRelationship
@@ -988,7 +1487,7 @@ export type PlayerRelationshipJson = {
  * Use `create(PlayerRelationshipSchema)` to create a new message.
  */
 export const PlayerRelationshipSchema: GenMessage<PlayerRelationship, {jsonType: PlayerRelationshipJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_player, 9);
+  messageDesc(file_craig_stars_v1_player, 12);
 
 /**
  * @generated from message craig_stars.v1.PlayerResearchSpec
@@ -1045,7 +1544,7 @@ export type PlayerResearchSpecJson = {
  * Use `create(PlayerResearchSpecSchema)` to create a new message.
  */
 export const PlayerResearchSpecSchema: GenMessage<PlayerResearchSpec, {jsonType: PlayerResearchSpecJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_player, 10);
+  messageDesc(file_craig_stars_v1_player, 13);
 
 /**
  * @generated from message craig_stars.v1.BattlePlan
@@ -1132,7 +1631,7 @@ export type BattlePlanJson = {
  * Use `create(BattlePlanSchema)` to create a new message.
  */
 export const BattlePlanSchema: GenMessage<BattlePlan, {jsonType: BattlePlanJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_player, 11);
+  messageDesc(file_craig_stars_v1_player, 14);
 
 /**
  * @generated from message craig_stars.v1.TransportPlan
@@ -1179,7 +1678,7 @@ export type TransportPlanJson = {
  * Use `create(TransportPlanSchema)` to create a new message.
  */
 export const TransportPlanSchema: GenMessage<TransportPlan, {jsonType: TransportPlanJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_player, 12);
+  messageDesc(file_craig_stars_v1_player, 15);
 
 /**
  * @generated from message craig_stars.v1.ProductionPlan
@@ -1236,7 +1735,7 @@ export type ProductionPlanJson = {
  * Use `create(ProductionPlanSchema)` to create a new message.
  */
 export const ProductionPlanSchema: GenMessage<ProductionPlan, {jsonType: ProductionPlanJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_player, 13);
+  messageDesc(file_craig_stars_v1_player, 16);
 
 /**
  * @generated from message craig_stars.v1.ProductionPlanItem
@@ -1283,7 +1782,7 @@ export type ProductionPlanItemJson = {
  * Use `create(ProductionPlanItemSchema)` to create a new message.
  */
 export const ProductionPlanItemSchema: GenMessage<ProductionPlanItem, {jsonType: ProductionPlanItemJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_player, 14);
+  messageDesc(file_craig_stars_v1_player, 17);
 
 /**
  * @generated from enum craig_stars.v1.PlayerRelation

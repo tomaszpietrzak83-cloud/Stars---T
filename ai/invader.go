@@ -61,6 +61,7 @@ func (ai *aiPlayer) invade() error {
 		// invade the closest world we can overwhelm
 		var target *cs.Planet
 		shortestDist := math.MaxInt
+		bestPriority := false
 		for _, planet := range ai.PlanetIntels {
 			if targeted[planet.Num] || !ai.canInvade(planet, available) {
 				continue
@@ -70,7 +71,9 @@ func (ai *aiPlayer) invade() error {
 				// a world our bombers are already over is the one to land on
 				dist -= 1 << 40
 			}
-			if dist < shortestDist || (dist == shortestDist && planet.Num < target.Num) {
+			priority := ai.priorityVictors[planet.PlayerNum]
+			if priority && !bestPriority || priority == bestPriority && (dist < shortestDist || (dist == shortestDist && target != nil && planet.Num < target.Num)) {
+				bestPriority = priority
 				shortestDist = dist
 				target = planet
 			}

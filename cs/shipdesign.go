@@ -48,6 +48,7 @@ type ShipDesignSpec struct {
 	CanStealFleetCargo        bool                  `json:"canStealFleetCargo,omitempty"`
 	CanStealPlanetCargo       bool                  `json:"canStealPlanetCargo,omitempty"`
 	CargoCapacity             int                   `json:"cargoCapacity,omitempty"`
+	MineralCargoBonus         int                   `json:"mineralCargoBonus,omitempty"`
 	CloakPercent              int                   `json:"cloakPercent,omitempty"`
 	CloakPercentFullCargo     int                   `json:"cloakPercentFullCargo,omitempty"`
 	CloakUnits                int                   `json:"cloakUnits,omitempty"`
@@ -551,6 +552,16 @@ func ComputeShipDesignSpec(rules *Rules, techLevels TechLevel, raceSpec RaceSpec
 	}
 
 	spec.Armor += int(armor)
+	if raceSpec.EEETraits&EEELightweightHulls != 0 && !hull.Starbase {
+		spec.Armor -= int(math.Ceil(float64(hull.Armor) * 0.1))
+	}
+	if raceSpec.EEETraits&EEEExtendedTanks != 0 && !hull.Starbase {
+		spec.FuelCapacity = spec.FuelCapacity * 12 / 10
+	}
+	if raceSpec.EEETraits&EEECargoEngineering != 0 && !hull.Starbase {
+		spec.MineralCargoBonus = spec.CargoCapacity / 5
+		spec.CargoCapacity += spec.MineralCargoBonus
+	}
 	spec.Shields += int(shield)
 
 	// ISB gives some special starbase bonuses

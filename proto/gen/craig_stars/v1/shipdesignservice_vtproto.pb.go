@@ -218,6 +218,11 @@ func (m *CreateShipDesignRequest) MarshalToSizedBufferVT(dAtA []byte) (int, erro
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.UpgradeFromDesignNum != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UpgradeFromDesignNum))
+		i--
+		dAtA[i] = 0x18
+	}
 	if m.Design != nil {
 		size, err := m.Design.MarshalToSizedBufferVT(dAtA[:i])
 		if err != nil {
@@ -265,6 +270,16 @@ func (m *CreateShipDesignResponse) MarshalToSizedBufferVT(dAtA []byte) (int, err
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.PlayerOrders != nil {
+		size, err := m.PlayerOrders.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x12
 	}
 	if m.Design != nil {
 		size, err := m.Design.MarshalToSizedBufferVT(dAtA[:i])
@@ -647,6 +662,9 @@ func (m *CreateShipDesignRequest) SizeVT() (n int) {
 		l = m.Design.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
+	if m.UpgradeFromDesignNum != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.UpgradeFromDesignNum))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -659,6 +677,10 @@ func (m *CreateShipDesignResponse) SizeVT() (n int) {
 	_ = l
 	if m.Design != nil {
 		l = m.Design.SizeVT()
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if m.PlayerOrders != nil {
+		l = m.PlayerOrders.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -1189,6 +1211,25 @@ func (m *CreateShipDesignRequest) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UpgradeFromDesignNum", wireType)
+			}
+			m.UpgradeFromDesignNum = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.UpgradeFromDesignNum |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -1273,6 +1314,42 @@ func (m *CreateShipDesignResponse) UnmarshalVT(dAtA []byte) error {
 				m.Design = &ShipDesign{}
 			}
 			if err := m.Design.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PlayerOrders", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.PlayerOrders == nil {
+				m.PlayerOrders = &PlayerOrders{}
+			}
+			if err := m.PlayerOrders.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

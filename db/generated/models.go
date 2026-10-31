@@ -281,6 +281,8 @@ type Player struct {
 	TransportPlans               *TransportPlans
 	Relations                    *PlayerRelationships
 	CargoTransfers               *CargoTransfers
+	DesignMaintenance            *DesignMaintenance
+	Automation                   *LogisticsAutomation
 	Messages                     *PlayerMessages
 	BattleRecords                *BattleRecords
 	PlayerIntels                 *PlayerIntels
@@ -342,6 +344,8 @@ type Race struct {
 	SpendLeftoverPointsOn     cs.SpendLeftoverPointsOn
 	Prt                       cs.PRT
 	Lrts                      cs.Bitmask
+	EeeTraits                 int64
+	EeeResearchField          string
 	HabLowGrav                int64
 	HabLowTemp                int64
 	HabLowRad                 int64

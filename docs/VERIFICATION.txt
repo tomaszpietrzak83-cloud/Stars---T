@@ -1,0 +1,13 @@
+tomek-stars program verification — 2026-10-31
+
+PASS: full Go suite (AI, server, DB, commands, converters and core); server 126s.
+PASS: final core/AI/converter tests, including zero-opponent edge/center starts, 95% infrastructure surplus, conservation and real cargo mass, damaged holds, terraform opt-in and victory target preference.
+PASS: 65 frontend tests, zero failures/errors. Svelte check: zero errors/warnings. Production build passed.
+PASS: isolated browser smoke using the Windows binary and compiled UI without Vite. A 5400-star galaxy was created; the human capital was on the edge; both new automation permissions remained enabled after reload. Existing research, fleet assembly, upgrades, races, menu, camera and invention tooltip checks also passed.
+PASS: full turn on an isolated copied-save regression database (118s). No personal playthrough was advanced by testing.
+PASS: deployed Windows PowerShell launcher, automatic local session and live scanner inspection. The read-only inspection blocked mutating API requests.
+PASS: source/build candidate scan excluded personal databases, .env files, credentials, private keys, caches, runtime downloads, node_modules and audit backups.
+
+The committed program includes the native Windows executable, compiled interface, WASM module, source and artwork. SHA-256 values are in windows/SHA256SUMS.txt.
+
+Only the program is published. Personal saves remain local in data/data.db. No personal game or backup is included.

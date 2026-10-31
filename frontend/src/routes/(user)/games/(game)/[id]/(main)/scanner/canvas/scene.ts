@@ -14,7 +14,7 @@ import {
 	type Minefield,
 	type Planet,
 	type PlayerNote,
-	type Waypoint
+	type Waypoint, WaypointSchema
 } from '#lib/types/cs-proto.js';
 import type { CommandedFleet } from '#lib/types/Fleet.js';
 import {
@@ -214,6 +214,24 @@ function wormholeExits(universe: Universe, waypoints: Waypoint[]): (Position | u
 	return waypoints.map((wp, index) => (index > 0 ? getWormholeExit(universe, wp) : undefined));
 }
 
+// Draw the entire planned expedition without submitting speculative future
+// waypoints as native orders. The server revalidates fuel and threats each turn.
+export function scoutPetalWaypoints(universe:Universe,fleet:Fleet|CommandedFleet):Waypoint[]{
+ const actual=fleet.fleetOrders?.waypoints??[];
+ try{
+  const raw=fleet.mapObject?.tags['scout-mission'];if(!raw)return actual;
+  const mission=JSON.parse(raw) as {plan?:number[],leg?:number,refuelling?:boolean};
+  if(!Array.isArray(mission.plan)||mission.refuelling)return actual;
+  const route=[...actual];const current=route.at(-1)?.mapObjectTarget?.targetNum;
+  const pending=mission.plan.slice(Math.max(0,mission.leg??0));
+  if(pending[0]===current)pending.shift();
+  for(const num of pending){const p=universe.getPlanet(num);if(!p?.mapObject?.position)continue;
+   const previous=route.at(-1)?.position;if(previous?.x===p.mapObject.position.x&&previous?.y===p.mapObject.position.y)continue;
+   route.push(create(WaypointSchema,{position:p.mapObject.position,mapObjectTarget:{targetType:MapObjectType.PLANET,targetNum:num,targetName:p.mapObject.name,targetPosition:p.mapObject.position}}));
+  }
+  return route;
+ }catch{return actual;}
+}
 export function buildWaypointPaths(
 	universe: Universe,
 	player: CommandedPlayer,
@@ -230,7 +248,7 @@ export function buildWaypointPaths(
 				(f.fleetOrders?.waypoints?.length ?? 0) > 1
 		)
 		.map((f) => {
-			const waypoints = f.fleetOrders?.waypoints ?? [];
+			const waypoints = scoutPetalWaypoints(universe,f);
 			return { waypoints, exits: wormholeExits(universe, waypoints), commanded: false };
 		});
 
@@ -245,7 +263,7 @@ export function buildWaypointPaths(
 				dragOrigin: true
 			});
 		}
-		const waypoints = commandedFleet.fleetOrders.waypoints;
+		const waypoints = dragOrigin?commandedFleet.fleetOrders.waypoints:scoutPetalWaypoints(universe,commandedFleet);
 		paths.push({
 			waypoints,
 			exits: wormholeExits(universe, waypoints),

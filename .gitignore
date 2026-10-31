@@ -31,3 +31,23 @@ dist/
 ansible/
 frontend/static/images/
 frontend/src/lib/wasm/
+
+# Local runtime, saves, caches and audit copies are never published.
+.runtime/
+audit-results/
+*.db
+*.db-wal
+*.db-shm
+*.log
+# Ready-to-play Windows edition.
+!windows/stars-local.exe
+!frontend/static/images/
+!frontend/static/images/**
+!frontend/src/lib/wasm/
+frontend/src/lib/wasm/*
+!frontend/src/lib/wasm/cs.wasm
+
+!frontend/src/lib/wasm/wasm_exec.js
+
+frontend/.svelte-kit*/
+.audit-tools/

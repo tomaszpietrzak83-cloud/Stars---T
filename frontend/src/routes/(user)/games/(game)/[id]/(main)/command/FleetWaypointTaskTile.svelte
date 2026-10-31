@@ -15,7 +15,7 @@
 		type TransportPlan
 	} from '#lib/types/cs-proto.js';
 	import { enumToString } from '#lib/types/Enums.js';
-	import { emptyTransportTasks, WaypointTasks } from '#lib/types/Fleet.js';
+	import { emptyTransportTasks, WaypointTasks, canPerformWaypointTask } from '#lib/types/Fleet.js';
 	import { owned, ownedBy, type MapObjectLike } from '#lib/types/MapObject.js';
 	import { getMineralOutput } from '#lib/types/Planet.js';
 	import { emptyVector } from '#lib/types/Vector.js';
@@ -42,7 +42,7 @@
 	);
 
 	const onSelectedWaypointTaskChange = (task: WaypointTask) => {
-		if (!$selectedWaypoint || !$commandedFleet) {
+		if (!$selectedWaypoint || !$commandedFleet || !canPerformWaypointTask($commandedFleet,task)) {
 			return;
 		}
 		$selectedWaypoint.task = task;
@@ -177,7 +177,7 @@
 						onSelectedWaypointTaskChange(parseInt(e.currentTarget.value));
 					}}
 				>
-					{#each WaypointTasks as task (task)}
+					{#each WaypointTasks.filter(task=>canPerformWaypointTask($commandedFleet,task)) as task (task)}
 						{#if task === WaypointTask.UNSPECIFIED}
 							<option value={task}>None</option>
 						{:else}

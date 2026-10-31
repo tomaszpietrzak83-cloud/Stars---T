@@ -16,12 +16,17 @@
 	import { create } from '@bufbuild/protobuf';
 	import FutureTechs from './FutureTechs.svelte';
 
-	const { cs, player } = getGameContext();
+	const { cs, player, game } = getGameContext();
 
 	type Props = {
 		onUpdatePlayer?: () => Promise<void>;
 	};
 	let { onUpdatePlayer }: Props = $props();
+
+ const {universe}=getGameContext();
+ let researchColonies=$derived($universe.planets.filter(planet=>planet.mapObject?.playerNum===$player.num));
+ let tax=$derived($player.playerOrders.automation?.researchTax);
+ let leftoverColonies=$derived(researchColonies.filter(planet=>tax?.enabled ? (tax.basis==='resources'?(planet.spec?.resourcesPerYear??0):(planet.cargo?.colonists??0)*100)<tax.leftoverUntil : planet.planetOrders?.contributesOnlyLeftoverToResearch));
 
 	let spec = $state(create(PlayerResearchSpecSchema));
 
@@ -40,6 +45,13 @@
 </script>
 
 <ItemTitle>Research</ItemTitle>
+{#if tax?.enabled}<div class="alert alert-info my-3 block"><strong>Automatic colony research tax is active.</strong> Small / medium / large colonies reserve {tax.smallPercent}% / {tax.mediumPercent}% / {tax.largePercent}% before production. These rates override the manual empire budget below. <a class="link" href={`/games/${$game.id}/automation`}>Configure automation</a></div>{/if}
+{#if leftoverColonies.length}
+ <div class="alert alert-warning my-3 block" role="status">
+  <p><strong>{leftoverColonies.length} of {researchColonies.length} colonies contribute only production leftovers.</strong> The research percentage is not reserved on these planets. If production uses all resources, they contribute zero.</p>
+  <p class="text-sm mt-1">{leftoverColonies.map(planet=>planet.mapObject?.name).join(', ')}. Disable “Contributes only leftover to research” in each planet's production settings to reserve the research budget before production.</p>
+ </div>
+{/if}
 <div
 	class="stats stats-vertical sm:stats-horizontal sm:flex shadow-sm border border-base-200 w-full"
 >

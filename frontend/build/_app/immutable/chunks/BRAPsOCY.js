@@ -1,0 +1,1 @@
+import{G as e,H as t,Ht as n,J as r,X as i,pt as a,t as o,vt as s,xt as c,zt as l}from"./Dgn-K8f2.js";var u=i(`<h3 class="text-xl font-semibold mb-2 mt-4 border border-secondary rounded-md p-1 pl-2"> <!></h3>`);function d(i,d){let f=o(d,`title`,3,``);var p=u(),m=s(p),h=c(m);t(h,()=>d.children??n),l(p),a(()=>e(m,`${f()??``} `)),r(i,p)}export{d as t};

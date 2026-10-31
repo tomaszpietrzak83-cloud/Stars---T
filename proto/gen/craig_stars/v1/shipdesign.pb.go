@@ -462,6 +462,7 @@ type ShipDesignSpec struct {
 	TorpedoJamming            float64                `protobuf:"fixed64,63,opt,name=torpedo_jamming,json=torpedoJamming,proto3" json:"torpedo_jamming,omitempty"`
 	WeaponSlots               []*ShipDesignSlot      `protobuf:"bytes,64,rep,name=weapon_slots,json=weaponSlots,proto3" json:"weapon_slots,omitempty"`
 	ShipClass                 ShipClass              `protobuf:"varint,65,opt,name=ship_class,json=shipClass,proto3,enum=craig_stars.v1.ShipClass" json:"ship_class,omitempty"`
+	MineralCargoBonus         int32                  `protobuf:"varint,66,opt,name=mineral_cargo_bonus,json=mineralCargoBonus,proto3" json:"mineral_cargo_bonus,omitempty"`
 	unknownFields             protoimpl.UnknownFields
 	sizeCache                 protoimpl.SizeCache
 }
@@ -951,6 +952,13 @@ func (x *ShipDesignSpec) GetShipClass() ShipClass {
 	return ShipClass_SHIP_CLASS_UNSPECIFIED
 }
 
+func (x *ShipDesignSpec) GetMineralCargoBonus() int32 {
+	if x != nil {
+		return x.MineralCargoBonus
+	}
+	return 0
+}
+
 var File_craig_stars_v1_shipdesign_proto protoreflect.FileDescriptor
 
 const file_craig_stars_v1_shipdesign_proto_rawDesc = "" +
@@ -977,7 +985,7 @@ const file_craig_stars_v1_shipdesign_proto_rawDesc = "" +
 	"\x0eShipDesignSlot\x12%\n" +
 	"\x0ehull_component\x18\x01 \x01(\tR\rhullComponent\x12&\n" +
 	"\x0fhull_slot_index\x18\x02 \x01(\x05R\rhullSlotIndex\x12\x1a\n" +
-	"\bquantity\x18\x03 \x01(\x05R\bquantity\"\xb8\x15\n" +
+	"\bquantity\x18\x03 \x01(\x05R\bquantity\"\xe8\x15\n" +
 	"\x0eShipDesignSpec\x126\n" +
 	"\x17additional_mass_drivers\x18\x01 \x01(\x05R\x15additionalMassDrivers\x12\x14\n" +
 	"\x05armor\x18\x02 \x01(\x05R\x05armor\x12*\n" +
@@ -1060,7 +1068,8 @@ const file_craig_stars_v1_shipdesign_proto_rawDesc = "" +
 	"\x0ftorpedo_jamming\x18? \x01(\x01R\x0etorpedoJamming\x12A\n" +
 	"\fweapon_slots\x18@ \x03(\v2\x1e.craig_stars.v1.ShipDesignSlotR\vweaponSlots\x128\n" +
 	"\n" +
-	"ship_class\x18A \x01(\x0e2\x19.craig_stars.v1.ShipClassR\tshipClass\x1aK\n" +
+	"ship_class\x18A \x01(\x0e2\x19.craig_stars.v1.ShipClassR\tshipClass\x12.\n" +
+	"\x13mineral_cargo_bonus\x18B \x01(\x05R\x11mineralCargoBonus\x1aK\n" +
 	"\x1dMineLayingRateByMineTypeEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01*\x98\t\n" +

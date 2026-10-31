@@ -159,6 +159,11 @@ const (
 	Size_SIZE_LARGE_WIDE  Size = 8
 	Size_SIZE_HUGE        Size = 9
 	Size_SIZE_HUGE_WIDE   Size = 10
+	Size_SIZE_VAST        Size = 11
+	Size_SIZE_IMMENSE     Size = 12
+	Size_SIZE_COLOSSAL    Size = 13
+	Size_SIZE_TITANIC     Size = 14
+	Size_SIZE_GALACTIC    Size = 15
 )
 
 // Enum value maps for Size.
@@ -175,6 +180,11 @@ var (
 		8:  "SIZE_LARGE_WIDE",
 		9:  "SIZE_HUGE",
 		10: "SIZE_HUGE_WIDE",
+		11: "SIZE_VAST",
+		12: "SIZE_IMMENSE",
+		13: "SIZE_COLOSSAL",
+		14: "SIZE_TITANIC",
+		15: "SIZE_GALACTIC",
 	}
 	Size_value = map[string]int32{
 		"SIZE_UNSPECIFIED": 0,
@@ -188,6 +198,11 @@ var (
 		"SIZE_LARGE_WIDE":  8,
 		"SIZE_HUGE":        9,
 		"SIZE_HUGE_WIDE":   10,
+		"SIZE_VAST":        11,
+		"SIZE_IMMENSE":     12,
+		"SIZE_COLOSSAL":    13,
+		"SIZE_TITANIC":     14,
+		"SIZE_GALACTIC":    15,
 	}
 )
 
@@ -440,6 +455,9 @@ const (
 	AiDifficulty_AI_DIFFICULTY_NORMAL      AiDifficulty = 2
 	AiDifficulty_AI_DIFFICULTY_HARD        AiDifficulty = 3
 	AiDifficulty_AI_DIFFICULTY_CHEATER     AiDifficulty = 4
+	AiDifficulty_AI_DIFFICULTY_SKILLED     AiDifficulty = 5
+	AiDifficulty_AI_DIFFICULTY_ADVANCED    AiDifficulty = 6
+	AiDifficulty_AI_DIFFICULTY_ELITE       AiDifficulty = 7
 )
 
 // Enum value maps for AiDifficulty.
@@ -450,6 +468,9 @@ var (
 		2: "AI_DIFFICULTY_NORMAL",
 		3: "AI_DIFFICULTY_HARD",
 		4: "AI_DIFFICULTY_CHEATER",
+		5: "AI_DIFFICULTY_SKILLED",
+		6: "AI_DIFFICULTY_ADVANCED",
+		7: "AI_DIFFICULTY_ELITE",
 	}
 	AiDifficulty_value = map[string]int32{
 		"AI_DIFFICULTY_UNSPECIFIED": 0,
@@ -457,6 +478,9 @@ var (
 		"AI_DIFFICULTY_NORMAL":      2,
 		"AI_DIFFICULTY_HARD":        3,
 		"AI_DIFFICULTY_CHEATER":     4,
+		"AI_DIFFICULTY_SKILLED":     5,
+		"AI_DIFFICULTY_ADVANCED":    6,
+		"AI_DIFFICULTY_ELITE":       7,
 	}
 )
 
@@ -1788,7 +1812,7 @@ const file_craig_stars_v1_common_proto_rawDesc = "" +
 	"\x1eGAME_STATE_GENERATING_UNIVERSE\x10\x02\x12\"\n" +
 	"\x1eGAME_STATE_WAITING_FOR_PLAYERS\x10\x03\x12\x1e\n" +
 	"\x1aGAME_STATE_GENERATING_TURN\x10\x04\x12$\n" +
-	" GAME_STATE_GENERATING_TURN_ERROR\x10\x05*\xd3\x01\n" +
+	" GAME_STATE_GENERATING_TURN_ERROR\x10\x05*\xac\x02\n" +
 	"\x04Size\x12\x14\n" +
 	"\x10SIZE_UNSPECIFIED\x10\x00\x12\r\n" +
 	"\tSIZE_TINY\x10\x01\x12\x12\n" +
@@ -1803,7 +1827,12 @@ const file_craig_stars_v1_common_proto_rawDesc = "" +
 	"\x0fSIZE_LARGE_WIDE\x10\b\x12\r\n" +
 	"\tSIZE_HUGE\x10\t\x12\x12\n" +
 	"\x0eSIZE_HUGE_WIDE\x10\n" +
-	"*q\n" +
+	"\x12\r\n" +
+	"\tSIZE_VAST\x10\v\x12\x10\n" +
+	"\fSIZE_IMMENSE\x10\f\x12\x11\n" +
+	"\rSIZE_COLOSSAL\x10\r\x12\x10\n" +
+	"\fSIZE_TITANIC\x10\x0e\x12\x11\n" +
+	"\rSIZE_GALACTIC\x10\x0f*q\n" +
 	"\aDensity\x12\x17\n" +
 	"\x13DENSITY_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eDENSITY_SPARSE\x10\x01\x12\x12\n" +
@@ -1825,13 +1854,16 @@ const file_craig_stars_v1_common_proto_rawDesc = "" +
 	"\x19NEW_GAME_PLAYER_TYPE_HOST\x10\x01\x12\x1e\n" +
 	"\x1aNEW_GAME_PLAYER_TYPE_GUEST\x10\x02\x12\x1d\n" +
 	"\x19NEW_GAME_PLAYER_TYPE_OPEN\x10\x03\x12\x1b\n" +
-	"\x17NEW_GAME_PLAYER_TYPE_AI\x10\x04*\x92\x01\n" +
+	"\x17NEW_GAME_PLAYER_TYPE_AI\x10\x04*\xe2\x01\n" +
 	"\fAiDifficulty\x12\x1d\n" +
 	"\x19AI_DIFFICULTY_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12AI_DIFFICULTY_EASY\x10\x01\x12\x18\n" +
 	"\x14AI_DIFFICULTY_NORMAL\x10\x02\x12\x16\n" +
 	"\x12AI_DIFFICULTY_HARD\x10\x03\x12\x19\n" +
-	"\x15AI_DIFFICULTY_CHEATER\x10\x04*j\n" +
+	"\x15AI_DIFFICULTY_CHEATER\x10\x04\x12\x19\n" +
+	"\x15AI_DIFFICULTY_SKILLED\x10\x05\x12\x1a\n" +
+	"\x16AI_DIFFICULTY_ADVANCED\x10\x06\x12\x17\n" +
+	"\x13AI_DIFFICULTY_ELITE\x10\a*j\n" +
 	"\n" +
 	"PlayerType\x12\x1b\n" +
 	"\x17PLAYER_TYPE_UNSPECIFIED\x10\x00\x12\x12\n" +

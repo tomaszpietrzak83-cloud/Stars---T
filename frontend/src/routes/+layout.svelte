@@ -15,6 +15,7 @@
 	import '../css/mapobjects.css';
 	import '../css/planets.css';
 	import '../css/techs.css';
+	import '../css/eee-techs.css';
 	import { UserStatuses } from '#lib/types/User.js';
 
 	type Props = { children?: Snippet };

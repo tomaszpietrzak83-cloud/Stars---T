@@ -19,10 +19,10 @@
 					><GitHub class="fill-base-content size-5 " /></a
 				>
 			</div>
-			<h1 class="text-center text-5xl font-bold text-accent">craig-stars</h1>
+			<h1 class="text-center text-5xl font-bold text-accent">tomek-stars</h1>
 			<div class="flex flex-col md:flex-row py-6">
 				<div>
-					A clone of <a href="https://wiki.starsautohost.org/" class="cs-link">Stars!</a>, an
+					Based on Craig (sirgwain)’s craig-stars, a clone of <a href="https://wiki.starsautohost.org/" class="cs-link">Stars!</a>, an
 					interstellar, turn based strategy game and a member of the 4<span class="text-success"
 						>X</span
 					>

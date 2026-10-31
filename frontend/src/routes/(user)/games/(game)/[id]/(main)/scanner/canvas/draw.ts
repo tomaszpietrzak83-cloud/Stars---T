@@ -5,6 +5,7 @@
  */
 import type { Universe } from '#lib/services/Universe.js';
 import { StargateWarpSpeed } from '#lib/types/Consts.js';
+import { getStrategicSpeed, getObservedSpeed } from '#lib/types/Fleet.js';
 import { MapObjectType, type Fleet, type Minefield, type Waypoint } from '#lib/types/cs-proto.js';
 import {
 	equal,
@@ -331,7 +332,9 @@ function drawWaypointPaths(ctx: CanvasRenderingContext2D, view: ScannerView, fra
 					wp1.position,
 					from,
 					points[i],
-					wp1.warpSpeed,
+					frame.commandedMapObject?.mapObject?.type === MapObjectType.FLEET
+						? getStrategicSpeed(frame.commandedMapObject as Fleet, wp1.warpSpeed)
+						: wp1.warpSpeed * wp1.warpSpeed,
 					width,
 					segment.start,
 					segment.end,
@@ -448,16 +451,15 @@ function drawYearTicks(
 	to: Position | undefined,
 	p0: ScreenPoint,
 	p1: ScreenPoint,
-	warpSpeed: number,
+	yearDist: number,
 	lineWidth: number,
 	start: number,
 	end: number,
 	returnOverlaps: { start: number; end: number }[]
 ) {
-	if (warpSpeed < 1 || warpSpeed > 10) {
+	if (yearDist <= 0) {
 		return;
 	}
-	const yearDist = warpSpeed * warpSpeed;
 	const legDist = Math.hypot(
 		Number(to?.x ?? 0) - Number(from?.x ?? 0),
 		Number(to?.y ?? 0) - Number(from?.y ?? 0)
@@ -860,7 +862,9 @@ function drawWarpLine(ctx: CanvasRenderingContext2D, view: ScannerView, frame: S
 		color = colors.mysteryTrader;
 	}
 
-	const yearDist = moving.warpSpeed * moving.warpSpeed;
+	const yearDist = type === MapObjectType.FLEET
+		? getObservedSpeed(mo as Fleet)
+		: moving.warpSpeed * moving.warpSpeed;
 	const heading = moving.heading;
 	const origin = mo.mapObject.position;
 	const points = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5].map((year) =>

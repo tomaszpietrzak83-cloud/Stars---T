@@ -1,0 +1,163 @@
+package cs
+
+import (
+	"encoding/json"
+	"fmt"
+	"math"
+	"slices"
+)
+
+const safetyTag = "automatic-safety"
+
+type automaticSafetyJob struct {
+	Kind   string      `json:"kind"`
+	Orders FleetOrders `json:"orders"`
+	Status string      `json:"status"`
+}
+
+func (fleet *Fleet) InAutomaticSafety() bool { return fleet.GetTag(safetyTag) != "" }
+func fleetDamagePercent(fleet *Fleet) int {
+	worst := 0
+	for _, token := range fleet.Tokens {
+		if token.QuantityDamaged > 0 && token.design != nil && token.design.Spec.Armor > 0 {
+			worst = max(worst, int(math.Ceil(100*token.Damage/float64(token.design.Spec.Armor))))
+		}
+	}
+	return worst
+}
+
+// Use only fresh visible courses, never hidden enemy orders. Closest approach
+// checks simultaneous movement during this turn instead of crossing lines alone.
+func interceptionThreat(player *Player, fleet *Fleet) int {
+	ours := VectorFloat64{}
+	if len(fleet.Waypoints) > 1 {
+		wp := fleet.Waypoints[1]
+		speed := min(fleet.StrategicSpeed(wp.WarpSpeed), fleet.Position.DistanceTo(wp.Position))
+		ours = wp.Position.Subtract(fleet.Position).Normalized().Scale(speed)
+	}
+	threat := 0
+	for _, enemy := range player.FleetIntels {
+		if enemy == nil || enemy.Delete || player.IsFriend(enemy.PlayerNum) || enemy.ReportAge != 0 || !patrolReportedCombatant(player, enemy) || enemy.WarpSpeed < 1 || enemy.WarpSpeed > 10 {
+			continue
+		}
+		speed := enemy.observedStrategicSpeed()
+		ev := enemy.Heading.Scale(speed)
+		dx, dy := float64(enemy.Position.X-fleet.Position.X), float64(enemy.Position.Y-fleet.Position.Y)
+		vx, vy := ev.X-ours.X, ev.Y-ours.Y
+		den := vx*vx + vy*vy
+		if den == 0 {
+			if math.Hypot(dx, dy) <= 3 {
+				threat = min(1_000_000_000, threat+patrolReportedPower(player, enemy))
+			}
+			continue
+		}
+		at := -(dx*vx + dy*vy) / den
+		if at < 0 || at > 1 {
+			continue
+		}
+		if math.Hypot(dx+vx*at, dy+vy*at) <= 3 {
+			threat = min(1_000_000_000, threat+patrolReportedPower(player, enemy))
+		}
+	}
+	return threat
+}
+func (t *turnGenerator) planAutomaticSafety() {
+	for _, player := range t.game.Players {
+		for _, fleet := range t.game.getFleets(player.Num) {
+			if !isAutomaticFleet(player, fleet) || fleet.Starbase || fleet.InDesignMaintenance() {
+				continue
+			}
+			var job automaticSafetyJob
+			active := json.Unmarshal([]byte(fleet.GetTag(safetyTag)), &job) == nil
+			damage := fleetDamagePercent(fleet)
+			threat := interceptionThreat(player, fleet)
+			defenders := 0
+			for _, member := range convoyMembers(player, fleet, t.game.getFleets(player.Num)) {
+				if member.Spec.HasWeapons {
+					defenders += patrolPower(member)
+				}
+			}
+			role := player.Automation.FleetRoles[fleet.Num]
+			canStand := role != "scout" && colonizationMode(role) == "" && defenders > threat*3/2
+			intercepted := !player.Automation.DisableInterceptionEvasion && threat > 0 && !canStand
+			needsRepair := !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()
+			if active && ((job.Kind == "repair" && (damage == 0 || player.Automation.DisableAutomaticRepair)) || (job.Kind == "evade" && !intercepted)) {
+				delete(fleet.Tags, safetyTag)
+				delete(fleet.Tags, fuelStatusTag)
+				orders := job.Orders
+				orders.Waypoints = slices.Clone(orders.Waypoints)
+				if len(orders.Waypoints) > 0 {
+					orders.Waypoints[0] = Waypoint{Position: fleet.Position}
+				}
+				fleet.FleetOrders = orders
+				fleet.ComputeFuelUsage(player)
+				active = false
+			}
+			if !active && !needsRepair && !intercepted {
+				continue
+			}
+			if !active {
+				job.Orders = fleet.FleetOrders
+				job.Orders.Waypoints = slices.Clone(fleet.Waypoints)
+				job.Kind = "evade"
+			}
+			if needsRepair {
+				job.Kind = "repair"
+			}
+			// A tanker under repair cannot promise delivery to its former customers.
+			if tankerJob := readTankerJob(fleet); tankerJob != nil {
+				t.releaseTankerCustomers(player, fleet, tankerJob)
+				delete(fleet.Tags, tankerJobTag)
+			}
+			delete(fleet.Tags, tankerAwaitTag)
+			delete(fleet.Tags, fuelAwaitResumeTag)
+			delete(fleet.Tags, fuelRequestTag)
+			t.releaseEscorts(player, fleet)
+			if fleet.GetTag(escortTag) != "" {
+				delete(fleet.Tags, escortTag)
+			}
+			var chosen *Planet
+			var route *expeditionRoute
+			for _, planet := range expeditionStations(player, fleet) {
+				// Retreat must be permitted out of the currently threatened corridor.
+				if intercepted && planet.Position == fleet.Position {
+					continue
+				}
+				if knownRouteThreat(player, planet.Position, planet.Position) > 0 {
+					continue
+				}
+				candidate := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{AllowThreat: true})
+				if candidate == nil {
+					continue
+				}
+				if route == nil || candidate.Turns < route.Turns || candidate.Turns == route.Turns && planet.Num < chosen.Num {
+					chosen, route = planet, candidate
+				}
+			}
+			if route == nil && intercepted {
+				if escape := t.planOpenSpaceEscape(player, fleet); escape != nil {
+					applyExpeditionRoute(player, fleet, escape)
+					job.Status = "Evading interception in open space; return fuel protected"
+					raw, _ := json.Marshal(job)
+					fleet.SetTag(safetyTag, string(raw))
+					fleet.SetTag(fuelStatusTag, job.Status)
+					continue
+				}
+			}
+			if route == nil {
+				holdAutomaticFleet(player, fleet, "Retreat waiting for a reachable repair dock")
+				requestAutomaticRescue(player, fleet, true)
+				job.Status = "Retreat needs tanker assistance"
+			} else {
+				applyExpeditionRoute(player, fleet, route)
+				job.Status = fmt.Sprintf("%s: whole fleet returning to %s (%d%% worst ship damage)", job.Kind, chosen.Name, damage)
+				if chosen.Position == fleet.Position {
+					holdAutomaticFleet(player, fleet, job.Status)
+				}
+			}
+			raw, _ := json.Marshal(job)
+			fleet.SetTag(safetyTag, string(raw))
+			fleet.SetTag(fuelStatusTag, job.Status)
+		}
+	}
+}

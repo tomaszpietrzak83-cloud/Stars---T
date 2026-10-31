@@ -109,6 +109,7 @@
 					<!-- icon and tech requirements row-->
 					<TechAvatar tech={techLike} hullTooltip={true} />
 					<TechLevelRequirements tech={techLike} {player} />
+					{#if techLike.tech?.requirements?.acquiredTechPrerequisite}<p class="text-xs mt-2">Trader prerequisite: {techLike.tech.requirements.acquiredTechPrerequisite}</p>{/if}
 					{#if showResearchCost && researchCost}
 						<div
 							class="flex flex-row justify-between gap-1"

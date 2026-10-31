@@ -444,6 +444,11 @@ func NewRulesWithSeed(seed int64) Rules {
 			SizeLargeWide:  1.0 / 12,
 			SizeHuge:       1.0 / 11,
 			SizeHugeWide:   1.0 / 11,
+			SizeVast:       1.0 / 10,
+			SizeImmense:    1.0 / 9,
+			SizeColossal:   1.0 / 8,
+			SizeTitanic:    1.0 / 7,
+			SizeGalactic:   1.0 / 6,
 		},
 		RandomMineralDepositMaxConcentration: 180, // deposits only increase concentrations below 180
 		RandomMineralDepositMinYear:          10,  // no deposits in the first 10 years
@@ -575,6 +580,11 @@ func NewRulesWithSeed(seed int64) Rules {
 			SizeLargeWide:  2,
 			SizeHuge:       2,
 			SizeHugeWide:   2,
+			SizeVast:       4,
+			SizeImmense:    5,
+			SizeColossal:   8,
+			SizeTitanic:    12,
+			SizeGalactic:   18,
 		},
 		WormholePairsForSize: map[Size]int{
 			SizeTiny:       1,
@@ -587,6 +597,11 @@ func NewRulesWithSeed(seed int64) Rules {
 			SizeLargeWide:  5,
 			SizeHuge:       6,
 			SizeHugeWide:   6,
+			SizeVast:       12,
+			SizeImmense:    15,
+			SizeColossal:   24,
+			SizeTitanic:    38,
+			SizeGalactic:   54,
 		},
 		MinefieldStatsByType: map[MinefieldType]MinefieldStats{
 			MinefieldTypeStandard: {
@@ -729,6 +744,16 @@ func (rules *Rules) GetArea(size Size) (Vector, error) {
 		return Vector{2000, 2000}, nil
 	case SizeHugeWide:
 		return Vector{2500, 1500}, nil
+	case SizeVast:
+		return Vector{2800, 2800}, nil
+	case SizeImmense:
+		return Vector{3200, 3200}, nil
+	case SizeColossal:
+		return Vector{4000, 4000}, nil
+	case SizeTitanic:
+		return Vector{5000,5000},nil
+	case SizeGalactic:
+		return Vector{6000,6000},nil
 	}
 
 	return Vector{}, fmt.Errorf("unable to GetArea for Size: %v", size)

@@ -53,6 +53,20 @@ func (m *Race) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.EeeResearchField != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EeeResearchField))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe8
+	}
+	if m.EeeTraits != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EeeTraits))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe0
+	}
 	if len(m.Description) > 0 {
 		i -= len(m.Description)
 		copy(dAtA[i:], m.Description)
@@ -293,6 +307,13 @@ func (m *RaceSpec) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.EeeTraits != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EeeTraits))
+		i--
+		dAtA[i] = 0x4
+		i--
+		dAtA[i] = 0xd0
 	}
 	if m.EngineReliableSpeed != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EngineReliableSpeed))
@@ -1575,6 +1596,12 @@ func (m *Race) SizeVT() (n int) {
 	if l > 0 {
 		n += 2 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
+	if m.EeeTraits != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.EeeTraits))
+	}
+	if m.EeeResearchField != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.EeeResearchField))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1827,6 +1854,9 @@ func (m *RaceSpec) SizeVT() (n int) {
 	}
 	if m.EngineReliableSpeed != 0 {
 		n += 2 + protohelpers.SizeOfVarint(uint64(m.EngineReliableSpeed))
+	}
+	if m.EeeTraits != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.EeeTraits))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -2689,6 +2719,44 @@ func (m *Race) UnmarshalVT(dAtA []byte) error {
 			}
 			m.Description = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 28:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EeeTraits", wireType)
+			}
+			m.EeeTraits = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EeeTraits |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 29:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EeeResearchField", wireType)
+			}
+			m.EeeResearchField = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EeeResearchField |= TechField(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -4154,6 +4222,25 @@ func (m *RaceSpec) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.EngineReliableSpeed |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 74:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EeeTraits", wireType)
+			}
+			m.EeeTraits = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EeeTraits |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

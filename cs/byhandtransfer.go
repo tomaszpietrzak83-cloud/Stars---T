@@ -345,6 +345,9 @@ func (b byHandBucket) removeFuel(amount int) {
 func (t *cargoTransferer) addToBucket(s *byHandSettlement, b byHandBucket, cargoType CargoType, amount int) {
 	for _, fleet := range b.fleets {
 		added := min(amount, fleet.availableCargoSpace())
+		if cargoType == Colonists {
+			added = min(amount, fleet.availableColonistSpace())
+		}
 		fleet.Cargo = fleet.Cargo.AddAmount(cargoType, added)
 		amount -= added
 	}
@@ -640,6 +643,9 @@ func (t *cargoTransferer) settleByHandUnloads(s *byHandSettlement) (results []by
 				unloaded = amount
 				if capacity := dest.GetCargoCapacity(); capacity != Infinite {
 					unloaded = min(amount, max(0, capacity-dest.GetCargo().Total()))
+				}
+				if receiving, ok := dest.(*Fleet); ok && cargoType == Colonists {
+					unloaded = min(unloaded, receiving.availableColonistSpace())
 				}
 				if unloaded < amount {
 					status = CargoTransferStatusDestCargoCapacity

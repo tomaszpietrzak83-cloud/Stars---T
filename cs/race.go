@@ -18,6 +18,8 @@ type Race struct {
 	SpendLeftoverPointsOn SpendLeftoverPointsOn `json:"spendLeftoverPointsOn"`
 	PRT                   PRT                   `json:"prt"`
 	LRTs                  Bitmask               `json:"lrts"`
+	EEETraits             int                   `json:"eeeTraits,omitempty"`
+	EEEResearchField      TechField             `json:"eeeResearchField,omitempty"`
 	HabLow                Hab                   `json:"habLow"`
 	HabHigh               Hab                   `json:"habHigh"`
 	GrowthRate            int                   `json:"growthRate"`
@@ -88,6 +90,7 @@ func (rc ResearchCost) Get(field TechField) ResearchCostLevel {
 }
 
 type RaceSpec struct {
+	EEETraits int `json:"eeeTraits,omitempty"`
 	MiniaturizationSpec
 	ScannerSpec
 	HabCenter                        Hab                    `json:"habCenter,omitzero"`
@@ -809,6 +812,7 @@ func ComputeRaceSpec(race *Race, rules *Rules) RaceSpec {
 		},
 	}
 
+	race.applyEEESpec(&spec)
 	return spec
 }
 
@@ -1114,7 +1118,7 @@ func (race *Race) ComputeRacePoints(startingPoints int) int {
 		points -= 100
 	}
 
-	return points / 3
+	return (points - 3*race.EEECost()) / 3
 
 }
 
@@ -1319,6 +1323,9 @@ func (race *Race) ComputeLeftoverRacePoints(startingPoints int) (leftoverPoints 
 
 // Validate cleans up the text a player wrote for a race and returns an error if it can't be saved
 func (race *Race) Validate() error {
+	if err := race.ValidateEEE(); err != nil {
+		return err
+	}
 	race.Description = strings.TrimSpace(race.Description)
 	if utf8.RuneCountInString(race.Description) > MaxDescriptionLength {
 		return fmt.Errorf("race description is longer than %d characters", MaxDescriptionLength)

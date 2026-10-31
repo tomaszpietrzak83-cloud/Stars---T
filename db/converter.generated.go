@@ -768,6 +768,8 @@ func (c *GameConverter) ConvertGamePlayer(source *cs.Player) generated.Player {
 		generatedPlayer.TransportPlans = GameTransportPlansToTransportPlans((*source).PlayerPlans.TransportPlans)
 		generatedPlayer.Relations = GamePlayerRelationshipsToPlayerRelationships((*source).Relations)
 		generatedPlayer.CargoTransfers = GameCargoTransfersToCargoTransfers((*source).PlayerOrders.CargoTransfers)
+		generatedPlayer.DesignMaintenance = GameMaintenanceToMaintenance((*source).PlayerOrders.DesignMaintenance)
+		generatedPlayer.Automation = GameAutomationToAutomation((*source).PlayerOrders.Automation)
 		generatedPlayer.Messages = GamePlayerMessagesToPlayerMessages((*source).Messages)
 		generatedPlayer.BattleRecords = GameBattleRecordsToBattleRecords((*source).Intels.BattleRecords)
 		generatedPlayer.PlayerIntels = GamePlayerIntelsToPlayerIntels((*source).Intels.PlayerIntels)
@@ -874,6 +876,8 @@ func (c *GameConverter) ConvertGamePlayerToCreateParams(source *cs.Player) gener
 		generatedCreatePlayerParams.ProductionPlans = GameProductionPlansToProductionPlans((*source).PlayerPlans.ProductionPlans)
 		generatedCreatePlayerParams.TransportPlans = GameTransportPlansToTransportPlans((*source).PlayerPlans.TransportPlans)
 		generatedCreatePlayerParams.Relations = GamePlayerRelationshipsToPlayerRelationships((*source).Relations)
+		generatedCreatePlayerParams.Automation = GameAutomationToAutomation((*source).PlayerOrders.Automation)
+		generatedCreatePlayerParams.DesignMaintenance = GameMaintenanceToMaintenance((*source).PlayerOrders.DesignMaintenance)
 		generatedCreatePlayerParams.CargoTransfers = GameCargoTransfersToCargoTransfers((*source).PlayerOrders.CargoTransfers)
 		generatedCreatePlayerParams.Messages = GamePlayerMessagesToPlayerMessages((*source).Messages)
 		generatedCreatePlayerParams.BattleRecords = GameBattleRecordsToBattleRecords((*source).Intels.BattleRecords)
@@ -933,6 +937,8 @@ func (c *GameConverter) ConvertGamePlayerToUpdateParams(source *cs.Player) gener
 		generatedUpdatePlayerParams.ProductionPlans = GameProductionPlansToProductionPlans((*source).PlayerPlans.ProductionPlans)
 		generatedUpdatePlayerParams.TransportPlans = GameTransportPlansToTransportPlans((*source).PlayerPlans.TransportPlans)
 		generatedUpdatePlayerParams.Relations = GamePlayerRelationshipsToPlayerRelationships((*source).Relations)
+		generatedUpdatePlayerParams.Automation = GameAutomationToAutomation((*source).PlayerOrders.Automation)
+		generatedUpdatePlayerParams.DesignMaintenance = GameMaintenanceToMaintenance((*source).PlayerOrders.DesignMaintenance)
 		generatedUpdatePlayerParams.CargoTransfers = GameCargoTransfersToCargoTransfers((*source).PlayerOrders.CargoTransfers)
 		generatedUpdatePlayerParams.Messages = GamePlayerMessagesToPlayerMessages((*source).Messages)
 		generatedUpdatePlayerParams.BattleRecords = GameBattleRecordsToBattleRecords((*source).Intels.BattleRecords)
@@ -973,6 +979,8 @@ func (c *GameConverter) ConvertGameRace(source *cs.Race) generated.Race {
 		generatedRace.SpendLeftoverPointsOn = (*source).SpendLeftoverPointsOn
 		generatedRace.Prt = (*source).PRT
 		generatedRace.Lrts = c.csBitmaskToCsBitmask((*source).LRTs)
+		generatedRace.EeeTraits = IntToInt64((*source).EEETraits)
+		generatedRace.EeeResearchField = string((*source).EEEResearchField)
 		generatedRace.HabLowGrav = IntToInt64((*source).HabLow.Grav)
 		generatedRace.HabLowTemp = IntToInt64((*source).HabLow.Temp)
 		generatedRace.HabLowRad = IntToInt64((*source).HabLow.Rad)
@@ -1037,6 +1045,8 @@ func (c *GameConverter) ConvertGameRaceToCreateParams(source *cs.Race) generated
 		generatedCreateRaceParams.ResearchCostBiotechnology = c.csResearchCostLevelToCsResearchCostLevel((*source).ResearchCost.Biotechnology)
 		generatedCreateRaceParams.TechsStartHigh = (*source).TechsStartHigh
 		generatedCreateRaceParams.Description = (*source).Description
+		generatedCreateRaceParams.EeeTraits = IntToInt64((*source).EEETraits)
+		generatedCreateRaceParams.EeeResearchField = string((*source).EEEResearchField)
 	}
 	return generatedCreateRaceParams
 }
@@ -1075,6 +1085,8 @@ func (c *GameConverter) ConvertGameRaceToUpdateParams(source *cs.Race) generated
 		generatedUpdateRaceParams.ResearchCostBiotechnology = c.csResearchCostLevelToCsResearchCostLevel((*source).ResearchCost.Biotechnology)
 		generatedUpdateRaceParams.TechsStartHigh = (*source).TechsStartHigh
 		generatedUpdateRaceParams.Description = (*source).Description
+		generatedUpdateRaceParams.EeeTraits = IntToInt64((*source).EEETraits)
+		generatedUpdateRaceParams.EeeResearchField = string((*source).EEEResearchField)
 		generatedUpdateRaceParams.ID = (*source).DBObject.ID
 	}
 	return generatedUpdateRaceParams
@@ -1669,6 +1681,8 @@ func (c *GameConverter) ConvertRace(source generated.Race) cs.Race {
 	csRace.SpendLeftoverPointsOn = source.SpendLeftoverPointsOn
 	csRace.PRT = source.Prt
 	csRace.LRTs = c.csBitmaskToCsBitmask(source.Lrts)
+	csRace.EEETraits = Int64ToInt(source.EeeTraits)
+	csRace.EEEResearchField = cs.TechField(source.EeeResearchField)
 	csRace.HabLow = ExtendHabLow(source)
 	csRace.HabHigh = ExtendHabHigh(source)
 	csRace.GrowthRate = Int64ToInt(source.GrowthRate)
@@ -1852,6 +1866,8 @@ func (c *GameConverter) generatedGameToCsDBObject(source generated.Game) cs.DBOb
 }
 func (c *GameConverter) generatedGetLightPlayerForGameRowToCsPlayerOrders(source generated.GetLightPlayerForGameRow) cs.PlayerOrders {
 	var csPlayerOrders cs.PlayerOrders
+	csPlayerOrders.Automation = AutomationToGameAutomation(source.Automation)
+	csPlayerOrders.DesignMaintenance = MaintenanceToGameMaintenance(source.DesignMaintenance)
 	csPlayerOrders.Researching = source.Researching
 	csPlayerOrders.NextResearchField = source.NextResearchField
 	csPlayerOrders.ResearchAmount = Int64ToInt(source.ResearchAmount)
@@ -1981,6 +1997,8 @@ func (c *GameConverter) generatedPlayerToCsIntels(source generated.Player) cs.In
 }
 func (c *GameConverter) generatedPlayerToCsPlayerOrders(source generated.Player) cs.PlayerOrders {
 	var csPlayerOrders cs.PlayerOrders
+	csPlayerOrders.Automation = AutomationToGameAutomation(source.Automation)
+	csPlayerOrders.DesignMaintenance = MaintenanceToGameMaintenance(source.DesignMaintenance)
 	csPlayerOrders.Researching = source.Researching
 	csPlayerOrders.NextResearchField = source.NextResearchField
 	csPlayerOrders.ResearchAmount = Int64ToInt(source.ResearchAmount)

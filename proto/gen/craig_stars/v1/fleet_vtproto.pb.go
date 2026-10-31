@@ -5,8 +5,10 @@
 package craig_starsv1
 
 import (
+	binary "encoding/binary"
 	fmt "fmt"
 	io "io"
+	math "math"
 
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -48,6 +50,14 @@ func (m *Fleet) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.ObservedSpeed != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.ObservedSpeed))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x81
 	}
 	if m.Spec != nil {
 		size, err := m.Spec.MarshalToSizedBufferVT(dAtA[:i])
@@ -698,6 +708,9 @@ func (m *Fleet) SizeVT() (n int) {
 		l = m.Spec.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
+	if m.ObservedSpeed != 0 {
+		n += 10
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1343,6 +1356,17 @@ func (m *Fleet) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 16:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ObservedSpeed", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.ObservedSpeed = float64(math.Float64frombits(v))
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

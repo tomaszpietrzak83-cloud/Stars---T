@@ -9,7 +9,7 @@
 	} from '#lib/types/cs-proto.js';
 	import FallbackMessageDetail from './FallbackMessageDetail.svelte';
 
-	const { player, universe } = getGameContext();
+	const { game, player, universe } = getGameContext();
 
 	type Props = {
 		message: PlayerMessage;
@@ -143,4 +143,8 @@
 	{/if}
 {:else}
 	<FallbackMessageDetail {message} />
+{/if}
+
+{#if $universe.getBattle(message.battleNum)}
+ <a class="btn btn-sm btn-primary ml-2" href={`/games/${$game.id}/battles/${message.battleNum}`}>Watch battle</a>
 {/if}

@@ -65,8 +65,22 @@ func (s *fleetService) UpdateFleetOrders(ctx context.Context, req *connect.Reque
 	fleet.InjectDesigns(player.Designs)
 
 	orders := converter.C.ConvertFleetOrders(req.Msg.FleetOrders)
+	if orders == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("fleet orders are required"))
+	}
+	fleet.Spec = cs.ComputeFleetSpec(&game.Rules, player, fleet)
+	for _, waypoint := range orders.Waypoints {
+		if !fleet.CanPerformWaypointTask(waypoint.Task) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("fleet lacks equipment for waypoint task %s", waypoint.Task))
+		}
+	}
+	if fleet.InDesignMaintenance() {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("clear design maintenance before changing this fleet's orders"))
+	}
 	orderer := cs.NewOrderer()
 	orderer.UpdateFleetOrders(player, fleet, *orders)
+	delete(fleet.Tags, "logistics-job")
+	delete(fleet.Tags, "escort-for")
 
 	if err := dbWriteClient.SaveFleet(ctx, fleet); err != nil {
 		slog.Error("update fleet in database", slog.Any("error", err), slog.Int64("ID", fleet.ID))
@@ -122,6 +136,11 @@ func (s *fleetService) MergeFleets(ctx context.Context, req *connect.Request[cra
 	// Execute the merge
 	orderer := cs.NewOrderer()
 	fleets = append([]*cs.Fleet{fleet}, fleets...)
+	for _, member := range fleets {
+		if player.FleetInActiveAssembly(member) {
+			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("edit or cancel the active fleet composition before manually merging its ships"))
+		}
+	}
 
 	updatedFleet, err := orderer.Merge(&game.Rules, player, fleets)
 	if err != nil {
@@ -200,6 +219,9 @@ func (s *fleetService) SplitAllFleets(ctx context.Context, req *connect.Request[
 	}
 
 	// Execute the split all
+	if player.FleetInActiveAssembly(fleet) {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("edit or cancel the active fleet composition before manually splitting its ships"))
+	}
 	orderer := cs.NewOrderer()
 	newFleets, err := orderer.SplitAll(&game.Rules, player, fleets, fleet)
 	if err != nil {
@@ -255,6 +277,9 @@ func (s *fleetService) SplitFleet(ctx context.Context, req *connect.Request[crai
 	}
 
 	// Convert proto tokens to CS tokens
+	if player.FleetInActiveAssembly(sourceFleet) || destFleet != nil && player.FleetInActiveAssembly(destFleet) {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("edit or cancel the active fleet composition before manually splitting its ships"))
+	}
 	sourceTokens := converter.C.ConvertShipTokens(req.Msg.SourceTokens)
 	destTokens := converter.C.ConvertShipTokens(req.Msg.DestTokens)
 
@@ -372,6 +397,10 @@ func (s *fleetService) saveSplitMergeFleets(ctx context.Context, player *cs.Play
 			}
 		}
 
+		// Persist inherited roles in the same transaction as the new fleets.
+		if err := c.UpdatePlayerOrders(ctx, player); err != nil {
+			return err
+		}
 		// update by hand transfers
 		if err := c.UpdatePlayerCargoTransfers(ctx, player); err != nil {
 			return err

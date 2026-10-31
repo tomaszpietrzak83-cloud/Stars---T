@@ -24,6 +24,7 @@
 	import { select } from 'd3-selection';
 	import { zoom, ZoomTransform, type D3ZoomEvent, type ZoomBehavior } from 'd3-zoom';
 	import hotkeys from 'hotkeys-js';
+ import { rememberScannerViewport, recalledScannerViewport } from '#lib/services/scannerViewport.js';
 	import { onDestroy, onMount } from 'svelte';
 	import { derived as derivedStore } from 'svelte/store';
 	import MapObjectQuadTreeFinder, { type FinderEvent } from './MapObjectQuadTreeFinder.svelte';
@@ -85,7 +86,7 @@
 
 	// our map scales for .75 to 15x, but the icons for the planets and fleets shrink below 2x
 	const minZoom = 0.75;
-	const maxZoom = 15;
+	const maxZoom = 60;
 	const minObjectZoom = 2;
 	let scale = $state(1.5); // default zoom
 
@@ -356,8 +357,16 @@
 		zooming = true;
 	}
 
-	function handleZoomEnd() {
-		zooming = false;
+	function rememberViewport() {
+  if(!transform || !clientRect.width || !clientRect.height) return;
+  rememberScannerViewport(`${$game.id}:${$player.num}`,{
+   x:scaler.x.invert(transform.invertX(clientRect.width/2)),
+   y:scaler.y.invert(transform.invertY(clientRect.height/2)),scale
+  });
+ }
+ function handleZoomEnd() {
+  rememberViewport();
+  zooming = false;
 	}
 
 	// translate/zoom the display to a point on the map
@@ -809,14 +818,18 @@
 	onMount(() => {
 		clientRect = rect?.getBoundingClientRect() ?? { width: 100, height: 100 };
 
-		// setup zoom and translate to the zoomTarget
-		translateViewport($zoomTarget?.mapObject?.position ?? create(VectorSchema));
+		const saved=recalledScannerViewport(`${$game.id}:${$player.num}`);
+  if(saved) scale=saved.scale;
+  translateViewport(saved?{x:saved.x,y:saved.y}:($zoomTarget?.mapObject?.position ?? create(VectorSchema)));
 		enableDragAndZoom();
 
 		// setup asubscriber to draw the target X and move the viewport to a new target
 		// when the zoomTarget changes
-		const unsubscribeZoomTarget = zoomTarget.subscribe((target) => {
-			if (target) {
+		let initial=true;
+  const unsubscribeZoomTarget = zoomTarget.subscribe((target) => {
+   if(initial && saved) {initial=false;return;}
+   initial=false;
+   if (target) {
 				translateViewport(target.mapObject?.position ?? create(VectorSchema));
 				showTargetLocation();
 			}
@@ -831,6 +844,7 @@
 	});
 
 	onDestroy(() => {
+  rememberViewport();
 		clearTimeout(longPressTimer);
 		stopSwallowingClick();
 		hotkeys.unbind('v', 'root', showTargetLocation);

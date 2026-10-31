@@ -1,5 +1,6 @@
 <script lang="ts">
 	import HabChance from '#lib/components/game/race/HabChance.svelte';
+	import EEETraits from '#lib/components/game/race/EEETraits.svelte';
 	import LRTsDescriptions from '#lib/components/game/race/LRTsDescriptions.svelte';
 	import PRTDescription from '#lib/components/game/race/PRTDescription.svelte';
 	import Population from '#lib/components/icons/Population.svelte';
@@ -59,6 +60,7 @@
 	None
 {/if}
 
+{#if race.eeeTraits}<ItemTitle>EEE — Dodatkowe cechy rasy</ItemTitle><EEETraits {race} readOnly />{/if}
 <ItemTitle>Habitability</ItemTitle>
 
 <div class="flex flex-col gap-2">

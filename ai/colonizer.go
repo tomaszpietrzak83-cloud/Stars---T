@@ -160,7 +160,7 @@ func (ai *aiPlayer) getBestPlanetToColonize(fleet *cs.Fleet, colonizablePlanets 
 
 	// lowest weight wins
 	bestWeight := math.MaxFloat64
-	yearlyTravelDistance := float64(fleet.Spec.Engine.IdealSpeed * fleet.Spec.Engine.IdealSpeed)
+	yearlyTravelDistance := fleet.StrategicSpeed(fleet.Spec.Engine.IdealSpeed)
 
 	for _, intel := range colonizablePlanets {
 		habValue := ai.colonyHabitability(intel)
@@ -181,7 +181,7 @@ func (ai *aiPlayer) getBestPlanetToColonize(fleet *cs.Fleet, colonizablePlanets 
 			weight = 2 * (yearsToTravel * yearsToTravel) / float64(terraformHabValue)
 		}
 
-		if ai.AIDifficulty == cs.AIDifficultyHard || ai.AIDifficulty == cs.AIDifficultyCheater {
+		if cs.IsAdvancedAI(ai.AIDifficulty) {
 			// Rich colonies start factories sooner; use only minerals in explored intel.
 			weight /= 1 + float64(intel.MineralConcentration.Germanium+intel.MineralConcentration.Ironium)/200
 		}

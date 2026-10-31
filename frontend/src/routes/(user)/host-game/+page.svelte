@@ -1,7 +1,6 @@
 <script lang="ts">
 	import NewGame from '#lib/components/game/newgame/NewGame.svelte';
 	import { getColor } from '#lib/components/game/newgame/playerColors.js';
-	import { me } from '#lib/services/Stores.js';
 	import {
 		AiDifficulty,
 		NewGamePlayerSchema,
@@ -28,7 +27,6 @@
 		})
 	];
 
-	const name = $me.username ? `${$me.username}'s game` : undefined;
 </script>
 
-<NewGame {players} {name} />
+<NewGame {players} />

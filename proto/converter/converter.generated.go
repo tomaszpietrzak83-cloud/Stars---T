@@ -179,6 +179,7 @@ func (c *ProtoConverter) ConvertCSFleet(source *cs.Fleet) *v1.Fleet {
 		craig_starsv1Fleet.OrbitingPlanetNum = IntToInt32((*source).OrbitingPlanetNum)
 		craig_starsv1Fleet.Starbase = (*source).Starbase
 		craig_starsv1Fleet.Spec = c.ConvertCSFleetSpec((*source).Spec)
+		craig_starsv1Fleet.ObservedSpeed = (*source).ObservedSpeed
 		pCraig_starsv1Fleet = &craig_starsv1Fleet
 	}
 	return pCraig_starsv1Fleet
@@ -695,6 +696,8 @@ func (c *ProtoConverter) ConvertCSRace(source cs.Race) *v1.Race {
 	craig_starsv1Race.ResearchCost = c.csResearchCostToPCraig_starsv1ResearchCost(source.ResearchCost)
 	craig_starsv1Race.TechsStartHigh = source.TechsStartHigh
 	craig_starsv1Race.Description = source.Description
+	craig_starsv1Race.EeeTraits = IntToInt32(source.EEETraits)
+	craig_starsv1Race.EeeResearchField = CSTechFieldToTechField(source.EEEResearchField)
 	return &craig_starsv1Race
 }
 func (c *ProtoConverter) ConvertCSRaceSpec(source cs.RaceSpec) *v1.RaceSpec {
@@ -777,6 +780,7 @@ func (c *ProtoConverter) ConvertCSRaceSpec(source cs.RaceSpec) *v1.RaceSpec {
 	craig_starsv1RaceSpec.ShieldRegenerationRate = source.ShieldRegenerationRate
 	craig_starsv1RaceSpec.EngineFailureRate = source.EngineFailureRate
 	craig_starsv1RaceSpec.EngineReliableSpeed = IntToInt32(source.EngineReliableSpeed)
+	craig_starsv1RaceSpec.EeeTraits = IntToInt32(source.EEETraits)
 	return &craig_starsv1RaceSpec
 }
 func (c *ProtoConverter) ConvertCSRaces(source []cs.Race) []*v1.Race {
@@ -1020,6 +1024,7 @@ func (c *ProtoConverter) ConvertCSShipDesignSpec(source cs.ShipDesignSpec) *v1.S
 		}
 	}
 	craig_starsv1ShipDesignSpec.ShipClass = CSShipClassToShipClass(source.ShipClass)
+	craig_starsv1ShipDesignSpec.MineralCargoBonus = IntToInt32(source.MineralCargoBonus)
 	return &craig_starsv1ShipDesignSpec
 }
 func (c *ProtoConverter) ConvertCSShipDesigns(source []*cs.ShipDesign) []*v1.ShipDesign {
@@ -1155,6 +1160,7 @@ func (c *ProtoConverter) ConvertCSTechHullComponentP(source *cs.TechHullComponen
 				craig_starsv1TechHullComponent.FuelUsage[i] = IntToInt32((*source).Engine.FuelUsage[i])
 			}
 		}
+		craig_starsv1TechHullComponent.StrategicSpeedFactor = (*source).Engine.StrategicSpeedFactor
 		pCraig_starsv1TechHullComponent = &craig_starsv1TechHullComponent
 	}
 	return pCraig_starsv1TechHullComponent
@@ -1339,6 +1345,7 @@ func (c *ProtoConverter) ConvertCost(source *v1.Cost) cs.CostGeneric[int] {
 func (c *ProtoConverter) ConvertEngine(source *v1.TechHullComponent) cs.Engine {
 	var csEngine cs.Engine
 	if source != nil {
+		csEngine.StrategicSpeedFactor = (*source).StrategicSpeedFactor
 		csEngine.IdealSpeed = Int32ToInt((*source).IdealSpeed)
 		csEngine.FreeSpeed = Int32ToInt((*source).FreeSpeed)
 		csEngine.MaxSafeSpeed = Int32ToInt((*source).MaxSafeSpeed)
@@ -1366,6 +1373,7 @@ func (c *ProtoConverter) ConvertFleet(source *v1.Fleet) *cs.Fleet {
 		csFleet.Tokens = c.ConvertShipTokens((*source).Tokens)
 		csFleet.Heading = c.ConvertVectorFloat64((*source).Heading)
 		csFleet.WarpSpeed = Int32ToInt((*source).WarpSpeed)
+		csFleet.ObservedSpeed = (*source).ObservedSpeed
 		csFleet.PreviousPosition = c.pCraig_starsv1VectorToPCsVectorGeneric((*source).PreviousPosition)
 		csFleet.OrbitingPlanetNum = Int32ToInt((*source).OrbitingPlanetNum)
 		csFleet.Starbase = (*source).Starbase
@@ -1448,6 +1456,7 @@ func (c *ProtoConverter) ConvertGameDBObject(source *v1.Game) cs.DBObject {
 func (c *ProtoConverter) ConvertGameSettings(source *v1.GameSettings) cs.GameSettings {
 	var csGameSettings cs.GameSettings
 	if source != nil {
+		csGameSettings.HostStartPosition = (*source).HostStartPosition
 		csGameSettings.Name = (*source).Name
 		csGameSettings.Public = (*source).Public
 		csGameSettings.QuickStartTurns = Int32ToInt((*source).QuickStartTurns)
@@ -1890,6 +1899,8 @@ func (c *ProtoConverter) ConvertPlayerNote(source *v1.PlayerNote) *cs.PlayerNote
 func (c *ProtoConverter) ConvertPlayerOrders(source *v1.PlayerOrders) cs.PlayerOrders {
 	var csPlayerOrders cs.PlayerOrders
 	if source != nil {
+		csPlayerOrders.Automation = c.pCraig_starsv1LogisticsAutomationToCsLogisticsAutomation((*source).Automation)
+		csPlayerOrders.DesignMaintenance = c.mapInt32Int32ToCsDesignMaintenance((*source).DesignMaintenance)
 		csPlayerOrders.Researching = TechFieldToCSTechField((*source).Researching)
 		csPlayerOrders.NextResearchField = NextResearchFieldToCSNextResearchField((*source).NextResearchField)
 		csPlayerOrders.ResearchAmount = Int32ToInt((*source).ResearchAmount)
@@ -1985,6 +1996,8 @@ func (c *ProtoConverter) ConvertRaceP(source *v1.Race) *cs.Race {
 		csRace.SpendLeftoverPointsOn = SpendLeftoverPointsOnToCSSpendLeftoverPointsOn((*source).SpendLeftoverPointsOn)
 		csRace.PRT = PRTToCSPRT((*source).Prt)
 		csRace.LRTs = Int32ToBitmask((*source).Lrts)
+		csRace.EEETraits = Int32ToInt((*source).EeeTraits)
+		csRace.EEEResearchField = TechFieldToCSTechField((*source).EeeResearchField)
 		csRace.HabLow = c.ConvertHab((*source).HabLow)
 		csRace.HabHigh = c.ConvertHab((*source).HabHigh)
 		csRace.GrowthRate = Int32ToInt((*source).GrowthRate)
@@ -2150,6 +2163,7 @@ func (c *ProtoConverter) ConvertShipDesignSpec(source *v1.ShipDesignSpec) *cs.Sh
 		csShipDesignSpec.CanStealFleetCargo = (*source).CanStealFleetCargo
 		csShipDesignSpec.CanStealPlanetCargo = (*source).CanStealPlanetCargo
 		csShipDesignSpec.CargoCapacity = Int32ToInt((*source).CargoCapacity)
+		csShipDesignSpec.MineralCargoBonus = Int32ToInt((*source).MineralCargoBonus)
 		csShipDesignSpec.CloakPercent = Int32ToInt((*source).CloakPercent)
 		csShipDesignSpec.CloakPercentFullCargo = Int32ToInt((*source).CloakPercentFullCargo)
 		csShipDesignSpec.CloakUnits = Int32ToInt((*source).CloakUnits)
@@ -2634,6 +2648,16 @@ func (c *ProtoConverter) csCostRulesToPCraig_starsv1CostRules(source cs.CostRule
 	}
 	return &craig_starsv1CostRules
 }
+func (c *ProtoConverter) csDesignMaintenanceToMapInt32Int32(source cs.DesignMaintenance) map[int32]int32 {
+	var mapInt32Int32 map[int32]int32
+	if source != nil {
+		mapInt32Int32 = make(map[int32]int32, len(source))
+		for key, value := range source {
+			mapInt32Int32[IntToInt32(key)] = IntToInt32(value)
+		}
+	}
+	return mapInt32Int32
+}
 func (c *ProtoConverter) csEngineToPCraig_starsv1Engine(source cs.Engine) *v1.Engine {
 	var craig_starsv1Engine v1.Engine
 	craig_starsv1Engine.IdealSpeed = IntToInt32(source.IdealSpeed)
@@ -2645,7 +2669,32 @@ func (c *ProtoConverter) csEngineToPCraig_starsv1Engine(source cs.Engine) *v1.En
 			craig_starsv1Engine.FuelUsage[i] = IntToInt32(source.FuelUsage[i])
 		}
 	}
+	craig_starsv1Engine.StrategicSpeedFactor = source.StrategicSpeedFactor
 	return &craig_starsv1Engine
+}
+func (c *ProtoConverter) csFleetAssemblyToPCraig_starsv1FleetAssembly(source cs.FleetAssembly) *v1.FleetAssembly {
+	var craig_starsv1FleetAssembly v1.FleetAssembly
+	craig_starsv1FleetAssembly.Name = source.Name
+	craig_starsv1FleetAssembly.RallyPlanetNum = IntToInt32(source.RallyPlanetNum)
+	if source.Designs != nil {
+		craig_starsv1FleetAssembly.Designs = make(map[int32]int32, len(source.Designs))
+		for key, value := range source.Designs {
+			craig_starsv1FleetAssembly.Designs[IntToInt32(key)] = IntToInt32(value)
+		}
+	}
+	if source.SourceFleets != nil {
+		craig_starsv1FleetAssembly.SourceFleets = make(map[int32]bool, len(source.SourceFleets))
+		for key2, value2 := range source.SourceFleets {
+			craig_starsv1FleetAssembly.SourceFleets[IntToInt32(key2)] = value2
+		}
+	}
+	craig_starsv1FleetAssembly.BuildMissing = source.BuildMissing
+	craig_starsv1FleetAssembly.Revision = IntToInt32(source.Revision)
+	craig_starsv1FleetAssembly.LeaderFleetNum = IntToInt32(source.LeaderFleetNum)
+	craig_starsv1FleetAssembly.CompletedRevision = IntToInt32(source.CompletedRevision)
+	craig_starsv1FleetAssembly.NotifiedRevision = IntToInt32(source.NotifiedRevision)
+	craig_starsv1FleetAssembly.Status = source.Status
+	return &craig_starsv1FleetAssembly
 }
 func (c *ProtoConverter) csFleetOrdersToPCraig_starsv1FleetOrders(source cs.FleetOrders) *v1.FleetOrders {
 	var craig_starsv1FleetOrders v1.FleetOrders
@@ -2702,6 +2751,54 @@ func (c *ProtoConverter) csJammerCapToPCraig_starsv1JammerCap(source cs.JammerCa
 }
 func (c *ProtoConverter) csLRTToUint32(source cs.LRT) uint32 {
 	return uint32(source)
+}
+func (c *ProtoConverter) csLogisticsAutomationToPCraig_starsv1LogisticsAutomation(source cs.LogisticsAutomation) *v1.LogisticsAutomation {
+	var craig_starsv1LogisticsAutomation v1.LogisticsAutomation
+	craig_starsv1LogisticsAutomation.ServeTerraformingWorlds = source.ServeTerraformingWorlds
+	craig_starsv1LogisticsAutomation.InfrastructureTransport = source.InfrastructureTransport
+	craig_starsv1LogisticsAutomation.ManualPassengerThresholds = source.ManualPassengerThresholds
+	craig_starsv1LogisticsAutomation.DisablePassengerTransport = source.DisablePassengerTransport
+	if source.DesignFamilies != nil {
+		craig_starsv1LogisticsAutomation.DesignFamilies = make(map[int32]int32, len(source.DesignFamilies))
+		for key, value := range source.DesignFamilies {
+			craig_starsv1LogisticsAutomation.DesignFamilies[IntToInt32(key)] = IntToInt32(value)
+		}
+	}
+	craig_starsv1LogisticsAutomation.ResearchTax = c.pCsResearchTaxPolicyToPCraig_starsv1ResearchTaxPolicy(source.ResearchTax)
+	craig_starsv1LogisticsAutomation.ScoutMaxReturnTurns = IntToInt32(source.ScoutMaxReturnTurns)
+	craig_starsv1LogisticsAutomation.RepairThresholdPercent = IntToInt32(source.RepairThresholdPercent)
+	craig_starsv1LogisticsAutomation.DisableAutomaticRepair = source.DisableAutomaticRepair
+	craig_starsv1LogisticsAutomation.DisableInterceptionEvasion = source.DisableInterceptionEvasion
+	craig_starsv1LogisticsAutomation.AutomaticPackets = source.AutomaticPackets
+	if source.FleetAssemblies != nil {
+		craig_starsv1LogisticsAutomation.FleetAssemblies = make(map[int32]*v1.FleetAssembly, len(source.FleetAssemblies))
+		for key2, value2 := range source.FleetAssemblies {
+			craig_starsv1LogisticsAutomation.FleetAssemblies[IntToInt32(key2)] = c.csFleetAssemblyToPCraig_starsv1FleetAssembly(value2)
+		}
+	}
+	craig_starsv1LogisticsAutomation.PassengerTransport = source.PassengerTransport
+	craig_starsv1LogisticsAutomation.SourcePopulationPercent = IntToInt32(source.SourcePopulationPercent)
+	craig_starsv1LogisticsAutomation.DestinationPopulationPercent = IntToInt32(source.DestinationPopulationPercent)
+	craig_starsv1LogisticsAutomation.EscortMarginLy = IntToInt32(source.EscortMarginLY)
+	craig_starsv1LogisticsAutomation.EscortStrengthPercent = IntToInt32(source.EscortStrengthPercent)
+	craig_starsv1LogisticsAutomation.DisableSalvage = source.DisableSalvage
+	craig_starsv1LogisticsAutomation.DisableMineralSupply = source.DisableMineralSupply
+	craig_starsv1LogisticsAutomation.SingleShipyardRebuild = source.SingleShipyardRebuild
+	if source.FleetRoles != nil {
+		craig_starsv1LogisticsAutomation.FleetRoles = make(map[int32]string, len(source.FleetRoles))
+		for key3, value3 := range source.FleetRoles {
+			craig_starsv1LogisticsAutomation.FleetRoles[IntToInt32(key3)] = value3
+		}
+	}
+	if source.RebuildFleets != nil {
+		craig_starsv1LogisticsAutomation.RebuildFleets = make(map[int32]bool, len(source.RebuildFleets))
+		for key4, value4 := range source.RebuildFleets {
+			craig_starsv1LogisticsAutomation.RebuildFleets[IntToInt32(key4)] = value4
+		}
+	}
+	craig_starsv1LogisticsAutomation.BattleSalvage = source.BattleSalvage
+	craig_starsv1LogisticsAutomation.OffloadCombatCargo = source.OffloadCombatCargo
+	return &craig_starsv1LogisticsAutomation
 }
 func (c *ProtoConverter) csMapObjectToPCraig_starsv1MapObject(source cs.MapObject) *v1.MapObject {
 	var craig_starsv1MapObject v1.MapObject
@@ -2865,6 +2962,8 @@ func (c *ProtoConverter) csPlayerMessageToPCraig_starsv1PlayerMessage(source cs.
 }
 func (c *ProtoConverter) csPlayerOrdersToPCraig_starsv1PlayerOrders(source cs.PlayerOrders) *v1.PlayerOrders {
 	var craig_starsv1PlayerOrders v1.PlayerOrders
+	craig_starsv1PlayerOrders.Automation = c.csLogisticsAutomationToPCraig_starsv1LogisticsAutomation(source.Automation)
+	craig_starsv1PlayerOrders.DesignMaintenance = c.csDesignMaintenanceToMapInt32Int32(source.DesignMaintenance)
 	craig_starsv1PlayerOrders.Researching = CSTechFieldToTechField(source.Researching)
 	craig_starsv1PlayerOrders.NextResearchField = CSNextResearchFieldToNextResearchField(source.NextResearchField)
 	craig_starsv1PlayerOrders.ResearchAmount = IntToInt32(source.ResearchAmount)
@@ -3115,6 +3214,7 @@ func (c *ProtoConverter) csTechRequirementsToPCraig_starsv1TechRequirements(sour
 	craig_starsv1TechRequirements.HullsAllowed = source.HullsAllowed
 	craig_starsv1TechRequirements.HullsDenied = source.HullsDenied
 	craig_starsv1TechRequirements.Acquirable = source.Acquirable
+	craig_starsv1TechRequirements.AcquiredTechPrerequisite = source.AcquiredTechPrerequisite
 	return &craig_starsv1TechRequirements
 }
 func (c *ProtoConverter) csTechTagsToMapStringBool(source cs.TechTags) map[string]bool {
@@ -3218,6 +3318,16 @@ func (c *ProtoConverter) csWormholeSpecToPCraig_starsv1WormholeSpec(source cs.Wo
 	var craig_starsv1WormholeSpec v1.WormholeSpec
 	craig_starsv1WormholeSpec.Stats = c.ConvertCSWormholeStats(source.Stats)
 	return &craig_starsv1WormholeSpec
+}
+func (c *ProtoConverter) mapInt32Int32ToCsDesignMaintenance(source map[int32]int32) cs.DesignMaintenance {
+	var csDesignMaintenance cs.DesignMaintenance
+	if source != nil {
+		csDesignMaintenance = make(cs.DesignMaintenance, len(source))
+		for key, value := range source {
+			csDesignMaintenance[Int32ToInt(key)] = Int32ToInt(value)
+		}
+	}
+	return csDesignMaintenance
 }
 func (c *ProtoConverter) mapStringBoolToCsTechTags(source map[string]bool) cs.TechTags {
 	var csTechTags cs.TechTags
@@ -3470,6 +3580,7 @@ func (c *ProtoConverter) pCraig_starsv1CostToPCsCostGeneric(source *v1.Cost) *cs
 func (c *ProtoConverter) pCraig_starsv1EngineToCsEngine(source *v1.Engine) cs.Engine {
 	var csEngine cs.Engine
 	if source != nil {
+		csEngine.StrategicSpeedFactor = (*source).StrategicSpeedFactor
 		csEngine.IdealSpeed = Int32ToInt((*source).IdealSpeed)
 		csEngine.FreeSpeed = Int32ToInt((*source).FreeSpeed)
 		csEngine.MaxSafeSpeed = Int32ToInt((*source).MaxSafeSpeed)
@@ -3481,6 +3592,32 @@ func (c *ProtoConverter) pCraig_starsv1EngineToCsEngine(source *v1.Engine) cs.En
 		}
 	}
 	return csEngine
+}
+func (c *ProtoConverter) pCraig_starsv1FleetAssemblyToCsFleetAssembly(source *v1.FleetAssembly) cs.FleetAssembly {
+	var csFleetAssembly cs.FleetAssembly
+	if source != nil {
+		csFleetAssembly.Name = (*source).Name
+		csFleetAssembly.RallyPlanetNum = Int32ToInt((*source).RallyPlanetNum)
+		if (*source).Designs != nil {
+			csFleetAssembly.Designs = make(map[int]int, len((*source).Designs))
+			for key, value := range (*source).Designs {
+				csFleetAssembly.Designs[Int32ToInt(key)] = Int32ToInt(value)
+			}
+		}
+		if (*source).SourceFleets != nil {
+			csFleetAssembly.SourceFleets = make(map[int]bool, len((*source).SourceFleets))
+			for key2, value2 := range (*source).SourceFleets {
+				csFleetAssembly.SourceFleets[Int32ToInt(key2)] = value2
+			}
+		}
+		csFleetAssembly.BuildMissing = (*source).BuildMissing
+		csFleetAssembly.Revision = Int32ToInt((*source).Revision)
+		csFleetAssembly.LeaderFleetNum = Int32ToInt((*source).LeaderFleetNum)
+		csFleetAssembly.CompletedRevision = Int32ToInt((*source).CompletedRevision)
+		csFleetAssembly.NotifiedRevision = Int32ToInt((*source).NotifiedRevision)
+		csFleetAssembly.Status = (*source).Status
+	}
+	return csFleetAssembly
 }
 func (c *ProtoConverter) pCraig_starsv1FleetOrdersToCsFleetOrders(source *v1.FleetOrders) cs.FleetOrders {
 	var csFleetOrders cs.FleetOrders
@@ -3522,6 +3659,56 @@ func (c *ProtoConverter) pCraig_starsv1JammerCapToCsJammerCap(source *v1.JammerC
 		csJammerCap.Starbase = (*source).Starbase
 	}
 	return csJammerCap
+}
+func (c *ProtoConverter) pCraig_starsv1LogisticsAutomationToCsLogisticsAutomation(source *v1.LogisticsAutomation) cs.LogisticsAutomation {
+	var csLogisticsAutomation cs.LogisticsAutomation
+	if source != nil {
+		csLogisticsAutomation.ServeTerraformingWorlds = (*source).ServeTerraformingWorlds
+		csLogisticsAutomation.InfrastructureTransport = (*source).InfrastructureTransport
+		csLogisticsAutomation.ManualPassengerThresholds = (*source).ManualPassengerThresholds
+		csLogisticsAutomation.DisablePassengerTransport = (*source).DisablePassengerTransport
+		if (*source).DesignFamilies != nil {
+			csLogisticsAutomation.DesignFamilies = make(map[int]int, len((*source).DesignFamilies))
+			for key, value := range (*source).DesignFamilies {
+				csLogisticsAutomation.DesignFamilies[Int32ToInt(key)] = Int32ToInt(value)
+			}
+		}
+		csLogisticsAutomation.ScoutMaxReturnTurns = Int32ToInt((*source).ScoutMaxReturnTurns)
+		csLogisticsAutomation.ResearchTax = c.pCraig_starsv1ResearchTaxPolicyToPCsResearchTaxPolicy((*source).ResearchTax)
+		csLogisticsAutomation.RepairThresholdPercent = Int32ToInt((*source).RepairThresholdPercent)
+		csLogisticsAutomation.DisableAutomaticRepair = (*source).DisableAutomaticRepair
+		csLogisticsAutomation.DisableInterceptionEvasion = (*source).DisableInterceptionEvasion
+		csLogisticsAutomation.AutomaticPackets = (*source).AutomaticPackets
+		if (*source).FleetAssemblies != nil {
+			csLogisticsAutomation.FleetAssemblies = make(map[int]cs.FleetAssembly, len((*source).FleetAssemblies))
+			for key2, value2 := range (*source).FleetAssemblies {
+				csLogisticsAutomation.FleetAssemblies[Int32ToInt(key2)] = c.pCraig_starsv1FleetAssemblyToCsFleetAssembly(value2)
+			}
+		}
+		csLogisticsAutomation.PassengerTransport = (*source).PassengerTransport
+		csLogisticsAutomation.SourcePopulationPercent = Int32ToInt((*source).SourcePopulationPercent)
+		csLogisticsAutomation.DestinationPopulationPercent = Int32ToInt((*source).DestinationPopulationPercent)
+		csLogisticsAutomation.EscortMarginLY = Int32ToInt((*source).EscortMarginLy)
+		csLogisticsAutomation.EscortStrengthPercent = Int32ToInt((*source).EscortStrengthPercent)
+		csLogisticsAutomation.DisableSalvage = (*source).DisableSalvage
+		csLogisticsAutomation.DisableMineralSupply = (*source).DisableMineralSupply
+		csLogisticsAutomation.SingleShipyardRebuild = (*source).SingleShipyardRebuild
+		if (*source).FleetRoles != nil {
+			csLogisticsAutomation.FleetRoles = make(map[int]string, len((*source).FleetRoles))
+			for key3, value3 := range (*source).FleetRoles {
+				csLogisticsAutomation.FleetRoles[Int32ToInt(key3)] = value3
+			}
+		}
+		if (*source).RebuildFleets != nil {
+			csLogisticsAutomation.RebuildFleets = make(map[int]bool, len((*source).RebuildFleets))
+			for key4, value4 := range (*source).RebuildFleets {
+				csLogisticsAutomation.RebuildFleets[Int32ToInt(key4)] = value4
+			}
+		}
+		csLogisticsAutomation.BattleSalvage = (*source).BattleSalvage
+		csLogisticsAutomation.OffloadCombatCargo = (*source).OffloadCombatCargo
+	}
+	return csLogisticsAutomation
 }
 func (c *ProtoConverter) pCraig_starsv1MapObjectTargetToCsTarget(source *v1.MapObjectTarget) cs.Target[cs.MapObjectType] {
 	var csTarget cs.Target[cs.MapObjectType]
@@ -3929,6 +4116,22 @@ func (c *ProtoConverter) pCraig_starsv1ResearchCostToCsResearchCost(source *v1.R
 	}
 	return csResearchCost
 }
+func (c *ProtoConverter) pCraig_starsv1ResearchTaxPolicyToPCsResearchTaxPolicy(source *v1.ResearchTaxPolicy) *cs.ResearchTaxPolicy {
+	var pCsResearchTaxPolicy *cs.ResearchTaxPolicy
+	if source != nil {
+		var csResearchTaxPolicy cs.ResearchTaxPolicy
+		csResearchTaxPolicy.Basis = (*source).Basis
+		csResearchTaxPolicy.Enabled = (*source).Enabled
+		csResearchTaxPolicy.LeftoverUntil = Int32ToInt((*source).LeftoverUntil)
+		csResearchTaxPolicy.MediumThreshold = Int32ToInt((*source).MediumThreshold)
+		csResearchTaxPolicy.LargeThreshold = Int32ToInt((*source).LargeThreshold)
+		csResearchTaxPolicy.SmallPercent = Int32ToInt((*source).SmallPercent)
+		csResearchTaxPolicy.MediumPercent = Int32ToInt((*source).MediumPercent)
+		csResearchTaxPolicy.LargePercent = Int32ToInt((*source).LargePercent)
+		pCsResearchTaxPolicy = &csResearchTaxPolicy
+	}
+	return pCsResearchTaxPolicy
+}
 func (c *ProtoConverter) pCraig_starsv1ScoreIntelToCsScoreIntel(source *v1.ScoreIntel) cs.ScoreIntel {
 	var csScoreIntel cs.ScoreIntel
 	if source != nil {
@@ -3970,6 +4173,7 @@ func (c *ProtoConverter) pCraig_starsv1ShipDesignSpecToCsShipDesignSpec(source *
 		csShipDesignSpec.CanStealFleetCargo = (*source).CanStealFleetCargo
 		csShipDesignSpec.CanStealPlanetCargo = (*source).CanStealPlanetCargo
 		csShipDesignSpec.CargoCapacity = Int32ToInt((*source).CargoCapacity)
+		csShipDesignSpec.MineralCargoBonus = Int32ToInt((*source).MineralCargoBonus)
 		csShipDesignSpec.CloakPercent = Int32ToInt((*source).CloakPercent)
 		csShipDesignSpec.CloakPercentFullCargo = Int32ToInt((*source).CloakPercentFullCargo)
 		csShipDesignSpec.CloakUnits = Int32ToInt((*source).CloakUnits)
@@ -4129,6 +4333,7 @@ func (c *ProtoConverter) pCraig_starsv1TechRequirementsToCsTechRequirements(sour
 		csTechRequirements.HullsAllowed = (*source).HullsAllowed
 		csTechRequirements.HullsDenied = (*source).HullsDenied
 		csTechRequirements.Acquirable = (*source).Acquirable
+		csTechRequirements.AcquiredTechPrerequisite = (*source).AcquiredTechPrerequisite
 	}
 	return csTechRequirements
 }
@@ -4393,6 +4598,22 @@ func (c *ProtoConverter) pCsPlayerStatsToPCraig_starsv1PlayerStats(source *cs.Pl
 		pCraig_starsv1PlayerStats = &craig_starsv1PlayerStats
 	}
 	return pCraig_starsv1PlayerStats
+}
+func (c *ProtoConverter) pCsResearchTaxPolicyToPCraig_starsv1ResearchTaxPolicy(source *cs.ResearchTaxPolicy) *v1.ResearchTaxPolicy {
+	var pCraig_starsv1ResearchTaxPolicy *v1.ResearchTaxPolicy
+	if source != nil {
+		var craig_starsv1ResearchTaxPolicy v1.ResearchTaxPolicy
+		craig_starsv1ResearchTaxPolicy.Enabled = (*source).Enabled
+		craig_starsv1ResearchTaxPolicy.LeftoverUntil = IntToInt32((*source).LeftoverUntil)
+		craig_starsv1ResearchTaxPolicy.MediumThreshold = IntToInt32((*source).MediumThreshold)
+		craig_starsv1ResearchTaxPolicy.LargeThreshold = IntToInt32((*source).LargeThreshold)
+		craig_starsv1ResearchTaxPolicy.SmallPercent = IntToInt32((*source).SmallPercent)
+		craig_starsv1ResearchTaxPolicy.MediumPercent = IntToInt32((*source).MediumPercent)
+		craig_starsv1ResearchTaxPolicy.LargePercent = IntToInt32((*source).LargePercent)
+		craig_starsv1ResearchTaxPolicy.Basis = (*source).Basis
+		pCraig_starsv1ResearchTaxPolicy = &craig_starsv1ResearchTaxPolicy
+	}
+	return pCraig_starsv1ResearchTaxPolicy
 }
 func (c *ProtoConverter) pCsShipTokenToPCraig_starsv1ShipToken(source *cs.ShipToken) *v1.ShipToken {
 	var pCraig_starsv1ShipToken *v1.ShipToken

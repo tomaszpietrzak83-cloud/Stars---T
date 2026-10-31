@@ -192,4 +192,5 @@ message ShipDesignSpec {
   double torpedo_jamming = 63;
   repeated ShipDesignSlot weapon_slots = 64;
   ShipClass ship_class = 65;
+  int32 mineral_cargo_bonus = 66;
 }

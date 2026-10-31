@@ -250,6 +250,7 @@
 	// reload the game, player and universe and reset the context
 	async function reload() {
 		if (!context) return;
+  const previousPlayerNum=get(context.player).num;
 		const seq = ++loadSeq;
 		const { game, universe, player } = await loadFullGame(BigInt(id));
 		if (seq !== loadSeq) {
@@ -265,7 +266,7 @@
 			context.setFullyLoaded(true);
 		}
 
-		context.commandHomeWorld();
+  if(previousPlayerNum!==player.num) context.commandHomeWorld();
 		updateHotkeys();
 	}
 

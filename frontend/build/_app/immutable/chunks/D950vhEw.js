@@ -1,0 +1,1 @@
+function e(e,t,n,r){return e?r.showPlayerColors?n.getPlayerColor(e):e===t.num?`#0000FF`:t.isFriend(e)?`#FFFF00`:`#FF0000`:`#999999`}function t(e){e=e.replace(`#`,``),e.length===3&&(e=e.split(``).map(e=>e+e).join(``));let t=parseInt(e.substr(0,2),16),n=parseInt(e.substr(2,2),16),r=parseInt(e.substr(4,2),16);return(.299*t+.587*n+.114*r)/255>.5?`#333`:`#bbb`}export{t as n,e as t};

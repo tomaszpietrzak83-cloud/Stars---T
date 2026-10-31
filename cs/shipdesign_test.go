@@ -1338,9 +1338,9 @@ func Test_designWarship(t *testing.T) {
 			want: map[string]int{
 				ArmageddonMissile.Name:   48,
 				CompletePhaseShield.Name: 20,
-				MegaPolyShell.Name:       20,
-				BattleNexus.Name:         6,
-				SuperStealthCloak.Name:   6,
+				"EEE Mega Poly Shell III":20,
+				BattleNexus.Name:         9,
+				SuperStealthCloak.Name:   3,
 				Stargate300_500.Name:     1,
 				UltraDriver10.Name:       1,
 			}, wantErr: false,

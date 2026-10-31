@@ -186,6 +186,46 @@ func (s *playerService) UpdatePlayerOrders(ctx context.Context, req *connect.Req
 	orderer := cs.NewOrderer()
 	// Build cs.PlayerOrders from proto without new converter helpers
 	orders := converter.C.ConvertPlayerOrders(req.Msg.Orders)
+	// Family history is created atomically by the design Upgrade action.
+	orders.Automation.DesignFamilies = player.Automation.DesignFamilies
+	designs, err := dbClient.GetShipDesignsForPlayer(ctx, game.ID, player.Num)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("load ship designs"))
+	}
+	player.Designs = designs
+	fleets, err := dbClient.GetFleetsForPlayer(ctx, game.ID, player.Num)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("load composition fleets"))
+	}
+	validationPlayer := *player
+	validationPlayer.DesignMaintenance = orders.DesignMaintenance
+	if err := validationPlayer.ValidateFleetAssemblies(orders.Automation.FleetAssemblies, fleets, planets); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := orders.Automation.Validate(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if len(orders.Automation.FleetRoles) > 0 || len(orders.Automation.RebuildFleets) > 0 {
+		fleets, err := dbClient.GetFleetsForPlayer(ctx, game.ID, player.Num)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("load automation fleets"))
+		}
+		validationPlayer := *player
+		validationPlayer.DesignMaintenance = orders.DesignMaintenance
+		if err := validationPlayer.ValidateLogisticsAutomation(orders.Automation, fleets); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
+	if len(orders.DesignMaintenance) > 0 {
+		designs, err := dbClient.GetShipDesignsForPlayer(ctx, game.ID, player.Num)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("load ship designs"))
+		}
+		player.Designs = designs
+		if err := player.ValidateDesignMaintenance(orders.DesignMaintenance); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
 	orders.CargoTransfers = player.CargoTransfers // don't let the player update cargoTransfers outside of a fleet transfer function
 	orderer.UpdatePlayerOrders(player, planets, orders, &game.Rules)
 
@@ -199,6 +239,11 @@ func (s *playerService) UpdatePlayerOrders(ctx context.Context, req *connect.Req
 
 		for _, planet := range planets {
 			if planet.Dirty {
+				if player.Automation.ResearchTax != nil && player.Automation.ResearchTax.Enabled {
+					if err := c.SavePlanet(ctx, planet); err != nil {
+						return err
+					}
+				}
 				if err := c.UpdatePlanetSpec(ctx, planet); err != nil {
 					slog.Error("updating player planet in database", slog.Any("error", err), slog.Int64("ID", player.ID))
 					return err

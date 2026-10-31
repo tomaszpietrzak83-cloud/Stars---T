@@ -74,3 +74,19 @@ func TestARColonyShipKeepsItsColonyHull(t *testing.T) {
 	assert.True(t, design.Spec.Colonizer)
 	assert.Equal(t, cs.ColonyShip.Name, design.Hull)
 }
+
+func TestIntermediateDifficultiesAreOrdered(t *testing.T) {
+	game := cs.NewGame()
+	var previous playerConfig
+	for index, difficulty := range []cs.AIDifficulty{cs.AIDifficultyEasy, cs.AIDifficultySkilled, cs.AIDifficultyNormal, cs.AIDifficultyAdvanced, cs.AIDifficultyHard} {
+		p := cs.NewPlayer(1, cs.NewRace().WithSpec(&game.Rules))
+		p.AIDifficulty = difficulty
+		config := NewAIPlayer(game, &cs.StaticTechStore, p, cs.PlayerMapObjects{}).config
+		if index > 0 {
+			assert.Greater(t, config.pace, previous.pace)
+			assert.Greater(t, config.colonyPipeline, previous.colonyPipeline)
+			assert.LessOrEqual(t, config.startAttackingYear, previous.startAttackingYear)
+		}
+		previous = config
+	}
+}

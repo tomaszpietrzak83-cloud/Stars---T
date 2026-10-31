@@ -27,7 +27,12 @@ const colors = [
 ];
 
 export const getColor = (index: number) =>
-	index < colors.length ? colors[index] : '#' + Math.floor(Math.random() * 16777215).toString(16);
+	index < colors.length ? colors[index] : '#' + Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0');
 
-export const getFirstAvailableColor = (usedColors: Set<string>) =>
-	colors.find((c) => !usedColors.has(c)) ?? '#' + Math.floor(Math.random() * 16777215).toString(16);
+export const getFirstAvailableColor = (usedColors: Set<string>) => {
+	const available = colors.find((c) => !usedColors.has(c));
+	if (available) return available;
+	let color = getColor(colors.length);
+	while (usedColors.has(color)) color = getColor(colors.length);
+	return color;
+};

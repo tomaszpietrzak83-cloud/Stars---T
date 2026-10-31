@@ -69,13 +69,14 @@ const (
 
 type TechRequirements struct {
 	TechLevel
-	PRTsDenied   []PRT    `json:"prtsDenied,omitempty"`
-	LRTsRequired LRT      `json:"lrtsRequired,omitempty"`
-	LRTsDenied   LRT      `json:"lrtsDenied,omitempty"`
-	PRTsRequired []PRT    `json:"prtsRequired,omitempty"`
-	HullsAllowed []string `json:"hullsAllowed,omitempty"`
-	HullsDenied  []string `json:"hullsDenied,omitempty"`
-	Acquirable   bool     `json:"acquirable,omitempty"`
+	PRTsDenied               []PRT    `json:"prtsDenied,omitempty"`
+	LRTsRequired             LRT      `json:"lrtsRequired,omitempty"`
+	LRTsDenied               LRT      `json:"lrtsDenied,omitempty"`
+	PRTsRequired             []PRT    `json:"prtsRequired,omitempty"`
+	HullsAllowed             []string `json:"hullsAllowed,omitempty"`
+	HullsDenied              []string `json:"hullsDenied,omitempty"`
+	Acquirable               bool     `json:"acquirable,omitempty"`
+	AcquiredTechPrerequisite string   `json:"acquiredTechPrerequisite,omitempty"`
 }
 
 type TechHullComponent struct {
@@ -142,10 +143,12 @@ func getArmorShieldAmounts(baseArmor, baseShield float64, qty int, raceSpec Race
 }
 
 type Engine struct {
-	IdealSpeed   int   `json:"idealSpeed"`
-	FreeSpeed    int   `json:"freeSpeed"`
-	MaxSafeSpeed int   `json:"maxSafeSpeed"`
-	FuelUsage    []int `json:"fuelUsage"`
+	// Zero in legacy saves means the ordinary 1x strategic speed. Combat is unaffected.
+	StrategicSpeedFactor float64 `json:"strategicSpeedFactor,omitempty"`
+	IdealSpeed           int     `json:"idealSpeed"`
+	FreeSpeed            int     `json:"freeSpeed"`
+	MaxSafeSpeed         int     `json:"maxSafeSpeed"`
+	FuelUsage            []int   `json:"fuelUsage"`
 }
 
 type TechHull struct {

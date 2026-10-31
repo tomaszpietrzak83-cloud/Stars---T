@@ -211,6 +211,7 @@ type Converter interface {
 
 	// goverter:map . DBObject | MapProtoGameDBObject
 	// goverter:ignore Rules
+	// goverter:ignore HostStartPosition
 	ConvertGame(source *craig_starsv1.Game) *cs.Game
 	ConvertVictoryConditions(source *craig_starsv1.VictoryConditions) cs.VictoryConditions
 

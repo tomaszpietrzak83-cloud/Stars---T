@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {packedInstallationMass} from '#lib/types/InfrastructureCargo.js';
 	import QuantityModifierButtons from '#lib/components/QuantityModifierButtons.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { clamp } from '#lib/services/Math.js';
@@ -50,7 +51,7 @@
 	}: Props = $props();
 
 	let srcCargoCapacity = $derived(
-		rest.srcCargoCapacity ?? src.spec.shipDesignSpec?.cargoCapacity ?? 0
+		(rest.srcCargoCapacity ?? src.spec.shipDesignSpec?.cargoCapacity ?? 0)-packedInstallationMass(src)
 	);
 	let srcFuelCapacity = $derived(
 		rest.srcFuelCapacity ?? src.spec.shipDesignSpec?.fuelCapacity ?? 0
@@ -80,7 +81,7 @@
 
 	function getCargoCapacity(dest: CargoDest): number {
 		if (dest && 'spec' in dest && dest.spec && 'shipDesignSpec' in dest.spec) {
-			return dest.spec.shipDesignSpec?.cargoCapacity ?? 0;
+			return Math.max(0,(dest.spec.shipDesignSpec?.cargoCapacity ?? 0)-packedInstallationMass(dest));
 		}
 		if (dest?.mapObject?.type === MapObjectType.FLEET) {
 			// if a fleet doesn't have a capcity, it's 0

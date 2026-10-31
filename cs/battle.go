@@ -409,7 +409,7 @@ func (b *battle) prepareBattle() {
 		dampening = max(dampening, token.design.Spec.ReduceMovement)
 	}
 	for _, token := range b.tokens {
-		cargo := getCargoPerShip(token.fleet.Cargo.Total(), token.fleet.Spec.CargoCapacity, token.design.Spec.CargoCapacity)
+		cargo := getCargoPerShip(token.fleet.CargoMass(), token.fleet.Spec.CargoCapacity, token.design.Spec.CargoCapacity)
 		token.Mass = token.design.Spec.Mass + cargo
 		token.Movement = token.design.getMovement(b.rules, cargo)
 		if dumpedFleets[token.fleet] && token.design.Spec.CargoCapacity > 0 {

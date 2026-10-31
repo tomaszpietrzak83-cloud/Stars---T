@@ -238,9 +238,11 @@ type Race struct {
 	TechsStartHigh        bool                   `protobuf:"varint,25,opt,name=techs_start_high,json=techsStartHigh,proto3" json:"techs_start_high,omitempty"`
 	// RaceSpec spec = 26;
 	// the player's own notes on the race, never shown to other players
-	Description   string `protobuf:"bytes,27,opt,name=description,proto3" json:"description,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Description      string    `protobuf:"bytes,27,opt,name=description,proto3" json:"description,omitempty"`
+	EeeTraits        int32     `protobuf:"varint,28,opt,name=eee_traits,json=eeeTraits,proto3" json:"eee_traits,omitempty"`
+	EeeResearchField TechField `protobuf:"varint,29,opt,name=eee_research_field,json=eeeResearchField,proto3,enum=craig_stars.v1.TechField" json:"eee_research_field,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Race) Reset() {
@@ -455,6 +457,20 @@ func (x *Race) GetDescription() string {
 	return ""
 }
 
+func (x *Race) GetEeeTraits() int32 {
+	if x != nil {
+		return x.EeeTraits
+	}
+	return 0
+}
+
+func (x *Race) GetEeeResearchField() TechField {
+	if x != nil {
+		return x.EeeResearchField
+	}
+	return TechField_TECH_FIELD_UNSPECIFIED
+}
+
 type RaceSpec struct {
 	state                            protoimpl.MessageState `protogen:"open.v1"`
 	MiniaturizationSpec              *MiniaturizationSpec   `protobuf:"bytes,1,opt,name=miniaturization_spec,json=miniaturizationSpec,proto3" json:"miniaturization_spec,omitempty"`
@@ -530,6 +546,7 @@ type RaceSpec struct {
 	ShieldRegenerationRate           float64                `protobuf:"fixed64,71,opt,name=shield_regeneration_rate,json=shieldRegenerationRate,proto3" json:"shield_regeneration_rate,omitempty"`
 	EngineFailureRate                float64                `protobuf:"fixed64,72,opt,name=engine_failure_rate,json=engineFailureRate,proto3" json:"engine_failure_rate,omitempty"`
 	EngineReliableSpeed              int32                  `protobuf:"varint,73,opt,name=engine_reliable_speed,json=engineReliableSpeed,proto3" json:"engine_reliable_speed,omitempty"`
+	EeeTraits                        int32                  `protobuf:"varint,74,opt,name=eee_traits,json=eeeTraits,proto3" json:"eee_traits,omitempty"`
 	unknownFields                    protoimpl.UnknownFields
 	sizeCache                        protoimpl.SizeCache
 }
@@ -1071,6 +1088,13 @@ func (x *RaceSpec) GetEngineFailureRate() float64 {
 func (x *RaceSpec) GetEngineReliableSpeed() int32 {
 	if x != nil {
 		return x.EngineReliableSpeed
+	}
+	return 0
+}
+
+func (x *RaceSpec) GetEeeTraits() int32 {
+	if x != nil {
+		return x.EeeTraits
 	}
 	return 0
 }
@@ -1671,7 +1695,7 @@ var File_craig_stars_v1_race_proto protoreflect.FileDescriptor
 
 const file_craig_stars_v1_race_proto_rawDesc = "" +
 	"\n" +
-	"\x19craig_stars/v1/race.proto\x12\x0ecraig_stars.v1\x1a\x1bcraig_stars/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x85\b\n" +
+	"\x19craig_stars/v1/race.proto\x12\x0ecraig_stars.v1\x1a\x1bcraig_stars/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xed\b\n" +
 	"\x04Race\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1707,7 +1731,10 @@ const file_craig_stars_v1_race_proto_rawDesc = "" +
 	"\tnum_mines\x18\x17 \x01(\x05R\bnumMines\x12A\n" +
 	"\rresearch_cost\x18\x18 \x01(\v2\x1c.craig_stars.v1.ResearchCostR\fresearchCost\x12(\n" +
 	"\x10techs_start_high\x18\x19 \x01(\bR\x0etechsStartHigh\x12 \n" +
-	"\vdescription\x18\x1b \x01(\tR\vdescription\"\x9e!\n" +
+	"\vdescription\x18\x1b \x01(\tR\vdescription\x12\x1d\n" +
+	"\n" +
+	"eee_traits\x18\x1c \x01(\x05R\teeeTraits\x12G\n" +
+	"\x12eee_research_field\x18\x1d \x01(\x0e2\x19.craig_stars.v1.TechFieldR\x10eeeResearchField\"\xbd!\n" +
 	"\bRaceSpec\x12V\n" +
 	"\x14miniaturization_spec\x18\x01 \x01(\v2#.craig_stars.v1.MiniaturizationSpecR\x13miniaturizationSpec\x12>\n" +
 	"\fscanner_spec\x18\x02 \x01(\v2\x1b.craig_stars.v1.ScannerSpecR\vscannerSpec\x122\n" +
@@ -1783,7 +1810,9 @@ const file_craig_stars_v1_race_proto_rawDesc = "" +
 	"\x16shield_strength_factor\x18F \x01(\x01R\x14shieldStrengthFactor\x128\n" +
 	"\x18shield_regeneration_rate\x18G \x01(\x01R\x16shieldRegenerationRate\x12.\n" +
 	"\x13engine_failure_rate\x18H \x01(\x01R\x11engineFailureRate\x122\n" +
-	"\x15engine_reliable_speed\x18I \x01(\x05R\x13engineReliableSpeed\x1aN\n" +
+	"\x15engine_reliable_speed\x18I \x01(\x05R\x13engineReliableSpeed\x12\x1d\n" +
+	"\n" +
+	"eee_traits\x18J \x01(\x05R\teeeTraits\x1aN\n" +
 	"\n" +
 	"CostsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12*\n" +
@@ -1912,8 +1941,9 @@ var file_craig_stars_v1_race_proto_goTypes = []any{
 	nil,                           // 14: craig_stars.v1.RaceSpec.TechCostOffsetEntry
 	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
 	(*Hab)(nil),                   // 16: craig_stars.v1.Hab
-	(*TechLevel)(nil),             // 17: craig_stars.v1.TechLevel
-	(*Cost)(nil),                  // 18: craig_stars.v1.Cost
+	(TechField)(0),                // 17: craig_stars.v1.TechField
+	(*TechLevel)(nil),             // 18: craig_stars.v1.TechLevel
+	(*Cost)(nil),                  // 19: craig_stars.v1.Cost
 }
 var file_craig_stars_v1_race_proto_depIdxs = []int32{
 	15, // 0: craig_stars.v1.Race.created_at:type_name -> google.protobuf.Timestamp
@@ -1923,31 +1953,32 @@ var file_craig_stars_v1_race_proto_depIdxs = []int32{
 	16, // 4: craig_stars.v1.Race.hab_low:type_name -> craig_stars.v1.Hab
 	16, // 5: craig_stars.v1.Race.hab_high:type_name -> craig_stars.v1.Hab
 	12, // 6: craig_stars.v1.Race.research_cost:type_name -> craig_stars.v1.ResearchCost
-	5,  // 7: craig_stars.v1.RaceSpec.miniaturization_spec:type_name -> craig_stars.v1.MiniaturizationSpec
-	7,  // 8: craig_stars.v1.RaceSpec.scanner_spec:type_name -> craig_stars.v1.ScannerSpec
-	16, // 9: craig_stars.v1.RaceSpec.hab_center:type_name -> craig_stars.v1.Hab
-	13, // 10: craig_stars.v1.RaceSpec.costs:type_name -> craig_stars.v1.RaceSpec.CostsEntry
-	17, // 11: craig_stars.v1.RaceSpec.starting_tech_levels:type_name -> craig_stars.v1.TechLevel
-	9,  // 12: craig_stars.v1.RaceSpec.starting_planets:type_name -> craig_stars.v1.StartingPlanet
-	14, // 13: craig_stars.v1.RaceSpec.tech_cost_offset:type_name -> craig_stars.v1.RaceSpec.TechCostOffsetEntry
-	11, // 14: craig_stars.v1.RaceSpec.freighter_growth:type_name -> craig_stars.v1.FreighterGrowth
-	10, // 15: craig_stars.v1.RaceSpec.steals_research:type_name -> craig_stars.v1.StealsResearch
-	17, // 16: craig_stars.v1.BuiltInScanner.normal_multi:type_name -> craig_stars.v1.TechLevel
-	17, // 17: craig_stars.v1.BuiltInScanner.pen_multi:type_name -> craig_stars.v1.TechLevel
-	6,  // 18: craig_stars.v1.ScannerSpec.built_in_scanner:type_name -> craig_stars.v1.BuiltInScanner
-	8,  // 19: craig_stars.v1.StartingPlanet.starting_fleets:type_name -> craig_stars.v1.StartingFleet
-	2,  // 20: craig_stars.v1.ResearchCost.energy:type_name -> craig_stars.v1.ResearchCostLevel
-	2,  // 21: craig_stars.v1.ResearchCost.weapons:type_name -> craig_stars.v1.ResearchCostLevel
-	2,  // 22: craig_stars.v1.ResearchCost.propulsion:type_name -> craig_stars.v1.ResearchCostLevel
-	2,  // 23: craig_stars.v1.ResearchCost.construction:type_name -> craig_stars.v1.ResearchCostLevel
-	2,  // 24: craig_stars.v1.ResearchCost.electronics:type_name -> craig_stars.v1.ResearchCostLevel
-	2,  // 25: craig_stars.v1.ResearchCost.biotechnology:type_name -> craig_stars.v1.ResearchCostLevel
-	18, // 26: craig_stars.v1.RaceSpec.CostsEntry.value:type_name -> craig_stars.v1.Cost
-	27, // [27:27] is the sub-list for method output_type
-	27, // [27:27] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	17, // 7: craig_stars.v1.Race.eee_research_field:type_name -> craig_stars.v1.TechField
+	5,  // 8: craig_stars.v1.RaceSpec.miniaturization_spec:type_name -> craig_stars.v1.MiniaturizationSpec
+	7,  // 9: craig_stars.v1.RaceSpec.scanner_spec:type_name -> craig_stars.v1.ScannerSpec
+	16, // 10: craig_stars.v1.RaceSpec.hab_center:type_name -> craig_stars.v1.Hab
+	13, // 11: craig_stars.v1.RaceSpec.costs:type_name -> craig_stars.v1.RaceSpec.CostsEntry
+	18, // 12: craig_stars.v1.RaceSpec.starting_tech_levels:type_name -> craig_stars.v1.TechLevel
+	9,  // 13: craig_stars.v1.RaceSpec.starting_planets:type_name -> craig_stars.v1.StartingPlanet
+	14, // 14: craig_stars.v1.RaceSpec.tech_cost_offset:type_name -> craig_stars.v1.RaceSpec.TechCostOffsetEntry
+	11, // 15: craig_stars.v1.RaceSpec.freighter_growth:type_name -> craig_stars.v1.FreighterGrowth
+	10, // 16: craig_stars.v1.RaceSpec.steals_research:type_name -> craig_stars.v1.StealsResearch
+	18, // 17: craig_stars.v1.BuiltInScanner.normal_multi:type_name -> craig_stars.v1.TechLevel
+	18, // 18: craig_stars.v1.BuiltInScanner.pen_multi:type_name -> craig_stars.v1.TechLevel
+	6,  // 19: craig_stars.v1.ScannerSpec.built_in_scanner:type_name -> craig_stars.v1.BuiltInScanner
+	8,  // 20: craig_stars.v1.StartingPlanet.starting_fleets:type_name -> craig_stars.v1.StartingFleet
+	2,  // 21: craig_stars.v1.ResearchCost.energy:type_name -> craig_stars.v1.ResearchCostLevel
+	2,  // 22: craig_stars.v1.ResearchCost.weapons:type_name -> craig_stars.v1.ResearchCostLevel
+	2,  // 23: craig_stars.v1.ResearchCost.propulsion:type_name -> craig_stars.v1.ResearchCostLevel
+	2,  // 24: craig_stars.v1.ResearchCost.construction:type_name -> craig_stars.v1.ResearchCostLevel
+	2,  // 25: craig_stars.v1.ResearchCost.electronics:type_name -> craig_stars.v1.ResearchCostLevel
+	2,  // 26: craig_stars.v1.ResearchCost.biotechnology:type_name -> craig_stars.v1.ResearchCostLevel
+	19, // 27: craig_stars.v1.RaceSpec.CostsEntry.value:type_name -> craig_stars.v1.Cost
+	28, // [28:28] is the sub-list for method output_type
+	28, // [28:28] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_craig_stars_v1_race_proto_init() }

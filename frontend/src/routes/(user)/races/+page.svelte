@@ -62,7 +62,7 @@
 	<header class="flex items-center justify-between gap-3">
 		<div>
 			<h1 class="text-3xl font-bold">Races</h1>
-			<p class="text-base-content/70 mt-1">Your race designs.</p>
+			<p class="text-base-content/70 mt-1">Your races and ready-to-play templates for all primary traits.</p>
 		</div>
 		<a href="/races/new" class="btn btn-primary shrink-0">Create race</a>
 	</header>
@@ -100,7 +100,7 @@
 						<div class="flex items-start justify-between gap-2">
 							<div class="min-w-0">
 								<h2 class="text-2xl font-semibold">
-									<a class="hover:text-accent" href="/races/{race.id}">{race.pluralName}</a>
+									<a class="hover:text-accent" href={race.id<0n?`/races/new?template=${race.id}`:`/races/${race.id}`}>{race.pluralName}</a>
 								</h2>
 								{#if race.description}<p
 										class="text-base-content/70 mt-1"
@@ -110,7 +110,7 @@
 									</p>{/if}
 								<span class="badge badge-secondary h-auto mt-2">{getLabelForPRT(race.prt)}</span>
 							</div>
-							<details class="dropdown dropdown-end">
+							{#if race.id>0n}<details class="dropdown dropdown-end">
 								<summary class="btn btn-ghost" aria-label={`Manage ${race.pluralName}`}>•••</summary
 								>
 								<ul
@@ -125,7 +125,7 @@
 										>
 									</li>
 								</ul>
-							</details>
+							</details>{/if}
 						</div>
 						<div class="flex flex-wrap items-center gap-1">
 							{#each lrts.filter((lrt) => (race.lrts & lrt) !== 0) as lrt (lrt)}<abbr
@@ -161,7 +161,7 @@
 						>
 							<span class="text-base-content/70">Growth {race.growthRate}% / year</span><a
 								class="btn btn-primary"
-								href="/races/{race.id}">Edit race →</a
+								href={race.id<0n?`/races/new?template=${race.id}`:`/races/${race.id}`}>{race.id<0n?'Copy template →':'Edit race →'}</a
 							>
 						</div>
 					</div>

@@ -128,7 +128,7 @@ func (r *researcher) researchFieldOnce(player *Player, field TechField, resource
 	// add the resourcesToSpend to how much we've currently spent
 	spent := player.TechLevelsSpent.Get(field)
 
-	totalCost := r.getTotalCost(player.TechLevels, player.Race.ResearchCost.Get(field), level)
+	totalCost := player.Race.eeeResearchCost(r.getTotalCost(player.TechLevels, player.Race.ResearchCost.Get(field), level), field)
 
 	if spent+resourcesToSpend >= totalCost {
 		// increase a level
@@ -222,7 +222,7 @@ func (r *researcher) getNextResearchField(player *Player) (nextField TechField) 
 // nextLevelCost returns the resources needed to research the next level in a field
 func nextLevelCost(rules *Rules, player *Player, field TechField) int {
 	r := newResearcher(rules)
-	return r.getTotalCost(player.TechLevels, player.Race.ResearchCost.Get(field), player.TechLevels.Get(field))
+	return player.Race.eeeResearchCost(r.getTotalCost(player.TechLevels, player.Race.ResearchCost.Get(field), player.TechLevels.Get(field)), field)
 }
 
 // addFieldResearch adds bonus research resources to a field, like those from

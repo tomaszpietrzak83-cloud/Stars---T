@@ -32,6 +32,7 @@
 	import FleetOtherFleetsHereTile from './FleetOtherFleetsHereTile.svelte';
 	import FleetSummaryTile from './FleetSummaryTile.svelte';
 	import FleetWaypointsTile from './FleetWaypointsTile.svelte';
+ import FleetAutoOrdersTile from './FleetAutoOrdersTile.svelte';
 	import FleetWaypointTaskTile from './FleetWaypointTaskTile.svelte';
 	import PlanetFleetsInOrbitTile from './PlanetFleetsInOrbitTile.svelte';
 	import PlanetMineralsOnHandTile from './PlanetMineralsOnHandTile.svelte';
@@ -277,7 +278,8 @@
 								/>
 							</div>
 							<div id="fleet-waypoints-tile">
-								<FleetWaypointsTile
+								<FleetAutoOrdersTile fleet={$commandedFleet} />
+ <FleetWaypointsTile
 									fleet={$commandedFleet}
 									selectedWaypointIndex={$currentSelectedWaypointIndex}
 									{onSelectWaypoint}

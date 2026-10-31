@@ -19,6 +19,12 @@ func AIDifficultyToCSAIDifficulty(m craig_starsv1.AiDifficulty) cs.AIDifficulty 
 		return cs.AIDifficultyHard
 	case craig_starsv1.AiDifficulty_AI_DIFFICULTY_CHEATER:
 		return cs.AIDifficultyCheater
+	case craig_starsv1.AiDifficulty_AI_DIFFICULTY_SKILLED:
+		return cs.AIDifficultySkilled
+	case craig_starsv1.AiDifficulty_AI_DIFFICULTY_ADVANCED:
+		return cs.AIDifficultyAdvanced
+	case craig_starsv1.AiDifficulty_AI_DIFFICULTY_ELITE:
+		return cs.AIDifficultyElite
 	default:
 		return cs.AIDifficulty("")
 	}
@@ -36,6 +42,12 @@ func CSAIDifficultyToAIDifficulty(m cs.AIDifficulty) craig_starsv1.AiDifficulty 
 		return craig_starsv1.AiDifficulty_AI_DIFFICULTY_HARD
 	case cs.AIDifficultyCheater:
 		return craig_starsv1.AiDifficulty_AI_DIFFICULTY_CHEATER
+	case cs.AIDifficultySkilled:
+		return craig_starsv1.AiDifficulty_AI_DIFFICULTY_SKILLED
+	case cs.AIDifficultyAdvanced:
+		return craig_starsv1.AiDifficulty_AI_DIFFICULTY_ADVANCED
+	case cs.AIDifficultyElite:
+		return craig_starsv1.AiDifficulty_AI_DIFFICULTY_ELITE
 	default:
 		return craig_starsv1.AiDifficulty_AI_DIFFICULTY_UNSPECIFIED
 	}
@@ -1742,6 +1754,16 @@ func SizeToCSSize(m craig_starsv1.Size) cs.Size {
 		return cs.SizeHuge
 	case craig_starsv1.Size_SIZE_HUGE_WIDE:
 		return cs.SizeHugeWide
+	case craig_starsv1.Size_SIZE_VAST:
+		return cs.SizeVast
+	case craig_starsv1.Size_SIZE_IMMENSE:
+		return cs.SizeImmense
+	case craig_starsv1.Size_SIZE_COLOSSAL:
+		return cs.SizeColossal
+	case craig_starsv1.Size_SIZE_TITANIC:
+		return cs.SizeTitanic
+	case craig_starsv1.Size_SIZE_GALACTIC:
+		return cs.SizeGalactic
 	default:
 		return cs.Size("")
 	}
@@ -1771,6 +1793,16 @@ func CSSizeToSize(m cs.Size) craig_starsv1.Size {
 		return craig_starsv1.Size_SIZE_HUGE
 	case cs.SizeHugeWide:
 		return craig_starsv1.Size_SIZE_HUGE_WIDE
+	case cs.SizeVast:
+		return craig_starsv1.Size_SIZE_VAST
+	case cs.SizeImmense:
+		return craig_starsv1.Size_SIZE_IMMENSE
+	case cs.SizeColossal:
+		return craig_starsv1.Size_SIZE_COLOSSAL
+	case cs.SizeTitanic:
+		return craig_starsv1.Size_SIZE_TITANIC
+	case cs.SizeGalactic:
+		return craig_starsv1.Size_SIZE_GALACTIC
 	default:
 		return craig_starsv1.Size_SIZE_UNSPECIFIED
 	}

@@ -267,6 +267,8 @@ export class CommandedPlayerRace implements Race {
 	spendLeftoverPointsOn = SpendLeftoverPointsOn.UNSPECIFIED;
 	prt = Prt.UNSPECIFIED;
 	lrts = 0;
+	eeeTraits = 0;
+	eeeResearchField = TechField.UNSPECIFIED;
 	habLow = create(HabSchema);
 	habHigh = create(HabSchema);
 	growthRate = 0;
@@ -299,6 +301,7 @@ export function canLearnTech(player: CommandedPlayer, tech: TechLike): boolean {
 		return true;
 	}
 	const requirements = tech.tech.requirements;
+	if (requirements.acquiredTechPrerequisite && !player.acquiredTechs[requirements.acquiredTechPrerequisite]) return false;
 	if (
 		requirements.prtsRequired?.length &&
 		requirements.prtsRequired.indexOf(player.race.prt) == -1

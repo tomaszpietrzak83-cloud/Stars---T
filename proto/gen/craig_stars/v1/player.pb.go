@@ -867,7 +867,10 @@ func (x *PlayerPlans) GetTransportPlans() []*TransportPlan {
 }
 
 type PlayerOrders struct {
-	state             protoimpl.MessageState     `protogen:"open.v1"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Automation *LogisticsAutomation   `protobuf:"bytes,6,opt,name=automation,proto3" json:"automation,omitempty"`
+	// -1 retires a design; a positive value names its same-hull replacement.
+	DesignMaintenance map[int32]int32            `protobuf:"bytes,5,rep,name=design_maintenance,json=designMaintenance,proto3" json:"design_maintenance,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	Researching       TechField                  `protobuf:"varint,1,opt,name=researching,proto3,enum=craig_stars.v1.TechField" json:"researching,omitempty"`
 	NextResearchField NextResearchField          `protobuf:"varint,2,opt,name=next_research_field,json=nextResearchField,proto3,enum=craig_stars.v1.NextResearchField" json:"next_research_field,omitempty"`
 	ResearchAmount    int32                      `protobuf:"varint,3,opt,name=research_amount,json=researchAmount,proto3" json:"research_amount,omitempty"`
@@ -906,6 +909,20 @@ func (*PlayerOrders) Descriptor() ([]byte, []int) {
 	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{7}
 }
 
+func (x *PlayerOrders) GetAutomation() *LogisticsAutomation {
+	if x != nil {
+		return x.Automation
+	}
+	return nil
+}
+
+func (x *PlayerOrders) GetDesignMaintenance() map[int32]int32 {
+	if x != nil {
+		return x.DesignMaintenance
+	}
+	return nil
+}
+
 func (x *PlayerOrders) GetResearching() TechField {
 	if x != nil {
 		return x.Researching
@@ -934,6 +951,451 @@ func (x *PlayerOrders) GetCargoTransfers() map[string]*CargoTransfers {
 	return nil
 }
 
+type LogisticsAutomation struct {
+	state                        protoimpl.MessageState   `protogen:"open.v1"`
+	ServeTerraformingWorlds      bool                     `protobuf:"varint,23,opt,name=serve_terraforming_worlds,json=serveTerraformingWorlds,proto3" json:"serve_terraforming_worlds,omitempty"`
+	InfrastructureTransport      bool                     `protobuf:"varint,24,opt,name=infrastructure_transport,json=infrastructureTransport,proto3" json:"infrastructure_transport,omitempty"`
+	ManualPassengerThresholds    bool                     `protobuf:"varint,22,opt,name=manual_passenger_thresholds,json=manualPassengerThresholds,proto3" json:"manual_passenger_thresholds,omitempty"`
+	DisablePassengerTransport    bool                     `protobuf:"varint,21,opt,name=disable_passenger_transport,json=disablePassengerTransport,proto3" json:"disable_passenger_transport,omitempty"`
+	DesignFamilies               map[int32]int32          `protobuf:"bytes,20,rep,name=design_families,json=designFamilies,proto3" json:"design_families,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	ResearchTax                  *ResearchTaxPolicy       `protobuf:"bytes,18,opt,name=research_tax,json=researchTax,proto3" json:"research_tax,omitempty"`
+	ScoutMaxReturnTurns          int32                    `protobuf:"varint,19,opt,name=scout_max_return_turns,json=scoutMaxReturnTurns,proto3" json:"scout_max_return_turns,omitempty"`
+	RepairThresholdPercent       int32                    `protobuf:"varint,14,opt,name=repair_threshold_percent,json=repairThresholdPercent,proto3" json:"repair_threshold_percent,omitempty"`
+	DisableAutomaticRepair       bool                     `protobuf:"varint,15,opt,name=disable_automatic_repair,json=disableAutomaticRepair,proto3" json:"disable_automatic_repair,omitempty"`
+	DisableInterceptionEvasion   bool                     `protobuf:"varint,16,opt,name=disable_interception_evasion,json=disableInterceptionEvasion,proto3" json:"disable_interception_evasion,omitempty"`
+	AutomaticPackets             bool                     `protobuf:"varint,17,opt,name=automatic_packets,json=automaticPackets,proto3" json:"automatic_packets,omitempty"`
+	FleetAssemblies              map[int32]*FleetAssembly `protobuf:"bytes,13,rep,name=fleet_assemblies,json=fleetAssemblies,proto3" json:"fleet_assemblies,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	PassengerTransport           bool                     `protobuf:"varint,5,opt,name=passenger_transport,json=passengerTransport,proto3" json:"passenger_transport,omitempty"`
+	SourcePopulationPercent      int32                    `protobuf:"varint,6,opt,name=source_population_percent,json=sourcePopulationPercent,proto3" json:"source_population_percent,omitempty"`
+	DestinationPopulationPercent int32                    `protobuf:"varint,7,opt,name=destination_population_percent,json=destinationPopulationPercent,proto3" json:"destination_population_percent,omitempty"`
+	EscortMarginLy               int32                    `protobuf:"varint,8,opt,name=escort_margin_ly,json=escortMarginLy,proto3" json:"escort_margin_ly,omitempty"`
+	EscortStrengthPercent        int32                    `protobuf:"varint,9,opt,name=escort_strength_percent,json=escortStrengthPercent,proto3" json:"escort_strength_percent,omitempty"`
+	DisableSalvage               bool                     `protobuf:"varint,10,opt,name=disable_salvage,json=disableSalvage,proto3" json:"disable_salvage,omitempty"`
+	DisableMineralSupply         bool                     `protobuf:"varint,11,opt,name=disable_mineral_supply,json=disableMineralSupply,proto3" json:"disable_mineral_supply,omitempty"`
+	SingleShipyardRebuild        bool                     `protobuf:"varint,12,opt,name=single_shipyard_rebuild,json=singleShipyardRebuild,proto3" json:"single_shipyard_rebuild,omitempty"`
+	FleetRoles                   map[int32]string         `protobuf:"bytes,1,rep,name=fleet_roles,json=fleetRoles,proto3" json:"fleet_roles,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	RebuildFleets                map[int32]bool           `protobuf:"bytes,2,rep,name=rebuild_fleets,json=rebuildFleets,proto3" json:"rebuild_fleets,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	BattleSalvage                bool                     `protobuf:"varint,3,opt,name=battle_salvage,json=battleSalvage,proto3" json:"battle_salvage,omitempty"`
+	OffloadCombatCargo           bool                     `protobuf:"varint,4,opt,name=offload_combat_cargo,json=offloadCombatCargo,proto3" json:"offload_combat_cargo,omitempty"`
+	unknownFields                protoimpl.UnknownFields
+	sizeCache                    protoimpl.SizeCache
+}
+
+func (x *LogisticsAutomation) Reset() {
+	*x = LogisticsAutomation{}
+	mi := &file_craig_stars_v1_player_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LogisticsAutomation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogisticsAutomation) ProtoMessage() {}
+
+func (x *LogisticsAutomation) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_player_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogisticsAutomation.ProtoReflect.Descriptor instead.
+func (*LogisticsAutomation) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *LogisticsAutomation) GetServeTerraformingWorlds() bool {
+	if x != nil {
+		return x.ServeTerraformingWorlds
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetInfrastructureTransport() bool {
+	if x != nil {
+		return x.InfrastructureTransport
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetManualPassengerThresholds() bool {
+	if x != nil {
+		return x.ManualPassengerThresholds
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetDisablePassengerTransport() bool {
+	if x != nil {
+		return x.DisablePassengerTransport
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetDesignFamilies() map[int32]int32 {
+	if x != nil {
+		return x.DesignFamilies
+	}
+	return nil
+}
+
+func (x *LogisticsAutomation) GetResearchTax() *ResearchTaxPolicy {
+	if x != nil {
+		return x.ResearchTax
+	}
+	return nil
+}
+
+func (x *LogisticsAutomation) GetScoutMaxReturnTurns() int32 {
+	if x != nil {
+		return x.ScoutMaxReturnTurns
+	}
+	return 0
+}
+
+func (x *LogisticsAutomation) GetRepairThresholdPercent() int32 {
+	if x != nil {
+		return x.RepairThresholdPercent
+	}
+	return 0
+}
+
+func (x *LogisticsAutomation) GetDisableAutomaticRepair() bool {
+	if x != nil {
+		return x.DisableAutomaticRepair
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetDisableInterceptionEvasion() bool {
+	if x != nil {
+		return x.DisableInterceptionEvasion
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetAutomaticPackets() bool {
+	if x != nil {
+		return x.AutomaticPackets
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetFleetAssemblies() map[int32]*FleetAssembly {
+	if x != nil {
+		return x.FleetAssemblies
+	}
+	return nil
+}
+
+func (x *LogisticsAutomation) GetPassengerTransport() bool {
+	if x != nil {
+		return x.PassengerTransport
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetSourcePopulationPercent() int32 {
+	if x != nil {
+		return x.SourcePopulationPercent
+	}
+	return 0
+}
+
+func (x *LogisticsAutomation) GetDestinationPopulationPercent() int32 {
+	if x != nil {
+		return x.DestinationPopulationPercent
+	}
+	return 0
+}
+
+func (x *LogisticsAutomation) GetEscortMarginLy() int32 {
+	if x != nil {
+		return x.EscortMarginLy
+	}
+	return 0
+}
+
+func (x *LogisticsAutomation) GetEscortStrengthPercent() int32 {
+	if x != nil {
+		return x.EscortStrengthPercent
+	}
+	return 0
+}
+
+func (x *LogisticsAutomation) GetDisableSalvage() bool {
+	if x != nil {
+		return x.DisableSalvage
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetDisableMineralSupply() bool {
+	if x != nil {
+		return x.DisableMineralSupply
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetSingleShipyardRebuild() bool {
+	if x != nil {
+		return x.SingleShipyardRebuild
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetFleetRoles() map[int32]string {
+	if x != nil {
+		return x.FleetRoles
+	}
+	return nil
+}
+
+func (x *LogisticsAutomation) GetRebuildFleets() map[int32]bool {
+	if x != nil {
+		return x.RebuildFleets
+	}
+	return nil
+}
+
+func (x *LogisticsAutomation) GetBattleSalvage() bool {
+	if x != nil {
+		return x.BattleSalvage
+	}
+	return false
+}
+
+func (x *LogisticsAutomation) GetOffloadCombatCargo() bool {
+	if x != nil {
+		return x.OffloadCombatCargo
+	}
+	return false
+}
+
+type ResearchTaxPolicy struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Enabled         bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	LeftoverUntil   int32                  `protobuf:"varint,2,opt,name=leftover_until,json=leftoverUntil,proto3" json:"leftover_until,omitempty"`
+	MediumThreshold int32                  `protobuf:"varint,3,opt,name=medium_threshold,json=mediumThreshold,proto3" json:"medium_threshold,omitempty"`
+	LargeThreshold  int32                  `protobuf:"varint,4,opt,name=large_threshold,json=largeThreshold,proto3" json:"large_threshold,omitempty"`
+	SmallPercent    int32                  `protobuf:"varint,5,opt,name=small_percent,json=smallPercent,proto3" json:"small_percent,omitempty"`
+	MediumPercent   int32                  `protobuf:"varint,6,opt,name=medium_percent,json=mediumPercent,proto3" json:"medium_percent,omitempty"`
+	LargePercent    int32                  `protobuf:"varint,7,opt,name=large_percent,json=largePercent,proto3" json:"large_percent,omitempty"`
+	Basis           string                 `protobuf:"bytes,8,opt,name=basis,proto3" json:"basis,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ResearchTaxPolicy) Reset() {
+	*x = ResearchTaxPolicy{}
+	mi := &file_craig_stars_v1_player_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResearchTaxPolicy) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResearchTaxPolicy) ProtoMessage() {}
+
+func (x *ResearchTaxPolicy) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_player_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResearchTaxPolicy.ProtoReflect.Descriptor instead.
+func (*ResearchTaxPolicy) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ResearchTaxPolicy) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *ResearchTaxPolicy) GetLeftoverUntil() int32 {
+	if x != nil {
+		return x.LeftoverUntil
+	}
+	return 0
+}
+
+func (x *ResearchTaxPolicy) GetMediumThreshold() int32 {
+	if x != nil {
+		return x.MediumThreshold
+	}
+	return 0
+}
+
+func (x *ResearchTaxPolicy) GetLargeThreshold() int32 {
+	if x != nil {
+		return x.LargeThreshold
+	}
+	return 0
+}
+
+func (x *ResearchTaxPolicy) GetSmallPercent() int32 {
+	if x != nil {
+		return x.SmallPercent
+	}
+	return 0
+}
+
+func (x *ResearchTaxPolicy) GetMediumPercent() int32 {
+	if x != nil {
+		return x.MediumPercent
+	}
+	return 0
+}
+
+func (x *ResearchTaxPolicy) GetLargePercent() int32 {
+	if x != nil {
+		return x.LargePercent
+	}
+	return 0
+}
+
+func (x *ResearchTaxPolicy) GetBasis() string {
+	if x != nil {
+		return x.Basis
+	}
+	return ""
+}
+
+type FleetAssembly struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	RallyPlanetNum int32                  `protobuf:"varint,2,opt,name=rally_planet_num,json=rallyPlanetNum,proto3" json:"rally_planet_num,omitempty"`
+	Designs        map[int32]int32        `protobuf:"bytes,3,rep,name=designs,proto3" json:"designs,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	SourceFleets   map[int32]bool         `protobuf:"bytes,4,rep,name=source_fleets,json=sourceFleets,proto3" json:"source_fleets,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	BuildMissing   bool                   `protobuf:"varint,5,opt,name=build_missing,json=buildMissing,proto3" json:"build_missing,omitempty"`
+	Revision       int32                  `protobuf:"varint,6,opt,name=revision,proto3" json:"revision,omitempty"`
+	// Progress is server-owned; editing a composition increments revision.
+	LeaderFleetNum    int32  `protobuf:"varint,7,opt,name=leader_fleet_num,json=leaderFleetNum,proto3" json:"leader_fleet_num,omitempty"`
+	CompletedRevision int32  `protobuf:"varint,8,opt,name=completed_revision,json=completedRevision,proto3" json:"completed_revision,omitempty"`
+	NotifiedRevision  int32  `protobuf:"varint,9,opt,name=notified_revision,json=notifiedRevision,proto3" json:"notified_revision,omitempty"`
+	Status            string `protobuf:"bytes,10,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *FleetAssembly) Reset() {
+	*x = FleetAssembly{}
+	mi := &file_craig_stars_v1_player_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FleetAssembly) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FleetAssembly) ProtoMessage() {}
+
+func (x *FleetAssembly) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_player_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FleetAssembly.ProtoReflect.Descriptor instead.
+func (*FleetAssembly) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *FleetAssembly) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *FleetAssembly) GetRallyPlanetNum() int32 {
+	if x != nil {
+		return x.RallyPlanetNum
+	}
+	return 0
+}
+
+func (x *FleetAssembly) GetDesigns() map[int32]int32 {
+	if x != nil {
+		return x.Designs
+	}
+	return nil
+}
+
+func (x *FleetAssembly) GetSourceFleets() map[int32]bool {
+	if x != nil {
+		return x.SourceFleets
+	}
+	return nil
+}
+
+func (x *FleetAssembly) GetBuildMissing() bool {
+	if x != nil {
+		return x.BuildMissing
+	}
+	return false
+}
+
+func (x *FleetAssembly) GetRevision() int32 {
+	if x != nil {
+		return x.Revision
+	}
+	return 0
+}
+
+func (x *FleetAssembly) GetLeaderFleetNum() int32 {
+	if x != nil {
+		return x.LeaderFleetNum
+	}
+	return 0
+}
+
+func (x *FleetAssembly) GetCompletedRevision() int32 {
+	if x != nil {
+		return x.CompletedRevision
+	}
+	return 0
+}
+
+func (x *FleetAssembly) GetNotifiedRevision() int32 {
+	if x != nil {
+		return x.NotifiedRevision
+	}
+	return 0
+}
+
+func (x *FleetAssembly) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 type PlayerStats struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	FleetsBuilt      int32                  `protobuf:"varint,1,opt,name=fleets_built,json=fleetsBuilt,proto3" json:"fleets_built,omitempty"`
@@ -946,7 +1408,7 @@ type PlayerStats struct {
 
 func (x *PlayerStats) Reset() {
 	*x = PlayerStats{}
-	mi := &file_craig_stars_v1_player_proto_msgTypes[8]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -958,7 +1420,7 @@ func (x *PlayerStats) String() string {
 func (*PlayerStats) ProtoMessage() {}
 
 func (x *PlayerStats) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_player_proto_msgTypes[8]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -971,7 +1433,7 @@ func (x *PlayerStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerStats.ProtoReflect.Descriptor instead.
 func (*PlayerStats) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{8}
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *PlayerStats) GetFleetsBuilt() int32 {
@@ -1012,7 +1474,7 @@ type PlayerRelationship struct {
 
 func (x *PlayerRelationship) Reset() {
 	*x = PlayerRelationship{}
-	mi := &file_craig_stars_v1_player_proto_msgTypes[9]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1024,7 +1486,7 @@ func (x *PlayerRelationship) String() string {
 func (*PlayerRelationship) ProtoMessage() {}
 
 func (x *PlayerRelationship) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_player_proto_msgTypes[9]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1037,7 +1499,7 @@ func (x *PlayerRelationship) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerRelationship.ProtoReflect.Descriptor instead.
 func (*PlayerRelationship) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{9}
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *PlayerRelationship) GetRelation() PlayerRelation {
@@ -1066,7 +1528,7 @@ type PlayerResearchSpec struct {
 
 func (x *PlayerResearchSpec) Reset() {
 	*x = PlayerResearchSpec{}
-	mi := &file_craig_stars_v1_player_proto_msgTypes[10]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1078,7 +1540,7 @@ func (x *PlayerResearchSpec) String() string {
 func (*PlayerResearchSpec) ProtoMessage() {}
 
 func (x *PlayerResearchSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_player_proto_msgTypes[10]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1091,7 +1553,7 @@ func (x *PlayerResearchSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerResearchSpec.ProtoReflect.Descriptor instead.
 func (*PlayerResearchSpec) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{10}
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *PlayerResearchSpec) GetResourcesPerYear() int32 {
@@ -1137,7 +1599,7 @@ type BattlePlan struct {
 
 func (x *BattlePlan) Reset() {
 	*x = BattlePlan{}
-	mi := &file_craig_stars_v1_player_proto_msgTypes[11]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1149,7 +1611,7 @@ func (x *BattlePlan) String() string {
 func (*BattlePlan) ProtoMessage() {}
 
 func (x *BattlePlan) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_player_proto_msgTypes[11]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1162,7 +1624,7 @@ func (x *BattlePlan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BattlePlan.ProtoReflect.Descriptor instead.
 func (*BattlePlan) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{11}
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *BattlePlan) GetNum() int32 {
@@ -1225,7 +1687,7 @@ type TransportPlan struct {
 
 func (x *TransportPlan) Reset() {
 	*x = TransportPlan{}
-	mi := &file_craig_stars_v1_player_proto_msgTypes[12]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1237,7 +1699,7 @@ func (x *TransportPlan) String() string {
 func (*TransportPlan) ProtoMessage() {}
 
 func (x *TransportPlan) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_player_proto_msgTypes[12]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1250,7 +1712,7 @@ func (x *TransportPlan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransportPlan.ProtoReflect.Descriptor instead.
 func (*TransportPlan) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{12}
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *TransportPlan) GetNum() int32 {
@@ -1286,7 +1748,7 @@ type ProductionPlan struct {
 
 func (x *ProductionPlan) Reset() {
 	*x = ProductionPlan{}
-	mi := &file_craig_stars_v1_player_proto_msgTypes[13]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1298,7 +1760,7 @@ func (x *ProductionPlan) String() string {
 func (*ProductionPlan) ProtoMessage() {}
 
 func (x *ProductionPlan) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_player_proto_msgTypes[13]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1311,7 +1773,7 @@ func (x *ProductionPlan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProductionPlan.ProtoReflect.Descriptor instead.
 func (*ProductionPlan) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{13}
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ProductionPlan) GetNum() int32 {
@@ -1353,7 +1815,7 @@ type ProductionPlanItem struct {
 
 func (x *ProductionPlanItem) Reset() {
 	*x = ProductionPlanItem{}
-	mi := &file_craig_stars_v1_player_proto_msgTypes[14]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1365,7 +1827,7 @@ func (x *ProductionPlanItem) String() string {
 func (*ProductionPlanItem) ProtoMessage() {}
 
 func (x *ProductionPlanItem) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_player_proto_msgTypes[14]
+	mi := &file_craig_stars_v1_player_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1378,7 +1840,7 @@ func (x *ProductionPlanItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProductionPlanItem.ProtoReflect.Descriptor instead.
 func (*ProductionPlanItem) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{14}
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ProductionPlanItem) GetType() QueueItemType {
@@ -1491,15 +1953,88 @@ const file_craig_stars_v1_player_proto_rawDesc = "" +
 	"\vPlayerPlans\x12I\n" +
 	"\x10production_plans\x18\x01 \x03(\v2\x1e.craig_stars.v1.ProductionPlanR\x0fproductionPlans\x12=\n" +
 	"\fbattle_plans\x18\x02 \x03(\v2\x1a.craig_stars.v1.BattlePlanR\vbattlePlans\x12F\n" +
-	"\x0ftransport_plans\x18\x03 \x03(\v2\x1d.craig_stars.v1.TransportPlanR\x0etransportPlans\"\x85\x03\n" +
-	"\fPlayerOrders\x12;\n" +
+	"\x0ftransport_plans\x18\x03 \x03(\v2\x1d.craig_stars.v1.TransportPlanR\x0etransportPlans\"\xf4\x04\n" +
+	"\fPlayerOrders\x12C\n" +
+	"\n" +
+	"automation\x18\x06 \x01(\v2#.craig_stars.v1.LogisticsAutomationR\n" +
+	"automation\x12b\n" +
+	"\x12design_maintenance\x18\x05 \x03(\v23.craig_stars.v1.PlayerOrders.DesignMaintenanceEntryR\x11designMaintenance\x12;\n" +
 	"\vresearching\x18\x01 \x01(\x0e2\x19.craig_stars.v1.TechFieldR\vresearching\x12Q\n" +
 	"\x13next_research_field\x18\x02 \x01(\x0e2!.craig_stars.v1.NextResearchFieldR\x11nextResearchField\x12'\n" +
 	"\x0fresearch_amount\x18\x03 \x01(\x05R\x0eresearchAmount\x12Y\n" +
-	"\x0fcargo_transfers\x18\x04 \x03(\v20.craig_stars.v1.PlayerOrders.CargoTransfersEntryR\x0ecargoTransfers\x1aa\n" +
+	"\x0fcargo_transfers\x18\x04 \x03(\v20.craig_stars.v1.PlayerOrders.CargoTransfersEntryR\x0ecargoTransfers\x1aD\n" +
+	"\x16DesignMaintenanceEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1aa\n" +
 	"\x13CargoTransfersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x124\n" +
-	"\x05value\x18\x02 \x01(\v2\x1e.craig_stars.v1.CargoTransfersR\x05value:\x028\x01\"\xa9\x01\n" +
+	"\x05value\x18\x02 \x01(\v2\x1e.craig_stars.v1.CargoTransfersR\x05value:\x028\x01\"\x92\x0e\n" +
+	"\x13LogisticsAutomation\x12:\n" +
+	"\x19serve_terraforming_worlds\x18\x17 \x01(\bR\x17serveTerraformingWorlds\x129\n" +
+	"\x18infrastructure_transport\x18\x18 \x01(\bR\x17infrastructureTransport\x12>\n" +
+	"\x1bmanual_passenger_thresholds\x18\x16 \x01(\bR\x19manualPassengerThresholds\x12>\n" +
+	"\x1bdisable_passenger_transport\x18\x15 \x01(\bR\x19disablePassengerTransport\x12`\n" +
+	"\x0fdesign_families\x18\x14 \x03(\v27.craig_stars.v1.LogisticsAutomation.DesignFamiliesEntryR\x0edesignFamilies\x12D\n" +
+	"\fresearch_tax\x18\x12 \x01(\v2!.craig_stars.v1.ResearchTaxPolicyR\vresearchTax\x123\n" +
+	"\x16scout_max_return_turns\x18\x13 \x01(\x05R\x13scoutMaxReturnTurns\x128\n" +
+	"\x18repair_threshold_percent\x18\x0e \x01(\x05R\x16repairThresholdPercent\x128\n" +
+	"\x18disable_automatic_repair\x18\x0f \x01(\bR\x16disableAutomaticRepair\x12@\n" +
+	"\x1cdisable_interception_evasion\x18\x10 \x01(\bR\x1adisableInterceptionEvasion\x12+\n" +
+	"\x11automatic_packets\x18\x11 \x01(\bR\x10automaticPackets\x12c\n" +
+	"\x10fleet_assemblies\x18\r \x03(\v28.craig_stars.v1.LogisticsAutomation.FleetAssembliesEntryR\x0ffleetAssemblies\x12/\n" +
+	"\x13passenger_transport\x18\x05 \x01(\bR\x12passengerTransport\x12:\n" +
+	"\x19source_population_percent\x18\x06 \x01(\x05R\x17sourcePopulationPercent\x12D\n" +
+	"\x1edestination_population_percent\x18\a \x01(\x05R\x1cdestinationPopulationPercent\x12(\n" +
+	"\x10escort_margin_ly\x18\b \x01(\x05R\x0eescortMarginLy\x126\n" +
+	"\x17escort_strength_percent\x18\t \x01(\x05R\x15escortStrengthPercent\x12'\n" +
+	"\x0fdisable_salvage\x18\n" +
+	" \x01(\bR\x0edisableSalvage\x124\n" +
+	"\x16disable_mineral_supply\x18\v \x01(\bR\x14disableMineralSupply\x126\n" +
+	"\x17single_shipyard_rebuild\x18\f \x01(\bR\x15singleShipyardRebuild\x12T\n" +
+	"\vfleet_roles\x18\x01 \x03(\v23.craig_stars.v1.LogisticsAutomation.FleetRolesEntryR\n" +
+	"fleetRoles\x12]\n" +
+	"\x0erebuild_fleets\x18\x02 \x03(\v26.craig_stars.v1.LogisticsAutomation.RebuildFleetsEntryR\rrebuildFleets\x12%\n" +
+	"\x0ebattle_salvage\x18\x03 \x01(\bR\rbattleSalvage\x120\n" +
+	"\x14offload_combat_cargo\x18\x04 \x01(\bR\x12offloadCombatCargo\x1aA\n" +
+	"\x13DesignFamiliesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1aa\n" +
+	"\x14FleetAssembliesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x123\n" +
+	"\x05value\x18\x02 \x01(\v2\x1d.craig_stars.v1.FleetAssemblyR\x05value:\x028\x01\x1a=\n" +
+	"\x0fFleetRolesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a@\n" +
+	"\x12RebuildFleetsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xaf\x02\n" +
+	"\x11ResearchTaxPolicy\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12%\n" +
+	"\x0eleftover_until\x18\x02 \x01(\x05R\rleftoverUntil\x12)\n" +
+	"\x10medium_threshold\x18\x03 \x01(\x05R\x0fmediumThreshold\x12'\n" +
+	"\x0flarge_threshold\x18\x04 \x01(\x05R\x0elargeThreshold\x12#\n" +
+	"\rsmall_percent\x18\x05 \x01(\x05R\fsmallPercent\x12%\n" +
+	"\x0emedium_percent\x18\x06 \x01(\x05R\rmediumPercent\x12#\n" +
+	"\rlarge_percent\x18\a \x01(\x05R\flargePercent\x12\x14\n" +
+	"\x05basis\x18\b \x01(\tR\x05basis\"\xc5\x04\n" +
+	"\rFleetAssembly\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12(\n" +
+	"\x10rally_planet_num\x18\x02 \x01(\x05R\x0erallyPlanetNum\x12D\n" +
+	"\adesigns\x18\x03 \x03(\v2*.craig_stars.v1.FleetAssembly.DesignsEntryR\adesigns\x12T\n" +
+	"\rsource_fleets\x18\x04 \x03(\v2/.craig_stars.v1.FleetAssembly.SourceFleetsEntryR\fsourceFleets\x12#\n" +
+	"\rbuild_missing\x18\x05 \x01(\bR\fbuildMissing\x12\x1a\n" +
+	"\brevision\x18\x06 \x01(\x05R\brevision\x12(\n" +
+	"\x10leader_fleet_num\x18\a \x01(\x05R\x0eleaderFleetNum\x12-\n" +
+	"\x12completed_revision\x18\b \x01(\x05R\x11completedRevision\x12+\n" +
+	"\x11notified_revision\x18\t \x01(\x05R\x10notifiedRevision\x12\x16\n" +
+	"\x06status\x18\n" +
+	" \x01(\tR\x06status\x1a:\n" +
+	"\fDesignsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1a?\n" +
+	"\x11SourceFleetsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xa9\x01\n" +
 	"\vPlayerStats\x12!\n" +
 	"\ffleets_built\x18\x01 \x01(\x05R\vfleetsBuilt\x12'\n" +
 	"\x0fstarbases_built\x18\x02 \x01(\x05R\x0estarbasesBuilt\x12!\n" +
@@ -1558,7 +2093,7 @@ func file_craig_stars_v1_player_proto_rawDescGZIP() []byte {
 }
 
 var file_craig_stars_v1_player_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_craig_stars_v1_player_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_craig_stars_v1_player_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_craig_stars_v1_player_proto_goTypes = []any{
 	(PlayerRelation)(0),            // 0: craig_stars.v1.PlayerRelation
 	(*Player)(nil),                 // 1: craig_stars.v1.Player
@@ -1569,101 +2104,121 @@ var file_craig_stars_v1_player_proto_goTypes = []any{
 	(*Intels)(nil),                 // 6: craig_stars.v1.Intels
 	(*PlayerPlans)(nil),            // 7: craig_stars.v1.PlayerPlans
 	(*PlayerOrders)(nil),           // 8: craig_stars.v1.PlayerOrders
-	(*PlayerStats)(nil),            // 9: craig_stars.v1.PlayerStats
-	(*PlayerRelationship)(nil),     // 10: craig_stars.v1.PlayerRelationship
-	(*PlayerResearchSpec)(nil),     // 11: craig_stars.v1.PlayerResearchSpec
-	(*BattlePlan)(nil),             // 12: craig_stars.v1.BattlePlan
-	(*TransportPlan)(nil),          // 13: craig_stars.v1.TransportPlan
-	(*ProductionPlan)(nil),         // 14: craig_stars.v1.ProductionPlan
-	(*ProductionPlanItem)(nil),     // 15: craig_stars.v1.ProductionPlanItem
-	nil,                            // 16: craig_stars.v1.Player.AcquiredTechsEntry
-	nil,                            // 17: craig_stars.v1.PlayerOrders.CargoTransfersEntry
-	(*GameDBObject)(nil),           // 18: craig_stars.v1.GameDBObject
-	(AiDifficulty)(0),              // 19: craig_stars.v1.AiDifficulty
-	(*Race)(nil),                   // 20: craig_stars.v1.Race
-	(*TechLevel)(nil),              // 21: craig_stars.v1.TechLevel
-	(*PlayerMessage)(nil),          // 22: craig_stars.v1.PlayerMessage
-	(*BattleRecord)(nil),           // 23: craig_stars.v1.BattleRecord
-	(*PlayerIntel)(nil),            // 24: craig_stars.v1.PlayerIntel
-	(*ScoreIntel)(nil),             // 25: craig_stars.v1.ScoreIntel
-	(*ShipDesign)(nil),             // 26: craig_stars.v1.ShipDesign
-	(*Planet)(nil),                 // 27: craig_stars.v1.Planet
-	(*Fleet)(nil),                  // 28: craig_stars.v1.Fleet
-	(*Minefield)(nil),              // 29: craig_stars.v1.Minefield
-	(*MineralPacket)(nil),          // 30: craig_stars.v1.MineralPacket
-	(*MysteryTrader)(nil),          // 31: craig_stars.v1.MysteryTrader
-	(*Salvage)(nil),                // 32: craig_stars.v1.Salvage
-	(*Wormhole)(nil),               // 33: craig_stars.v1.Wormhole
-	(*MapObjectTarget)(nil),        // 34: craig_stars.v1.MapObjectTarget
-	(*Cargo)(nil),                  // 35: craig_stars.v1.Cargo
-	(*timestamppb.Timestamp)(nil),  // 36: google.protobuf.Timestamp
-	(TechField)(0),                 // 37: craig_stars.v1.TechField
-	(NextResearchField)(0),         // 38: craig_stars.v1.NextResearchField
-	(BattleTarget)(0),              // 39: craig_stars.v1.BattleTarget
-	(BattleTactic)(0),              // 40: craig_stars.v1.BattleTactic
-	(BattleAttackWho)(0),           // 41: craig_stars.v1.BattleAttackWho
-	(*WaypointTransportTasks)(nil), // 42: craig_stars.v1.WaypointTransportTasks
-	(QueueItemType)(0),             // 43: craig_stars.v1.QueueItemType
+	(*LogisticsAutomation)(nil),    // 9: craig_stars.v1.LogisticsAutomation
+	(*ResearchTaxPolicy)(nil),      // 10: craig_stars.v1.ResearchTaxPolicy
+	(*FleetAssembly)(nil),          // 11: craig_stars.v1.FleetAssembly
+	(*PlayerStats)(nil),            // 12: craig_stars.v1.PlayerStats
+	(*PlayerRelationship)(nil),     // 13: craig_stars.v1.PlayerRelationship
+	(*PlayerResearchSpec)(nil),     // 14: craig_stars.v1.PlayerResearchSpec
+	(*BattlePlan)(nil),             // 15: craig_stars.v1.BattlePlan
+	(*TransportPlan)(nil),          // 16: craig_stars.v1.TransportPlan
+	(*ProductionPlan)(nil),         // 17: craig_stars.v1.ProductionPlan
+	(*ProductionPlanItem)(nil),     // 18: craig_stars.v1.ProductionPlanItem
+	nil,                            // 19: craig_stars.v1.Player.AcquiredTechsEntry
+	nil,                            // 20: craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
+	nil,                            // 21: craig_stars.v1.PlayerOrders.CargoTransfersEntry
+	nil,                            // 22: craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
+	nil,                            // 23: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
+	nil,                            // 24: craig_stars.v1.LogisticsAutomation.FleetRolesEntry
+	nil,                            // 25: craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
+	nil,                            // 26: craig_stars.v1.FleetAssembly.DesignsEntry
+	nil,                            // 27: craig_stars.v1.FleetAssembly.SourceFleetsEntry
+	(*GameDBObject)(nil),           // 28: craig_stars.v1.GameDBObject
+	(AiDifficulty)(0),              // 29: craig_stars.v1.AiDifficulty
+	(*Race)(nil),                   // 30: craig_stars.v1.Race
+	(*TechLevel)(nil),              // 31: craig_stars.v1.TechLevel
+	(*PlayerMessage)(nil),          // 32: craig_stars.v1.PlayerMessage
+	(*BattleRecord)(nil),           // 33: craig_stars.v1.BattleRecord
+	(*PlayerIntel)(nil),            // 34: craig_stars.v1.PlayerIntel
+	(*ScoreIntel)(nil),             // 35: craig_stars.v1.ScoreIntel
+	(*ShipDesign)(nil),             // 36: craig_stars.v1.ShipDesign
+	(*Planet)(nil),                 // 37: craig_stars.v1.Planet
+	(*Fleet)(nil),                  // 38: craig_stars.v1.Fleet
+	(*Minefield)(nil),              // 39: craig_stars.v1.Minefield
+	(*MineralPacket)(nil),          // 40: craig_stars.v1.MineralPacket
+	(*MysteryTrader)(nil),          // 41: craig_stars.v1.MysteryTrader
+	(*Salvage)(nil),                // 42: craig_stars.v1.Salvage
+	(*Wormhole)(nil),               // 43: craig_stars.v1.Wormhole
+	(*MapObjectTarget)(nil),        // 44: craig_stars.v1.MapObjectTarget
+	(*Cargo)(nil),                  // 45: craig_stars.v1.Cargo
+	(*timestamppb.Timestamp)(nil),  // 46: google.protobuf.Timestamp
+	(TechField)(0),                 // 47: craig_stars.v1.TechField
+	(NextResearchField)(0),         // 48: craig_stars.v1.NextResearchField
+	(BattleTarget)(0),              // 49: craig_stars.v1.BattleTarget
+	(BattleTactic)(0),              // 50: craig_stars.v1.BattleTactic
+	(BattleAttackWho)(0),           // 51: craig_stars.v1.BattleAttackWho
+	(*WaypointTransportTasks)(nil), // 52: craig_stars.v1.WaypointTransportTasks
+	(QueueItemType)(0),             // 53: craig_stars.v1.QueueItemType
 }
 var file_craig_stars_v1_player_proto_depIdxs = []int32{
-	18, // 0: craig_stars.v1.Player.game_db_object:type_name -> craig_stars.v1.GameDBObject
+	28, // 0: craig_stars.v1.Player.game_db_object:type_name -> craig_stars.v1.GameDBObject
 	8,  // 1: craig_stars.v1.Player.player_orders:type_name -> craig_stars.v1.PlayerOrders
 	7,  // 2: craig_stars.v1.Player.player_plans:type_name -> craig_stars.v1.PlayerPlans
-	19, // 3: craig_stars.v1.Player.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
-	20, // 4: craig_stars.v1.Player.race:type_name -> craig_stars.v1.Race
-	21, // 5: craig_stars.v1.Player.tech_levels:type_name -> craig_stars.v1.TechLevel
-	21, // 6: craig_stars.v1.Player.tech_levels_spent:type_name -> craig_stars.v1.TechLevel
-	10, // 7: craig_stars.v1.Player.relations:type_name -> craig_stars.v1.PlayerRelationship
-	22, // 8: craig_stars.v1.Player.messages:type_name -> craig_stars.v1.PlayerMessage
-	16, // 9: craig_stars.v1.Player.acquired_techs:type_name -> craig_stars.v1.Player.AcquiredTechsEntry
-	9,  // 10: craig_stars.v1.Player.stats:type_name -> craig_stars.v1.PlayerStats
-	23, // 11: craig_stars.v1.PlayerUniverse.battle_records:type_name -> craig_stars.v1.BattleRecord
-	24, // 12: craig_stars.v1.PlayerUniverse.player_intels:type_name -> craig_stars.v1.PlayerIntel
-	25, // 13: craig_stars.v1.PlayerUniverse.score_intels:type_name -> craig_stars.v1.ScoreIntel
-	26, // 14: craig_stars.v1.PlayerUniverse.designs:type_name -> craig_stars.v1.ShipDesign
-	27, // 15: craig_stars.v1.PlayerUniverse.planets:type_name -> craig_stars.v1.Planet
-	28, // 16: craig_stars.v1.PlayerUniverse.fleets:type_name -> craig_stars.v1.Fleet
-	29, // 17: craig_stars.v1.PlayerUniverse.minefields:type_name -> craig_stars.v1.Minefield
-	30, // 18: craig_stars.v1.PlayerUniverse.mineral_packets:type_name -> craig_stars.v1.MineralPacket
-	31, // 19: craig_stars.v1.PlayerUniverse.mystery_traders:type_name -> craig_stars.v1.MysteryTrader
-	32, // 20: craig_stars.v1.PlayerUniverse.salvages:type_name -> craig_stars.v1.Salvage
-	33, // 21: craig_stars.v1.PlayerUniverse.wormholes:type_name -> craig_stars.v1.Wormhole
-	34, // 22: craig_stars.v1.ByHandCargoTransfer.map_object_target:type_name -> craig_stars.v1.MapObjectTarget
-	35, // 23: craig_stars.v1.ByHandCargoTransfer.cargo:type_name -> craig_stars.v1.Cargo
+	29, // 3: craig_stars.v1.Player.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
+	30, // 4: craig_stars.v1.Player.race:type_name -> craig_stars.v1.Race
+	31, // 5: craig_stars.v1.Player.tech_levels:type_name -> craig_stars.v1.TechLevel
+	31, // 6: craig_stars.v1.Player.tech_levels_spent:type_name -> craig_stars.v1.TechLevel
+	13, // 7: craig_stars.v1.Player.relations:type_name -> craig_stars.v1.PlayerRelationship
+	32, // 8: craig_stars.v1.Player.messages:type_name -> craig_stars.v1.PlayerMessage
+	19, // 9: craig_stars.v1.Player.acquired_techs:type_name -> craig_stars.v1.Player.AcquiredTechsEntry
+	12, // 10: craig_stars.v1.Player.stats:type_name -> craig_stars.v1.PlayerStats
+	33, // 11: craig_stars.v1.PlayerUniverse.battle_records:type_name -> craig_stars.v1.BattleRecord
+	34, // 12: craig_stars.v1.PlayerUniverse.player_intels:type_name -> craig_stars.v1.PlayerIntel
+	35, // 13: craig_stars.v1.PlayerUniverse.score_intels:type_name -> craig_stars.v1.ScoreIntel
+	36, // 14: craig_stars.v1.PlayerUniverse.designs:type_name -> craig_stars.v1.ShipDesign
+	37, // 15: craig_stars.v1.PlayerUniverse.planets:type_name -> craig_stars.v1.Planet
+	38, // 16: craig_stars.v1.PlayerUniverse.fleets:type_name -> craig_stars.v1.Fleet
+	39, // 17: craig_stars.v1.PlayerUniverse.minefields:type_name -> craig_stars.v1.Minefield
+	40, // 18: craig_stars.v1.PlayerUniverse.mineral_packets:type_name -> craig_stars.v1.MineralPacket
+	41, // 19: craig_stars.v1.PlayerUniverse.mystery_traders:type_name -> craig_stars.v1.MysteryTrader
+	42, // 20: craig_stars.v1.PlayerUniverse.salvages:type_name -> craig_stars.v1.Salvage
+	43, // 21: craig_stars.v1.PlayerUniverse.wormholes:type_name -> craig_stars.v1.Wormhole
+	44, // 22: craig_stars.v1.ByHandCargoTransfer.map_object_target:type_name -> craig_stars.v1.MapObjectTarget
+	45, // 23: craig_stars.v1.ByHandCargoTransfer.cargo:type_name -> craig_stars.v1.Cargo
 	3,  // 24: craig_stars.v1.CargoTransfers.transfers:type_name -> craig_stars.v1.ByHandCargoTransfer
-	36, // 25: craig_stars.v1.PlayerStatus.updated_at:type_name -> google.protobuf.Timestamp
-	19, // 26: craig_stars.v1.PlayerStatus.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
-	23, // 27: craig_stars.v1.Intels.battle_records:type_name -> craig_stars.v1.BattleRecord
-	24, // 28: craig_stars.v1.Intels.player_intels:type_name -> craig_stars.v1.PlayerIntel
-	25, // 29: craig_stars.v1.Intels.score_intels:type_name -> craig_stars.v1.ScoreIntel
-	27, // 30: craig_stars.v1.Intels.planet_intels:type_name -> craig_stars.v1.Planet
-	28, // 31: craig_stars.v1.Intels.fleet_intels:type_name -> craig_stars.v1.Fleet
-	26, // 32: craig_stars.v1.Intels.ship_design_intels:type_name -> craig_stars.v1.ShipDesign
-	30, // 33: craig_stars.v1.Intels.mineral_packet_intels:type_name -> craig_stars.v1.MineralPacket
-	29, // 34: craig_stars.v1.Intels.minefield_intels:type_name -> craig_stars.v1.Minefield
-	33, // 35: craig_stars.v1.Intels.wormhole_intels:type_name -> craig_stars.v1.Wormhole
-	31, // 36: craig_stars.v1.Intels.mystery_trader_intels:type_name -> craig_stars.v1.MysteryTrader
-	32, // 37: craig_stars.v1.Intels.salvage_intels:type_name -> craig_stars.v1.Salvage
-	14, // 38: craig_stars.v1.PlayerPlans.production_plans:type_name -> craig_stars.v1.ProductionPlan
-	12, // 39: craig_stars.v1.PlayerPlans.battle_plans:type_name -> craig_stars.v1.BattlePlan
-	13, // 40: craig_stars.v1.PlayerPlans.transport_plans:type_name -> craig_stars.v1.TransportPlan
-	37, // 41: craig_stars.v1.PlayerOrders.researching:type_name -> craig_stars.v1.TechField
-	38, // 42: craig_stars.v1.PlayerOrders.next_research_field:type_name -> craig_stars.v1.NextResearchField
-	17, // 43: craig_stars.v1.PlayerOrders.cargo_transfers:type_name -> craig_stars.v1.PlayerOrders.CargoTransfersEntry
-	0,  // 44: craig_stars.v1.PlayerRelationship.relation:type_name -> craig_stars.v1.PlayerRelation
-	39, // 45: craig_stars.v1.BattlePlan.primary_target:type_name -> craig_stars.v1.BattleTarget
-	39, // 46: craig_stars.v1.BattlePlan.secondary_target:type_name -> craig_stars.v1.BattleTarget
-	40, // 47: craig_stars.v1.BattlePlan.tactic:type_name -> craig_stars.v1.BattleTactic
-	41, // 48: craig_stars.v1.BattlePlan.attack_who:type_name -> craig_stars.v1.BattleAttackWho
-	42, // 49: craig_stars.v1.TransportPlan.tasks:type_name -> craig_stars.v1.WaypointTransportTasks
-	15, // 50: craig_stars.v1.ProductionPlan.items:type_name -> craig_stars.v1.ProductionPlanItem
-	43, // 51: craig_stars.v1.ProductionPlanItem.type:type_name -> craig_stars.v1.QueueItemType
-	4,  // 52: craig_stars.v1.PlayerOrders.CargoTransfersEntry.value:type_name -> craig_stars.v1.CargoTransfers
-	53, // [53:53] is the sub-list for method output_type
-	53, // [53:53] is the sub-list for method input_type
-	53, // [53:53] is the sub-list for extension type_name
-	53, // [53:53] is the sub-list for extension extendee
-	0,  // [0:53] is the sub-list for field type_name
+	46, // 25: craig_stars.v1.PlayerStatus.updated_at:type_name -> google.protobuf.Timestamp
+	29, // 26: craig_stars.v1.PlayerStatus.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
+	33, // 27: craig_stars.v1.Intels.battle_records:type_name -> craig_stars.v1.BattleRecord
+	34, // 28: craig_stars.v1.Intels.player_intels:type_name -> craig_stars.v1.PlayerIntel
+	35, // 29: craig_stars.v1.Intels.score_intels:type_name -> craig_stars.v1.ScoreIntel
+	37, // 30: craig_stars.v1.Intels.planet_intels:type_name -> craig_stars.v1.Planet
+	38, // 31: craig_stars.v1.Intels.fleet_intels:type_name -> craig_stars.v1.Fleet
+	36, // 32: craig_stars.v1.Intels.ship_design_intels:type_name -> craig_stars.v1.ShipDesign
+	40, // 33: craig_stars.v1.Intels.mineral_packet_intels:type_name -> craig_stars.v1.MineralPacket
+	39, // 34: craig_stars.v1.Intels.minefield_intels:type_name -> craig_stars.v1.Minefield
+	43, // 35: craig_stars.v1.Intels.wormhole_intels:type_name -> craig_stars.v1.Wormhole
+	41, // 36: craig_stars.v1.Intels.mystery_trader_intels:type_name -> craig_stars.v1.MysteryTrader
+	42, // 37: craig_stars.v1.Intels.salvage_intels:type_name -> craig_stars.v1.Salvage
+	17, // 38: craig_stars.v1.PlayerPlans.production_plans:type_name -> craig_stars.v1.ProductionPlan
+	15, // 39: craig_stars.v1.PlayerPlans.battle_plans:type_name -> craig_stars.v1.BattlePlan
+	16, // 40: craig_stars.v1.PlayerPlans.transport_plans:type_name -> craig_stars.v1.TransportPlan
+	9,  // 41: craig_stars.v1.PlayerOrders.automation:type_name -> craig_stars.v1.LogisticsAutomation
+	20, // 42: craig_stars.v1.PlayerOrders.design_maintenance:type_name -> craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
+	47, // 43: craig_stars.v1.PlayerOrders.researching:type_name -> craig_stars.v1.TechField
+	48, // 44: craig_stars.v1.PlayerOrders.next_research_field:type_name -> craig_stars.v1.NextResearchField
+	21, // 45: craig_stars.v1.PlayerOrders.cargo_transfers:type_name -> craig_stars.v1.PlayerOrders.CargoTransfersEntry
+	22, // 46: craig_stars.v1.LogisticsAutomation.design_families:type_name -> craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
+	10, // 47: craig_stars.v1.LogisticsAutomation.research_tax:type_name -> craig_stars.v1.ResearchTaxPolicy
+	23, // 48: craig_stars.v1.LogisticsAutomation.fleet_assemblies:type_name -> craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
+	24, // 49: craig_stars.v1.LogisticsAutomation.fleet_roles:type_name -> craig_stars.v1.LogisticsAutomation.FleetRolesEntry
+	25, // 50: craig_stars.v1.LogisticsAutomation.rebuild_fleets:type_name -> craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
+	26, // 51: craig_stars.v1.FleetAssembly.designs:type_name -> craig_stars.v1.FleetAssembly.DesignsEntry
+	27, // 52: craig_stars.v1.FleetAssembly.source_fleets:type_name -> craig_stars.v1.FleetAssembly.SourceFleetsEntry
+	0,  // 53: craig_stars.v1.PlayerRelationship.relation:type_name -> craig_stars.v1.PlayerRelation
+	49, // 54: craig_stars.v1.BattlePlan.primary_target:type_name -> craig_stars.v1.BattleTarget
+	49, // 55: craig_stars.v1.BattlePlan.secondary_target:type_name -> craig_stars.v1.BattleTarget
+	50, // 56: craig_stars.v1.BattlePlan.tactic:type_name -> craig_stars.v1.BattleTactic
+	51, // 57: craig_stars.v1.BattlePlan.attack_who:type_name -> craig_stars.v1.BattleAttackWho
+	52, // 58: craig_stars.v1.TransportPlan.tasks:type_name -> craig_stars.v1.WaypointTransportTasks
+	18, // 59: craig_stars.v1.ProductionPlan.items:type_name -> craig_stars.v1.ProductionPlanItem
+	53, // 60: craig_stars.v1.ProductionPlanItem.type:type_name -> craig_stars.v1.QueueItemType
+	4,  // 61: craig_stars.v1.PlayerOrders.CargoTransfersEntry.value:type_name -> craig_stars.v1.CargoTransfers
+	11, // 62: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry.value:type_name -> craig_stars.v1.FleetAssembly
+	63, // [63:63] is the sub-list for method output_type
+	63, // [63:63] is the sub-list for method input_type
+	63, // [63:63] is the sub-list for extension type_name
+	63, // [63:63] is the sub-list for extension extendee
+	0,  // [0:63] is the sub-list for field type_name
 }
 
 func init() { file_craig_stars_v1_player_proto_init() }
@@ -1690,7 +2245,7 @@ func file_craig_stars_v1_player_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_craig_stars_v1_player_proto_rawDesc), len(file_craig_stars_v1_player_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   17,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

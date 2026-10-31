@@ -148,6 +148,13 @@ func (m *TechRequirements) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.AcquiredTechPrerequisite) > 0 {
+		i -= len(m.AcquiredTechPrerequisite)
+		copy(dAtA[i:], m.AcquiredTechPrerequisite)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.AcquiredTechPrerequisite)))
+		i--
+		dAtA[i] = 0x72
+	}
 	if m.Acquirable {
 		i--
 		if m.Acquirable {
@@ -270,6 +277,14 @@ func (m *TechHullComponent) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.StrategicSpeedFactor != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.StrategicSpeedFactor))))
+		i--
+		dAtA[i] = 0x3
+		i--
+		dAtA[i] = 0xe1
 	}
 	if len(m.FuelUsage) > 0 {
 		var pksize2 int
@@ -1283,6 +1298,12 @@ func (m *Engine) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.StrategicSpeedFactor != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.StrategicSpeedFactor))))
+		i--
+		dAtA[i] = 0x29
+	}
 	if len(m.FuelUsage) > 0 {
 		var pksize2 int
 		for _, num := range m.FuelUsage {
@@ -1466,6 +1487,10 @@ func (m *TechRequirements) SizeVT() (n int) {
 	if m.Acquirable {
 		n += 2
 	}
+	l = len(m.AcquiredTechPrerequisite)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1639,6 +1664,9 @@ func (m *TechHullComponent) SizeVT() (n int) {
 			l += protohelpers.SizeOfVarint(uint64(e))
 		}
 		n += 2 + protohelpers.SizeOfVarint(uint64(l)) + l
+	}
+	if m.StrategicSpeedFactor != 0 {
+		n += 10
 	}
 	n += len(m.unknownFields)
 	return n
@@ -1864,6 +1892,9 @@ func (m *Engine) SizeVT() (n int) {
 			l += protohelpers.SizeOfVarint(uint64(e))
 		}
 		n += 1 + protohelpers.SizeOfVarint(uint64(l)) + l
+	}
+	if m.StrategicSpeedFactor != 0 {
+		n += 9
 	}
 	n += len(m.unknownFields)
 	return n
@@ -2546,6 +2577,38 @@ func (m *TechRequirements) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Acquirable = bool(v != 0)
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AcquiredTechPrerequisite", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AcquiredTechPrerequisite = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -3636,6 +3699,17 @@ func (m *TechHullComponent) UnmarshalVT(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field FuelUsage", wireType)
 			}
+		case 60:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StrategicSpeedFactor", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.StrategicSpeedFactor = float64(math.Float64frombits(v))
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -5086,6 +5160,17 @@ func (m *Engine) UnmarshalVT(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field FuelUsage", wireType)
 			}
+		case 5:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StrategicSpeedFactor", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.StrategicSpeedFactor = float64(math.Float64frombits(v))
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

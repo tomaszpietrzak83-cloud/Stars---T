@@ -31,12 +31,15 @@ func (s *raceService) GetRaces(ctx context.Context, req *connect.Request[craig_s
 	}
 
 	return connect.NewResponse(&craig_starsv1.GetRacesResponse{
-		Races: converter.C.ConvertCSRaces(races),
+		Races: converter.C.ConvertCSRaces(append(races, raceTemplates()...)),
 	}), nil
 }
 
 // GetRace returns a single race by ID
 func (s *raceService) GetRace(ctx context.Context, req *connect.Request[craig_starsv1.GetRaceRequest]) (*connect.Response[craig_starsv1.GetRaceResponse], error) {
+	if template := raceTemplate(req.Msg.RaceId); template != nil {
+		return connect.NewResponse(&craig_starsv1.GetRaceResponse{Race: converter.C.ConvertCSRace(*template)}), nil
+	}
 	dbClient := contextDb(ctx)
 	user := contextUserSession(ctx)
 

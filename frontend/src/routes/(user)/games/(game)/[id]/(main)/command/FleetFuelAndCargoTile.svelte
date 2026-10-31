@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {packedInstallationMass} from '#lib/types/InfrastructureCargo.js';
 	import CargoBar from '#lib/components/game/CargoBar.svelte';
 	import FuelBar from '#lib/components/game/FuelBar.svelte';
 	import type { ShowCargoTransferDialogProps } from '#lib/services/Events.js';
@@ -51,7 +52,7 @@
 		<div class="flex justify-between my-1">
 			<div class="w-12 text-tile-item-title">Cargo</div>
 			<div class="ml-1 size-full">
-				<CargoBar
+				<CargoBar extraMass={packedInstallationMass(fleet)}
 					onPointerDown={transfer}
 					canTransferCargo={canTransferCargo(fleet)}
 					value={fleet.cargo}

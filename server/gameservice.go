@@ -42,6 +42,13 @@ func (s *gameService) CreateGame(ctx context.Context, req *connect.Request[craig
 
 	// Convert proto settings to CS settings
 	settings := converter.C.ConvertGameSettings(req.Msg.Settings)
+	if settings.HostStartPosition != "" && settings.HostStartPosition != "random" && settings.HostStartPosition != "edge" && settings.HostStartPosition != "center" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("unknown host starting location"))
+	}
+	rules := cs.NewRules()
+	if _, err := rules.GetArea(settings.Size); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("unsupported map size; restart the local server after updating: %w", err))
+	}
 
 	// make sure guests don't create multiplayer games
 	if user.isGuest() && !settings.IsSinglePlayer() {

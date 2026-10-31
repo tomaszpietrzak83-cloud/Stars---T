@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -117,14 +118,14 @@ func Start(config configpkg.Config) error {
 		SecretReader: token.SecretFunc(func(_ string) (string, error) { // secret key for JWT, ignores aud
 			return server.config.Auth.Secret, nil
 		}),
-		TokenDuration:     time.Minute,                           // short token, refreshed automatically
-		CookieDuration:    cookieDuration,                        // cookie fine to keep for long time
-		SecureCookies:     server.config.Auth.SecureCookie,       // true for deployment, false for local dev
-		DisableXSRF:       config.Auth.DisableXSRF,               // don't disable XSRF in real-life applications!
-		Issuer:            issuer,                                // part of token, just informational
-		URL:               server.config.Auth.URL,                // base url of the protected service
-		AvatarStore:       avatar.NewLocalFS("/tmp/craig-stars"), // stores avatars locally
-		AvatarResizeLimit: 200,                                   // resizes avatars to 200x200
+		TokenDuration:     time.Minute,                                                   // short token, refreshed automatically
+		CookieDuration:    cookieDuration,                                                // cookie fine to keep for long time
+		SecureCookies:     server.config.Auth.SecureCookie,                               // true for deployment, false for local dev
+		DisableXSRF:       config.Auth.DisableXSRF,                                       // don't disable XSRF in real-life applications!
+		Issuer:            issuer,                                                        // part of token, just informational
+		URL:               server.config.Auth.URL,                                        // base url of the protected service
+		AvatarStore:       avatar.NewLocalFS(filepath.Join(os.TempDir(), "craig-stars")), // portable writable avatar cache
+		AvatarResizeLimit: 200,                                                           // resizes avatars to 200x200
 		ClaimsUpd: token.ClaimsUpdFunc(func(claims token.Claims) token.Claims { // modify issued token
 			if claims.User != nil {
 				tokenUser := newTokenUser(claims.User)
@@ -420,6 +421,7 @@ func Start(config configpkg.Config) error {
 func withVersionHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-App-Version", version.Semver)
+		w.Header().Set("X-App-Capabilities", "expanded-maps,eee-races,race-templates,eee-techs")
 		next.ServeHTTP(w, r)
 	})
 }

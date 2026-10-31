@@ -1,0 +1,1 @@
+import{t as e}from"./BUUVNDsH.js";var t=e(function(e,t,n){return e+(n?`-`:``)+t.toLowerCase()});export{t};

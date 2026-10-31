@@ -8,7 +8,7 @@
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { StargateWarpSpeed } from '#lib/types/Consts.js';
 	import { MapObjectType, WaypointSchema, type Waypoint } from '#lib/types/cs-proto.js';
-	import { CommandedFleet } from '#lib/types/Fleet.js';
+	import { CommandedFleet, getStrategicSpeed } from '#lib/types/Fleet.js';
 	import { create } from '@bufbuild/protobuf';
 	import CommandTile from './CommandTile.svelte';
 
@@ -168,6 +168,12 @@
 				<span class="text-tile-item-title">Travel Time</span>
 				<span>{legTravelTime}</span>
 			</div>
+			{#if waypoint.warpSpeed > 0 && waypoint.warpSpeed < StargateWarpSpeed}
+				<div class="flex justify-between mt-1">
+					<span class="text-tile-item-title">Travel Speed</span>
+					<span>{getStrategicSpeed(fleet, waypoint.warpSpeed)} ly/year</span>
+				</div>
+			{/if}
 			<div class="flex justify-between mt-1">
 				<span class="text-tile-item-title">Total Travel Time</span>
 				<span>{totalTravelTime}</span>

@@ -151,7 +151,8 @@ func (ai *aiPlayer) getBestPlanetToBomb(fleet *cs.Fleet, planets map[int]*cs.Pla
 
 	// lowest weight wins
 	bestWeight := 0.0
-	yearlyTravelDistance := float64(fleet.Spec.Engine.IdealSpeed * fleet.Spec.Engine.IdealSpeed)
+	bestPriority := false
+	yearlyTravelDistance := fleet.StrategicSpeed(fleet.Spec.Engine.IdealSpeed)
 
 	for num := range planets {
 		intel := planets[num]
@@ -172,7 +173,7 @@ func (ai *aiPlayer) getBestPlanetToBomb(fleet *cs.Fleet, planets map[int]*cs.Pla
 		if ai.enabled("war-range") {
 			// what matters is how fast the fleet can really get there on its fuel
 			warp := ai.getWarpSpeed(fleet, intel.ToTarget(), true)
-			yearsToTravel = max(1, math.Ceil(dist/float64(max(1, warp*warp))))
+			yearsToTravel = max(1, math.Ceil(dist/max(1, fleet.StrategicSpeed(warp))))
 			if yearsToTravel > maxAttackYears {
 				continue
 			}
@@ -190,7 +191,9 @@ func (ai *aiPlayer) getBestPlanetToBomb(fleet *cs.Fleet, planets map[int]*cs.Pla
 		// 	Float64("weight", weight*1000).
 		// 	Msgf("getBestPlanetToBomb %s", intel.Name)
 
-		if weight > bestWeight || (weight == bestWeight && best != nil && intel.Num < best.Num) {
+		priority := ai.priorityVictors[intel.PlayerNum]
+		if priority && !bestPriority || priority == bestPriority && (weight > bestWeight || (weight == bestWeight && best != nil && intel.Num < best.Num)) {
+			bestPriority = priority
 			bestWeight = weight
 			best = intel
 		}

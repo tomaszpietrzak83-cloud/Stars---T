@@ -47,7 +47,7 @@ func TestTechStore_GetBestBattleEngine(t *testing.T) {
 	}{
 		{"Base scout", args{testPlayer(), &Scout}, &QuickJump5, false},
 		{"Prop 5 vs mizer", args{NewPlayer(0, NewRace().WithPRT(JoaT).WithLRT(IFE).WithSpec(&rules)).WithTechLevels(TechLevel{0, 0, 5, 5, 0, 0}).withSpec(&rules), &Destroyer}, &DaddyLongLegs7, false},
-		{"Max Techs", args{NewPlayer(0, NewRace().WithPRT(SD).WithLRT(IFE).WithSpec(&rules)).WithTechLevels(TechLevel{26, 26, 26, 26, 26, 26}).withSpec(&rules), &Nubian}, &EnigmaPulsar, true},
+		{"Max Techs", args{NewPlayer(0, NewRace().WithPRT(SD).WithLRT(IFE).WithSpec(&rules)).WithTechLevels(TechLevel{26, 26, 26, 26, 26, 26}).withSpec(&rules), &Nubian}, StaticTechStore.GetHullComponent("EEE Enigma Pulsar III"), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -103,14 +103,14 @@ func TestTechStore_GetHullComponentsByHullSlotType(t *testing.T) {
 			name:   "max tech MT shields with IS",
 			fields: fields{TechLevel{26, 26, 26, 26, 26, 26}, NewRace().WithPRT(IS), true},
 			slot:   HullSlotTypeShield,
-			want:   []*TechHullComponent{&MoleSkinShield, &CowHideShield, &WolverineDiffuseShield, &BearNeutrinoBarrier, &CrobySharmor, &GorillaDelagator, &LangstonShell, &ElephantHideFortress, &CompletePhaseShield},
+			want:   []*TechHullComponent{&MoleSkinShield, &CowHideShield, &WolverineDiffuseShield, &BearNeutrinoBarrier, &CrobySharmor, &GorillaDelagator, &LangstonShell,StaticTechStore.GetHullComponent("EEE Langston Shell II"),StaticTechStore.GetHullComponent("EEE Langston Shell III"), &ElephantHideFortress, StaticTechStore.GetHullComponent("EEE Phase Barrier"), &CompletePhaseShield},
 		},
 		{
 			name:   "Default Shields/Armors",
 			fields: fields{TechLevel{26, 26, 26, 26, 26, 26}, NewRace().WithPRT(JoaT), false},
 			slot:   HullSlotTypeShieldArmor,
-			want: []*TechHullComponent{&MoleSkinShield, &CowHideShield, &WolverineDiffuseShield, &BearNeutrinoBarrier, &GorillaDelagator, &ElephantHideFortress, &CompletePhaseShield,
-				&Tritanium, &Crobmnium, &Carbonic, &Strobnium, &Organic, &Kelarium, &Neutronium, &Valanium, &Superlatanium},
+			want: []*TechHullComponent{&MoleSkinShield, &CowHideShield, &WolverineDiffuseShield, &BearNeutrinoBarrier, &GorillaDelagator, &ElephantHideFortress, StaticTechStore.GetHullComponent("EEE Phase Barrier"), &CompletePhaseShield,
+				&Tritanium, &Crobmnium, &Carbonic, &Strobnium, &Organic, StaticTechStore.GetHullComponent("EEE Ceramic Armor"), &Kelarium, &Neutronium, &Valanium, &Superlatanium},
 		},
 	}
 	for _, tt := range tests {

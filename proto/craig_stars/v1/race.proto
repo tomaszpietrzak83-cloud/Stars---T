@@ -34,6 +34,8 @@ message Race {
   // RaceSpec spec = 26;
   // the player's own notes on the race, never shown to other players
   string description = 27;
+  int32 eee_traits = 28;
+  TechField eee_research_field = 29;
 }
 
 // Primary Race Trait
@@ -143,6 +145,7 @@ message RaceSpec {
   double shield_regeneration_rate = 71;
   double engine_failure_rate = 72;
   int32 engine_reliable_speed = 73;
+  int32 eee_traits = 74;
 }
 
 message MiniaturizationSpec {

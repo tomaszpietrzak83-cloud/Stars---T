@@ -261,8 +261,10 @@ type Fleet struct {
 	OrbitingPlanetNum int32                  `protobuf:"varint,13,opt,name=orbiting_planet_num,json=orbitingPlanetNum,proto3" json:"orbiting_planet_num,omitempty"`
 	Starbase          bool                   `protobuf:"varint,14,opt,name=starbase,proto3" json:"starbase,omitempty"`
 	Spec              *FleetSpec             `protobuf:"bytes,15,opt,name=spec,proto3" json:"spec,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// Observed strategic velocity for fleet intel, without exposing its engine.
+	ObservedSpeed float64 `protobuf:"fixed64,16,opt,name=observed_speed,json=observedSpeed,proto3" json:"observed_speed,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Fleet) Reset() {
@@ -398,6 +400,13 @@ func (x *Fleet) GetSpec() *FleetSpec {
 		return x.Spec
 	}
 	return nil
+}
+
+func (x *Fleet) GetObservedSpeed() float64 {
+	if x != nil {
+		return x.ObservedSpeed
+	}
+	return 0
 }
 
 type FleetOrders struct {
@@ -892,7 +901,7 @@ var File_craig_stars_v1_fleet_proto protoreflect.FileDescriptor
 
 const file_craig_stars_v1_fleet_proto_rawDesc = "" +
 	"\n" +
-	"\x1acraig_stars/v1/fleet.proto\x12\x0ecraig_stars.v1\x1a\x1bcraig_stars/v1/common.proto\x1a\x1fcraig_stars/v1/shipdesign.proto\"\x9f\x05\n" +
+	"\x1acraig_stars/v1/fleet.proto\x12\x0ecraig_stars.v1\x1a\x1bcraig_stars/v1/common.proto\x1a\x1fcraig_stars/v1/shipdesign.proto\"\xc6\x05\n" +
 	"\x05Fleet\x12B\n" +
 	"\x0egame_db_object\x18\x01 \x01(\v2\x1c.craig_stars.v1.GameDBObjectR\fgameDbObject\x128\n" +
 	"\n" +
@@ -912,7 +921,8 @@ const file_craig_stars_v1_fleet_proto_rawDesc = "" +
 	"\x11previous_position\x18\f \x01(\v2\x16.craig_stars.v1.VectorR\x10previousPosition\x12.\n" +
 	"\x13orbiting_planet_num\x18\r \x01(\x05R\x11orbitingPlanetNum\x12\x1a\n" +
 	"\bstarbase\x18\x0e \x01(\bR\bstarbase\x12-\n" +
-	"\x04spec\x18\x0f \x01(\v2\x19.craig_stars.v1.FleetSpecR\x04spec\"\xca\x01\n" +
+	"\x04spec\x18\x0f \x01(\v2\x19.craig_stars.v1.FleetSpecR\x04spec\x12%\n" +
+	"\x0eobserved_speed\x18\x10 \x01(\x01R\robservedSpeed\"\xca\x01\n" +
 	"\vFleetOrders\x126\n" +
 	"\twaypoints\x18\x01 \x03(\v2\x18.craig_stars.v1.WaypointR\twaypoints\x12#\n" +
 	"\rrepeat_orders\x18\x02 \x01(\bR\frepeatOrders\x12&\n" +

@@ -64,6 +64,8 @@ message Fleet {
   int32 orbiting_planet_num = 13;
   bool starbase = 14;
   FleetSpec spec = 15;
+  // Observed strategic velocity for fleet intel, without exposing its engine.
+  double observed_speed = 16;
 }
 
 message FleetOrders {

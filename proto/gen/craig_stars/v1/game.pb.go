@@ -469,6 +469,7 @@ func (x *NewGamePlayer) GetRace() *Race {
 
 type GameSettings struct {
 	state                        protoimpl.MessageState `protogen:"open.v1"`
+	HostStartPosition            string                 `protobuf:"bytes,15,opt,name=host_start_position,json=hostStartPosition,proto3" json:"host_start_position,omitempty"`
 	Name                         string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Public                       bool                   `protobuf:"varint,2,opt,name=public,proto3" json:"public,omitempty"`
 	QuickStartTurns              int32                  `protobuf:"varint,3,opt,name=quick_start_turns,json=quickStartTurns,proto3" json:"quick_start_turns,omitempty"`
@@ -515,6 +516,13 @@ func (x *GameSettings) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GameSettings.ProtoReflect.Descriptor instead.
 func (*GameSettings) Descriptor() ([]byte, []int) {
 	return file_craig_stars_v1_game_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GameSettings) GetHostStartPosition() string {
+	if x != nil {
+		return x.HostStartPosition
+	}
+	return ""
 }
 
 func (x *GameSettings) GetName() string {
@@ -725,8 +733,9 @@ const file_craig_stars_v1_game_proto_rawDesc = "" +
 	"\rai_difficulty\x18\x02 \x01(\x0e2\x1c.craig_stars.v1.AiDifficultyR\faiDifficulty\x12\x14\n" +
 	"\x05color\x18\x03 \x01(\tR\x05color\x12(\n" +
 	"\x10default_hull_set\x18\x04 \x01(\x05R\x0edefaultHullSet\x12(\n" +
-	"\x04race\x18\x05 \x01(\v2\x14.craig_stars.v1.RaceR\x04race\"\xc2\x05\n" +
-	"\fGameSettings\x12\x12\n" +
+	"\x04race\x18\x05 \x01(\v2\x14.craig_stars.v1.RaceR\x04race\"\xf2\x05\n" +
+	"\fGameSettings\x12.\n" +
+	"\x13host_start_position\x18\x0f \x01(\tR\x11hostStartPosition\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
 	"\x06public\x18\x02 \x01(\bR\x06public\x12*\n" +
 	"\x11quick_start_turns\x18\x03 \x01(\x05R\x0fquickStartTurns\x12(\n" +

@@ -1,0 +1,24 @@
+import type { Fleet, ShipDesign } from './cs-proto.js';
+export function automationRoles(fleet: Fleet, designs: ShipDesign[] = [], currentRole = '') {
+ const spec=fleet.spec?.shipDesignSpec;
+ const roles=[{value:'',label:'Manual'},{value:'scout',label:'Scout: explore unvisited planets'}];
+ if(spec?.colonizer && fleet.tokens.length && fleet.tokens.every(t=>designs.find(d=>d.num===t.designNum)?.spec?.colonizer)) {
+  for(const [value,label] of [['auto','Auto'],['nearest','Nearest'],['farthest','Farthest'],['best','Best world']]) roles.push({value:`colonizer:${value}`,label:`Colonizer: ${label}`});
+ }
+ if((spec?.miningRate??0)>0) roles.push({value:'miner',label:'Automatic remote mining'});
+ if((spec?.terraformRate??0)>0) roles.push({value:'terraformer',label:'Automatic terraforming'});
+ if((spec?.cargoCapacity??0)>0) roles.push({value:'freighter',label:'Automatic transport'});
+ if(spec?.bomber) roles.push({value:'bomber',label:'Bomber: escort required in danger'});
+ if(spec?.hasWeapons) {roles.push({value:'patrol',label:'Auto Patrol: intercept and regroup'});roles.push({value:'escort',label:'Escort'});roles.push({value:'combat',label:'Combat: manual mission with automatic safety'});} 
+ if((spec?.fuelCapacity??0)>0) roles.push({value:'tanker',label:'Tanker: automatic fuel supply'});
+ if(currentRole && !roles.some(option=>option.value===currentRole)) roles.push({value:currentRole,label:`${currentRole}: enabled, waiting for suitable equipment`});
+ return roles;
+}
+export function automationStatus(fleet: Fleet): string {
+ const tags=fleet.mapObject?.tags??{};
+ if(tags['automatic-fuel-status']) return tags['automatic-fuel-status'];
+ for(const key of ['automatic-patrol','automatic-tanker','design-maintenance','logistics-job','mining-job','colonization-job','terraform-job','automatic-safety','bomber-orders']) {
+  try {if(tags[key]) return JSON.parse(tags[key]).status??'Order pending';} catch { /* legacy status */ }
+ }
+ return tags['scout-job']??(tags['escort-for']?`Escorting fleet #${tags['escort-for']}`:'Orders take effect on the next turn');
+}

@@ -1,0 +1,1 @@
+import{d as e}from"./Dgn-K8f2.js";import"./B3izITrL.js";var t=e(),n=e({x:0,y:0});function r(e,r,i,a){n.set({x:e,y:r}),t.set({component:i,props:a})}export{n,r,t};

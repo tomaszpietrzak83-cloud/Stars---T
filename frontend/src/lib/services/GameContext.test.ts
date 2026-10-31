@@ -433,3 +433,16 @@ it.each([
 		expect(waypoints().map((wp) => wp.position!.x)).toEqual(expected);
 	}
 );
+
+it('retains the commanded fleet and zoom target after loading the next turn',async()=>{
+ const {context,u}=await setup();
+ context.selectMapObject(u.fleets[0]);context.zoomToMapObject(u.fleets[0]);
+ const target=get(context.zoomTarget);
+ const next=new Universe();next.fleets=[fleet(1),fleet(2)];next.fleets[0].mapObject!.position={...next.fleets[0].mapObject!.position!,x:55};
+ const p=new CommandedPlayer();p.num=1;
+ const game=new FullGame();game.id=1n;game.year=2401;
+ await context.resetContext(game,p,next);
+ expect(get(context.commandedFleet)?.mapObject.num).toBe(1);
+ expect(get(context.selectedMapObject)?.mapObject?.num).toBe(1);
+ expect(get(context.zoomTarget)).toBe(target);
+});

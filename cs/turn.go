@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"strconv"
 
 	"slices"
 
@@ -47,7 +48,8 @@ func (t *turnGenerator) generateTurn() error {
 
 	// reset players for start of the turn
 	for _, player := range t.game.Players {
-		player.clearTransientIntel()
+		// Automatic orders need the reports visible when the player submitted
+		// this turn. Replace transient reports immediately before the new scan.
 		player.incrementReportAge()
 		player.Messages = []PlayerMessage{}
 		player.BattleRecords = []BattleRecord{}
@@ -67,14 +69,39 @@ func (t *turnGenerator) generateTurn() error {
 
 	// wp0 tasks
 	t.fleetInit()
+	t.refreshAutomaticFuelIntel()
+	t.advanceFuelNetworks()
+	t.resolveAutomaticTankers()
+	t.unloadOpportunisticInfrastructure()
+	t.fleetDesignMaintenance()
+	t.planFleetAssemblies()
+	t.planScoutAutomation()
+	t.planMiningAutomation()
+	t.planTerraformAutomation()
+	t.planColonizationAutomation()
+	t.planLogisticsAutomation()
+	t.planBomberEscorts()
+	t.planPatrolAutomation()
+	t.guardAutomaticFuel()
+	t.planFuelNetworks()
+	t.planAutomaticTankers()
+	t.resolveAutomaticTankers()
+	t.planAutomaticSafety()
+	t.advanceFuelNetworks()
+	t.planAutomaticPackets()
 	t.fleetByHandTransfers()
 	t.fleetScrap()
 	t.fleetUnload()
 	t.fleetColonize()
+	t.resolveAutomaticInvasions()
 	t.resolveColonistDrops()
+	t.planTerraformingWorlds()
 	t.fleetLoad()
 	t.fleetMerge()
 	t.fleetRoute()
+	t.advanceFuelNetworks()
+	t.preparePatrolPursuits()
+	t.enforceAutomaticDeparture()
 	t.fleetMarkWaypointsProcessed()
 
 	// move stuff through space
@@ -105,6 +132,8 @@ func (t *turnGenerator) generateTurn() error {
 	t.randomPlanetaryChange()
 	t.captureScorePopulations()
 	t.fleetBattle()
+	t.advanceFuelNetworks()
+	t.collectBattleSalvage()
 	t.fleetBomb()
 	if err := t.mysteryTraderMeet(); err != nil {
 		return err
@@ -115,10 +144,17 @@ func (t *turnGenerator) generateTurn() error {
 	t.fleetRemoteMine() // remote mine for normal miners
 	t.fleetUnload()
 	t.fleetColonize() // colonize wp1 after arriving at a planet
+	t.resolveAutomaticInvasions()
 	t.resolveColonistDrops()
+	t.planTerraformingWorlds()
 	t.fleetScrap()
 	t.fleetLoad()
 	t.decayMines()
+	t.resolveLogisticsAutomation()
+	t.unloadOpportunisticInfrastructure()
+	t.advanceFuelNetworks()
+	t.resolveAutomaticTankers()
+	t.resolveFleetAssemblies()
 	t.fleetLayMines()
 	t.fleetTransferOwner()
 	t.fleetMerge()
@@ -137,6 +173,9 @@ func (t *turnGenerator) generateTurn() error {
 	// and patrol orders
 	t.computeSpecs()           // make sure our specs are up to date
 	t.game.updateTokenCounts() // update token counts
+	for _, player := range t.game.Players {
+		player.clearTransientIntel()
+	}
 	if err := t.scan(); err != nil {
 		return err
 	}
@@ -149,6 +188,7 @@ func (t *turnGenerator) generateTurn() error {
 	// as a last turn step, calculate scores and check for victories
 	t.calculateScores()
 	t.checkDeath()
+	t.pruneAutomationAssignments()
 
 	// merges and splits during the turn record by hand transfers. Next turn's by hand transfers start fresh
 	for _, player := range t.game.Players {
@@ -184,6 +224,11 @@ func (t *turnGenerator) deliverMail() {
 // useful before turn generation and after building
 func (t *turnGenerator) computeSpecs() {
 	t.game.computeSpecs()
+	for _, player := range t.game.Players {
+		for _, planet := range t.game.getPlanets(player.Num) {
+			planet.applyResearchTax(player)
+		}
+	}
 }
 
 // fleetInit will reset any fleet data before processing
@@ -1231,6 +1276,14 @@ func (t *turnGenerator) fleetPursue(pursuits []*fleetMove) {
 				wp1.Position = target.Position
 			}
 
+			if !t.patrolPursuitSafe(fleet, wp1.Position, move.budget-move.moved) {
+				wp1.Position = fleet.Position
+				t.clearWaypointTarget(fleet, wp1)
+				move.done = true
+				fleet.SetTag(fuelStatusTag, "Patrol interception paused: target left the safe one-turn fuel range")
+				t.finishPursuit(move)
+				continue
+			}
 			// move 1/5 of our move toward a target still moving, or the rest of our move if it's done
 			targetIsDone := target.Delete || targetDone(target)
 			step := move.budget - move.moved
@@ -1504,7 +1557,7 @@ func (t *turnGenerator) fleetReproduce() {
 		}
 		startingColonists := fleet.Cargo.Colonists
 		fleet.Cargo.Colonists = max(0, fleet.Cargo.Colonists+growth)
-		over := max(0, fleet.Cargo.Total()-fleet.Spec.CargoCapacity)
+		over := max(0, fleet.CargoMass()-fleet.Spec.CargoCapacity, fleet.Cargo.Colonists-(fleet.Spec.CargoCapacity-fleet.Spec.MineralCargoBonus))
 
 		planet := t.game.getOrbitingPlanet(fleet)
 		if over > 0 {
@@ -1799,6 +1852,9 @@ func (t *turnGenerator) fleetRemoteMine() {
 // remote mine a planet
 func (t *turnGenerator) remoteMine(fleet *Fleet, player *Player, planet *Planet) {
 	output := planet.getMineralOutput(&t.game.Rules, fleet.Spec.MiningRate, t.game.Rules.RemoteMiningMineOutput)
+	if player.Race.HasEEE(EEEExtractionSpecialists) {
+		output = Mineral{output.Ironium * 5 / 4, output.Boranium * 5 / 4, output.Germanium * 5 / 4}
+	}
 	planet.mine(&t.game.Rules, output, fleet.Spec.MiningRate)
 	planet.MarkDirty()
 
@@ -1825,6 +1881,7 @@ func (t *turnGenerator) planetProduction() error {
 
 		player := t.game.Players[planet.PlayerNum-1]
 		producer := newProducer(t.log, &t.game.Rules, planet, player)
+		producer.maintainShips = func(available *Cost) { t.maintainShipsAtPlanet(player, planet, available) }
 		result, err := producer.produce()
 		if err != nil {
 			return err
@@ -1870,6 +1927,24 @@ func (t *turnGenerator) planetProduction() error {
 
 			player.Stats.FleetsBuilt++
 			player.Stats.TokensBuilt += token.Quantity
+			if id, err := strconv.Atoi(token.tags[assemblyTag]); err == nil && id > 0 {
+				if _, ok := player.Automation.FleetAssemblies[id]; ok {
+					fleet, err := t.buildFleet(player, planet, token.ShipToken, Tags{assemblyTag: token.tags[assemblyTag]}, nil)
+					if err != nil {
+						return err
+					}
+					messager.fleetBuilt(player, planet, fleet, token.Quantity, nil, "Fleet composition order")
+					continue
+				}
+			}
+			if work := decodeMaintenance(token.tags[replacementOrderTag]); work != nil {
+				fleet, err := t.addReplacementShips(player, planet, token.ShipToken, work)
+				if err != nil {
+					return err
+				}
+				messager.fleetBuilt(player, planet, fleet, token.Quantity, nil, "Replacement after scrapping")
+				continue
+			}
 
 			var routeTarget *MapObject
 			if planet.RouteTargetNum != None {
@@ -3080,6 +3155,12 @@ func (t *turnGenerator) fleetTransferOwner() {
 			}
 
 			// give the gift of this fleet!
+			if job := readTankerJob(fleet); job != nil {
+				t.releaseTankerCustomers(player, fleet, job)
+			}
+			for _, key := range []string{fuelStatusTag, fuelRequestTag, fuelResumeTag, fuelAwaitResumeTag, tankerJobTag, tankerAwaitTag, colonizationTag, terraformTag, safetyTag, bomberTag} {
+				delete(fleet.Tags, key)
+			}
 			t.log.Debug("transferring fleet",
 				slog.Int("Player", fleet.PlayerNum),
 				slog.String("Fleet", fleet.Name),

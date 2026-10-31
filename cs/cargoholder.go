@@ -136,7 +136,7 @@ func (ch *Fleet) GetFuel() int {
 }
 
 func (ch *Fleet) GetCargoCapacity() int {
-	return ch.Spec.CargoCapacity
+	return max(0, ch.Spec.CargoCapacity-readInfrastructure(ch).mass())
 }
 
 func (ch *Fleet) GetFuelCapacity() int {
