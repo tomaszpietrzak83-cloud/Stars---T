@@ -1,1 +1,0 @@
-function e(e,t,n){let r=t[n];return r?e.filter(e=>t[e.num]===r):e.filter(e=>e.num===n)}function t(t,n,r){return e(t,n,r).sort((e,t)=>t.version-e.version||t.num-e.num)[0]}function n(e,t){return`${e.name.replace(/\s+Mk\s+\d+$/i,``)} Mk ${t}`}export{t as n,n as r,e as t};

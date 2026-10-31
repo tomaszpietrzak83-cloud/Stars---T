@@ -143,9 +143,13 @@ func patrolAvailable(player *Player, f *Fleet) bool {
 }
 func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 	job := readPatrolJob(leader)
-	for _, member := range t.game.getFleets(player.Num) {
+	var stacks []*Fleet
+	for _, member := range slices.Clone(t.game.getFleets(player.Num)) {
 		if readPatrolJob(member).Leader != leader.Num {
 			continue
+		}
+		if job.Grouped && !member.Delete && !member.InDesignMaintenance() && member.Spec.TotalShips > 1 {
+			stacks = append(stacks, member)
 		}
 		delete(member.Tags, patrolTag)
 		if member.GetTag(patrolSupportTag) == "escort" {
@@ -156,14 +160,14 @@ func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 			holdAutomaticFleet(player, member, "Wolf pack mission finished")
 		}
 	}
-	if job.Grouped && !leader.Delete && !leader.InDesignMaintenance() && leader.Spec.TotalShips > 1 {
-		children, err := NewOrderer().SplitAll(&t.game.Rules, player, t.game.getFleets(player.Num), leader)
+	for _, stack := range stacks {
+		children, err := NewOrderer().SplitAll(&t.game.Rules, player, t.game.getFleets(player.Num), stack)
 		if err == nil {
 			for _, child := range children {
 				t.game.Fleets = append(t.game.Fleets, child)
 				_ = t.game.Universe.addFleet(child)
 			}
-			for _, child := range append([]*Fleet{leader}, children...) {
+			for _, child := range append([]*Fleet{stack}, children...) {
 				delete(child.Tags, patrolTag)
 				delete(child.Tags, patrolSupportTag)
 				player.Automation.FleetRoles[child.Num] = "patrol"
@@ -220,6 +224,9 @@ func (t *turnGenerator) preparePatrolPursuits() {
 				continue
 			}
 			enemy := patrolEnemy(player, readPatrolJob(fleet))
+			if fleet.Position.DistanceTo(enemy.Position) > 150 {
+				continue
+			}
 			wp := &fleet.Waypoints[1]
 			for speed := automaticMaxWarp(player, fleet); speed >= automaticCruiseWarp(player, fleet); speed-- {
 				if fleet.Position.DistanceTo(wp.Position) > fleet.StrategicSpeed(speed) {
@@ -329,6 +336,16 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 		savePatrolJob(leader, job)
 		return
 	}
+	if colony := patrolDefendedColony(player, enemy); colony != nil && leader.Position.DistanceTo(enemy.Position) > 150 {
+		job.Status = "Mobilizing one defensive fleet at " + colony.Name + " against incoming " + enemy.Name
+		savePatrolJob(leader, job)
+		if leader.Position != colony.Position {
+			t.patrolRoute(player, leader, colony.Position, false)
+		} else {
+			holdAutomaticFleet(player, leader, job.Status)
+		}
+		return
+	}
 	if patrolPower(leader) < patrolThreat(player, enemy)*3/2+1 {
 		job.Status = "Regrouped as one fleet; withdrawing toward fuel while the enemy is stronger"
 		savePatrolJob(leader, job)
@@ -429,7 +446,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 			})
 			assigned := false
 			for _, enemy := range enemies {
-				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || player.IsFriend(enemy.PlayerNum) || fleet.Position.DistanceTo(enemy.Position) > 150 {
+				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || player.IsFriend(enemy.PlayerNum) || (fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy)) {
 					continue
 				}
 				claimed := false
@@ -472,7 +489,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 
 					}
 				}
-				if power < needed && len(members) == 1 {
+				if power < needed && len(members) == 1 && !patrolDefenceReachable(player, fleet, enemy) {
 					continue
 				}
 				for _, m := range members {
@@ -587,4 +604,72 @@ func reportedScoutsOnly(p *Player, enemy *Fleet) bool {
 		}
 	}
 	return true
+}
+
+// Merge co-located members even at an intermediate rendezvous. They must enter
+// battle as one token stack rather than several independent single-ship fleets.
+func (t *turnGenerator) mergePatrolRendezvous() {
+	for _, p := range t.automaticPlayers() {
+		fleets := slices.Clone(t.game.getFleets(p.Num))
+		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
+		for _, a := range fleets {
+			j := readPatrolJob(a)
+			if !patrolAvailable(p, a) || j.Leader == 0 {
+				continue
+			}
+			for _, b := range fleets {
+				k := readPatrolJob(b)
+				if b == a || b.Delete || !patrolAvailable(p, b) || a.Position != b.Position || k.Leader != j.Leader || k.Target != j.Target || k.Enemy != j.Enemy {
+					continue
+				}
+				leader, member := a, b
+				if b.Num == j.Leader {
+					leader, member = b, a
+				}
+				if _, err := NewOrderer().Merge(&t.game.Rules, p, []*Fleet{leader, member}); err != nil {
+					continue
+				}
+				t.game.deleteFleet(member)
+				saved := readPatrolJob(leader)
+				saved.Grouped = true
+				savePatrolJob(leader, saved)
+				if overall := t.game.getFleet(p.Num, j.Leader); overall != nil && !overall.Delete {
+					w := readPatrolJob(overall)
+					w.Grouped = true
+					savePatrolJob(overall, w)
+				}
+				if member == a {
+					break
+				}
+			}
+		}
+	}
+}
+
+// Respond to a reported course toward our colonies before the attacker enters
+// the local 150-ly interception radius. No hidden enemy orders are consulted.
+func patrolDefendedColony(p *Player, enemy *Fleet) *Planet {
+	if !enemyApproachingColony(p, enemy) {
+		return nil
+	}
+	heading := enemy.Heading.Normalized()
+	var best *Planet
+	nearest := math.Inf(1)
+	for _, colony := range p.PlanetIntels {
+		if colony == nil || !colony.OwnedBy(p.Num) {
+			continue
+		}
+		delta := colony.Position.Subtract(enemy.Position).ToFloat64()
+		along := delta.X*heading.X + delta.Y*heading.Y
+		cross := math.Abs(delta.X*heading.Y - delta.Y*heading.X)
+		if along >= 0 && along <= max(1, enemy.observedStrategicSpeed())*10 && cross <= 20 && along < nearest {
+			best = colony
+			nearest = along
+		}
+	}
+	return best
+}
+func patrolDefenceReachable(p *Player, f, enemy *Fleet) bool {
+	colony := patrolDefendedColony(p, enemy)
+	return colony != nil && f.Position.DistanceTo(colony.Position) <= 150
 }

@@ -222,6 +222,7 @@ func (s *playerService) UpdatePlayerOrders(ctx context.Context, req *connect.Req
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("load ship designs"))
 		}
 		player.Designs = designs
+		player.NormalizeDesignMaintenance(orders.DesignMaintenance)
 		if err := player.ValidateDesignMaintenance(orders.DesignMaintenance); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}

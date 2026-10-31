@@ -3,6 +3,7 @@
 package cs
 
 import (
+	"fmt"
 	"slices"
 	"testing"
 
@@ -204,4 +205,28 @@ func TestColonizationRejectsRoutesLongerThanFiftyTurns(t *testing.T) {
 	require.Nil(t, planAutomaticRoute(&u.Game.Rules, p, []*Fleet{f}, far.Position, far.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true}))
 	u.Run((*turnGenerator).planColonizationAutomation)
 	require.Equal(t, u.Planet("Near").Num, readColonizationJob(f).TargetNum)
+}
+
+func TestColonizerUnloadsAtAlreadyOwnedTargetAndKeepsRole(t *testing.T) {
+	for _, retire := range []bool{false, true} {
+		t.Run(fmt.Sprint(retire), func(t *testing.T) {
+			u := colonizerUniverse(t)
+			p, f, planet := u.Player(1), u.Fleet("Colony Ship"), u.Planet("Home")
+			before := planet.Cargo.Colonists
+			load := f.Cargo.Colonists
+			writeColonizationJob(f, &colonizationJob{TargetNum: planet.Num, Kind: "colonize", Mode: "auto"})
+			if retire {
+				p.DesignMaintenance = DesignMaintenance{f.Tokens[0].DesignNum: RetireDesign}
+			}
+			u.Run((*turnGenerator).unloadArrivedColonizers)
+			require.Zero(t, f.Cargo.Colonists)
+			require.Equal(t, before+load, planet.Cargo.Colonists)
+			require.Equal(t, "colonizer:auto", p.Automation.FleetRoles[f.Num])
+			require.Equal(t, "load", readColonizationJob(f).Kind)
+			if retire {
+				tg := newTurnGenerator(u.Game)
+				require.True(t, tg.maintenanceNeeded(p, f))
+			}
+		})
+	}
 }

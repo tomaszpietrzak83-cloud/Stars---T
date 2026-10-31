@@ -288,3 +288,26 @@ func (p *Player) InheritAutomaticRole(source, child *Fleet) {
 		}
 	}
 }
+
+// A colony claimed while the ship was in flight is a delivery, not an invasion.
+func (t *turnGenerator) unloadArrivedColonizers() {
+	for _, p := range t.automaticPlayers() {
+		for _, f := range t.game.getFleets(p.Num) {
+			job := readColonizationJob(f)
+			if f.Delete || colonizationMode(p.Automation.FleetRoles[f.Num]) == "" || job == nil || job.Kind != "colonize" || !p.CanAutomateColonizer(f) {
+				continue
+			}
+			planet := t.game.getPlanet(job.TargetNum)
+			if planet == nil || !planet.OwnedBy(p.Num) || f.Position != planet.Position {
+				continue
+			}
+			planet.Cargo.Colonists += f.Cargo.Colonists
+			f.Cargo.Colonists = 0
+			f.Waypoints = []Waypoint{{Position: f.Position}}
+			delete(f.Tags, "maintenance-pending")
+			job.Kind = "load"
+			job.Status = "Settlers delivered to an already owned colony; collecting a new load or retiring"
+			writeColonizationJob(f, job)
+		}
+	}
+}

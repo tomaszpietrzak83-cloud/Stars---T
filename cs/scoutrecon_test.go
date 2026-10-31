@@ -30,3 +30,39 @@ func TestScoutPrioritizesOnlyUnknownIncomingEnemyFleetAndReportsBeforeBattle(t *
 	require.NotEmpty(t, design.Slots)
 	require.False(t, scoutReconActive(p, f))
 }
+
+func TestFreighterCannotAcceptSacrificialScoutRecon(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, f := u.Player(1), u.Fleet("Transport")
+	p.Automation.FleetRoles[f.Num] = "scout"
+	p.FleetIntels = []*Fleet{{MapObject: MapObject{Num: 91, PlayerNum: 2, Position: Vector{20, 0}}, Heading: VectorFloat64{-1, 0}, WarpSpeed: 5, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true}}}}
+	u.Run(func(tg *turnGenerator) { require.False(t, tg.planScoutRecon(p, f)) })
+	require.False(t, scoutReconActive(p, f))
+	u.Run((*turnGenerator).repairStaleScoutRoles)
+	require.Equal(t, "freighter", p.Automation.FleetRoles[f.Num])
+}
+
+func TestReusedFleetNumberDoesNotInheritDestroyedScoutRole(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, f := u.Player(1), u.Fleet("Transport")
+	reusedNum := p.GetNextFleetNum(u.Game.getFleets(p.Num))
+	p.Automation.FleetRoles = map[int]string{reusedNum: "scout"}
+	p.Automation.RebuildFleets = map[int]bool{reusedNum: true}
+	u.Run(func(tg *turnGenerator) {
+		built, err := tg.addFleet(p, f.Position, f.Tokens[0], nil)
+		require.NoError(t, err)
+		require.Equal(t, reusedNum, built.Num)
+		require.Empty(t, p.Automation.FleetRoles[built.Num])
+		require.False(t, p.Automation.RebuildFleets[built.Num])
+	})
+}
+func TestDepartureRejectsUnarmedFreighterEnemyFleetWaypoint(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, f := u.Player(1), u.Fleet("Transport")
+	p.Automation.FleetRoles[f.Num] = "freighter"
+	f.Waypoints = append(f.Waypoints, Waypoint{Position: Vector{20, 0}, WarpSpeed: 5, MapObjectTarget: MapObjectTarget{TargetType: MapObjectTypeFleet, TargetPlayerNum: 2, TargetNum: 91}})
+	u.Run((*turnGenerator).enforceAutomaticDeparture)
+	for _, wp := range f.Waypoints[1:] {
+		require.False(t, wp.TargetType == MapObjectTypeFleet && wp.TargetPlayerNum == 2)
+	}
+}

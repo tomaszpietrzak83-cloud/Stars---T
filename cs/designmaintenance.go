@@ -126,6 +126,9 @@ func (t *turnGenerator) maintenanceNeeded(player *Player, fleet *Fleet) bool {
 	return t.pendingReplacements(player, readMaintenance(fleet))
 }
 func (t *turnGenerator) fleetDesignMaintenance() {
+	for _, p := range t.automaticPlayers() {
+		p.NormalizeDesignMaintenance(p.DesignMaintenance)
+	}
 	for _, fleet := range t.game.Fleets {
 		if fleet.Delete || fleet.Starbase {
 			continue
@@ -281,7 +284,7 @@ func (t *turnGenerator) maintainShipsAtPlanet(player *Player, planet *Planet, av
 		var replacements []ProductionQueueItem
 		for index := 0; index < len(fleet.Tokens); {
 			token := fleet.Tokens[index]
-			targetNum := player.DesignMaintenance[token.DesignNum]
+			targetNum := player.LatestReplacement(player.DesignMaintenance[token.DesignNum])
 			if targetNum == 0 {
 				index++
 				continue
@@ -329,6 +332,7 @@ func (t *turnGenerator) addReplacementShips(player *Player, planet *Planet, toke
 		}
 		fleet.Spec = ComputeFleetSpec(&t.game.Rules, player, fleet)
 		fleet.Fuel = min(fleet.Spec.FuelCapacity, fleet.Fuel+token.design.Spec.FuelCapacity*token.Quantity)
+		writeMaintenance(fleet, work)
 		inheritReplacementRole(player, fleet, work)
 		return fleet, nil
 	}
@@ -347,7 +351,9 @@ func (t *turnGenerator) addReplacementShips(player *Player, planet *Planet, toke
 // The role belongs to the replacement as soon as it is built. Controllers
 // still wait for maintenance/regrouping to finish before issuing mission orders.
 func inheritReplacementRole(player *Player, fleet *Fleet, work *fleetMaintenance) {
+	delete(player.Automation.RebuildFleets, fleet.Num)
 	if work.OriginalRole == "" {
+		delete(player.Automation.FleetRoles, fleet.Num)
 		return
 	}
 	if player.Automation.FleetRoles == nil {

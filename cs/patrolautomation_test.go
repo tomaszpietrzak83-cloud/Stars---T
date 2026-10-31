@@ -226,3 +226,56 @@ func TestFullTurnPatrolUsesThePlayersVisibleReports(t *testing.T) {
 	require.Contains(t, f.GetTag(patrolTag), "Intercepting", "the full turn must not erase visible fleet reports before automatic orders run")
 	require.Equal(t, "patrol", p.Automation.FleetRoles[f.Num])
 }
+
+func TestPatrolFollowersMergeBeforeBattleAtIntermediateRendezvous(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, a, b := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
+	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
+	a.Position = Vector{10, 0}
+	b.Position = a.Position
+	savePatrolJob(a, patrolJob{Leader: 999, Enemy: 2, Target: 91})
+	savePatrolJob(b, patrolJob{Leader: 999, Enemy: 2, Target: 91})
+	total := a.Spec.TotalShips + b.Spec.TotalShips
+	u.Run((*turnGenerator).mergePatrolRendezvous)
+	require.True(t, b.Delete)
+	require.Equal(t, total, a.Spec.TotalShips)
+	require.True(t, readPatrolJob(a).Grouped)
+}
+func TestPatrolMobilizesForDistantIncomingCombatFleet(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, a, b := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
+	b.Position = a.Position
+	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
+	addExpeditionTestDock(p, Vector{})
+	enemy := patrolTestEnemy(10000)
+	enemy.Position = Vector{200, 0}
+	enemy.WarpSpeed = 5
+	enemy.Heading = VectorFloat64{-1, 0}
+	enemy.Name = "31-ship invasion"
+	p.FleetIntels = []*Fleet{enemy}
+	u.Run((*turnGenerator).planPatrolAutomation)
+	require.True(t, b.Delete)
+	require.Greater(t, a.Spec.TotalShips, 1)
+	require.Contains(t, readPatrolJob(a).Status, "Mobilizing")
+	require.False(t, patrolCanAttack(p, a), "outmatched defenders must gather instead of charge")
+}
+
+func TestIntermediatePatrolStacksSplitWhenPackIsReleased(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, a, b, leader := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat"), u.Fleet("Transport")
+	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol", leader.Num: "patrol"}
+	a.Position = Vector{10, 0}
+	b.Position = a.Position
+	for _, f := range []*Fleet{a, b, leader} {
+		savePatrolJob(f, patrolJob{Leader: leader.Num, Enemy: 2, Target: 91})
+	}
+	u.Run((*turnGenerator).mergePatrolRendezvous)
+	require.Greater(t, a.Spec.TotalShips, 1)
+	u.Run(func(tg *turnGenerator) { tg.releasePatrol(p, leader) })
+	for _, f := range u.Game.getFleets(p.Num) {
+		if !f.Delete {
+			require.LessOrEqual(t, f.Spec.TotalShips, 1)
+			require.Zero(t, readPatrolJob(f).Leader)
+		}
+	}
+}

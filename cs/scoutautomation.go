@@ -41,6 +41,13 @@ func scoutRetirementDeferred(player *Player, fleet *Fleet) bool {
 		return false
 	}
 	mission := readScoutMission(fleet)
+	if mission != nil && (mission.Refuelling || len(fleet.Waypoints) <= 1) {
+		for _, dock := range expeditionStations(player, fleet) {
+			if dock.Position == fleet.Position {
+				return false
+			}
+		}
+	}
 	return mission == nil || !mission.Complete
 }
 

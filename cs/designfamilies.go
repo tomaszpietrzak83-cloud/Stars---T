@@ -5,6 +5,40 @@ import (
 	"maps"
 )
 
+// A rebuild selects the newest member once, not each intermediate blueprint.
+func (p *Player) LatestReplacement(num int) int {
+	if num <= 0 {
+		return num
+	}
+	d := p.GetDesign(num)
+	if d == nil {
+		return num
+	}
+	family := p.Automation.DesignFamilies[num]
+	if family == 0 {
+		return num
+	}
+	for _, candidate := range p.Designs {
+		if !candidate.Delete && candidate.Hull == d.Hull && p.Automation.DesignFamilies[candidate.Num] == family && p.DesignMaintenance[candidate.Num] != RetireDesign && (candidate.Version > d.Version || candidate.Version == d.Version && candidate.Num > d.Num) {
+			d = candidate
+		}
+	}
+	return d.Num
+}
+
+func (p *Player) NormalizeDesignMaintenance(policies DesignMaintenance) {
+	for source, target := range policies {
+		if target > 0 {
+			latest := p.LatestReplacement(target)
+			if source == latest {
+				delete(policies, source)
+			} else {
+				policies[source] = latest
+			}
+		}
+	}
+}
+
 // Family IDs are negative counters, independent of reusable design numbers.
 // The latest version is the successor of every previous version on the same hull.
 func (p *Player) RegisterDesignUpgrade(source, next *ShipDesign) error {

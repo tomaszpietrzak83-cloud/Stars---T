@@ -20,8 +20,65 @@ func readScoutRecon(f *Fleet) *scoutReconJob {
 	}
 	return &j
 }
+
+// Sacrificial contact reconnaissance belongs to actual scout hulls, never
+// cargo ships which may carry a stale role from an older saved game.
+func scoutReconEligible(p *Player, f *Fleet) bool {
+	if f == nil || len(f.Tokens) == 0 || f.Cargo.Colonists > 0 {
+		return false
+	}
+	for _, token := range f.Tokens {
+		d := p.GetDesign(token.DesignNum)
+		if d == nil {
+			return false
+		}
+		hull := StaticTechStore.GetHull(d.Hull)
+		if hull == nil || hull.Type != TechHullTypeScout {
+			return false
+		}
+	}
+	return true
+}
+
+func (t *turnGenerator) repairStaleScoutRoles() {
+	for _, p := range t.automaticPlayers() {
+		for _, f := range t.game.getFleets(p.Num) {
+			if f.Delete || p.Automation.FleetRoles[f.Num] != "scout" {
+				continue
+			}
+			freight := len(f.Tokens) > 0
+			for _, token := range f.Tokens {
+				d := p.GetDesign(token.DesignNum)
+				if d == nil {
+					freight = false
+					break
+				}
+				h := StaticTechStore.GetHull(d.Hull)
+				if h == nil || h.Type != TechHullTypeFreighter {
+					freight = false
+					break
+				}
+			}
+			if !freight {
+				continue
+			}
+			p.Automation.FleetRoles[f.Num] = "freighter"
+			delete(f.Tags, scoutReconTag)
+			delete(f.Tags, scoutMissionTag)
+			delete(f.Tags, scoutTag)
+			if w := readMaintenance(f); w != nil {
+				w.OriginalRole = "freighter"
+				writeMaintenance(f, w)
+			}
+			if !f.InDesignMaintenance() {
+				holdAutomaticFleet(p, f, "Transport role restored; selecting a cargo mission")
+			}
+		}
+	}
+}
+
 func scoutReconActive(p *Player, f *Fleet) bool {
-	return p.Automation.FleetRoles[f.Num] == "scout" && readScoutRecon(f) != nil
+	return p.Automation.FleetRoles[f.Num] == "scout" && scoutReconEligible(p, f) && readScoutRecon(f) != nil
 }
 
 // Only reported headings are used, never the enemy's private waypoints.
@@ -57,6 +114,13 @@ func unknownFleetEquipment(p *Player, enemy *Fleet) bool {
 	return false
 }
 func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
+	if !scoutReconEligible(p, f) {
+		if readScoutRecon(f) != nil {
+			holdAutomaticFleet(p, f, "Cargo ships cannot perform combat reconnaissance")
+		}
+		delete(f.Tags, scoutReconTag)
+		return false
+	}
 	var chosen *Fleet
 	var best *expeditionRoute
 	score := math.Inf(1)

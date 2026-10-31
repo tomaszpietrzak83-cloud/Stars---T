@@ -71,6 +71,8 @@ func (t *turnGenerator) generateTurn() error {
 
 	// wp0 tasks
 	t.fleetInit()
+	t.repairStaleScoutRoles()
+	t.unloadArrivedColonizers()
 	t.refreshAutomaticFuelIntel()
 	t.advanceFuelNetworks()
 	t.resolveAutomaticTankers()
@@ -143,6 +145,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.randomPlanetaryChange()
 	t.captureScorePopulations()
 	t.scanScoutReconContacts()
+	t.mergePatrolRendezvous()
 	t.fleetBattle()
 	t.advanceFuelNetworks()
 	t.collectBattleSalvage()
@@ -167,6 +170,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.advanceFuelNetworks()
 	t.resolveAutomaticTankers()
 	t.resolveFleetAssemblies()
+	t.finishReplacementRallies()
 	t.fleetLayMines()
 	t.fleetTransferOwner()
 	t.fleetMerge()
@@ -643,6 +647,18 @@ func (t *turnGenerator) fleetColonize() {
 
 			planet := t.game.getPlanet(wp.TargetNum)
 			if planet.Owned() {
+				if planet.OwnedBy(player.Num) && colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && player.CanAutomateColonizer(fleet) {
+					planet.Cargo.Colonists += fleet.Cargo.Colonists
+					fleet.Cargo.Colonists = 0
+					delete(fleet.Tags, "maintenance-pending")
+					if job := readColonizationJob(fleet); job != nil {
+						job.Kind = "load"
+						job.Status = "Settlers delivered; ready for a new mission or retirement"
+						writeColonizationJob(fleet, job)
+					}
+					wp.Task = WaypointTaskNone
+					continue
+				}
 				messager.fleetColonizeOwnedPlanet(player, planet, fleet)
 				wp.Task = WaypointTaskNone
 				continue
@@ -2085,6 +2101,8 @@ func (t *turnGenerator) buildFleet(player *Player, planet *Planet, token ShipTok
 func (t *turnGenerator) addFleet(player *Player, position Vector, token ShipToken, tags Tags) (*Fleet, error) {
 	playerFleets := t.game.getFleets(player.Num)
 	fleetNum := player.GetNextFleetNum(playerFleets)
+	delete(player.Automation.FleetRoles, fleetNum)
+	delete(player.Automation.RebuildFleets, fleetNum) // Reused numbers never inherit a destroyed ship's role.
 	fleet := newFleetForToken(player, fleetNum, token, []Waypoint{NewPositionWaypoint(position, token.design.Spec.Engine.IdealSpeed)})
 	fleet.Position = position
 	fleet.Spec = ComputeFleetSpec(&t.game.Rules, player, &fleet)

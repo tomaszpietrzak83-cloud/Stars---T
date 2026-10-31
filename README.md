@@ -37,6 +37,12 @@ This project is an open-source derivative of Craig (sirgwain)'s open-source **cr
 
 Contributions should include a clear behavior description and relevant tests. Never publish personal saves. Our release series starts at **0.2.0** for the automation edition; increment patch versions for fixes and minor versions for new gameplay capabilities. See SUGGESTIONS-CHECKLIST.txt for implementation status, including unfinished requests.
 
+## 0.4.2: design cleanup and civilian protection
+
+Empty superseded designs disappear from the designer while referenced blueprints remain available for production and reports. An unused older version can be deleted without clearing the whole family's maintenance orders; targets and queued production remain protected.
+
+New ships never inherit a destroyed fleet's automation through a reused fleet number. Only actual scout hulls can accept sacrificial contact reconnaissance. Legacy freighters incorrectly carrying a scout role return to transport work, and unarmed cargo ships cannot depart on enemy-fleet interception orders. Patrol pack members merge at intermediate rendezvous before combat. Incoming reported courses toward colonies trigger defensive mobilization beyond the immediate interception radius; outmatched defenders gather rather than charge. Automatic colonizers arriving at an already owned colony unload their settlers and continue with loading or pending retirement.
+
 ## 0.4.1: autonomous initiative and turn analysis
 
 Routine routes balance years against actual engine fuel cost and preserve a return budget. Useful combat interception may spend more fuel; emergency returns choose a funded path home even through reported enemy proximity. Engine and minefield checks remain. Free escorts can join patrol interceptions, real merged packs retain multiple ships in a single native battle stack, and packs can recruit more nearby support when the reported enemy grows. Roles resume after the temporary mission.

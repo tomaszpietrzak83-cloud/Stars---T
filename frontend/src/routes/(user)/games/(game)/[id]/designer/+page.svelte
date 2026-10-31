@@ -2,7 +2,7 @@
  import UpgradeAll from '#lib/components/game/design/UpgradeAll.svelte';
 	import { clone,create } from '@bufbuild/protobuf';
  import { LogisticsAutomationSchema } from '#lib/types/cs-proto.js';
- import {designFamilyMembers,latestFamilyDesign} from '#lib/types/designFamilies.js';
+ import {designFamilyMembers,latestFamilyDesign,hideSupersededDesign} from '#lib/types/designFamilies.js';
  import Breadcrumb from '#lib/components/game/Breadcrumb.svelte';
 	import DesignCard from '#lib/components/game/DesignCard.svelte';
 	import ItemTitle from '#lib/components/ItemTitle.svelte';
@@ -20,7 +20,7 @@
   const before=$player.playerOrders.automation;
   const previousMaintenance={...$player.playerOrders.designMaintenance};
   const target=latest(num);
-  if(target){for(const design of members(num)){if(design.num!==target.num)$player.playerOrders.designMaintenance[design.num]=target.num;}} 
+  if(target){for(const design of members(num)){if(design.num!==target.num)$player.playerOrders.designMaintenance[design.num]=target.num;}}
   const automation=clone(LogisticsAutomationSchema,before??create(LogisticsAutomationSchema));
   for(const fleet of familyFleets(num)) automation.rebuildFleets[fleet.mapObject!.num]=true;
   $player.playerOrders.automation=automation;familyError='';
@@ -44,6 +44,7 @@
 	let filteredDesigns: ShipDesign[] = $derived(
 		$universe
 			.getMyDesigns()
+   .filter(d => !hideSupersededDesign(d, $universe.getMyDesigns(), $player.playerOrders.automation?.designFamilies ?? {}, $player.playerOrders.designMaintenance, queuedByDesign[d.num] ?? 0))
 			.filter(
 				(i) =>
 					i.name.toLowerCase().indexOf(search.toLowerCase()) != -1 ||
@@ -106,7 +107,7 @@
    familyFleetCount={familyFleets(design.num).length}
 
 			onDelete={async (design) => {
-				if (design.num) deleteDesign(design.num);
+				if (design.num) {familyError=''; try {await deleteDesign(design.num);} catch(cause) {familyError=String(cause);}}
 			}}
 		/>
 	{/each}
@@ -122,7 +123,7 @@
 			href={`/games/${$game.id}/designer/${design.num}`}
 			copyhref={`/games/${$game.id}/designer/create/${design.hull}?copy=${design.num}`}
 			onDelete={async (design) => {
-				if (design.num) deleteDesign(design.num);
+				if (design.num) {familyError=''; try {await deleteDesign(design.num);} catch(cause) {familyError=String(cause);}}
 			}}
 		/>
 	{/each}

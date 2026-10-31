@@ -42,7 +42,7 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 		_ = t.game.Universe.addFleet(child)
 	}
 	units := append([]*Fleet{fleet}, children...)
-	load := map[int]float64{}
+	load := t.rebuildYardLoads(player, work.Group)
 	for _, planet := range t.game.Planets {
 		if !planet.OwnedBy(player.Num) {
 			continue
@@ -80,7 +80,7 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 			if !planet.OwnedBy(player.Num) || !planet.CanBuild(target.Spec.Mass) || planet.Spec.ResourcesPerYearAvailable <= 0 {
 				continue
 			}
-			route := planExpeditionRoute(&t.game.Rules, player, unit, planet)
+			route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{unit}, planet.Position, planet.ToTarget(), automaticRoutePolicy{AllowThreat: true, EmergencyReturn: true, MaxTurns: 10000})
 			if route == nil {
 				continue
 			}
@@ -91,9 +91,9 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 				if missing > 0 {
 					rate := planet.Spec.MiningOutput.GetAmount(kind)
 					if rate <= 0 {
-						productionYears += 100
+						productionYears += 2
 					} else {
-						productionYears = max(productionYears, float64(missing)/float64(rate))
+						productionYears += min(2, float64(missing)/float64(rate))
 					}
 				}
 			}
@@ -106,10 +106,14 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 			assignment.PlanetNum = chosen.Num
 			assignment.Status = "Assigned to shipyard " + chosen.Name
 			load[chosen.Num] += float64(target.Spec.Cost.Resources)
-			routeAutomatically(&t.game.Rules, player, unit, chosen.Position, chosen.MapObject.ToTarget(), 0)
+			if route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{unit}, chosen.Position, chosen.ToTarget(), automaticRoutePolicy{AllowThreat: true, EmergencyReturn: true, MaxTurns: 10000}); route != nil {
+				applyExpeditionRoute(player, unit, route)
+			}
 		} else {
-			assignment.Status = "Waiting for a reachable shipyard with production capacity"
-			routeAutomatically(&t.game.Rules, player, unit, unit.Position, MapObjectTarget{}, 0)
+			assignment.Status = "Moving toward a fuel dock while retaining the yard reservation"
+			if !t.routeEmergencyReturn(player, unit) {
+				holdAutomaticFleet(player, unit, "No physically reachable yard; mobile fuel requested")
+			}
 			requestAutomaticRescue(player, unit, true)
 		}
 		writeMaintenance(unit, &assignment)
@@ -204,5 +208,34 @@ func (t *turnGenerator) rallyReplacementFleet(player *Player, fleet *Fleet, work
 		}
 		player.Automation.FleetRoles[leader.Num] = work.OriginalRole
 		leader.Waypoints = []Waypoint{{Position: leader.Position}}
+	}
+}
+
+// Incoming ships reserve production space before they reach the yard.
+func (t *turnGenerator) rebuildYardLoads(p *Player, exclude string) map[int]float64 {
+	loads := map[int]float64{}
+	for _, f := range t.game.getFleets(p.Num) {
+		w := readMaintenance(f)
+		if f.Delete || w == nil || w.Group == exclude || w.Stage != "scrap" {
+			continue
+		}
+		for _, token := range f.Tokens {
+			if d := p.GetDesign(p.LatestReplacement(p.DesignMaintenance[token.DesignNum])); d != nil {
+				loads[w.PlanetNum] += float64(d.Spec.Cost.Resources * token.Quantity)
+			}
+		}
+	}
+	return loads
+}
+func (t *turnGenerator) finishReplacementRallies() {
+	for _, p := range t.automaticPlayers() {
+		for _, f := range slices.Clone(t.game.getFleets(p.Num)) {
+			if f.Delete {
+				continue
+			}
+			if w := readMaintenance(f); w != nil && w.Stage == "rally" && !hasMaintenanceTargets(p, f) {
+				t.rallyReplacementFleet(p, f, w)
+			}
+		}
 	}
 }

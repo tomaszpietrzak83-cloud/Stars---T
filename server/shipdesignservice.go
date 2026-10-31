@@ -224,7 +224,7 @@ func (s *shipDesignService) UpdateShipDesignDescription(ctx context.Context, req
 
 // DeleteShipDesign removes a design and updates fleets/planets accordingly.
 func (s *shipDesignService) DeleteShipDesign(ctx context.Context, req *connect.Request[craig_starsv1.DeleteShipDesignRequest]) (*connect.Response[craig_starsv1.DeleteShipDesignResponse], error) {
-	if err := checkDesignMaintenanceLock(ctx, int(req.Msg.Num)); err != nil {
+	if err := checkDesignMaintenanceLock(ctx, int(req.Msg.Num), true); err != nil {
 		return nil, err
 	}
 	dbClient := contextDb(ctx)
@@ -366,6 +366,7 @@ func (s *shipDesignService) DeleteShipDesign(ctx context.Context, req *connect.R
 		}
 
 		delete(player.Automation.DesignFamilies, design.Num)
+		delete(player.DesignMaintenance, design.Num)
 		if err := c.UpdatePlayerOrders(ctx, player); err != nil {
 			return err
 		}

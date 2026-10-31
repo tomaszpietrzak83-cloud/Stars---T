@@ -261,7 +261,7 @@ func (p *producer) produce() (productionResult, error) {
 		// An already scrapped ship must not lose its replacement if a newer family
 		// version appears during construction. Preserve quantities and paid costs.
 		if item.Type == QueueItemTypeShipToken && item.GetTag(replacementOrderTag) != "" {
-			if next := p.player.GetDesign(p.player.DesignMaintenance[item.DesignNum]); next != nil && item.design != nil && next.Hull == item.design.Hull {
+			if next := p.player.GetDesign(p.player.LatestReplacement(p.player.DesignMaintenance[item.DesignNum])); next != nil && item.design != nil && next.Hull == item.design.Hull {
 				item.DesignNum = next.Num
 				item.design = next
 				queue[i] = item

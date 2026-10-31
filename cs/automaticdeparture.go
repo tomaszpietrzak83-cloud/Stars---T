@@ -16,6 +16,13 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			wp := fleet.Waypoints[1]
+			if wp.TargetType == MapObjectTypeFleet && wp.TargetPlayerNum != player.Num && !player.IsFriend(wp.TargetPlayerNum) && !fleet.Spec.HasWeapons && !scoutReconEligible(player, fleet) {
+				delete(fleet.Tags, scoutReconTag)
+				if !t.routeEmergencyReturn(player, fleet) {
+					holdAutomaticFleet(player, fleet, "Unarmed cargo ships cannot intercept enemy fleets; returning or requesting fuel")
+				}
+				continue
+			}
 			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
 			if raw := fleet.GetTag(tankerAwaitTag); raw != "" {
 				num, _ := strconv.Atoi(raw)

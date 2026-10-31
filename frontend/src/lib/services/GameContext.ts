@@ -1069,6 +1069,11 @@ export async function createGameContext(
 
 	async function deleteDesign(num: number): Promise<void> {
 		const { planets, fleets, starbases } = await shipDesignClient.deleteShipDesign({ gameId, num });
+		const current = get(player);
+		delete current.playerOrders.designMaintenance[num];
+		if (current.playerOrders.automation) delete current.playerOrders.automation.designFamilies[num];
+		player.set(current);
+		await cs.wasmService.setPlayer({player: current});
 		const u = get(universe);
 		// replace our fleets and starbases (but keep intel issue #146)
 		u.fleets = fleets;

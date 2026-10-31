@@ -1,1 +1,0 @@
-import{V as e}from"./DCrL4nAs.js";import{D as t}from"./Czuxpq1D.js";function n(n){return{...n.game??e(t),players:n.players??[]}}export{n as t};

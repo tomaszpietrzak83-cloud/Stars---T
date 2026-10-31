@@ -71,6 +71,7 @@ func (g *FullGame) PreviewAutomaticRoutes(playerNum int) (*AutomaticRoutesPrevie
 	t.ordersOnly = true
 	// Keep all player indices intact; filter only the automation controllers.
 	t.ordersPlayerNum = p.Num
+	t.repairStaleScoutRoles()
 	t.refreshAutomaticFuelIntel()
 	t.planScoutAutomation()
 	t.planMiningAutomation()
