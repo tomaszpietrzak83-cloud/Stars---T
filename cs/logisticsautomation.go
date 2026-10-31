@@ -1,12 +1,14 @@
 package cs
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"maps"
 	"math"
 	"slices"
 	"strconv"
+	"strings"
 )
 
 type LogisticsAutomation struct {
@@ -269,18 +271,29 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 	if fleet.Spec.HasWeapons {
 		power = patrolPower(fleet)
 	}
-	for _, escort := range t.game.getFleets(player.Num) {
+	escortCandidates := t.game.getFleets(player.Num)
+	slices.SortStableFunc(escortCandidates, func(a, b *Fleet) int {
+		return cmp.Compare(a.Position.DistanceTo(fleet.Position), b.Position.DistanceTo(fleet.Position))
+	})
+	for _, escort := range escortCandidates {
 		if readTankerJob(escort) != nil || fuelNetworkManaged(escort) || escort.InAutomaticSafety() || escort.Delete || escort.InDesignMaintenance() || player.Automation.FleetRoles[escort.Num] != "escort" || !escort.Spec.HasWeapons {
 			continue
 		}
 		assigned := escort.GetTag(escortTag)
-		if assigned == strconv.Itoa(fleet.Num) || threat > power && assigned == "" && escort.Idle() {
+		if assigned == strconv.Itoa(fleet.Num) && power >= threat {
+			delete(escort.Tags, escortTag)
+			continue
+		}
+		if assigned == strconv.Itoa(fleet.Num) || threat > power && assigned == "" && (escort.Idle() || escort.GetTag(escortStagingTag) != "") {
+			delete(escort.Tags, escortStagingTag)
+			delete(escort.Tags, frontierPatrolTag)
 			escort.SetTag(escortTag, strconv.Itoa(fleet.Num))
 			escorts = append(escorts, escort)
 			power += max(1, escort.Spec.PowerRating)
 		}
 	}
 	if threat > power {
+		t.releaseEscorts(player, fleet)
 		job.Status = "Waiting for enough escort strength"
 		routeAutomatically(&t.game.Rules, player, fleet, fleet.Position, MapObjectTarget{}, 0)
 		return
@@ -324,9 +337,9 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 }
 
 func (t *turnGenerator) planLogisticsAutomation() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		for _, escort := range t.game.getFleets(player.Num) {
-			if readTankerJob(escort) == nil && !fuelNetworkManaged(escort) && player.Automation.FleetRoles[escort.Num] == "escort" && escort.GetTag(escortTag) == "" && !escort.InAutomaticSafety() && !escort.InDesignMaintenance() {
+			if escort.GetTag(escortStagingTag) == "" && readTankerJob(escort) == nil && !fuelNetworkManaged(escort) && player.Automation.FleetRoles[escort.Num] == "escort" && escort.GetTag(escortTag) == "" && !escort.InAutomaticSafety() && !escort.InDesignMaintenance() {
 				holdAutomaticFleet(player, escort, "")
 			}
 			if assigned := escort.GetTag(escortTag); assigned != "" {
@@ -365,6 +378,13 @@ func (t *turnGenerator) planLogisticsAutomation() {
 				continue
 			}
 
+			if job != nil && job.Kind == "salvage" && fleet.Cargo.Colonists == 0 && fleet.Cargo.ToMineral().Total() == 0 && strings.HasPrefix(job.Status, "Waiting") && !player.Automation.DisablePassengerTransport {
+				if replacement := t.findPassengerTransfer(player, fleet); replacement != nil {
+					t.releaseEscorts(player, fleet)
+					job = replacement
+					saveLogisticsWork(fleet, job)
+				}
+			}
 			if fleet.Cargo.ToMineral().Total() > 0 && (job == nil || job.Kind != "return" && job.Kind != "settle") {
 				delivery := 0
 				if job != nil {
@@ -514,7 +534,7 @@ func (t *turnGenerator) armedEnemyAt(player *Player, position Vector) bool {
 }
 
 func (t *turnGenerator) collectBattleSalvage() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		if !player.Automation.BattleSalvage {
 			continue
 		}
@@ -545,7 +565,7 @@ func (t *turnGenerator) collectBattleSalvage() {
 }
 
 func (t *turnGenerator) resolveLogisticsAutomation() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		for _, fleet := range t.game.getFleets(player.Num) {
 			if fleet.InAutomaticSafety() || fleet.Delete || player.Automation.FleetRoles[fleet.Num] != "freighter" || fleet.InDesignMaintenance() {
 				continue
@@ -634,7 +654,7 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 }
 
 func (t *turnGenerator) pruneAutomationAssignments() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		for num := range player.Automation.FleetRoles {
 			if fleet := t.game.getFleet(player.Num, num); fleet == nil || fleet.Delete {
 				delete(player.Automation.FleetRoles, num)
@@ -651,7 +671,7 @@ func (t *turnGenerator) pruneAutomationAssignments() {
 // Loading at waypoint zero must be followed by departure in the same turn.
 // Refresh only ready deliveries, not the expensive global source/destination search.
 func (t *turnGenerator) dispatchReadyLogistics() {
-	for _, p := range t.game.Players {
+	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
 			if f.Delete || fuelNetworkManaged(f) || f.InAutomaticSafety() || f.InDesignMaintenance() || p.Automation.FleetRoles[f.Num] != "freighter" {
 				continue

@@ -55,7 +55,7 @@ func scoutRouteSafe(player *Player, from, to Vector) bool {
 }
 
 func (t *turnGenerator) planScoutAutomation() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
 		claimed := map[int]int{}

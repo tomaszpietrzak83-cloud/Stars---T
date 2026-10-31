@@ -233,7 +233,7 @@ CLARIFIED / SUPERSEDED REQUESTS
 - Graphical battle playback exists; the requested direct notification link has been added.
 
 CURRENT STATUS
-Requests 1–155 checked as described, with remaining operational limits in docs/VERIFICATION.txt. Item 129 is a completed design proposal, not an implemented technology. Only the program is published, never the personal playthrough.
+Requests 1–161 checked as described, with remaining operational limits in docs/VERIFICATION.txt. The late starbase proposal in item 129 was implemented in 0.3.0 (item 159). Only the program is published, never the personal playthrough.
 No original Stars! files were changed. Automatic behavior remains subject to real fuel, available ships and known intelligence.
 
 PLANNER LIMITS
@@ -251,7 +251,7 @@ Verification details: audit-results/FUEL-AUTOMATION-AUDIT.txt.
 
 Clarification: infrastructure export is limited to the actual surplus above 95% of the planet maximum. At maximum 100 and stock 100, at most 5 may be exported; stock 95 exports zero.
 
-LATEST VERIFIED UPDATE: 2026-10-31, version 0.2.0. Full Go suite passed (server 110.860s); 108 UI tests passed; Svelte check zero errors/warnings; final native/WASM/UI builds and isolated compiled-browser integration passed. Emergency-detour copied-save turn passed (59.56s). Local launcher deployed; read-only live scanner check passed. Personal game remained at year 2444 across restart. No personal saves, credentials or caches are included.
+LATEST VERIFIED UPDATE: 2026-10-31, version 0.3.0. Full Go suite and final core/AI/CLI regressions passed; 108 UI tests passed; Svelte check zero errors/warnings. Copied-save preview-plus-turn regression passed (61.92s), using a temporary copy only. Final native/WASM/UI builds and compiled isolated browser checks passed, including both late starbases. Applied 84 fleet navigation plans to the actual game without advancing year 2444 or changing any non-navigation game data. Six escorts now have distinct staging routes. Local live scanner check passed; personal data remain excluded from publication.
 
 NEW REQUESTS — 2026-10-31
 [x] 108. Complete scout waypoint itinerary with global fuel/speed optimization, economical short hops and distant cluster expeditions
@@ -300,7 +300,7 @@ NEW REQUESTS — 2026-10-31
 [x] 128. Symmetric hull-specific slot layouts based on native ships
     Evidence: Symmetric integer hull slot layouts; gallery/layout screenshots inspected.
 [x] 129. Plan a general late starbase and an AR-specific late starbase
-    Evidence: Design proposals only, as requested: docs/STARBASE-PROPOSALS.txt. Not added to the tech tree.
+    Evidence: Initially documented in docs/STARBASE-PROPOSALS.txt; implemented and tested in 0.3.0, see item 159.
 [x] 130. Full-load-only automatic departure; wait empty at source until safe filling is possible
     Evidence: Full useful cargo forecast before any source mutation; native full-cargo tests.
 [x] 131. Compute source population reserve from maximum nominal growth (native formula: one third capacity)
@@ -361,3 +361,18 @@ NEW REQUESTS — 2026-10-31
 
 [x] 155. Emergency homeward navigation can detour around threat circles using real non-refuelling waypoints; optimize speeds across that entire corridor and retain urgent rescue requests. Nearby combat fuel donors may travel up to four maximum-speed turns if their actual delivery/return budget permits it.
     Evidence: Native multi-waypoint detour and full-corridor budget test; identical copied-save snapshot improved from 16 to 23 moving/routed scouts. No phantom refuelling at detour points.
+
+[x] 156. Apply navigation changes to the current personal game without advancing the year or changing positions, fuel, cargo or production; back up and verify all non-navigation columns.
+    Evidence: Applied navigation-only preview to 84 fleets in the current game at year 2444. Transaction compared current game against its fresh safety backup and verified every non-navigation game column unchanged. No turn, movement, fuel, cargo or production changes. Live scanner inspection passed.
+[x] 157. Free escorts stage across frontier sectors at economical speed, retain return fuel and accept assignments while travelling.
+    Evidence: Native staging/convoy reassignment tests; all six previously idle escorts received distinct warp-4 staging destinations with return fuel reserved in the current game.
+[x] 158. Returning scouts accept enemy-fleet risk instead of remaining idle; prefer reasonable safe detours, preserve engine/mine and complete-fuel checks.
+    Evidence: Native surrounding-contact return test; previously blocked scouts 11 and 24 received funded return routes with explicit enemy-risk acceptance. Engine/mine checks remain active. Copied-save integration and current-game navigation verification passed.
+[x] 159. Implement the two previously proposed late starbases, with native-style appearances and balanced capacities.
+    Evidence: EEE Bastion Station: 120 weapon capacity, 1250 armor. EEE Sanctuary Star: AR only, 128 weapons, 1875 armor and 3.75M population. Native requirement/slot tests and compiled browser galleries passed; screenshots inspected.
+
+[x] 160. Impossible escort-strength requirements release reserved escorts; excess cover is released, and a full passenger job can replace waiting salvage work. Verify the six escorts reserved by the current save.
+    Evidence: Native impossible-cover release, excess-cover and passenger-preemption regressions. Current save had six escorts reserved by one waiting salvage job; all six now have distinct staging routes.
+
+[x] 161. Leave exactly one game shortcut in the Developer/Stars! directory.
+    Evidence: Removed duplicate Stars! - T.lnk; exactly one root shortcut remains, Stars!.lnk, pointing to Start-Stars.ps1. Build and start scripts have different purposes and remain.

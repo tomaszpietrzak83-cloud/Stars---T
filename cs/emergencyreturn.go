@@ -1,6 +1,7 @@
 package cs
 
 const emergencyReturnTag = "emergency-return"
+const emergencyRiskTag = "emergency-return-risk"
 
 // A threat at the starting point must not make every possible escape illegal.
 // Permit only corridors whose distance from every relevant threat increases
@@ -26,6 +27,7 @@ func knownWithdrawalRoute(p *Player, from, to Vector) bool {
 }
 func (t *turnGenerator) routeEmergencyReturn(p *Player, f *Fleet) bool {
 	var best *expeditionRoute
+	risk := false
 	for _, dock := range expeditionStations(p, f) {
 		if dock.Position == f.Position {
 			continue
@@ -38,10 +40,24 @@ func (t *turnGenerator) routeEmergencyReturn(p *Player, f *Fleet) bool {
 			best = route
 		}
 	}
+	if p.Automation.FleetRoles[f.Num] == "scout" {
+		for _, dock := range expeditionStations(p, f) {
+			route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, dock.Position, dock.ToTarget(), automaticRoutePolicy{EmergencyReturn: true, AllowThreat: true, MaxTurns: 10000})
+			if route != nil && !route.WaitForFuel && (best == nil || route.Turns+3 < best.Turns) {
+				best = route
+				risk = true
+			}
+		}
+	}
 	if best == nil {
 		return false
 	}
 	applyExpeditionRoute(p, f, best)
+	if risk {
+		f.SetTag(emergencyRiskTag, "Returning despite hostile fleet reports; fuel and mine safety remain enforced")
+	} else {
+		delete(f.Tags, emergencyRiskTag)
+	}
 	f.SetTag(emergencyReturnTag, "Legacy or emergency recovery: slow funded return, requesting mobile fuel")
 	f.SetTag(fuelStatusTag, "Moving towards a fuel dock at the fastest fully funded emergency speed; rescue requested")
 	saveAutomaticFuelRequest(f, automaticFuelRequest{Destination: f.Position, Members: []int{f.Num}, Urgent: true})
@@ -58,7 +74,7 @@ func fundedEmergencyReturn(rules *Rules, p *Player, f *Fleet) bool {
 	}
 	fuel, from := f.Fuel, f.Position
 	for _, wp := range f.Waypoints[1:] {
-		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticLegSafe(rules, p, from, wp.Position, wp.WarpSpeed, false, f.StrategicSpeed(wp.WarpSpeed)) {
+		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticLegSafe(rules, p, from, wp.Position, wp.WarpSpeed, p.Automation.FleetRoles[f.Num] == "scout" && f.GetTag(emergencyRiskTag) != "", f.StrategicSpeed(wp.WarpSpeed)) {
 			return false
 		}
 		_, left, _, ok := automaticLegFuel(p, f, wp.WarpSpeed, from.DistanceTo(wp.Position), fuel, 0)

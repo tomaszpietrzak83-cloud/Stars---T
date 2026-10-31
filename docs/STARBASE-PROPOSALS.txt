@@ -1,11 +1,11 @@
-Late starbase proposals - design draft, not yet added to the tech tree
+Late starbase proposals - implemented in 0.3.0; audited against native hull capacities
 
 EEE Bastion Station (all races)
 Research: Construction 22, Energy 20, Electronics 16.
 Hull cost: 160 ironium / 110 boranium / 380 germanium / 850 resources.
 Unlimited dock; armor 1250; initiative 17; range bonus 1; repair bonus 0.15.
-Four weapon batteries of 20 (80 total); two shield banks of 24; two
-shield/armor banks of 24; two electrical slots of 4; two orbital slots of 1.
+Six weapon batteries of 20 (120 total); two shield banks of 24; two
+shield/armor banks of 24; four electrical slots of 4; two orbital slots of 1.
 AR population limit 2 million: it must not supersede the AR Death Star.
 Versus ISB Ultra Station: 25% more weapon capacity and armor, available
 later without ISB. ISB retains its normal discount and earlier availability.
@@ -18,7 +18,7 @@ Hull cost: 160 ironium / 110 boranium / 460 germanium / 1050 resources.
 Unlimited dock; armor 1875; initiative 19; range bonus 1; repair bonus 0.15.
 Population limit 3.75 million versus Death Star's 3 million (+25%).
 Keep the Death Star's four separate 32-weapon batteries (128 total).
-Shield banks 36+36; shield/armor banks 24+24; four electrical banks of 4;
+Shield banks 36+36; shield/armor banks 24+24; six electrical banks of 4;
 two orbital slots of 1. Keep the 0.5 innate penetrating-scanner multiplier.
 Prioritize population, resilience and a clear symmetric station silhouette,
 rather than combining every offensive bonus in a universal best hull.

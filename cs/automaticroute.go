@@ -412,6 +412,9 @@ func holdAutomaticFleet(player *Player, fleet *Fleet, status string) {
 }
 
 func automaticReturnLimit(player *Player, fleet *Fleet, target MapObjectTarget) int {
+	if fleet.GetTag(escortStagingTag) != "" {
+		return 20
+	}
 	if player.Automation.FleetRoles[fleet.Num] == "patrol" {
 		if fleet.GetTag(frontierPatrolTag) != "" {
 			return 20
@@ -428,7 +431,7 @@ func automaticReturnLimit(player *Player, fleet *Fleet, target MapObjectTarget) 
 }
 
 func automaticCruiseWarp(player *Player, fleet *Fleet) int {
-	if player.Automation.FleetRoles[fleet.Num] == "patrol" && fleet.GetTag(frontierPatrolTag) != "" {
+	if fleet.GetTag(escortStagingTag) != "" || player.Automation.FleetRoles[fleet.Num] == "patrol" && fleet.GetTag(frontierPatrolTag) != "" {
 		return min(automaticMaxWarp(player, fleet), 4)
 	}
 	return min(automaticMaxWarp(player, fleet), 5)

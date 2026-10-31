@@ -47,7 +47,7 @@
 		isHullComponent(techLike.tech?.category) ? (techLike as TechHullComponent) : undefined
 	);
 	let hull = $derived(
-		techLike.tech?.category == TechCategory.SHIP_HULL ? (techLike as TechHull) : undefined
+		(techLike.tech?.category == TechCategory.SHIP_HULL || techLike.tech?.category == TechCategory.STARBASE_HULL) ? (techLike as TechHull) : undefined
 	);
 	let engine = $derived(
 		techLike.tech?.category == TechCategory.ENGINE ? (techLike as TechHullComponent) : undefined

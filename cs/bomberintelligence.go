@@ -118,6 +118,8 @@ func borrowBomberProtection(p *Player, escort, bomber *Fleet) {
 		escort.SetTag(bomberBorrowTag, string(raw))
 	}
 	p.Automation.FleetRoles[escort.Num] = "escort"
+	delete(escort.Tags, escortStagingTag)
+	delete(escort.Tags, frontierPatrolTag)
 	escort.SetTag(escortTag, strconv.Itoa(bomber.Num))
 }
 func restoreBomberProtection(p *Player, escort *Fleet) bool {

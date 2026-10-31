@@ -47,6 +47,21 @@ func TestLocalAutomationOnCopiedSave(t *testing.T) {
 	runner := NewGameRunner(database, cfg)
 	before, err := database.NewReadClient().GetFullGame(t.Context(), gameID)
 	require.NoError(t, err)
+	if os.Getenv("STARS_COPY_PREVIEW_ROUTES") != "" {
+		preview, err := before.PreviewAutomaticRoutes(1)
+		require.NoError(t, err)
+		require.Equal(t, before.Year, preview.Year)
+		for _, change := range preview.Fleets {
+			for _, fleet := range before.Fleets {
+				if fleet.ID == change.ID {
+					fleet.Waypoints = change.Waypoints
+					fleet.Tags = change.Tags
+					require.NoError(t, database.NewReadWriteClient().SaveFleet(t.Context(), fleet))
+				}
+			}
+		}
+		t.Logf("Applied navigation-only preview to %d fleets on a temporary copy", len(preview.Fleets))
+	}
 	_, err = runner.GenerateTurn(gameID)
 	require.NoError(t, err)
 	after, err := database.NewReadClient().GetFullGame(t.Context(), gameID)

@@ -127,8 +127,10 @@ func (t *turnGenerator) loadColonizer(player *Player, fleet *Fleet, job *coloniz
 }
 
 func (t *turnGenerator) planColonizationAutomation() {
-	for _, player := range t.game.Players {
-		t.splitAutomaticColonizers(player)
+	for _, player := range t.automaticPlayers() {
+		if !t.ordersOnly {
+			t.splitAutomaticColonizers(player)
+		}
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
 		claimed := map[int]int{}

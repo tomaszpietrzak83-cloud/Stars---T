@@ -174,6 +174,8 @@ func (u *Universe) buildMaps(players []*Player) error {
 
 	}
 
+	u.mineralPacketsByNum = make(map[playerObject]*MineralPacket, len(u.MineralPackets))
+	u.minefieldsByNum = make(map[playerObject]*Minefield, len(u.Minefields))
 	for _, mineralPacket := range u.MineralPackets {
 		if mineralPacket.Delete {
 			continue

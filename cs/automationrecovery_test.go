@@ -126,7 +126,7 @@ func TestFullNativeTurnLoadsTransportAndStartsMovingImmediately(t *testing.T) {
 func TestEmergencyReturnDetoursAroundThreatInsteadOfRetryingBlockedStraightLine(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Transport")
-	p.Automation.FleetRoles = map[int]string{f.Num: "scout"}
+	p.Automation.FleetRoles = map[int]string{f.Num: "miner"}
 	p.PlanetIntels = nil
 	addExpeditionTestDock(p, Vector{200, 0})
 	p.FleetIntels = []*Fleet{patrolTestEnemy(10)}

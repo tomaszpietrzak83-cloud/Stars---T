@@ -89,7 +89,7 @@ func requestAutomaticRescue(player *Player, fleet *Fleet, force ...bool) {
 // Only owned docks are used: another player's friendly stance toward us cannot
 // be inferred from our own diplomacy, and actually controls their fuel service.
 func (t *turnGenerator) refreshAutomaticFuelIntel() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		if len(player.Automation.FleetRoles) == 0 && len(player.Automation.FleetAssemblies) == 0 && len(player.DesignMaintenance) == 0 {
 			continue
 		}
@@ -156,7 +156,7 @@ func convoyMembers(player *Player, fleet *Fleet, all []*Fleet) []*Fleet {
 // Audit every controlled fleet, including an assembly leader's user-issued
 // orders and the manual mission an assigned transport is finishing first.
 func (t *turnGenerator) guardAutomaticFuel() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		for _, fleet := range t.game.getFleets(player.Num) {
 			if (fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet)) || fuelNetworkManaged(fleet) || !isAutomaticFleet(player, fleet) || player.Automation.FleetRoles[fleet.Num] == "tanker" || fleet.GetTag(escortTag) != "" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
@@ -182,7 +182,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				target = MapObjectTarget{}
 			}
 			policy := automaticRoutePolicy{AllowThreat: allowThreat, OneWay: colonizationOneWay(player, fleet, goal)}
-			if fleet.GetTag(frontierPatrolTag) != "" {
+			if fleet.GetTag(frontierPatrolTag) != "" || fleet.GetTag(escortStagingTag) != "" {
 				policy.EconomicalPatrol = true
 				policy.MaxWarp = 4
 				policy.MinWarp = 4
@@ -332,7 +332,7 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 }
 
 func (t *turnGenerator) planAutomaticTankers() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
 		for _, tanker := range fleets {
@@ -569,7 +569,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 }
 
 func (t *turnGenerator) resolveAutomaticTankers() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		for _, tanker := range t.game.getFleets(player.Num) {
 			t.refuelRepairPatients(player, tanker)
 			job := readTankerJob(tanker)

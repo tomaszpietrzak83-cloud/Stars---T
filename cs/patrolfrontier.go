@@ -42,7 +42,7 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 			}
 		}
 		for _, other := range t.game.getFleets(p.Num) {
-			if other != f && !other.Delete && p.Automation.FleetRoles[other.Num] == "patrol" && len(other.Waypoints) > 1 {
+			if other != f && !other.Delete && p.Automation.FleetRoles[other.Num] == p.Automation.FleetRoles[f.Num] && len(other.Waypoints) > 1 {
 				goal := other.Waypoints[len(other.Waypoints)-1].Position
 				value /= 1 + 5*math.Exp(-float64(pos.DistanceSquaredTo(goal))/6400)
 			}

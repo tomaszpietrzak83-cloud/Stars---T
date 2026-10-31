@@ -53,7 +53,7 @@
 </Breadcrumb>
 
 {#if tech}
-	<a class="btn btn-outline btn-sm my-2" href={`/techs?category=${TechCategory.SHIP_HULL}`}>← Back to hulls</a>
+	<a class="btn btn-outline btn-sm my-2" href={`/techs?category=${tech.tech?.category === TechCategory.STARBASE_HULL ? TechCategory.STARBASE_HULL : TechCategory.SHIP_HULL}`}>← Back to hulls</a>
  <TechSummary {tech} />
 	{#if tech.tech?.category === TechCategory.SHIP_HULL || tech.tech?.category === TechCategory.STARBASE_HULL}
 		<h1 class="my-3 text-lg text-center font-semibold">Hull</h1>

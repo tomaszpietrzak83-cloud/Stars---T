@@ -14,6 +14,8 @@ import (
 
 // Generate a turn after all players submit their orders.
 type turnGenerator struct {
+	ordersOnly       bool
+	ordersPlayerNum  int
 	game             *FullGame
 	log              *slog.Logger
 	scorePopulations map[*Planet]planetScorePopulation
@@ -85,6 +87,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.dispatchReadyLogistics()
 	t.planBomberEscorts()
 	t.planPatrolAutomation()
+	t.planEscortStaging()
 	t.guardAutomaticFuel()
 	t.planFuelNetworks()
 	t.planAutomaticTankers()
@@ -3736,4 +3739,14 @@ func (t *turnGenerator) checkDeath() {
 		}
 	}
 
+}
+
+func (t *turnGenerator) automaticPlayers() []*Player {
+	if t.ordersOnly {
+		if p := t.game.getPlayer(t.ordersPlayerNum); p != nil {
+			return []*Player{p}
+		}
+		return nil
+	}
+	return t.game.Players
 }

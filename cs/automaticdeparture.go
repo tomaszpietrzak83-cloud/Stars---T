@@ -9,14 +9,14 @@ import (
 // Waypoint-zero loads/transfers run after mission planning. Recheck the actual
 // fuel and cargo just before movement, and stop the whole convoy on a shortfall.
 func (t *turnGenerator) enforceAutomaticDeparture() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		blocked := map[int]bool{}
 		for _, fleet := range t.game.getFleets(player.Num) {
 			if !isAutomaticFleet(player, fleet) || len(fleet.Waypoints) < 2 {
 				continue
 			}
 			wp := fleet.Waypoints[1]
-			allowThreat := scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			allowThreat := player.Automation.FleetRoles[fleet.Num] == "scout" && fleet.GetTag(emergencyRiskTag) != "" || scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
 			valid := true
 			if wp.WarpSpeed == StargateWarpSpeed {
 				valid = fleet.CanJump(player, fleet.Position.DistanceTo(wp.Position), player.GetPlanetIntel(fleet.OrbitingPlanetNum), player.GetPlanetIntel(wp.TargetNum))

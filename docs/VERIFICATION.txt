@@ -1,4 +1,4 @@
-tomek-stars 0.2.0 — verification, 2026-10-31
+tomek-stars 0.3.0 — verification, 2026-10-31
 
 PASS: full Go suite, plus targeted core/AI automation recovery and design-family regression tests.
 PASS: Svelte check: zero errors and warnings. 108 frontend tests: zero failures/errors.
@@ -17,4 +17,12 @@ PASS: candidate path/credential scan excluded saves, secrets, caches and audit c
 
 Deployment and publication are recorded in SUGGESTIONS-CHECKLIST.txt. The program includes the native Windows executable, compiled interface, WASM, source and artwork; hashes are in windows/SHA256SUMS.txt. Personal databases, credentials, runtime downloads, caches, test profiles and audit backups are excluded. The original D:/gry/Stars! WineDVM installation is untouched.
 
-Late starbases remain proposals in docs/STARBASE-PROPOSALS.txt, as requested; they are not claimed as implemented technologies.
+PASS: both proposed late starbases are now implemented. Native tests verify capacity, AR restriction, unlimited docks and non-overlapping slots. Compiled browser verified eight variants for each; screenshots inspected. docs/STARBASE-PROPOSALS.txt records the implemented design. Native atlas artwork is reused with color variants.
+
+0.3.0 navigation update evidence:
+PASS: source snapshot remains byte-equivalent at the JSON model level after preview. Separate packet/minefield and second-player preview regressions passed. Preview filters controllers without changing player indices.
+PASS: full scout return through surrounding enemy reports, economical escort staging, assignment while staging, impossible-cover release, excess-cover release and passenger preemption of waiting salvage.
+PASS: navigation preview applied to a temporary copied save and a full subsequent turn generated only there (61.92s). No personal turn was generated.
+PASS: actual current-game update changed only own fleet waypoints and tags (84 fleets). The write transaction compared all current-game rows to the safety backup and checked all non-navigation game columns before/after. Year remained 2444. Route counts after application: 24 scouts, 24 colony fleets, 9 patrols, 11 transports and 6 escorts. This does not claim every ship must always be moving: repairs, replacement, rendezvous and threat constraints can require holding.
+PASS: six previously reserved escorts received six distinct warp-4 staging destinations. Formerly blocked scouts 11 and 24 received funded return routes accepting enemy risk.
+PASS: deployed 0.3.0 launcher and live scanner inspected with mutating API requests blocked. Exactly one root game shortcut remains.

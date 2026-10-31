@@ -37,7 +37,7 @@ var StaticTechStore = TechStore{
 	Defenses:          TechDefenses(),
 	Planetaries:       TechPlanetaries(),
 	HullComponents:    append(append(append(TechHullComponents(), EEETechHullComponents()...), EEETraderComponents()...), EEEStrategicEngines()...),
-	Hulls:             append(TechHulls(), EEELateHulls()...),
+	Hulls:             append(append(TechHulls(), EEELateHulls()...), EEEStationHulls()...),
 }
 
 func init() {

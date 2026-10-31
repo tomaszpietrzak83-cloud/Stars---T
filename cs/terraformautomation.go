@@ -26,7 +26,7 @@ func terraformWork(player *Player, planet *Planet) bool {
 	return planet != nil && planet.OwnedBy(player.Num) && NewTerraformer().GetBestTerraform(planet, player, player) != nil
 }
 func (t *turnGenerator) planTerraformAutomation() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
 		assigned := map[int]int{}

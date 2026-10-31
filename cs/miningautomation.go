@@ -54,7 +54,7 @@ func miningValue(planet *Planet, weights [3]float64) float64 {
 }
 
 func (t *turnGenerator) planMiningAutomation() {
-	for _, player := range t.game.Players {
+	for _, player := range t.automaticPlayers() {
 		weights := t.miningWeights(player)
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })

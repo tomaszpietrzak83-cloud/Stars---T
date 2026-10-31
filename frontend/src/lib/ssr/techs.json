@@ -10110,6 +10110,327 @@
         }
       ],
       "class": "SHIP_CLASS_MINER"
+    },
+    {
+      "tech": {
+        "name": "EEE Bastion Station",
+        "cost": {
+          "ironium": 160,
+          "boranium": 110,
+          "germanium": 380,
+          "resources": 850
+        },
+        "requirements": {
+          "techLevel": {
+            "energy": 20,
+            "construction": 22,
+            "electronics": 16
+          }
+        },
+        "ranking": 60,
+        "category": "TECH_CATEGORY_STARBASE_HULL"
+      },
+      "type": "TECH_HULL_TYPE_STARBASE",
+      "armor": 1250,
+      "spaceDock": -1,
+      "spaceDockSlotSize": {
+        "x": 1,
+        "y": 1
+      },
+      "initiative": 17,
+      "repairBonus": 0.15,
+      "rangeBonus": 1,
+      "starbase": true,
+      "maxPopulation": 2000000,
+      "innateScanRangePenFactor": 0.5,
+      "slots": [
+        {
+          "type": 4160,
+          "capacity": 1,
+          "position": {
+            "y": -2
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 20,
+          "position": {
+            "x": -2,
+            "y": -2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": -2,
+            "y": -1
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 20,
+          "position": {
+            "x": 2,
+            "y": 2
+          }
+        },
+        {
+          "type": 128,
+          "capacity": 24,
+          "position": {
+            "x": -1,
+            "y": -2
+          }
+        },
+        {
+          "type": 128,
+          "capacity": 24,
+          "position": {
+            "x": 1,
+            "y": 2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": 2,
+            "y": 1
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 20,
+          "position": {
+            "x": 2,
+            "y": -2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": 2,
+            "y": -1
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 20,
+          "position": {
+            "x": -2,
+            "y": 2
+          }
+        },
+        {
+          "type": 4160,
+          "capacity": 1,
+          "position": {
+            "y": 2
+          }
+        },
+        {
+          "type": 384,
+          "capacity": 24,
+          "position": {
+            "x": 1,
+            "y": -2
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 20,
+          "position": {
+            "x": -2
+          }
+        },
+        {
+          "type": 384,
+          "capacity": 24,
+          "position": {
+            "x": -1,
+            "y": 2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": -2,
+            "y": 1
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 20,
+          "position": {
+            "x": 2
+          }
+        }
+      ]
+    },
+    {
+      "tech": {
+        "name": "EEE Sanctuary Star",
+        "cost": {
+          "ironium": 160,
+          "boranium": 110,
+          "germanium": 460,
+          "resources": 1050
+        },
+        "requirements": {
+          "techLevel": {
+            "energy": 23,
+            "construction": 24,
+            "electronics": 20
+          },
+          "prtsRequired": [
+            "PRT_AR"
+          ]
+        },
+        "ranking": 70,
+        "category": "TECH_CATEGORY_STARBASE_HULL"
+      },
+      "type": "TECH_HULL_TYPE_STARBASE",
+      "armor": 1875,
+      "spaceDock": -1,
+      "spaceDockSlotSize": {
+        "x": 1,
+        "y": 1
+      },
+      "initiative": 19,
+      "repairBonus": 0.15,
+      "rangeBonus": 1,
+      "starbase": true,
+      "maxPopulation": 3750000,
+      "innateScanRangePenFactor": 0.5,
+      "slots": [
+        {
+          "type": 4160,
+          "capacity": 1,
+          "position": {
+            "y": -2
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 32,
+          "position": {
+            "x": -2,
+            "y": -2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": -2,
+            "y": -1
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": 2,
+            "y": 1
+          }
+        },
+        {
+          "type": 128,
+          "capacity": 36,
+          "position": {
+            "x": -1,
+            "y": -2
+          }
+        },
+        {
+          "type": 128,
+          "capacity": 36,
+          "position": {
+            "x": 1,
+            "y": 2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": 2,
+            "y": -1
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 32,
+          "position": {
+            "x": 2,
+            "y": 2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": -2,
+            "y": 1
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 32,
+          "position": {
+            "x": 2,
+            "y": -2
+          }
+        },
+        {
+          "type": 4160,
+          "capacity": 1,
+          "position": {
+            "y": 2
+          }
+        },
+        {
+          "type": 384,
+          "capacity": 24,
+          "position": {
+            "x": 1,
+            "y": -2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": -2
+          }
+        },
+        {
+          "type": 384,
+          "capacity": 24,
+          "position": {
+            "x": -1,
+            "y": 2
+          }
+        },
+        {
+          "type": 64,
+          "capacity": 4,
+          "position": {
+            "x": 2
+          }
+        },
+        {
+          "type": 2048,
+          "capacity": 32,
+          "position": {
+            "x": -2,
+            "y": 2
+          }
+        }
+      ]
     }
   ]
 }
