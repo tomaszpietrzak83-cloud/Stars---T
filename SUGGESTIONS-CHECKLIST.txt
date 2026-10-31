@@ -233,7 +233,7 @@ CLARIFIED / SUPERSEDED REQUESTS
 - Graphical battle playback exists; the requested direct notification link has been added.
 
 CURRENT STATUS
-Requests 1–166 checked as described, with remaining operational limits in docs/VERIFICATION.txt. The late starbase proposal in item 129 was implemented in 0.3.0 (item 159). Only the program is published, never the personal playthrough.
+Requests 1–176 checked as described, with remaining operational limits in docs/VERIFICATION.txt. The late starbase proposal in item 129 was implemented in 0.3.0 (item 159). Only the program is published, never the personal playthrough.
 No original Stars! files were changed. Automatic behavior remains subject to real fuel, available ships and known intelligence.
 
 PLANNER LIMITS
@@ -251,7 +251,7 @@ Verification details: audit-results/FUEL-AUTOMATION-AUDIT.txt.
 
 Clarification: infrastructure export is limited to the actual surplus above 95% of the planet maximum. At maximum 100 and stock 100, at most 5 may be exported; stock 95 exports zero.
 
-LATEST VERIFIED UPDATE: 2026-10-31, version 0.4.0. Full Go suite, 108 UI tests, zero-error/warning Svelte check, native/WASM/UI builds and compiled isolated browser passed. Production investments protect every explicit deadline and may build useful infrastructure without delay; fleet composition uses the same planner; useful rolling mineral stocks and optional accelerating alchemy implemented. Forty-four original generated assets replace prior EEE art, over one native starfield. Sanctuary capacity strengthened. Current-game deployment changed only one own planet production_queue at year 2450, with fresh backup, complete snapshot comparison and non-production-column fingerprint verification. No personal turn generated.
+LATEST VERIFIED UPDATE: 2026-10-31, version 0.4.1. Autonomous initiative, economical routes, moving fuel rescue, actual combat merges and persistent latest-generation rebuilds. 44 original assets retained; components corrected to gray. Full Go/native core suites, 112 frontend tests and zero-error/warning check; compiled UI and copied-save turn checks. Archives and parallel report decoding validated. Deployment details for the current live year are appended after restart; no personal turn generated.
 
 NEW REQUESTS — 2026-10-31
 [x] 108. Complete scout waypoint itinerary with global fuel/speed optimization, economical short hops and distant cluster expeditions
@@ -391,3 +391,27 @@ NEW REQUESTS — 2026-10-31
 0.4.0 verification: full Go suite passed; frontend check 0 errors/0 warnings; 108 frontend tests passed; compiled native/WASM/frontend and isolated browser passed. A temporary copy of the year-2450 save accepted production-only preview and completed a turn in 68.36 seconds. No personal turn generated. Forecasts cover known current conditions and a bounded 100-year horizon; the investment search is bounded, not a claim of exhaustive global optimization.
 
 Deployment evidence 0.4.0: current game remained at year 2450; one production queue updated after fresh backup. Native production forecast for that queue improved from 19 to 4 years using alchemy. Only production_queue changed; all other game-specific rows/columns verified unchanged in transaction. Program restarted with immutable new UI.
+
+[x] 167. Opportunistic patrol/escort combat groups: actual merges, pursuit, rally/retreat and role restoration.
+    Evidence: Native seven-Destroyer merge into one token, role restoration, dynamic free-escort recruitment and retaining merged stacks during retreat. Patrol/free-escort routes accept reported proximity while native interception evasion and mine/engine checks remain.
+[x] 168. Moving rescue donors and stranded clients; funded returns despite hostile reports, orphaned wait cleanup and empty freighter withdrawal.
+    Evidence: Native moving donor/partial refill, actual reserve/fuel conservation, empty off-territory freighter withdrawal, orphan release and funded recovery for all specified roles. Final copied-save test: 26/26 idle off-dock rebuild fleets moving/routed; waiting customers verified at the real rendezvous. Purposeful rally/repair/bombing waits preserved.
+[x] 169. Economic routine movement/escort assembly with real return/escape fuel; faster expensive legs require useful interception or emergency escape.
+    Evidence: Native engine fixture chooses routine 2 years/2 fuel versus pursuit 1 year/23 fuel. Escort assembly uses economic routes; unassisted cruise networks no longer accelerate staging. Donors retain return and existing next-leg budgets. Full native core suite passed.
+[x] 170. Scout recon targets incoming combat formations, not ordinary enemy scouts.
+    Evidence: Native scout recon still reports incoming Destroyer equipment before combat; ordinary actual Scout hulls are excluded from recon and route threats. Native broad Scout class also includes Frigate/Destroyer, so hull Type is used.
+[x] 171. Preserve zero-instance design history; pending rebuilds follow latest family version.
+    Evidence: Server API and compiled browser verified intermediate zero-instance Mk 2 remains after Mk 3. Reserved replacement queue retarget preserves quantity and unspent paid resources; all previous family versions point to newest.
+[x] 172. One/two-sentence selected fleet plan in Auto Orders.
+    Evidence: 112 frontend tests passed, including selected-fleet next-action/destination/warp summary; check zero errors/warnings. Manual fleets undergoing maintenance also show the plan.
+[x] 173. Adjacent unit factory/mine search for ship/base batches, preserving explicit deadlines.
+    Evidence: Native unit-neighbor refinement checks single/paired +/-1 factory/mine proposals and verifies every accepted queue with real production. Mixed-ship-batch regression finds no improving adjacent allocation and protects explicit deadlines. Existing queues previewed without a turn.
+[x] 174. Automatic local per-turn archives for analysis, excluded from Git.
+    Evidence: Atomic compressed orders/result archives under data/turn-archives/game-ID, default enabled. Tests verify repeat attempts do not overwrite, original state unchanged and human intel retained; redundant AI intel omitted. Current-copy test produced both archives (~4.7/4.9 MB). Data excluded from Git.
+[x] 175. Profile copied current-save turn, improve measured repeated work and safe multicore execution; new docks extend coverage and mineral-starved yards receive useful shipments.
+    Evidence: Read-only original/parallel DB query comparison on 144-player snapshot: 16.187s serial versus 2.628s parallel, 12 workers; every field/report and row order equal. Streamed buffer release; planet forecasting uses runtime parallelism. Full suite passed. SQLite serialization/commit remains a substantial ordered bottleneck. Existing/new docks refresh coverage from current own starbases; demand-based useful mineral deliveries retained.
+
+[x] 176. EEE components use native medium gray; only mobile hulls/stations use the black common starfield. Unknown enemy strength uses reported ship counts and Weapon/General slot capacities; ordinary scouts do not block routes or attract reconnaissance.
+    Evidence: Compiled UI verifies EEE component background rgb(192,192,192), PNG without starfield; hull/station galleries retain native starfield. Native enemy estimates use quantity times Weapon-compatible slot capacity (including General), and actual Scout hulls do not block routes.
+
+0.4.1 live deployment: fresh backup of actual current game 10 at year 2454. Updated only 6 own planet production_queue values and 57 own fleet waypoint/tag plans. Each transaction fingerprinted all other current-game fields; initial transaction compared the fresh backup. No personal turn, movement, fuel or cargo changes. Program restarted with immutable compiled UI. Earlier year-2450 tests used a copied backup only; the newer live progress was retained.

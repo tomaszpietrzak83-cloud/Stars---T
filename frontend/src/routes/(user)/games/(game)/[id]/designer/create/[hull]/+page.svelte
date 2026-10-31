@@ -37,6 +37,7 @@
 			if (copyDesign) {
 				design = clone(ShipDesignSchema, copyDesign);
 				design.gameDbObject = create(GameDBObjectSchema);
+    design.num=0;
 				design.version++;
     if(upgradeFrom){const members=designFamilyMembers($universe.getMyDesigns(),$player.playerOrders.automation?.designFamilies??{},upgradeFrom);design.version=Math.max(1,...members.map(d=>d.version))+1;design.name=upgradeDesignName(copyDesign,design.version);}
 			}

@@ -1,4 +1,6 @@
-tomek-stars 0.3.0 — verification, 2026-10-31
+tomek-stars verification history — latest release 0.4.1, 2026-10-31
+
+Earlier release entries are historical; the final 0.4.1 section describes this deployment.
 
 PASS: full Go suite, plus targeted core/AI automation recovery and design-family regression tests.
 PASS: Svelte check: zero errors and warnings. 108 frontend tests: zero failures/errors.
@@ -38,3 +40,20 @@ PASS: latest year-2450 audit snapshot copied again into a temporary test databas
 Forecast limitations: up to 100 years, current tech/research/population/mineral conditions; no prediction of future attacks or deliveries. Investment search is bounded, not exhaustive. Three-year mineral stocks plus next committed unit are demand targets, not resource creation. Temporary alchemy requires an actual improvement in at least one manufacturing completion with no other completion delayed.
 
 PASS: production-only deployment was first rehearsed on a separate database. Live deployment took a fresh backup while the game was waiting, compared the entire current-game snapshot, updated only one own production_queue and verified all other current-game columns unchanged. Year 2450 retained; no turn generated. Queue forecast improved from 19 to 4 years. Native executable and immutable compiled UI restarted.
+
+0.4.1 verification — 2026-10-31
+Implemented regressions: seven Destroyers merge into one fleet/token and restore four patrol/three escort roles; ordinary scout reports do not block routes; unknown strength follows Weapon/General slot capacity times reported ship count; moving donor and partial refill; empty off-territory transport withdrawal; funded patrol/escort/freighter recovery through enemy proximity; reserved replacement retarget with paid-resource conservation. Engine fixture: economical 2 years/2 fuel versus combat pursuit 1 year/23 fuel. Component icons corrected to #c0c0c0 gray; hull/base starfield retained.
+Archives use atomic compressed files, retain repeated attempts without overwriting and do not mutate the source. They preserve physical state, all orders and human intel; AI intel caches omitted intentionally. Analysis archives are not restorable whole-database backups.
+Parallel SQL report decoding uses the same query, ordered rows and native Scan types. Serial/parallel equivalence, malformed report attribution and existing database/AI determinism suites verify behavior. Raw JSON is streamed through a bounded hand-off, not accumulated for the entire galaxy.
+
+PASS: full native core suite after final recovery/formation changes. Legacy hold-only tests now validate funded recovery instead; a donor rendezvous may take multiple economical turns and must physically close distance.
+PASS: 112 frontend tests, zero failures/errors; Svelte check zero errors/warnings. Selected Auto Orders describes status and the next destination/warp.
+PASS: real audit snapshot (144 players): original serial report read/decode 16.187s, streamed parallel read/decode 2.628s with GOMAXPROCS=12. Deep equality confirmed every returned player field/report and row order. This is a read-stage measurement, not a whole-turn speedup guarantee.
+PASS: copied-save integration with archives: 26/26 previously idle off-dock rebuild fleets moving/routed. Waiting customers must actually be at their agreed rendezvous. The run before final hull-type classification took 37.063s for native generation and 49.21s for the full test; timing varies with I/O and workload. Orders/result archives were about 4.7/4.9 MB compressed each, not 43 MB full AI-cache dumps.
+LIMITATION: SQLite commit/serialization remains a major whole-turn cost. Combat, shared RNG and transactional state changes remain ordered. No claim that every simulation step uses every core. Bounded unit-neighbor production search verifies each accepted plan with native simulation; it is not exhaustive global optimization.
+
+PASS: final full Go suite (server 117.762s), plus full native core 2.594s after the final classification/recovery corrections. Final copied-save run completed native generation in 50.292s (whole test 71.82s including extra I/O); 26/26 previously idle off-dock maintenance fleets moving/routed. Both private analysis archives written. Final classification uses hull Type: original Frigate/Destroyer have the broad Scout class but are not harmless exploration hulls.
+
+PASS: deployed 0.4.1 to actual current year 2454 after fresh backup; six production queues and 57 fleet navigation/tag plans updated. Year retained; all other current-game fields verified unchanged per transaction. The user had advanced from the year-2450 analysis snapshot; no older snapshot was restored over that progress.
+
+PASS: deployed 0.4.1 live automatic login and scanner inspected with all mutating API operations blocked by the browser test. Native/WASM SHA-256 values verified, compiled component gray background inspected.

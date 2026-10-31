@@ -45,7 +45,7 @@ func (c *client) GetPlayersForUser(ctx context.Context, userID int64) ([]*cs.Pla
 // get all the players for a game, with data loaded
 func (c *client) GetPlayersForGame(ctx context.Context, gameID int64) ([]*cs.Player, error) {
 
-	items, err := c.reader.GetPlayersForGame(ctx, gameID)
+	items, err := c.reader.GetPlayersForGameParallel(ctx, gameID)
 	if err == sql.ErrNoRows {
 		return []*cs.Player{}, nil
 	}

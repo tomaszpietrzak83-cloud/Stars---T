@@ -22,3 +22,11 @@ export function automationStatus(fleet: Fleet): string {
  }
  return tags['scout-job']??(tags['escort-for']?`Escorting fleet #${tags['escort-for']}`:'Orders take effect on the next turn');
 }
+
+export function automationPlan(fleet: Fleet): string {
+ const status=automationStatus(fleet).replace(/\s+/g,' ').trim();
+ const next=fleet.fleetOrders?.waypoints?.[1];
+ if(!next) return status;
+ const name=next.mapObjectTarget?.targetName || (next.position?`(${next.position.x}, ${next.position.y})`:'the next waypoint');
+ return `${status.replace(/[.!?]$/,'')}. Next: ${name}, warp ${next.warpSpeed}; fuel is checked before departure.`;
+}

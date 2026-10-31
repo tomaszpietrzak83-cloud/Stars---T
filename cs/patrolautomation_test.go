@@ -102,7 +102,8 @@ func TestPatrolUsesReportedDesignsRatherThanPrivateEnemyPointers(t *testing.T) {
 	p, f := u.Player(1), u.Fleet("Escort")
 	enemy := patrolTestEnemy(0)
 	enemy.Tokens = []ShipToken{{DesignNum: 10, Quantity: 1, design: f.Tokens[0].design}}
-	require.Greater(t, patrolReportedPower(p, enemy), 1000000, "unknown designs must not be treated as harmless")
+	require.Positive(t, patrolReportedPower(p, enemy), "unidentified hulls retain a finite conservative estimate")
+	require.Less(t, patrolReportedPower(p, enemy), 1000000, "missing equipment is not an infinitely powerful enemy")
 	p.ShipDesignIntels = []*ShipDesign{{PlayerNum: 2, Num: 10, Slots: []ShipDesignSlot{{Quantity: 1}}, Spec: ShipDesignSpec{PowerRating: 75}}}
 	require.Equal(t, 75, patrolReportedPower(p, enemy))
 }

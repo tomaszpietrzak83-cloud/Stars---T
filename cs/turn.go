@@ -74,6 +74,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.refreshAutomaticFuelIntel()
 	t.advanceFuelNetworks()
 	t.resolveAutomaticTankers()
+	t.shareOpportunisticFuel()
 	t.unloadOpportunisticInfrastructure()
 	t.fleetDesignMaintenance()
 	t.planFleetAssemblies()
@@ -94,6 +95,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.resolveAutomaticTankers()
 	t.planBombingWolfPacks()
 	t.planAutomaticSafety()
+	t.recoverIdleAutomaticFleets()
 	t.advanceFuelNetworks()
 	t.planAutomaticPackets()
 	t.fleetByHandTransfers()
@@ -134,7 +136,8 @@ func (t *turnGenerator) generateTurn() error {
 	t.wormholeJiggle()   // wormholes move after production, like the original
 	t.packetMove(true)   // move packets built this turn
 	t.decayPackets(true) // decay packets built this turn
-	t.fleetRefuel()      // refuel after production so fleets will refuel at planets that just built a starbase this turn
+	t.fleetRefuel()
+	t.shareOpportunisticFuel() // refuel after production so fleets will refuel at planets that just built a starbase this turn
 	t.randomCometStrike()
 	t.randomMineralDeposit()
 	t.randomPlanetaryChange()

@@ -46,6 +46,7 @@ type discordConfig struct {
 }
 
 type gameConfig struct {
+	TurnArchives   bool   `yaml:"TurnArchives,omitempty"`
 	InviteLinkSalt string `yaml:"InviteLinkSalt,omitempty"`
 }
 
@@ -92,6 +93,7 @@ func GetConfig() *Config {
 
 		// Set default values for local dev
 		viper.SetDefault("Database.Filename", "data/data.db")
+		viper.SetDefault("Game.TurnArchives", true)
 		viper.SetDefault("Database.ReadConnectionParams", "?_txlock=deferred")
 		viper.SetDefault("Database.WriteConnectionParams", "?_txlock=immediate&_busy_timeout=1200")
 		viper.SetDefault("Auth.DisableXSRF", true)            // default for local dev

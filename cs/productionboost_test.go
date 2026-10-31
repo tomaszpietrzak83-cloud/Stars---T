@@ -210,3 +210,41 @@ func TestNewAssemblyDoesNotJumpAheadOfPreviouslyBoostedManufacturing(t *testing.
 	require.GreaterOrEqual(t, firstAt, 0)
 	require.Greater(t, secondAt, firstAt, "temporary auto investment must not make newer fleet orders jump ahead")
 }
+
+func TestUnitRefinementDoesNotLeaveAnImprovingAdjacentShipBatchInvestment(t *testing.T) {
+	u, p, planet, d := manufacturingTestWorld(t)
+	second := *d
+	second.Num = 90
+	second.Name = "Second queued ship"
+	p.Designs = append(p.Designs, &second)
+	original := []ProductionQueueItem{{Type: QueueItemTypeShipToken, DesignNum: d.Num, Quantity: 30, design: d}, {Type: QueueItemTypeShipToken, DesignNum: second.Num, Quantity: 12, design: &second}}
+	planet.ProductionQueue = original
+	baseline, err := forecastManufacturing(&u.Game.Rules, p, planet, original, 0, Mineral{})
+	require.NoError(t, err)
+	PlanDefaultAuto(&u.Game.Rules, p, planet)
+	result, err := forecastManufacturing(&u.Game.Rules, p, planet, planet.ProductionQueue, 0, Mineral{})
+	require.NoError(t, err)
+	require.True(t, manufacturingDatesNoLater(result, baseline))
+	plan := productionBoostPlan{}
+	for _, item := range planet.ProductionQueue {
+		if item.GetTag(starbaseBoostTag) != "" {
+			switch item.Type {
+			case QueueItemTypeAutoFactories:
+				plan.Factories = item.Quantity
+			case QueueItemTypeAutoMines:
+				plan.Mines = item.Quantity
+			}
+		}
+	}
+	for _, delta := range [][2]int{{1, 0}, {0, 1}, {1, 1}, {-1, 0}, {0, -1}, {-1, -1}, {1, -1}, {-1, 1}} {
+		f, m := plan.Factories+delta[0], plan.Mines+delta[1]
+		if f < 0 || m < 0 || f > planet.Spec.MaxFactories-planet.Factories || m > planet.Spec.MaxMines-planet.Mines {
+			continue
+		}
+		candidate, err := forecastManufacturing(&u.Game.Rules, p, planet, productionPlanQueue(original, productionBoostPlan{Factories: f, Mines: m}), 0, Mineral{})
+		require.NoError(t, err)
+		if manufacturingDatesNoLater(candidate, baseline) {
+			require.False(t, betterManufacturing(candidate, result), "an adjacent one-unit improvement was missed: %d/%d", f, m)
+		}
+	}
+}

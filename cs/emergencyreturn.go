@@ -40,7 +40,7 @@ func (t *turnGenerator) routeEmergencyReturn(p *Player, f *Fleet) bool {
 			best = route
 		}
 	}
-	if p.Automation.FleetRoles[f.Num] == "scout" {
+	{ // Recovery must keep moving for every role, not only scouts.
 		for _, dock := range expeditionStations(p, f) {
 			route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, dock.Position, dock.ToTarget(), automaticRoutePolicy{EmergencyReturn: true, AllowThreat: true, MaxTurns: 10000})
 			if route != nil && !route.WaitForFuel && (best == nil || route.Turns+3 < best.Turns) {
@@ -74,7 +74,7 @@ func fundedEmergencyReturn(rules *Rules, p *Player, f *Fleet) bool {
 	}
 	fuel, from := f.Fuel, f.Position
 	for _, wp := range f.Waypoints[1:] {
-		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticLegSafe(rules, p, from, wp.Position, wp.WarpSpeed, p.Automation.FleetRoles[f.Num] == "scout" && f.GetTag(emergencyRiskTag) != "", f.StrategicSpeed(wp.WarpSpeed)) {
+		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticLegSafe(rules, p, from, wp.Position, wp.WarpSpeed, f.GetTag(emergencyRiskTag) != "", f.StrategicSpeed(wp.WarpSpeed)) {
 			return false
 		}
 		_, left, _, ok := automaticLegFuel(p, f, wp.WarpSpeed, from.DistanceTo(wp.Position), fuel, 0)

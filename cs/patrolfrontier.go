@@ -71,7 +71,7 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 	f.SetTag(frontierPatrolTag, "Economical frontier patrol; whole return budget retained")
 	for _, candidate := range candidates[:min(32, len(candidates))] {
 		allow := patrolPower(f) > knownRouteThreat(p, f.Position, candidate.pos)*3/2
-		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, candidate.pos, MapObjectTarget{}, automaticRoutePolicy{EconomicalPatrol: true, MaxWarp: min(4, automaticMaxWarp(p, f)), MinWarp: 4, MaxTurns: 20, AllowThreat: allow})
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, candidate.pos, MapObjectTarget{}, automaticRoutePolicy{EconomicalPatrol: true, MaxWarp: min(4, automaticMaxWarp(p, f)), MinWarp: 4, MaxTurns: 20, AllowThreat: allow || combatAutonomy(p, f)})
 		if route != nil && !route.WaitForFuel {
 			applyExpeditionRoute(p, f, route)
 			return true

@@ -93,6 +93,7 @@ func (t *turnGenerator) refreshAutomaticFuelIntel() {
 		if len(player.Automation.FleetRoles) == 0 && len(player.Automation.FleetAssemblies) == 0 && len(player.DesignMaintenance) == 0 {
 			continue
 		}
+		t.releaseUnassistedCruiseNetworks(player)
 		known := map[int]bool{}
 		for i, intel := range player.PlanetIntels {
 			if intel == nil {
@@ -158,7 +159,7 @@ func convoyMembers(player *Player, fleet *Fleet, all []*Fleet) []*Fleet {
 func (t *turnGenerator) guardAutomaticFuel() {
 	for _, player := range t.automaticPlayers() {
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if (fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet)) || fuelNetworkManaged(fleet) || !isAutomaticFleet(player, fleet) || player.Automation.FleetRoles[fleet.Num] == "tanker" || fleet.GetTag(escortTag) != "" || fleet.GetTag(tankerAwaitTag) != "" {
+			if (readTankerJob(fleet) != nil && readTankerJob(fleet).TargetNum > 0) || (fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet)) || fuelNetworkManaged(fleet) || !isAutomaticFleet(player, fleet) || player.Automation.FleetRoles[fleet.Num] == "tanker" || fleet.GetTag(escortTag) != "" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
 			group := convoyMembers(player, fleet, t.game.getFleets(player.Num))
@@ -172,7 +173,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				continue
 			}
 			goal := fleet.Waypoints[1]
-			allowThreat := scoutReconActive(player, fleet) || len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
+			allowThreat := combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
 			if job := logisticsWork(fleet); job != nil {
 				goal.Position = job.Position
 				allowThreat = knownRouteThreat(player, fleet.Position, job.Position) > 0 && len(group) > 1
@@ -198,6 +199,9 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			}
 			route := planAutomaticRoute(&t.game.Rules, player, budgets, goal.Position, target, policy)
 			if route == nil {
+				if len(group) == 1 && t.routeEmergencyReturn(player, fleet) {
+					continue
+				}
 				for _, member := range group {
 					raw, _ := json.Marshal(member.FleetOrders)
 					member.SetTag(fuelResumeTag, string(raw))
@@ -248,7 +252,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			}
 			fast := planAutomaticRoute(&t.game.Rules, player, full, goal.Position, target, policy)
 			minimumTurns := max(1, int(math.Ceil(fleet.Position.DistanceTo(goal.Position)/max(1, fleet.StrategicSpeed(automaticMaxWarp(player, fleet))))))
-			if fast != nil && fast.Turns+1 < route.Turns || route.Turns > minimumTurns {
+			if !(fleet.GetTag(frontierPatrolTag) != "" || fleet.GetTag(escortStagingTag) != "") && (fast != nil && fast.Turns+1 < route.Turns || route.Turns > minimumTurns) {
 				saveAutomaticFuelRequest(fleet, automaticFuelRequest{Destination: goal.Position, Target: target, Members: fleetNumbers(group), BaselineTurns: route.Turns, AllowThreat: allowThreat, OneWay: policy.OneWay})
 			}
 		}
@@ -300,7 +304,7 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 			return false
 		}
 	}
-	receiverRoute := planAutomaticRoute(&t.game.Rules, player, members, job.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: job.AllowThreat, RefuelRendezvous: true, EmergencyReturn: job.Urgent, MaxTurns: 10000})
+	receiverRoute := planAutomaticRoute(&t.game.Rules, player, members, job.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: job.AllowThreat || job.Urgent, RefuelRendezvous: true, EmergencyReturn: job.Urgent, MaxTurns: 10000})
 	if receiverRoute == nil {
 		return false
 	}
@@ -309,14 +313,9 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 			return false
 		}
 	}
-	route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{tanker}, job.Position, MapObjectTarget{}, automaticRoutePolicy{DeliveryFuel: []int{job.DeliveryFuel}})
+	route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{tanker}, job.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: combatAutonomy(player, tanker), DeliveryFuel: []int{job.DeliveryFuel}})
 	if route == nil {
-		job.Status = "Tanker waiting for a safe fuel route"
-		holdAutomaticFleet(player, tanker, job.Status)
-		for _, member := range members {
-			holdAutomaticFleet(player, member, "Waiting until the tanker can safely reach the rendezvous")
-		}
-		return true
+		return false // Release the rendezvous; both ships can withdraw instead of freezing.
 	}
 	applyExpeditionRoute(player, tanker, route)
 	for _, member := range members {
@@ -452,7 +451,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 				if atDock {
 					continue
 				}
-				positions := []Vector{customer.Position, tanker.Position}
+				positions := []Vector{customer.Position, {(customer.Position.X + tanker.Position.X) / 2, (customer.Position.Y + tanker.Position.Y) / 2}, tanker.Position}
 				networkNode := false
 				if hub := readTankerJob(tanker); hub != nil && hub.Stage == "patrol" {
 					networkNode = true
@@ -471,7 +470,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 					}
 				}
 				for _, position := range positions {
-					receiverRoute := planAutomaticRoute(&t.game.Rules, player, group, position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: request.AllowThreat, RefuelRendezvous: true, EmergencyReturn: request.Urgent, MaxTurns: 10000})
+					receiverRoute := planAutomaticRoute(&t.game.Rules, player, group, position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: request.AllowThreat || request.Urgent, RefuelRendezvous: true, EmergencyReturn: request.Urgent, MaxTurns: 10000})
 					if receiverRoute == nil {
 						continue
 					}
@@ -489,11 +488,11 @@ func (t *turnGenerator) planAutomaticTankers() {
 					}
 					var deliveryRoute *expeditionRoute
 					donation := 0
-					for _, amount := range []int{want, min(want, max(1, tanker.Spec.FuelCapacity/2)), 1} {
+					for _, amount := range []int{want, min(want, max(1, tanker.Spec.FuelCapacity/2)), min(want, max(1, tanker.Spec.FuelCapacity/4)), min(want, max(1, minimumDelivery)), 1} {
 						if amount < minimumDelivery || !request.Urgent && amount < want {
 							continue
 						}
-						if route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{tanker}, position, MapObjectTarget{}, automaticRoutePolicy{DeliveryFuel: []int{amount}}); route != nil && !route.WaitForFuel {
+						if route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{tanker}, position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: combatAutonomy(player, tanker), DeliveryFuel: []int{amount}}); route != nil && !route.WaitForFuel {
 							deliveryRoute, donation = route, amount
 							break
 						}
@@ -515,7 +514,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 							continue
 						}
 					}
-					score := float64(eta) + float64(want-min(want, donation))/float64(max(1, want))
+					score := float64(eta) + float64(receiverRoute.Turns)*0.5 + float64(want-min(want, donation))/float64(max(1, want))
 					if score < best {
 						chosen = &automaticTankerJob{Urgent: request.Urgent, TargetNum: customer.Num, Members: fleetNumbers(group), Position: position, DeliveryFuel: donation, AllowThreat: request.AllowThreat, ResumeOrders: map[int]FleetOrders{}}
 						best = score

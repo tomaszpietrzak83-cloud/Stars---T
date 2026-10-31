@@ -199,7 +199,7 @@ func PlanProductionBoost(rules *Rules, player *Player, planet *Planet) {
 	}{
 		planet.Cargo, planet.Factories, planet.Mines, planet.Hab, planet.MineralConcentration, planet.MineYears, player.ResearchAmount, planet.ContributesOnlyLeftoverToResearch, player.TechLevels, player.Race, keyItems, planet.Spec.StarbaseDesignNum, planet.Spec.ResourcesPerYearAvailable, planet.Spec.MaxFactories, planet.Spec.MaxMines}
 	encoded, _ := json.Marshal(input)
-	key := fmt.Sprintf("v040-%x", sha256.Sum256(encoded))
+	key := fmt.Sprintf("v041-%x", sha256.Sum256(encoded))
 	var cached productionBoostPlan
 	if json.Unmarshal([]byte(planet.GetTag(productionBoostCacheTag)), &cached) == nil && cached.Key == key {
 		planet.ProductionQueue = productionPlanQueue(queue, cached)
@@ -239,6 +239,7 @@ func PlanProductionBoost(rules *Rules, player *Player, planet *Planet) {
 	}
 	maxF := max(0, planet.Spec.MaxFactories-planet.Factories)
 	maxM := max(0, planet.Spec.MaxMines-planet.Mines)
+	try(min(1, maxF), min(1, maxM), 0) // Start with Factory then Mine, one unit each.
 	baseF := min(maxF, max(1, planet.Spec.ResourcesPerYearAvailable/max(1, player.Race.FactoryCost)/2))
 	baseM := min(maxM, max(1, planet.Spec.ResourcesPerYearAvailable/max(1, player.Race.MineCost)/2))
 	for _, f := range []int{0, min(1, maxF), baseF, min(maxF, baseF*2)} {
@@ -260,6 +261,20 @@ func PlanProductionBoost(rules *Rules, player *Player, planet *Planet) {
 	}
 	try(maxF, best.Mines, 0)
 	try(best.Factories, maxM, 0)
+	// Refine in exact adjacent units, including paired factory/mine changes.
+	// Each proposal runs native production and protects every explicit deadline.
+	for range 256 {
+		previous := best
+		for _, delta := range [][2]int{{1, 0}, {0, 1}, {1, 1}, {-1, 0}, {0, -1}, {-1, -1}, {1, -1}, {-1, 1}} {
+			f, m := previous.Factories+delta[0], previous.Mines+delta[1]
+			if f >= 0 && f <= maxF && m >= 0 && m <= maxM {
+				try(f, m, 0)
+			}
+		}
+		if best.Factories == previous.Factories && best.Mines == previous.Mines {
+			break
+		}
+	}
 	try(0, 0, 1)
 	try(best.Factories, best.Mines, 1)
 	try(best.Factories, best.Mines, 2)

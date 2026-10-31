@@ -61,7 +61,7 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 	var best *expeditionRoute
 	score := math.Inf(1)
 	for _, enemy := range p.FleetIntels {
-		if !enemyApproachingColony(p, enemy) || !unknownFleetEquipment(p, enemy) {
+		if !enemyApproachingColony(p, enemy) || !reconCombatFormation(p, enemy) || !unknownFleetEquipment(p, enemy) {
 			continue
 		}
 		claimed := false
@@ -86,6 +86,9 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 		}
 	}
 	if chosen == nil {
+		if readScoutRecon(f) != nil {
+			holdAutomaticFleet(p, f, "Reconnaissance ended; resuming exploration or return")
+		}
 		delete(f.Tags, scoutReconTag)
 		return false
 	}
@@ -130,4 +133,26 @@ func (t *turnGenerator) scanScoutReconContacts() {
 			}
 		}
 	}
+}
+
+// A lone ordinary scout is no reason to abandon exploration. A report with an
+// unknown hull may still be a warship; known scout/freighter/miner hulls are not.
+func reconCombatFormation(p *Player, enemy *Fleet) bool {
+	if reportedScoutsOnly(p, enemy) {
+		return false
+	}
+	if enemy.Spec.HasWeapons || enemy.Spec.Bomber {
+		return true
+	}
+	for _, token := range enemy.Tokens {
+		d := p.GetShipDesignIntel(enemy.PlayerNum, token.DesignNum)
+		if d == nil {
+			return enemy.Spec.ShipClass != ShipClassScout && enemy.Spec.ShipClass != ShipClassFreighter && enemy.Spec.ShipClass != ShipClassMiner
+		}
+		h := StaticTechStore.GetHull(d.Hull)
+		if h != nil && h.Type != TechHullTypeScout && h.Class != ShipClassFreighter && h.Class != ShipClassMiner {
+			return true
+		}
+	}
+	return false
 }

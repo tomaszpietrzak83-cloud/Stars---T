@@ -16,7 +16,15 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			wp := fleet.Waypoints[1]
-			allowThreat := player.Automation.FleetRoles[fleet.Num] == "scout" && fleet.GetTag(emergencyRiskTag) != "" || scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			if raw := fleet.GetTag(tankerAwaitTag); raw != "" {
+				num, _ := strconv.Atoi(raw)
+				if donor := t.game.getFleet(player.Num, num); donor != nil && !donor.Delete {
+					if job := readTankerJob(donor); job != nil && slices.Contains(job.Members, fleet.Num) && job.Position == wp.Position {
+						allowThreat = allowThreat || job.AllowThreat || job.Urgent
+					}
+				}
+			}
 			valid := true
 			if wp.WarpSpeed == StargateWarpSpeed {
 				valid = fleet.CanJump(player, fleet.Position.DistanceTo(wp.Position), player.GetPlanetIntel(fleet.OrbitingPlanetNum), player.GetPlanetIntel(wp.TargetNum))
@@ -51,6 +59,10 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 			}
 			if !valid {
 				blocked[fleet.Num] = true
+				if raw := fleet.GetTag(tankerAwaitTag); raw != "" {
+					num, _ := strconv.Atoi(raw)
+					blocked[num] = true
+				}
 				if raw := fleet.GetTag(escortTag); raw != "" {
 					num, _ := strconv.Atoi(raw)
 					blocked[num] = true
@@ -76,6 +88,23 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				fleet.SetTag(fuelResumeTag, string(raw))
 				holdAutomaticFleet(player, fleet, "Departure held: actual fuel, payload or route no longer matches the safe plan")
 				requestAutomaticRescue(player, fleet, true)
+				// An invalid fuel promise must not immobilize both parties indefinitely.
+				if raw := fleet.GetTag(tankerAwaitTag); raw != "" {
+					n, _ := strconv.Atoi(raw)
+					if donor := t.game.getFleet(player.Num, n); donor != nil {
+						if job := readTankerJob(donor); job != nil {
+							t.releaseTankerCustomers(player, donor, job)
+							delete(donor.Tags, tankerJobTag)
+						}
+					}
+				}
+				if job := readTankerJob(fleet); job != nil && job.TargetNum > 0 {
+					t.releaseTankerCustomers(player, fleet, job)
+					delete(fleet.Tags, tankerJobTag)
+				}
+				if !atOwnFuelDock(player, fleet) && fleet.GetTag(tankerAwaitTag) == "" {
+					t.routeEmergencyReturn(player, fleet)
+				}
 			}
 		}
 	}

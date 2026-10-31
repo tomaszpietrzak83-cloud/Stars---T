@@ -294,6 +294,9 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 	}
 	if threat > power {
 		t.releaseEscorts(player, fleet)
+		if t.withdrawEmptyFreighter(player, fleet, job) {
+			return
+		}
 		job.Status = "Waiting for enough escort strength"
 		routeAutomatically(&t.game.Rules, player, fleet, fleet.Position, MapObjectTarget{}, 0)
 		return
@@ -302,7 +305,11 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 	ready := true
 	for _, escort := range escorts {
 		if escort.Position != fleet.Position {
-			routeAutomatically(&t.game.Rules, player, escort, fleet.Position, MapObjectTarget{}, 0)
+			if route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{escort}, fleet.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: true}); route != nil {
+				applyExpeditionRoute(player, escort, route)
+			} else {
+				t.returnPatrolToFuel(player, escort)
+			}
 			ready = false
 		}
 		group = append(group, escort)
@@ -314,6 +321,9 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 	}
 	route := t.planAutomaticMission(player, group, job.Position, target, automaticRoutePolicy{AllowThreat: threat > 0})
 	if route == nil {
+		if len(escorts) == 0 && t.withdrawEmptyFreighter(player, fleet, job) {
+			return
+		}
 		job.Status = "Waiting for convoy fuel or a safe route"
 		for _, member := range group {
 			holdAutomaticFleet(player, member, job.Status)

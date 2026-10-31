@@ -3,7 +3,7 @@
  import { clone, create } from '@bufbuild/protobuf';
  import { getGameContext } from '#lib/services/GameContext.js';
  import { LogisticsAutomationSchema, type Fleet } from '#lib/types/cs-proto.js';
- import { automationRoles, automationStatus } from '#lib/types/automationRoles.js';
+ import { automationRoles, automationPlan } from '#lib/types/automationRoles.js';
  import CommandTile from './CommandTile.svelte';
  let { fleet }: {fleet: Fleet}=$props();
  const {player,universe,updatePlayerOrders}=getGameContext();
@@ -30,7 +30,7 @@
     {#each options as option (option.value)}<option value={option.value}>{option.label}</option>{/each}
    </select>
   </label>
-  <p class="text-xs mt-2">{role?automationStatus(fleet):'Manual waypoint orders. Select a role to enable automation.'}</p>
+  <p class="text-xs mt-2">{role || locked?automationPlan(fleet):'Manual waypoint orders. Select a role to enable automation.'}</p>
   <FuelRouteDetails {fleet} />
   {#if role==='scout' && petal?.plan?.length}<details class="text-xs mt-2"><summary>Planned petal itinerary</summary><ol class="list-decimal pl-4">{#each petal.plan.slice(petal.leg??0) as num,index (`${index}:${num}`)}<li>{$universe.getPlanet(num)?.mapObject?.name??`Planet #${num}`}{index+(petal.leg??0)>=(petal.returnAt??0)?' — return arm':''}</li>{/each}</ol></details>{/if}
   {#if role}<button class="btn btn-xs mt-2" disabled={busy||locked} onclick={()=>assign('')}>Disable automation</button>{/if}

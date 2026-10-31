@@ -266,5 +266,6 @@
       "target": "frontend/static/images/eee/stations/eee-sanctuary-star-v1.png",
       "prompt": "New original metallic Stars!-inspired station sprite, transparent alpha; inhabited alien spindle arcology with three partially open habitat rings, sage/violet/silver, no planet/Saturn. Fixed elevated three-quarter view, upper-left illumination, coarse readable pixel clusters for a 64x64 display, sparse pin highlights, no text, borders, background or glow."
     }
-  ]
+  ],
+  "componentBackground": "#c0c0c0, native medium gray (later user correction; hulls and stations retain the common starfield)"
 }

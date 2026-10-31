@@ -96,6 +96,7 @@ func (g *FullGame) PreviewAutomaticRoutes(playerNum int) (*AutomaticRoutesPrevie
 		}
 	}
 	t.planEscortStaging()
+	t.recoverIdleAutomaticFleets()
 	t.guardAutomaticFuel()
 	t.planAutomaticTankers()
 	t.enforceAutomaticDeparture()

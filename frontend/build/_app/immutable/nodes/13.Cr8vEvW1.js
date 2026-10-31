@@ -1,0 +1,1 @@
+import{J as e,M as t,X as n,gt as r,ut as i}from"../chunks/Dgn-K8f2.js";import"../chunks/BD0k_xHk.js";import{t as a}from"../chunks/HQRXaIdN.js";var o=n(`<meta name="description" content="CraigStars!"/>`);function s(n){t(`1cgavzv`,t=>{var n=o();i(()=>{r.title=`Home`}),e(t,n)}),a(n,{})}export{s as component};

@@ -470,7 +470,7 @@ func (g *FullGame) computeSpecs() error {
 		}
 	}
 
-	if err := g.computePlanetSpecs(min(8, runtime.GOMAXPROCS(0))); err != nil {
+	if err := g.computePlanetSpecs(runtime.GOMAXPROCS(0)); err != nil {
 		return err
 	}
 

@@ -179,6 +179,16 @@ func (t *turnGenerator) advanceFuelNetworks() {
 			if plan == nil {
 				continue
 			}
+			if leader.GetTag(frontierPatrolTag) != "" || leader.GetTag(escortStagingTag) != "" {
+				mobile := false
+				for _, leg := range plan.Route.Legs {
+					mobile = mobile || len(leg.Donations) > 0
+				}
+				if !mobile {
+					t.closeFuelNetwork(player, leader, plan, false)
+					continue
+				}
+			}
 			members, valid := t.fuelNetworkMembers(player, plan)
 			if !valid || plan.Leg >= len(plan.Route.Legs) || !t.fuelNetworkReservationsValid(player, plan) {
 				t.closeFuelNetwork(player, leader, plan, false)
@@ -349,6 +359,9 @@ func (t *turnGenerator) planFuelNetworks() {
 				donors = append(donors, donor)
 			}
 
+			if !request.Urgent && len(donors) == 0 {
+				continue
+			} // No phantom acceleration without mobile fuel.
 			policy := automaticRoutePolicy{AllowThreat: request.AllowThreat, OneWay: request.OneWay, MaxTurns: 50}
 			returning := request.Urgent && request.Destination == customer.Position
 			if returning {
@@ -392,4 +405,26 @@ func (t *turnGenerator) fuelNetworkDepartureReserve(player *Player, fleet *Fleet
 		}
 	}
 	return 0, false
+}
+
+func (t *turnGenerator) releaseUnassistedCruiseNetworks(p *Player) {
+	for _, f := range t.game.getFleets(p.Num) {
+		plan := readFuelNetworkPlan(f)
+		if plan == nil || f.GetTag(frontierPatrolTag) == "" && f.GetTag(escortStagingTag) == "" {
+			continue
+		}
+		mobile := false
+		for _, leg := range plan.Route.Legs {
+			mobile = mobile || len(leg.Donations) > 0
+		}
+		if !mobile {
+			t.closeFuelNetwork(p, f, plan, false)
+			for _, n := range plan.Members {
+				if m := t.game.getFleet(p.Num, n); m != nil {
+					delete(m.Tags, fuelResumeTag)
+					delete(m.Tags, fuelRequestTag)
+				}
+			}
+		}
+	}
 }

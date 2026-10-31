@@ -123,7 +123,7 @@ func TestFullNativeTurnLoadsTransportAndStartsMovingImmediately(t *testing.T) {
 	require.Positive(t, f.Cargo.Colonists)
 }
 
-func TestEmergencyReturnDetoursAroundThreatInsteadOfRetryingBlockedStraightLine(t *testing.T) {
+func TestEmergencyReturnCanChooseFundedRiskInsteadOfAnExcessivelyLongThreatDetour(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Transport")
 	p.Automation.FleetRoles = map[int]string{f.Num: "miner"}
@@ -136,9 +136,9 @@ func TestEmergencyReturnDetoursAroundThreatInsteadOfRetryingBlockedStraightLine(
 		token.design.Spec.Engine.FuelUsage = []int{0, 0, 0, 0, 100000, 100000, 100000, 100000, 100000, 100000, 100000}
 	}
 	u.Run(func(tg *turnGenerator) { require.True(t, tg.routeEmergencyReturn(p, f)) }, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture)
-	require.Greater(t, len(f.Waypoints), 2)
+	require.Greater(t, len(f.Waypoints), 1)
 	require.True(t, fundedEmergencyReturn(&u.Game.Rules, p, f))
 	for i := 1; i < len(f.Waypoints); i++ {
-		require.True(t, automaticLegSafe(&u.Game.Rules, p, f.Waypoints[i-1].Position, f.Waypoints[i].Position, f.Waypoints[i].WarpSpeed, false))
+		require.True(t, automaticLegSafe(&u.Game.Rules, p, f.Waypoints[i-1].Position, f.Waypoints[i].Position, f.Waypoints[i].WarpSpeed, f.GetTag(emergencyRiskTag) != ""))
 	}
 }

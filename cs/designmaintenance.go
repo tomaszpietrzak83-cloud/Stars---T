@@ -223,7 +223,7 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 			if !fits {
 				continue
 			}
-			route := t.planAutomaticMission(player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{})
+			route := t.planAutomaticMission(player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{AllowThreat: true, EmergencyReturn: true, MaxTurns: 10000})
 			if route == nil {
 				continue
 			}
@@ -244,7 +244,11 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 				work.Status = "Returning to " + closest.Name
 			}
 		} else {
-			work.Status = "Waiting for a reachable, suitable shipyard"
+			if t.routeEmergencyReturn(player, fleet) {
+				work.Status = "Returning toward fuel and shipyards while retaining the rebuild order"
+			} else {
+				work.Status = "Waiting for a reachable, suitable shipyard"
+			}
 			requestAutomaticRescue(player, fleet, true)
 		}
 		writeMaintenance(fleet, work)

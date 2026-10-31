@@ -46,7 +46,7 @@ func patrolEnemy(player *Player, job patrolJob) *Fleet {
 func patrolReportedPower(player *Player, enemy *Fleet) int {
 	if len(enemy.Tokens) == 0 {
 		if enemy.Spec.HasWeapons && enemy.Spec.PowerRating <= 0 {
-			return 1_000_000_000
+			return max(1, reportedWeaponUnit(player)*4)
 		}
 		return max(1, enemy.Spec.PowerRating)
 	}
@@ -54,7 +54,8 @@ func patrolReportedPower(player *Player, enemy *Fleet) int {
 	for _, token := range enemy.Tokens {
 		design := player.GetShipDesignIntel(enemy.PlayerNum, token.DesignNum)
 		if design == nil {
-			return 1_000_000_000
+			power += max(1, token.Quantity) * reportedWeaponUnit(player) * 4
+			continue
 		}
 		if len(design.Slots) > 0 {
 			power += max(1, design.Spec.PowerRating) * token.Quantity
@@ -68,7 +69,15 @@ func patrolReportedPower(player *Player, enemy *Fleet) int {
 			}
 			// Unknown equipment is never assumed unarmed. Use a conservative
 			// mass estimate until a component scan gives an actual rating.
-			power += max(50, design.Spec.Mass*4) * token.Quantity
+			slots := 0
+			if hull := StaticTechStore.GetHull(design.Hull); hull != nil {
+				for _, slot := range hull.Slots {
+					if slot.Type&HullSlotTypeWeapon != 0 {
+						slots += slot.Capacity
+					}
+				}
+			}
+			power += max(1, slots*reportedWeaponUnit(player)) * token.Quantity
 		}
 	}
 	return max(1, power)
@@ -95,16 +104,31 @@ func patrolThreat(player *Player, target *Fleet) int {
 }
 
 func patrolReportedCombatant(player *Player, enemy *Fleet) bool {
-	if enemy.Spec.HasWeapons || enemy.Spec.PowerRating > 0 {
-		return true
+	if reportedScoutsOnly(player, enemy) {
+		return false
+	}
+	if len(enemy.Tokens) == 0 {
+		return enemy.Spec.HasWeapons || enemy.Spec.PowerRating > 0 && !enemy.Spec.Bomber
 	}
 	for _, token := range enemy.Tokens {
-		design := player.GetShipDesignIntel(enemy.PlayerNum, token.DesignNum)
-		if design == nil || design.Spec.PowerRating > 0 {
+		d := player.GetShipDesignIntel(enemy.PlayerNum, token.DesignNum)
+		if d == nil {
 			return true
 		}
-		if len(design.Slots) == 0 && design.Hull != Scout.Name && design.Spec.ShipClass != ShipClassFreighter && design.Spec.ShipClass != ShipClassMiner {
+		if len(d.Slots) > 0 {
+			if d.Spec.HasWeapons || d.Spec.PowerRating > 0 && !d.Spec.Bomber {
+				return true
+			}
+			continue
+		}
+		h := StaticTechStore.GetHull(d.Hull)
+		if h == nil {
 			return true
+		}
+		for _, slot := range h.Slots {
+			if slot.Type&HullSlotTypeWeapon != 0 {
+				return true
+			}
 		}
 	}
 	return false
@@ -115,7 +139,7 @@ func patrolCanAttack(player *Player, fleet *Fleet) bool {
 	return job.Leader == fleet.Num && enemy != nil && patrolPower(fleet) >= patrolThreat(player, enemy)*3/2+1
 }
 func patrolAvailable(player *Player, f *Fleet) bool {
-	return !fuelNetworkManaged(f) && !f.Delete && !f.Starbase && player.Automation.FleetRoles[f.Num] == "patrol" && f.Spec.HasWeapons && patrolPower(f) > 0 && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !player.FleetInActiveAssembly(f) && f.GetTag(tankerAwaitTag) == "" && readTankerJob(f) == nil && fleetDamagePercent(f) < player.Automation.repairThreshold()
+	return f.GetTag("maintenance-pending") == "" && !fuelNetworkManaged(f) && !f.Delete && !f.Starbase && (player.Automation.FleetRoles[f.Num] == "patrol" || player.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(escortTag) == "" && f.GetTag(bomberBorrowTag) == "") && f.Spec.HasWeapons && patrolPower(f) > 0 && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !player.FleetInActiveAssembly(f) && f.GetTag(tankerAwaitTag) == "" && readTankerJob(f) == nil && fleetDamagePercent(f) < player.Automation.repairThreshold()
 }
 func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 	job := readPatrolJob(leader)
@@ -155,7 +179,7 @@ func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 }
 
 func (t *turnGenerator) patrolRoute(player *Player, fleet *Fleet, position Vector, attack bool) bool {
-	route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: attack, MaxTurns: 8, MinWarp: automaticCruiseWarp(player, fleet)})
+	route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: true, Fast: attack, MaxTurns: 20, MinWarp: automaticCruiseWarp(player, fleet)})
 	if route == nil {
 		if t.returnPatrolToFuel(player, fleet) {
 			return false
@@ -174,7 +198,7 @@ func (t *turnGenerator) returnPatrolToFuel(player *Player, fleet *Fleet) bool {
 		if dock.Position == fleet.Position && fleet.Fuel >= fleet.Spec.FuelCapacity {
 			continue
 		}
-		route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, dock.Position, dock.MapObject.ToTarget(), automaticRoutePolicy{MaxTurns: 8, MinWarp: automaticCruiseWarp(player, fleet)})
+		route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, dock.Position, dock.MapObject.ToTarget(), automaticRoutePolicy{AllowThreat: true, MaxTurns: 20, MinWarp: automaticCruiseWarp(player, fleet)})
 		if route != nil && (best == nil || route.Turns < best.Turns) {
 			best = route
 		}
@@ -233,11 +257,48 @@ func (t *turnGenerator) patrolPursuitSafe(fleet *Fleet, position Vector, remaini
 	return enough
 }
 func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
+	if leader.InDesignMaintenance() {
+		if !readPatrolJob(leader).Grouped {
+			delete(leader.Tags, patrolTag)
+		}
+		return
+	}
+	if leader.InAutomaticSafety() {
+		return
+	} // Keep the combat stack together throughout retreat/repair.
 	job := readPatrolJob(leader)
 	enemy := patrolEnemy(player, job)
 	if enemy == nil || !patrolAvailable(player, leader) {
 		t.releasePatrol(player, leader)
 		return
+	}
+	// A pack can recruit fresh nearby support when the reported enemy grows.
+	current := patrolPower(leader)
+	for _, m := range t.game.getFleets(player.Num) {
+		if m != leader && !m.Delete && readPatrolJob(m).Leader == leader.Num {
+			current += patrolPower(m)
+		}
+	}
+	needed := patrolThreat(player, enemy)*3/2 + 1
+	for _, m := range t.game.getFleets(player.Num) {
+		if current >= needed {
+			break
+		}
+		if m == leader || !patrolAvailable(player, m) || readPatrolJob(m).Leader != 0 || m.Position.DistanceTo(leader.Position) > 100 || m.Fuel < m.Spec.FuelCapacity/4 {
+			continue
+		}
+		if player.Automation.FleetRoles[m.Num] == "escort" {
+			m.SetTag(patrolSupportTag, "escort")
+			if job.SupportDesigns == nil {
+				job.SupportDesigns = map[int]int{}
+			}
+			for _, token := range m.Tokens {
+				job.SupportDesigns[token.DesignNum] += token.Quantity
+			}
+			player.Automation.FleetRoles[m.Num] = "patrol"
+		}
+		savePatrolJob(m, patrolJob{Leader: leader.Num, Enemy: job.Enemy, Target: job.Target, Status: "Joining nearby combat group"})
+		current += patrolPower(m)
 	}
 	allHere := true
 	for _, member := range slices.Clone(t.game.getFleets(player.Num)) {
@@ -269,7 +330,9 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 		return
 	}
 	if patrolPower(leader) < patrolThreat(player, enemy)*3/2+1 {
-		t.releasePatrol(player, leader)
+		job.Status = "Regrouped as one fleet; withdrawing toward fuel while the enemy is stronger"
+		savePatrolJob(leader, job)
+		t.returnPatrolToFuel(player, leader)
 		return
 	}
 	// Recompute a bounded interception from fresh reports each turn. A fixed waypoint
@@ -291,7 +354,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 	for _, player := range t.game.Players {
 		fleets := []*Fleet{}
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if player.Automation.FleetRoles[fleet.Num] == "patrol" || fleet.GetTag(patrolTag) != "" {
+			if player.Automation.FleetRoles[fleet.Num] == "patrol" || patrolAvailable(player, fleet) || fleet.GetTag(patrolTag) != "" {
 				fleets = append(fleets, fleet)
 			}
 		}
@@ -395,24 +458,31 @@ func (t *turnGenerator) planPatrolAutomation() {
 				}
 				borrowed := []*Fleet{}
 				support := map[int]int{}
-				if power < needed && (patrolReportedBomber(player, enemy) || enemyApproachingColony(player, enemy)) {
+				if power < needed {
 					for _, e := range t.game.getFleets(player.Num) {
 						if power >= needed {
 							break
 						}
-						if e.Delete || e.InDesignMaintenance() || e.InAutomaticSafety() || fuelNetworkManaged(e) || readTankerJob(e) != nil || player.FleetInActiveAssembly(e) || player.Automation.FleetRoles[e.Num] != "escort" || e.GetTag(escortTag) != "" || !e.Idle() || !e.Spec.HasWeapons || e.Position.DistanceTo(fleet.Position) > 100 || e.Fuel < e.Spec.FuelCapacity/4 {
+						if slices.Contains(members, e) || e.Delete || e.InDesignMaintenance() || e.InAutomaticSafety() || fuelNetworkManaged(e) || readTankerJob(e) != nil || player.FleetInActiveAssembly(e) || player.Automation.FleetRoles[e.Num] != "escort" || e.GetTag(escortTag) != "" || !e.Spec.HasWeapons || e.Position.DistanceTo(fleet.Position) > 100 || e.Fuel < e.Spec.FuelCapacity/4 {
 							continue
 						}
 						members = append(members, e)
 						borrowed = append(borrowed, e)
 						power += patrolPower(e)
-						for _, token := range e.Tokens {
-							support[token.DesignNum] += token.Quantity
-						}
+
 					}
 				}
-				if power < needed {
+				if power < needed && len(members) == 1 {
 					continue
+				}
+				for _, m := range members {
+					if player.Automation.FleetRoles[m.Num] == "escort" && m.GetTag(patrolSupportTag) == "" {
+						m.SetTag(patrolSupportTag, "escort")
+						for _, token := range m.Tokens {
+							support[token.DesignNum] += token.Quantity
+						}
+						player.Automation.FleetRoles[m.Num] = "patrol"
+					}
 				}
 				for _, e := range borrowed {
 					e.SetTag(patrolSupportTag, "escort")
@@ -430,6 +500,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 				break
 			}
 			if assigned {
+				continue
+			}
+			if player.Automation.FleetRoles[fleet.Num] == "escort" {
 				continue
 			}
 			job := readPatrolJob(fleet)
@@ -473,4 +546,45 @@ func patrolReportedBomber(p *Player, enemy *Fleet) bool {
 		}
 	}
 	return false
+}
+
+// Estimate unscanned weapons from visible hull capacity and the player's known
+// weapon scale, never from hidden design pointers or an "infinite" threat.
+func reportedWeaponUnit(p *Player) int {
+	unit := 4
+	for _, d := range p.Designs {
+		weapons := 0
+		for _, slot := range d.Slots {
+			c := StaticTechStore.GetHullComponent(slot.HullComponent)
+			if c != nil && c.HullSlotType&HullSlotTypeWeapon != 0 {
+				weapons += slot.Quantity
+			}
+		}
+		if d.Spec.HasWeapons && weapons > 0 {
+			unit = max(unit, (d.Spec.PowerRating+weapons-1)/weapons)
+		}
+	}
+	return unit
+}
+func reportedScoutsOnly(p *Player, enemy *Fleet) bool {
+	if len(enemy.Tokens) == 0 {
+		return enemy.Spec.ShipClass == ShipClassScout && !enemy.Spec.HasWeapons && enemy.Spec.PowerRating == 0
+	}
+	for _, token := range enemy.Tokens {
+		d := p.GetShipDesignIntel(enemy.PlayerNum, token.DesignNum)
+		if d == nil {
+			return false
+		}
+		// The native broad Scout class also includes Frigate/Destroyer.
+		// Identify actual exploration hulls by Type, never that broad class.
+		h := StaticTechStore.GetHull(d.Hull)
+		if h != nil {
+			if h.Type != TechHullTypeScout {
+				return false
+			}
+		} else if d.Hull != Scout.Name {
+			return false
+		}
+	}
+	return true
 }

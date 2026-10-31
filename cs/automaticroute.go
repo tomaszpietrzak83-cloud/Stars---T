@@ -9,6 +9,7 @@ const fuelStatusTag = "automatic-fuel-status"
 const fuelRequestTag = "automatic-fuel-request"
 
 type automaticRoutePolicy struct {
+	Fast             bool // Useful combat pursuit only; ordinary movement weighs fuel against travel time.
 	EconomicalPatrol bool
 	EmergencyReturn  bool
 	MaxTurns         int
@@ -257,7 +258,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 	}
 	// With no gate alternative a straight leg achieving the geometric minimum
 	// ETA cannot be improved by a dock detour. This keeps dense empires cheap.
-	if !hasGates && maxWarp > 0 {
+	if !hasGates && maxWarp > 0 && (policy.Fast || policy.EmergencyReturn) {
 		distance := start.DistanceTo(position)
 		minimum := max(1, int(math.Ceil(distance/fleets[0].StrategicSpeed(maxWarp))))
 		var direct *expeditionRoute
@@ -315,10 +316,20 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 		previous[i] = -1
 	}
 	times[0] = 0
+	capacity := 0
+	for _, f := range fleets {
+		capacity += max(1, f.Spec.FuelCapacity)
+	}
+	score := func(turns, fuel int) float64 {
+		if policy.Fast || policy.EmergencyReturn {
+			return float64(turns)
+		}
+		return float64(turns) + 20*float64(fuel)/float64(max(1, capacity))
+	}
 	for range n {
 		at := -1
 		for i := range positions {
-			if !done[i] && (at < 0 || times[i] < times[at] || times[i] == times[at] && used[i] < used[at]) {
+			if !done[i] && (at < 0 || score(times[i], used[i]) < score(times[at], used[at]) || score(times[i], used[i]) == score(times[at], used[at]) && times[i] < times[at]) {
 				at = i
 			}
 		}
@@ -383,7 +394,10 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				if speed != StargateWarpSpeed {
 					turns = times[at] + max(1, int(math.Ceil(distance/fleets[0].StrategicSpeed(speed))))
 				}
-				if turns < times[next] || turns == times[next] && used[at]+costTotal < used[next] {
+				if policy.MaxTurns > 0 && turns > policy.MaxTurns {
+					continue
+				}
+				if score(turns, used[at]+costTotal) < score(times[next], used[next]) || score(turns, used[at]+costTotal) == score(times[next], used[next]) && turns < times[next] {
 					times[next], used[next], previous[next], speeds[next] = turns, used[at]+costTotal, at, speed
 					arrival[next] = fuelLeft
 				}
@@ -431,7 +445,7 @@ func automaticReturnLimit(player *Player, fleet *Fleet, target MapObjectTarget) 
 }
 
 func automaticCruiseWarp(player *Player, fleet *Fleet) int {
-	if fleet.GetTag(escortStagingTag) != "" || player.Automation.FleetRoles[fleet.Num] == "patrol" && fleet.GetTag(frontierPatrolTag) != "" {
+	if fleet.GetTag(escortStagingTag) != "" || player.Automation.FleetRoles[fleet.Num] == "patrol" || player.Automation.FleetRoles[fleet.Num] == "escort" {
 		return min(automaticMaxWarp(player, fleet), 4)
 	}
 	return min(automaticMaxWarp(player, fleet), 5)

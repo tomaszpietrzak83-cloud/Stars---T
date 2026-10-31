@@ -995,6 +995,11 @@ func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGa
 		}
 	}()
 
+	// Capture submitted orders before any simulation mutation.
+	if err := gr.archiveTurn(fullGame, "orders"); err != nil {
+		_ = readWriteClient.UpdateGameState(gr.ctx, fullGame.ID, cs.GameStateWaitingForPlayers)
+		return fmt.Errorf("archive submitted turn: %w", err)
+	}
 	// if everyone submitted their turn, generate a new turn
 	if err := gr.client.GenerateTurn(fullGame.Game, fullGame.Universe, fullGame.Players); err != nil {
 		// update the state so it's clear we got an error during turn generation
@@ -1043,6 +1048,9 @@ func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGa
 		return err
 	}
 
+	if err := gr.archiveTurn(fullGame, "result"); err != nil {
+		slog.Error("Turn saved but result archive failed", slog.Any("error", err), slog.Int64("GameID", fullGame.ID))
+	}
 	return nil
 
 }

@@ -258,6 +258,15 @@ func (p *producer) produce() (productionResult, error) {
 	alchemy := false // true if the previous item is auto alchemy
 	for i := 0; i < len(queue); {
 		item := queue[i]
+		// An already scrapped ship must not lose its replacement if a newer family
+		// version appears during construction. Preserve quantities and paid costs.
+		if item.Type == QueueItemTypeShipToken && item.GetTag(replacementOrderTag) != "" {
+			if next := p.player.GetDesign(p.player.DesignMaintenance[item.DesignNum]); next != nil && item.design != nil && next.Hull == item.design.Hull {
+				item.DesignNum = next.Num
+				item.design = next
+				queue[i] = item
+			}
+		}
 		if item.Type == QueueItemTypeShipToken && p.player.DesignMaintenance[item.DesignNum] != 0 {
 			// Do not build old ships only to scrap or refit them immediately.
 			available = available.Add(item.Allocated)
@@ -318,6 +327,14 @@ func (p *producer) produce() (productionResult, error) {
 			return productionResult{}, err
 		}
 
+		// A reserved replacement's already paid resources remain invested while
+		// waiting for minerals after a family retarget. Only retain unspent credit;
+		// ordinary annual production and alchemy are not duplicated.
+		if item.GetTag(replacementOrderTag) != "" && built.numBuilt == 0 {
+			keep := min(max(0, min(item.Allocated.Resources, cost.Resources)-built.allocated.Resources), max(0, available.Resources))
+			built.allocated.Resources += keep
+			available.Resources -= keep
+		}
 		result.alchemy += built.alchemy
 		if built.numBuilt > 0 {
 			// add mines and factories to the planet, terraform

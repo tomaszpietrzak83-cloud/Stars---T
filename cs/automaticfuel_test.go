@@ -227,7 +227,14 @@ func TestAutomaticFuelNetworkThroughRealTurnPipeline(t *testing.T) {
 	customer := u.Fleet("Customer")
 	tanker := u.Fleet("Tanker")
 	require.NoError(t, u.turn.generateTurn())
-	require.Positive(t, customer.Fuel, "an empty automatic fleet should receive help through the normal turn phases")
+	require.NotEqual(t, Vector{}, tanker.Position, "the donor closes distance immediately")
+	for range 3 {
+		if customer.Fuel > 0 {
+			break
+		}
+		require.NoError(t, u.turn.generateTurn())
+	}
+	require.Positive(t, customer.Fuel, "an empty automatic fleet receives fuel after a real, economical rendezvous")
 	for range 18 {
 		require.NoError(t, u.turn.generateTurn())
 		for _, fleet := range u.Game.Fleets {
@@ -276,7 +283,13 @@ func TestAutomaticFuelRoutingForEveryManagedFleetRole(t *testing.T) {
 			}
 			f.Waypoints = []Waypoint{{Position: f.Position}, NewPositionWaypoint(Vector{100, 0}, 9)}
 			u.Run((*turnGenerator).enforceAutomaticDeparture)
-			require.Len(t, f.Waypoints, 1)
+			if len(f.Waypoints) > 1 {
+				require.True(t, fundedEmergencyReturn(&u.Game.Rules, p, f))
+				require.Equal(t, u.Planet("Home").Position, f.Waypoints[len(f.Waypoints)-1].Position)
+				require.Less(t, f.Waypoints[1].WarpSpeed, 9)
+			} else {
+				require.Len(t, f.Waypoints, 1)
+			}
 			require.Zero(t, f.Fuel)
 		})
 	}

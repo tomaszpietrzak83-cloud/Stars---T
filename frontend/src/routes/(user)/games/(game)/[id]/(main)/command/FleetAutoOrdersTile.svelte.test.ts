@@ -30,3 +30,10 @@ it('does not offer equipment-dependent roles to a scout',async()=>{
  render(FleetAutoOrdersTile,{fleet:scout});
  expect(Array.from((page.getByRole('combobox').element() as HTMLSelectElement).options).some(o=>o.value==='terraformer')).toBe(false);
 });
+
+it('describes the selected fleet next action and warp in its Auto Orders tile',async()=>{
+ const f=create(FleetSchema,{mapObject:{num:1,playerNum:1,name:'Scout',tags:{'automatic-fuel-status':'Returning to refuel'}},spec:{shipDesignSpec:{fuelCapacity:300}},fleetOrders:{waypoints:[{position:{x:100,y:0}},{position:{x:0,y:0},mapObjectTarget:{targetName:'Home'},warpSpeed:4}]}});
+ context.player.update(p=>{p.playerOrders!.automation!.fleetRoles[1]='scout';return p;});
+ render(FleetAutoOrdersTile,{fleet:f});
+ await expect.element(page.getByText(/Returning to refuel.*Next: Home, warp 4/)).toBeVisible();
+});

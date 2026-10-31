@@ -70,6 +70,20 @@ func TestAutomaticColonizerRolePersistsAfterSplitAllAPI(t *testing.T) {
 	require.Equal(t, third.Msg.Design.Num, third.Msg.PlayerOrders.DesignMaintenance[newest])
 	require.Equal(t, third.Msg.PlayerOrders.Automation.DesignFamilies[int32(original.Num)], third.Msg.PlayerOrders.Automation.DesignFamilies[third.Msg.Design.Num])
 
+	// The intermediate zero-instance version remains historical after Mk 3.
+	history, err := c.GetShipDesignsForPlayer(ctx, full.ID, p.Num)
+	require.NoError(t, err)
+	found := false
+	for _, d := range history {
+		if d.Num == int(newest) {
+			found = true
+			require.Zero(t, d.Spec.NumInstances)
+			require.Equal(t, "Colony Mk 2", d.Name)
+		}
+	}
+	require.True(t, found)
+	require.NotEqual(t, upgraded.Msg.Design.GameDbObject.Id, third.Msg.Design.GameDbObject.Id)
+
 	// Regression for a stale backend rejecting the newly introduced patrol role.
 	armed := cs.NewShipDesign(p.Num, 100).WithHull(cs.Destroyer.Name).WithSlots(cs.DestroyerDeltaTestSlots).WithSpec(&full.Rules, p)
 	armed.GameID = full.ID
