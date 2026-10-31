@@ -55,8 +55,8 @@ func TestPassengerReservationsAvoidOverfillingColony(t *testing.T) {
 			planned += job.Passengers
 		}
 	}
-	require.Equal(t, 1, jobs)
-	require.Equal(t, 5, planned)
+	require.Zero(t, jobs, "do not reserve a colony which cannot accept a full useful load")
+	require.Zero(t, planned)
 }
 
 func TestPassengerTransportRejectsUnsuitableColonies(t *testing.T) {

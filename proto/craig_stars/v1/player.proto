@@ -126,6 +126,7 @@ message PlayerOrders {
 }
 
 message LogisticsAutomation {
+  map<int32, bool> priority_planets = 25;
   bool serve_terraforming_worlds = 23;
   bool infrastructure_transport = 24;
   bool manual_passenger_thresholds = 22;

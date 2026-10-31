@@ -9619,6 +9619,9 @@
       "armor": 120,
       "fuelCapacity": 1600,
       "cargoCapacity": 80,
+      "cargoSlotPosition": {
+        "x": 1
+      },
       "cargoSlotSize": {
         "x": 1,
         "y": 1
@@ -9638,32 +9641,26 @@
           "type": 4,
           "capacity": 2,
           "position": {
-            "x": -1,
-            "y": -1.5
+            "y": -1
           }
         },
         {
           "type": 64,
           "capacity": 2,
           "position": {
-            "y": -1.5
+            "y": 1
           }
         },
         {
           "type": 8,
           "capacity": 2,
           "position": {
-            "x": 1,
-            "y": -1.5
+            "x": 2
           }
         },
         {
           "type": 384,
-          "capacity": 1,
-          "position": {
-            "x": 2,
-            "y": -0.5
-          }
+          "capacity": 1
         }
       ],
       "class": "SHIP_CLASS_SCOUT"
@@ -9690,6 +9687,10 @@
       "armor": 250,
       "fuelCapacity": 5500,
       "cargoCapacity": 2200,
+      "cargoSlotPosition": {
+        "x": -0.5,
+        "y": -0.5
+      },
       "cargoSlotSize": {
         "x": 2,
         "y": 2
@@ -9707,23 +9708,21 @@
           "type": 76,
           "capacity": 2,
           "position": {
-            "x": -1,
-            "y": -1.5
+            "x": 2
           }
         },
         {
           "type": 384,
           "capacity": 3,
           "position": {
-            "y": -1.5
+            "y": -2
           }
         },
         {
           "type": 64,
           "capacity": 1,
           "position": {
-            "x": 1,
-            "y": -1.5
+            "y": 2
           }
         }
       ],
@@ -9751,7 +9750,7 @@
       "mass": 150,
       "armor": 160,
       "fuelCapacity": 6500,
-      "fuelGeneration": 200,
+      "fuelGeneration": 600,
       "repairBonus": 0.1,
       "slots": [
         {
@@ -9766,32 +9765,26 @@
           "type": 128,
           "capacity": 2,
           "position": {
-            "x": -1,
-            "y": -1.5
+            "y": -1
           }
         },
         {
           "type": 4,
           "capacity": 1,
           "position": {
-            "y": -1.5
+            "y": 1
           }
         },
         {
           "type": 8,
           "capacity": 2,
           "position": {
-            "x": 1,
-            "y": -1.5
+            "x": 2
           }
         },
         {
           "type": 64,
-          "capacity": 1,
-          "position": {
-            "x": 2,
-            "y": -0.5
-          }
+          "capacity": 1
         }
       ],
       "class": "SHIP_CLASS_FUEL_TRANSPORT"
@@ -9834,46 +9827,40 @@
           "capacity": 4,
           "position": {
             "x": -1,
-            "y": -1.5
+            "y": -1
           }
         },
         {
           "type": 2048,
           "capacity": 4,
           "position": {
-            "y": -1.5
+            "x": -1,
+            "y": 1
           }
         },
         {
           "type": 384,
-          "capacity": 4,
+          "capacity": 4
+        },
+        {
+          "type": 64,
+          "capacity": 2,
           "position": {
-            "x": 1,
-            "y": -1.5
+            "y": -1
           }
         },
         {
           "type": 64,
           "capacity": 2,
           "position": {
-            "x": 2,
-            "y": -0.5
-          }
-        },
-        {
-          "type": 64,
-          "capacity": 2,
-          "position": {
-            "x": 2,
-            "y": 0.5
+            "y": 1
           }
         },
         {
           "type": 76,
           "capacity": 2,
           "position": {
-            "x": 1,
-            "y": 1.5
+            "x": 2
           }
         }
       ],
@@ -9917,14 +9904,15 @@
           "capacity": 6,
           "position": {
             "x": -1,
-            "y": -1.5
+            "y": -1
           }
         },
         {
           "type": 2048,
           "capacity": 6,
           "position": {
-            "y": -1.5
+            "x": -1,
+            "y": 1
           }
         },
         {
@@ -9932,54 +9920,50 @@
           "capacity": 3,
           "position": {
             "x": 1,
-            "y": -1.5
+            "y": -1
           }
         },
         {
           "type": 2048,
           "capacity": 3,
           "position": {
-            "x": 2,
-            "y": -0.5
+            "x": 1,
+            "y": 1
           }
         },
         {
           "type": 128,
           "capacity": 8,
           "position": {
-            "x": 2,
-            "y": 0.5
+            "y": -1
           }
         },
         {
           "type": 256,
           "capacity": 6,
           "position": {
-            "x": 1,
-            "y": 1.5
+            "y": 1
           }
         },
         {
           "type": 64,
           "capacity": 3,
           "position": {
-            "y": 1.5
+            "x": -1
           }
         },
         {
           "type": 64,
           "capacity": 3,
           "position": {
-            "x": -1,
-            "y": 1.5
+            "x": 1
           }
         },
         {
           "type": 76,
           "capacity": 2,
           "position": {
-            "x": -1,
-            "y": -0.5
+            "x": 2
           }
         }
       ],
@@ -9992,7 +9976,7 @@
           "ironium": 95,
           "boranium": 15,
           "germanium": 14,
-          "resources": 260
+          "resources": 300
         },
         "requirements": {
           "techLevel": {
@@ -10018,49 +10002,50 @@
         },
         {
           "type": 16,
-          "capacity": 4,
+          "capacity": 5,
           "position": {
             "x": -1,
-            "y": -1.5
+            "y": -1
           }
         },
         {
           "type": 16,
-          "capacity": 4,
+          "capacity": 5,
           "position": {
-            "y": -1.5
+            "x": -1,
+            "y": 1
           }
         },
         {
           "type": 16,
-          "capacity": 4,
+          "capacity": 5,
           "position": {
-            "x": 1,
-            "y": -1.5
+            "y": -1
+          }
+        },
+        {
+          "type": 16,
+          "capacity": 5,
+          "position": {
+            "y": 1
           }
         },
         {
           "type": 128,
-          "capacity": 2,
-          "position": {
-            "x": 2,
-            "y": -0.5
-          }
+          "capacity": 2
         },
         {
           "type": 76,
           "capacity": 2,
           "position": {
-            "x": 2,
-            "y": 0.5
+            "x": 1
           }
         },
         {
           "type": 64,
           "capacity": 1,
           "position": {
-            "x": 1,
-            "y": 1.5
+            "x": 2
           }
         }
       ],
@@ -10072,7 +10057,7 @@
         "cost": {
           "ironium": 42,
           "germanium": 10,
-          "resources": 155
+          "resources": 175
         },
         "requirements": {
           "techLevel": {
@@ -10087,7 +10072,7 @@
       },
       "type": "TECH_HULL_TYPE_MINER",
       "mass": 140,
-      "armor": 1400,
+      "armor": 1700,
       "fuelCapacity": 3500,
       "slots": [
         {
@@ -10100,34 +10085,28 @@
         },
         {
           "type": 32,
-          "capacity": 4,
+          "capacity": 6,
           "position": {
-            "x": -1,
-            "y": -1.5
+            "y": -1
           }
         },
         {
           "type": 32,
-          "capacity": 4,
+          "capacity": 6,
           "position": {
-            "y": -1.5
+            "y": 1
           }
         },
         {
           "type": 332,
           "capacity": 2,
           "position": {
-            "x": 1,
-            "y": -1.5
+            "x": 2
           }
         },
         {
           "type": 8,
-          "capacity": 2,
-          "position": {
-            "x": 2,
-            "y": -0.5
-          }
+          "capacity": 2
         }
       ],
       "class": "SHIP_CLASS_MINER"

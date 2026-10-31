@@ -221,3 +221,31 @@ func TestStrategicLoadedFuelIFEAndCombatRemainIndependent(t *testing.T) {
 	require.Equal(t, movement, design.getMovement(&rules, 80), "strategic boost is not a combat movement bonus")
 	require.LessOrEqual(t, movement, rules.MovementMax)
 }
+
+func TestEEESpecialistsHaveCompetitiveEquipmentAndNonOverlappingLayouts(t *testing.T) {
+	capacity := func(h *TechHull, kind HullSlotType) int {
+		n := 0
+		for _, slot := range h.Slots {
+			if slot.Type == kind {
+				n += slot.Capacity
+			}
+		}
+		return n
+	}
+	bomber := StaticTechStore.GetHull("EEE Expedition Bomber")
+	require.Greater(t, capacity(bomber, HullSlotTypeBomb), capacity(&B52Bomber, HullSlotTypeBomb))
+	miner := StaticTechStore.GetHull("EEE Prospector")
+	require.Greater(t, capacity(miner, HullSlotTypeMining), capacity(&MaxiMiner, HullSlotTypeMining))
+	require.Equal(t, 600, StaticTechStore.GetHull("EEE Fleet Tender").FuelGeneration)
+	for _, h := range EEELateHulls() {
+		seen := map[VectorFloat64]bool{}
+		for _, slot := range h.Slots {
+			require.False(t, seen[slot.Position], h.Name)
+			seen[slot.Position] = true
+			if h.CargoSlotSize.X > 0 && h.CargoSlotSize.Y > 0 {
+				overlaps := slot.Position.X < h.CargoSlotPosition.X+h.CargoSlotSize.X && slot.Position.X+1 > h.CargoSlotPosition.X && slot.Position.Y < h.CargoSlotPosition.Y+h.CargoSlotSize.Y && slot.Position.Y+1 > h.CargoSlotPosition.Y
+				require.False(t, overlaps, h.Name)
+			}
+		}
+	}
+}

@@ -2,6 +2,7 @@ package cs
 
 import (
 	"encoding/json"
+	"fmt"
 	"maps"
 	"math"
 	"sort"
@@ -64,12 +65,15 @@ func (t *turnGenerator) passengerDestination(player *Player, fleet *Fleet, prefe
 		if planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet)}) == nil {
 			continue
 		}
-		if planet.Num == preferred {
+		if planet.Num == preferred && (incoming[planet.Num] == 0 || fleet.Position.DistanceTo(planet.Position) <= fleet.StrategicSpeed(automaticMaxWarp(player, fleet))) {
 			return planet
 		}
 		d := passengerScore(planet, fleet.Position.DistanceTo(planet.Position))
 		if fleet.Cargo.Colonists > 0 && fleet.Cargo.Colonists*4 < fleet.Spec.CargoCapacity {
 			d = fleet.Position.DistanceTo(planet.Position)
+		}
+		if incoming[planet.Num] > 0 {
+			d += 1e9
 		}
 		if d < distance {
 			best, distance = planet, d
@@ -87,8 +91,10 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 	}
 	incoming, outgoing := t.passengerReservations(player, fleet.Num)
 	type candidate struct {
-		job   *logisticsJob
-		score float64
+		job     *logisticsJob
+		score   float64
+		crowded bool
+		quality int
 	}
 	candidates := []candidate{}
 	owned := t.game.getPlanets(player.Num)
@@ -96,7 +102,7 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 		if source.Spec.MaxPopulation <= 0 {
 			continue
 		}
-		surplus := source.Cargo.Colonists - populationTarget(source, player.Automation.sourcePopulationPercent()) - outgoing[source.Num]
+		surplus := source.Cargo.Colonists - sourcePopulationReserve(player, source) - outgoing[source.Num]
 		if surplus <= 0 {
 			continue
 		}
@@ -105,6 +111,9 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 				continue
 			}
 			deficit := populationTarget(dest, player.Automation.destinationPopulationPercent()) - dest.Cargo.Colonists - incoming[dest.Num]
+			if !t.destinationCanFillTransport(player, fleet, source, dest, deficit) {
+				continue
+			}
 			load := min(surplus, deficit, fleet.availableColonistSpace())
 			if load <= 0 {
 				continue
@@ -123,11 +132,21 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 				}
 			}
 			job := &logisticsJob{Kind: "passengers", TargetNum: source.Num, DeliveryNum: dest.Num, Position: source.Position, Passengers: load}
-			candidates = append(candidates, candidate{job, passengerScore(dest, fleet.Position.DistanceTo(source.Position)+source.Position.DistanceTo(dest.Position))})
+			candidates = append(candidates, candidate{job, passengerScore(dest, fleet.Position.DistanceTo(source.Position)+source.Position.DistanceTo(dest.Position)), incoming[dest.Num] > 0, prospectivePlanetQuality(player, dest)})
 		}
 	}
 	sort.Slice(candidates, func(i, j int) bool {
 		a, b := candidates[i], candidates[j]
+		ap, bp := player.Automation.PriorityPlanets[a.job.DeliveryNum], player.Automation.PriorityPlanets[b.job.DeliveryNum]
+		if ap != bp {
+			return ap
+		}
+		if a.crowded != b.crowded {
+			return !a.crowded
+		}
+		if a.quality != b.quality {
+			return a.quality > b.quality
+		}
 		if a.score != b.score {
 			return a.score < b.score
 		}
@@ -141,7 +160,7 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 	best := 0.0
 	alternatives := []*logisticsJob{}
 	seen := map[int]bool{}
-	for _, candidate := range candidates[:min(64, len(candidates))] {
+	for _, candidate := range candidates[:min(256, len(candidates))] {
 		if seen[candidate.job.DeliveryNum] || !t.passengerTripSafe(player, fleet, candidate.job) {
 			continue
 		}
@@ -149,6 +168,12 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 		if chosen == nil {
 			chosen = candidate.job
 			best = candidate.score
+		}
+		if player.Automation.PriorityPlanets[candidate.job.DeliveryNum] != player.Automation.PriorityPlanets[chosen.DeliveryNum] {
+			continue
+		}
+		if incoming[candidate.job.DeliveryNum] > 0 && incoming[chosen.DeliveryNum] == 0 {
+			continue
 		}
 		if candidate.job.DeliveryNum != rotation.LastDestination && candidate.score <= max(100.0, best*2) {
 			alternatives = append(alternatives, candidate.job)
@@ -170,20 +195,33 @@ func (t *turnGenerator) loadAutomaticPassengers(player *Player, fleet *Fleet, jo
 		return
 	}
 	incoming, _ := t.passengerReservations(player, fleet.Num)
-	available := max(0, source.Cargo.Colonists-populationTarget(source, player.Automation.sourcePopulationPercent()))
+	available := max(0, source.Cargo.Colonists-sourcePopulationReserve(player, source))
 	room := max(0, populationTarget(dest, player.Automation.destinationPopulationPercent())-dest.Cargo.Colonists-incoming[dest.Num])
-	initialLoad := max(0, min(available, room, job.Passengers, fleet.availableColonistSpace()))
-	if initialLoad > 0 && t.passengerTripSafe(player, fleet, &logisticsJob{TargetNum: source.Num, DeliveryNum: dest.Num, Passengers: initialLoad}) {
-		t.loadOpportunisticInfrastructure(player, fleet, source, dest, initialLoad)
-	}
-	load := max(0, min(available, room, job.Passengers, fleet.availableColonistSpace()))
-	if load == 0 || !t.passengerTripSafe(player, fleet, &logisticsJob{TargetNum: source.Num, DeliveryNum: dest.Num, Passengers: load}) {
-		delete(fleet.Tags, logisticsTag)
+	probe := *fleet
+	probe.Tags = maps.Clone(fleet.Tags)
+	origin := *source
+	initialLoad := max(0, min(available, room, probe.availableColonistSpace()))
+	minimumPassengers := t.preparePassengerMixedCargo(player, &probe, &origin, dest, initialLoad)
+	load := max(0, min(available, room, probe.availableColonistSpace()))
+	origin.Cargo.Colonists -= load
+	probe.Cargo.Colonists += load
+	t.topUpLogisticsCargo(player, &probe, &origin, dest)
+	loadedRoute := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet)})
+	safe := load > 0 && load >= minimumPassengers && loadedRoute != nil && !loadedRoute.WaitForFuel
+	if probe.CargoMass() != fleet.Spec.CargoCapacity || !safe {
+		job.Passengers = initialLoad
+		job.Status = fmt.Sprintf("Waiting empty at source for a full safe load (%d/%d kT available)", probe.CargoMass(), fleet.Spec.CargoCapacity)
+		holdAutomaticFleet(player, fleet, job.Status)
+		saveLogisticsWork(fleet, job)
 		return
 	}
-	source.Cargo.Colonists -= load
-	fleet.Cargo.Colonists += load
-	t.topUpLogisticsCargo(player, fleet, source, dest)
+	source.Cargo = origin.Cargo
+	source.Factories = origin.Factories
+	source.Mines = origin.Mines
+	source.Defenses = origin.Defenses
+	fleet.Cargo = probe.Cargo
+	saveInfrastructure(fleet, readInfrastructure(&probe))
+
 	rotation := readPassengerRotation(fleet)
 	rotation.Trips++
 	rotation.LastDestination = dest.Num
@@ -247,4 +285,47 @@ func (t *turnGenerator) passengerTripSafe(player *Player, fleet *Fleet, job *log
 func passengerCruiseFleet(fleet *Fleet) bool {
 	job := logisticsWork(fleet)
 	return job != nil && (job.Kind == "passengers" || job.Kind == "settle" || job.Kind == "invade" || job.Kind == "invade-load")
+}
+
+// For d>1/4 the native growth law is k*d*(1-d)^2. Its maximum
+// is d=1/3. Round the reserve up to a whole 100-person cargo unit.
+func sourcePopulationReserve(p *Player, planet *Planet) int {
+	if p.Automation.ManualPassengerThresholds {
+		return populationTarget(planet, p.Automation.sourcePopulationPercent())
+	}
+	return (planet.Spec.MaxPopulation + 299) / 300
+}
+
+// Waiting for a source to grow is useful. Waiting because the destination can
+// never accept a full useful load is not: choose another colony immediately.
+func (t *turnGenerator) destinationCanFillTransport(p *Player, f *Fleet, source, dest *Planet, room int) bool {
+	if room >= f.availableColonistSpace() {
+		return true
+	}
+	probe, origin := *f, *source
+	probe.Tags = maps.Clone(f.Tags)
+	probe.Position = source.Position
+	minimum := t.preparePassengerMixedCargo(p, &probe, &origin, dest, min(room, probe.availableColonistSpace()))
+	if room < minimum {
+		return false
+	}
+	probe.Cargo.Colonists += max(0, min(room, probe.availableColonistSpace()))
+	t.topUpLogisticsCargo(p, &probe, &origin, dest)
+	return probe.CargoMass() == probe.Spec.CargoCapacity
+}
+
+func (t *turnGenerator) preparePassengerMixedCargo(p *Player, f *Fleet, source, dest *Planet, passengers int) int {
+	minimum := 0
+	placeholder := 0
+	if t.prefetchStarbaseMinerals(p, dest).Total() > 0 {
+		minimum = f.Spec.CargoCapacity - f.Spec.CargoCapacity/5
+		placeholder = min(minimum, f.availableColonistSpace())
+		f.Cargo.Colonists += placeholder
+	}
+	// Surplus installations and advance mineral stock share the non-passenger
+	// allowance, so construction deliveries cannot displace the 80% passenger share.
+	t.loadOpportunisticInfrastructure(p, f, source, dest, passengers)
+	t.loadStarbasePrefetch(p, f, source, dest)
+	f.Cargo.Colonists -= placeholder
+	return minimum
 }

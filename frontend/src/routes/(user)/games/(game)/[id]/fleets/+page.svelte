@@ -63,6 +63,7 @@
 	);
 
 	type TableFleet = Fleet & {
+ rebuilding?:never; fleet?:never;
 		name?: never;
 		num?: never;
 		battlePlanNum?: never;
@@ -75,6 +76,8 @@
 		mass?: never;
 	};
 	const columns: TableColumn<TableFleet>[] = [
+ {key:'rebuilding',title:'Rebuilding',sortBy:fleetsSortBy('rebuilding',$universe)},
+ {key:'fleet',title:'Fleet',sortBy:fleetsSortBy('fleet',$universe)},
 		{
 			key: 'name',
 			title: 'Name',
@@ -245,7 +248,9 @@
 				{:else if column.key == 'battlePlanNum'}
 					{@const battlePlan = $player.getBattlePlan(row.fleetOrders?.battlePlanNum ?? 0)}
 					{battlePlan?.name ?? ''}
-				{:else if column.key == 'mass'}
+				{:else if column.key == 'rebuilding'}{row.mapObject?.tags['design-maintenance']?'Rebuilding':row.mapObject?.tags['maintenance-pending']?'Pending':'—'}
+ {:else if column.key == 'fleet'}{row.mapObject?.num}
+ {:else if column.key == 'mass'}
 					{row.spec?.shipDesignSpec?.mass ?? 0}
 				{:else}
 					{cell}

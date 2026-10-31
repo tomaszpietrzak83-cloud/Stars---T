@@ -145,7 +145,8 @@
 			$universe.designs,
 			queuedStarbases
 		);
-		availableStarbaseDesigns = planet.getAvailableProductionQueueStarbaseDesigns($universe.designs);
+		availableShipDesigns=availableShipDesigns.filter(item=>!$player.playerOrders.designMaintenance?.[item.designNum]);
+  availableStarbaseDesigns = planet.getAvailableProductionQueueStarbaseDesigns($universe.designs);
 		for (const item of [...availableShipDesigns, ...availableStarbaseDesigns, ...availableItems]) {
 			item.queueItemCompletionEstimate = estimates.get(key(item));
 		}
@@ -200,13 +201,10 @@
 			return;
 		}
 
-		for (let i = 0; i < queueItems.length; i++) {
-			const estimate = planetWithEstimates.planetOrders.productionQueue[i];
-			queueItems[i].queueItemCompletionEstimate = estimate.queueItemCompletionEstimate;
-		}
-
-		// update the reactive variable so the UI updates
-		queueItems = updatedPlanet.planetOrders.productionQueue;
+        const previousSelection=selectedQueueItem;
+        queueItems=planetWithEstimates.planetOrders.productionQueue;
+        updatedPlanet.planetOrders.productionQueue=queueItems;
+        if(previousSelection) selectedQueueItemIndex=queueItems.findIndex(item=>item.type===previousSelection.type && item.designNum===previousSelection.designNum && !!item.tags['starbase-boost']===!!previousSelection.tags['starbase-boost']);
 
 		if (selectedQueueItemIndex !== -1) {
 			selectedQueueItem = queueItems[selectedQueueItemIndex];
@@ -488,7 +486,7 @@
 </script>
 
 <div
-	class="flex flex-col h-full bg-base-200 shadow-sm rounded-xs border-2 border-base-300 text-base"
+	class="production-editor flex flex-col h-full bg-base-200 shadow-sm rounded-xs border-2 border-base-300 text-base"
 >
 	<div class="text-center"><h2 class="text-lg">{planet.mapObject.name}</h2></div>
 	<div class="flex-col size-full">
@@ -796,3 +794,11 @@
 		</div>
 	</div>
 </div>
+
+<style>
+ :global(dialog:has(.production-editor)),:global(.modal-box:has(.production-editor)),:global([role="dialog"]:has(.production-editor)){width:min(96vw,1400px);max-width:96vw;height:90vh;max-height:94vh;}
+ :global(.production-editor :is(button,label,input,select,textarea,.text-base,.text-sm)){font-size:15px;line-height:1.4;}
+ :global(.production-editor h2){font-size:20px;}
+ :global(.production-editor .bg-primary){outline:2px solid var(--color-primary);border-color:var(--color-primary);}
+ :global(.production-editor .bg-primary [class*="border"]){border-color:var(--color-primary);}
+</style>

@@ -113,7 +113,7 @@ func (t *turnGenerator) buildScoutPetal(player *Player, fleet *Fleet, mission *s
 			best := math.Inf(1)
 			directHome := scoutHomeRoute(&t.game.Rules, player, &virtual, home)
 			for _, candidate := range shortlist {
-				route := planExpeditionRoute(&t.game.Rules, player, &virtual, candidate.planet)
+				route := scoutEconomicalLeg(&t.game.Rules, player, &virtual, candidate.planet)
 				if route == nil {
 					continue
 				}
@@ -176,6 +176,9 @@ func (t *turnGenerator) advanceScoutPetal(player *Player, fleet *Fleet, mission 
 			if route := scoutHomeRoute(&t.game.Rules, player, fleet, home); route != nil {
 				applyExpeditionRoute(player, fleet, route)
 			} else {
+				if t.routeEmergencyReturn(player, fleet) {
+					return
+				}
 				holdAutomaticFleet(player, fleet, "Scout return needs fuel assistance")
 				requestAutomaticRescue(player, fleet, true)
 			}
@@ -204,8 +207,13 @@ func (t *turnGenerator) advanceScoutPetal(player *Player, fleet *Fleet, mission 
 			mission.Leg++
 			continue
 		}
+		if target.Num == home.Num && fleet.Position != home.Position && mission.Leg > 0 {
+			t.buildScoutPetal(player, fleet, mission, home, claimed, quota, true)
+			target = player.GetPlanetIntel(mission.Plan[0])
+		}
 		if target.Num == home.Num && fleet.Position == home.Position {
 			mission.Complete = true
+			mission.Cycle++
 			mission.Target = 0
 			mission.Refuelling = fleet.Fuel < fleet.Spec.FuelCapacity
 			holdAutomaticFleet(player, fleet, "Awaiting fuel or the next petal expedition")
@@ -232,13 +240,41 @@ func (t *turnGenerator) advanceScoutPetal(player *Player, fleet *Fleet, mission 
 				route = scoutHomeRoute(&t.game.Rules, player, fleet, home)
 			}
 			if route == nil {
+				if t.routeEmergencyReturn(player, fleet) {
+					return
+				}
 				holdAutomaticFleet(player, fleet, "Scout waiting for fuel or a safe return route")
 				requestAutomaticRescue(player, fleet, true)
 				fleet.SetTag(scoutTag, "Waiting for a safe return or tanker; role remains enabled")
 				return
 			}
 		}
-		applyExpeditionRoute(player, fleet, route)
+		for len(mission.Plan)-mission.Leg > 2 && !optimizeScoutItinerary(&t.game.Rules, player, fleet, mission) {
+			mission.Plan = append(mission.Plan[:len(mission.Plan)-2], mission.Plan[len(mission.Plan)-1])
+		}
+		if !optimizeScoutItinerary(&t.game.Rules, player, fleet, mission) {
+			mission.Plan = nil
+			mission.Leg = 0
+			mission.Refuelling = true
+			if homeRoute := scoutHomeRoute(&t.game.Rules, player, fleet, home); homeRoute != nil {
+				applyExpeditionRoute(player, fleet, homeRoute)
+			} else {
+				if t.routeEmergencyReturn(player, fleet) {
+					return
+				}
+				holdAutomaticFleet(player, fleet, "Waiting for a funded complete scout return")
+				requestAutomaticRescue(player, fleet, true)
+			}
+			return
+		}
+		fleet.Waypoints = []Waypoint{{Position: fleet.Position}}
+		for i, num := range mission.Plan[mission.Leg:] {
+			planet := player.GetPlanetIntel(num)
+			if planet != nil {
+				fleet.Waypoints = append(fleet.Waypoints, Waypoint{Position: planet.Position, MapObjectTarget: planet.ToTarget(), WarpSpeed: mission.Warps[i]})
+			}
+		}
+		fleet.ComputeFuelUsage(player)
 		mission.Target = target.Num
 		mission.Radius = max(mission.Radius, fleet.Position.DistanceTo(mission.Origin))
 		stage := "outward"

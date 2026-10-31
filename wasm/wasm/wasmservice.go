@@ -115,6 +115,7 @@ func (s *wasmService) EstimateProduction(ctx context.Context, req *craig_starsv1
 		return nil, fmt.Errorf("failed to populate %s production queue designs.: %v", planet.Name, err)
 	}
 
+	cs.PlanDefaultAuto(s.rules, s.player, planet)
 	planet.PopulateProductionQueueEstimates(s.rules, s.player)
 
 	return &craig_starsv1.EstimateProductionResponse{

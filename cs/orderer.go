@@ -143,6 +143,7 @@ func (o *orders) updatePlanetSpec(rules *Rules, player *Player, planet *Planet) 
 		}
 	}
 
+	PlanDefaultAuto(rules, player, planet)
 	if err := planet.PopulateProductionQueueEstimates(rules, player); err != nil {
 		return fmt.Errorf("planet %s unable to populate queue estimates: %w", planet.Name, err)
 	}
@@ -508,6 +509,8 @@ func (o *orders) SplitAll(rules *Rules, player *Player, playerFleets []*Fleet, s
 	if source != nil && source.InDesignMaintenance() {
 		return nil, fmt.Errorf("cancel design maintenance before splitting a fleet")
 	}
+	packBefore := readBombingPack(source)
+	patrolBefore := readPatrolJob(source)
 	// call split on each of these tokens
 	newFleets := []*Fleet{}
 	for index := 0; index < len(source.Tokens); index++ {
@@ -540,6 +543,22 @@ func (o *orders) SplitAll(rules *Rules, player *Player, playerFleets []*Fleet, s
 		index--
 	}
 
+	if packBefore != nil {
+		restoreBombingPackRoles(player, source, newFleets, packBefore)
+	}
+	if patrolBefore.Grouped {
+		for _, f := range append([]*Fleet{source}, newFleets...) {
+			delete(f.Tags, patrolTag)
+			delete(f.Tags, patrolSupportTag)
+			player.Automation.FleetRoles[f.Num] = "patrol"
+			for _, token := range f.Tokens {
+				if patrolBefore.SupportDesigns[token.DesignNum] > 0 {
+					player.Automation.FleetRoles[f.Num] = "escort"
+					patrolBefore.SupportDesigns[token.DesignNum] -= token.Quantity
+				}
+			}
+		}
+	}
 	slog.Info("split all fleet",
 		slog.Int64("GameID", player.GameID),
 		slog.Int("PlayerNum", player.Num),

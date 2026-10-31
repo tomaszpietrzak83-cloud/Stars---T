@@ -528,6 +528,8 @@ export function fleetsSortBy(
 	universe: Universe
 ): ((a: Fleet, b: Fleet) => number) | undefined {
 	switch (key) {
+ case 'rebuilding': return (a,b)=>Number(!!(a.mapObject?.tags['design-maintenance']||a.mapObject?.tags['maintenance-pending']))-Number(!!(b.mapObject?.tags['design-maintenance']||b.mapObject?.tags['maintenance-pending']));
+ case 'fleet': return (a,b)=>(a.mapObject?.num??0)-(b.mapObject?.num??0);
 		case 'name':
 			return (a, b) => (a.mapObject?.name ?? '').localeCompare(b.mapObject?.name ?? '');
 		case 'location':

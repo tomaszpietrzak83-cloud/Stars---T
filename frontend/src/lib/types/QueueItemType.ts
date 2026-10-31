@@ -100,9 +100,9 @@ export function getFullName(item: ProductionQueueItem, designFinder: DesignFinde
 		case QueueItemType.MINERAL_ALCHEMY:
 			return 'Alchemy';
 		case QueueItemType.AUTO_MINES:
-			return 'Mine (Auto Build)';
+			return item.tags['starbase-boost']?'Mine (Starbase boost)':item.tags.defaultauto?'Mine (defaultauto)':'Mine (Auto Build)';
 		case QueueItemType.AUTO_FACTORIES:
-			return 'Factory (Auto Build)';
+			return item.tags['starbase-boost']?'Factory (Starbase boost)':item.tags.defaultauto?'Factory (defaultauto)':'Factory (Auto Build)';
 		case QueueItemType.AUTO_DEFENSES:
 			return 'Defense (Auto Build)';
 		case QueueItemType.AUTO_MIN_TERRAFORM:

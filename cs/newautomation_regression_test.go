@@ -45,29 +45,33 @@ func TestPartialPatrolRescueKeepsWaitingForMoreFuel(t *testing.T) {
 }
 
 func TestPatrolCanDeliverFuelWithoutLosingItsOwnReturnReserve(t *testing.T) {
-	u := logisticsUniverse(t)
-	p, customer, donor := u.Player(1), u.Fleet("Transport"), u.Fleet("Escort")
-	customer.Position = Vector{20, 0}
-	customer.Fuel = 0
-	p.Automation.FleetRoles = map[int]string{customer.Num: "scout", donor.Num: "patrol"}
-	u.Run((*turnGenerator).refreshAutomaticFuelIntel)
-	savePatrolJob(donor, patrolJob{Leader: donor.Num, Enemy: 2, Target: 91, Status: "Distant pursuit"})
-	saveAutomaticFuelRequest(customer, automaticFuelRequest{Destination: customer.Position, Members: []int{customer.Num}, Urgent: true})
-	u.Run((*turnGenerator).planAutomaticTankers)
-	require.NotNil(t, readTankerJob(donor))
-	for range 8 {
-		u.Run((*turnGenerator).planAutomaticTankers, (*turnGenerator).fleetMove)
-		fuel := customer.Fuel + donor.Fuel
-		u.Run((*turnGenerator).resolveAutomaticTankers)
-		require.Equal(t, fuel, customer.Fuel+donor.Fuel)
-		if customer.Fuel > 0 {
-			break
-		}
+	for _, role := range []string{"scout", "freighter", "miner", "terraformer", "escort", "colonizer:auto"} {
+		t.Run(role, func(t *testing.T) {
+			u := logisticsUniverse(t)
+			p, customer, donor := u.Player(1), u.Fleet("Transport"), u.Fleet("Escort")
+			customer.Position = Vector{20, 0}
+			customer.Fuel = 0
+			p.Automation.FleetRoles = map[int]string{customer.Num: role, donor.Num: "patrol"}
+			u.Run((*turnGenerator).refreshAutomaticFuelIntel)
+			savePatrolJob(donor, patrolJob{Leader: donor.Num, Enemy: 2, Target: 91, Status: "Distant pursuit"})
+			saveAutomaticFuelRequest(customer, automaticFuelRequest{Destination: customer.Position, Members: []int{customer.Num}, Urgent: true})
+			u.Run((*turnGenerator).planAutomaticTankers)
+			require.NotNil(t, readTankerJob(donor))
+			for range 8 {
+				u.Run((*turnGenerator).planAutomaticTankers, (*turnGenerator).fleetMove)
+				fuel := customer.Fuel + donor.Fuel
+				u.Run((*turnGenerator).resolveAutomaticTankers)
+				require.Equal(t, fuel, customer.Fuel+donor.Fuel)
+				if customer.Fuel > 0 {
+					break
+				}
+			}
+			require.Positive(t, customer.Fuel)
+			require.Equal(t, "patrol", p.Automation.FleetRoles[donor.Num])
+			require.GreaterOrEqual(t, donor.Fuel, automaticReturnFuel(&u.Game.Rules, p, donor, donor.Position, expeditionStations(p, donor), false))
+			require.GreaterOrEqual(t, customer.Fuel, automaticReturnFuel(&u.Game.Rules, p, customer, customer.Position, expeditionStations(p, customer), false))
+		})
 	}
-	require.Positive(t, customer.Fuel)
-	require.Equal(t, "patrol", p.Automation.FleetRoles[donor.Num])
-	require.GreaterOrEqual(t, donor.Fuel, automaticReturnFuel(&u.Game.Rules, p, donor, donor.Position, expeditionStations(p, donor), false))
-	require.GreaterOrEqual(t, customer.Fuel, automaticReturnFuel(&u.Game.Rules, p, customer, customer.Position, expeditionStations(p, customer), false))
 }
 
 func TestLowFuelPatrolReturnsInsteadOfContinuingItsOldRoute(t *testing.T) {
@@ -106,14 +110,14 @@ func TestAutomaticTransportCapturesWeakValuableEnemyColony(t *testing.T) {
 	require.Equal(t, p.Num, target.PlayerNum)
 	require.Zero(t, f.Cargo.Colonists)
 	require.Equal(t, "freighter", p.Automation.FleetRoles[f.Num])
-	// A stronger garrison arriving before us must not receive an automatic drop.
+	// Already-arrived transports drop immediately even if the garrison grew.
 	target.PlayerNum = 2
 	target.Cargo.Colonists = 10000
 	f.Cargo.Colonists = 10
 	saveLogisticsWork(f, &logisticsJob{Kind: "invade", TargetNum: target.Num, DeliveryNum: target.Num, Position: target.Position})
 	u.Run((*turnGenerator).resolveAutomaticInvasions)
 	require.Nil(t, logisticsWork(f))
-	require.Equal(t, 10, f.Cargo.Colonists)
+	require.Zero(t, f.Cargo.Colonists)
 	require.Equal(t, 2, target.PlayerNum)
 }
 

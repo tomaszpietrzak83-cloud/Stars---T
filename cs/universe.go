@@ -10,6 +10,8 @@ import (
 // The Universe represents all the objects that occupy space in the game universe.
 // The Universe is used by the turn generator to lookup objects in space
 type Universe struct {
+	fleetOwnerIndex      map[int][]*Fleet
+	fleetIndexSize       int
 	Planets              []*Planet        `json:"planets,omitempty"`
 	Fleets               []*Fleet         `json:"fleets,omitempty"`
 	Starbases            []*Fleet         `json:"starbases,omitempty"`
@@ -98,6 +100,7 @@ func (u *Universe) setLogger(log *slog.Logger) {
 
 // build the maps used for the Get functions
 func (u *Universe) buildMaps(players []*Player) error {
+	u.fleetOwnerIndex = nil
 
 	// make a big map to hold all of our universe objects by position
 	u.mapObjectsByPosition = make(map[Vector][]interface{}, len(u.Planets))
@@ -568,16 +571,22 @@ func (u *Universe) getPlanets(playerNum int) []*Planet {
 }
 
 func (u *Universe) getFleets(playerNum int) []*Fleet {
-	fleets := []*Fleet{}
-	for _, fleet := range u.Fleets {
-		if fleet.Delete {
-			continue
+	if u.fleetOwnerIndex == nil || u.fleetIndexSize != len(u.Fleets) {
+		u.fleetOwnerIndex = make(map[int][]*Fleet)
+		for _, f := range u.Fleets {
+			if !f.Delete {
+				u.fleetOwnerIndex[f.PlayerNum] = append(u.fleetOwnerIndex[f.PlayerNum], f)
+			}
 		}
-		if fleet.PlayerNum == playerNum {
-			fleets = append(fleets, fleet)
+		u.fleetIndexSize = len(u.Fleets)
+	}
+	result := make([]*Fleet, 0, len(u.fleetOwnerIndex[playerNum]))
+	for _, f := range u.fleetOwnerIndex[playerNum] {
+		if !f.Delete && f.PlayerNum == playerNum {
+			result = append(result, f)
 		}
 	}
-	return fleets
+	return result
 }
 
 func (u *Universe) getStarbases(playerNum int) []*Fleet {

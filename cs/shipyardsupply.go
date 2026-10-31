@@ -9,6 +9,9 @@ func (t *turnGenerator) productionMinerals(player *Player, planet *Planet, ships
 	need := Mineral{}
 	calculator := newProducer(t.log, &t.game.Rules, planet, player)
 	for _, item := range planet.ProductionQueue {
+		if item.Type == QueueItemTypeShipToken && player.DesignMaintenance[item.DesignNum] != 0 {
+			continue
+		}
 		if item.Type.IsAuto() {
 			if !shipsOnly && item.Type == QueueItemTypeAutoFactories {
 				per := t.game.Rules.FactoryCostGermanium
@@ -19,7 +22,7 @@ func (t *turnGenerator) productionMinerals(player *Player, planet *Planet, ships
 			}
 			continue
 		}
-		if shipsOnly && item.Type != QueueItemTypeShipToken {
+		if shipsOnly && item.Type != QueueItemTypeShipToken && item.Type != QueueItemTypeStarbase {
 			continue
 		}
 		if cost, err := calculator.getItemCost(&t.game.Rules, player, planet, item); err == nil {
@@ -36,10 +39,14 @@ func (t *turnGenerator) findShipyardSupply(player *Player, fleet *Fleet, claimed
 	var chosen *logisticsJob
 	best := math.Inf(1)
 	for _, yard := range t.game.Planets {
-		if !yard.OwnedBy(player.Num) || !yard.Spec.HasStarbase || yard.Spec.DockCapacity == 0 || claimed[fmt.Sprintf("yard:%d", yard.Num)] {
+		if !yard.OwnedBy(player.Num) || (!yard.Spec.HasStarbase || yard.Spec.DockCapacity == 0) && !queuedStarbase(yard) || claimed[fmt.Sprintf("yard:%d", yard.Num)] {
 			continue
 		}
 		need := t.productionMinerals(player, yard, true).ToCost().Subtract(yard.Cargo.ToMineral().ToCost()).Subtract(yard.Spec.MiningOutput.ToCost()).ToMineral()
+		baseline := math.MaxInt
+		if queuedStarbase(yard) {
+			baseline = starbaseCompletion(&t.game.Rules, player, *yard, Mineral{})
+		}
 		for _, source := range t.game.Planets {
 			if source.Num == yard.Num || !t.canCollectMiningPlanet(player, source) || claimed[fmt.Sprintf("planet:%d", source.Num)] {
 				continue
@@ -55,6 +62,15 @@ func (t *turnGenerator) findShipyardSupply(player *Player, fleet *Fleet, claimed
 			}
 			if load.Total() == 0 {
 				continue
+			}
+			if queuedStarbase(yard) {
+				improved := starbaseCompletion(&t.game.Rules, player, *yard, load)
+				travel := max(1, int(math.Ceil((fleet.Position.DistanceTo(source.Position)+source.Position.DistanceTo(yard.Position))/max(1, fleet.StrategicSpeed(automaticCruiseWarp(player, fleet))))))
+				// Several full deliveries may be necessary to turn an otherwise
+				// impossible build into a possible one. Each reduces a real shortage.
+				if baseline != math.MaxInt && (improved == math.MaxInt || improved+travel >= baseline) {
+					continue
+				}
 			}
 			score := fleet.Position.DistanceTo(source.Position) + source.Position.DistanceTo(yard.Position)
 			if score < best {

@@ -51,7 +51,7 @@ func TestScoutOnlyTargetsUnexploredReports(t *testing.T) {
 	}
 	addExpeditionTestDock(p, Vector{})
 	u.Run((*turnGenerator).planScoutAutomation)
-	require.Len(t, fleet.Waypoints, 2)
+	require.GreaterOrEqual(t, len(fleet.Waypoints), 2)
 	require.Equal(t, Vector{20, 0}, fleet.Waypoints[1].Position)
 	p.PlanetIntels[1].ReportAge = 0
 	u.Run((*turnGenerator).planScoutAutomation)
@@ -68,8 +68,8 @@ func TestScoutsDistributeTargetsAndAvoidKnownThreats(t *testing.T) {
 	}
 	addExpeditionTestDock(p, Vector{})
 	u.Run((*turnGenerator).planScoutAutomation)
-	require.Len(t, a.Waypoints, 2)
-	require.Len(t, b.Waypoints, 2)
+	require.GreaterOrEqual(t, len(a.Waypoints), 2)
+	require.GreaterOrEqual(t, len(b.Waypoints), 2)
 	require.NotEqual(t, a.Waypoints[1].Position, b.Waypoints[1].Position)
 	p.FleetIntels = []*Fleet{{MapObject: MapObject{PlayerNum: 2, Position: Vector{10, 0}}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true}}}}
 	u.Run((*turnGenerator).planScoutAutomation)
@@ -107,7 +107,8 @@ func TestScoutMovesOutwardAndKeepsItsOriginAfterReload(t *testing.T) {
 	p.PlanetIntels[1].ReportAge = 0
 	u.Run((*turnGenerator).planScoutAutomation)
 	require.False(t, readScoutMission(fleet).Complete)
-	require.Equal(t, Vector{19, 0}, fleet.Waypoints[len(fleet.Waypoints)-1].Position)
+	require.Equal(t, Vector{19, 0}, fleet.Waypoints[1].Position)
+	require.Equal(t, Vector{}, fleet.Waypoints[len(fleet.Waypoints)-1].Position)
 	p.PlanetIntels[0].ReportAge = 0
 	fleet.Position = Vector{}
 	u.Run((*turnGenerator).planScoutAutomation)

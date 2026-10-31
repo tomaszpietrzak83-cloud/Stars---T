@@ -596,3 +596,449 @@
 .hull-death-star-3 {
 	background: url(/images/starbases.png) -256px -192px;
 }
+
+/* Four additional colour variants preserve each original silhouette. */
+.hull-small-freighter-4 {
+	background: url(/images/techhulls01.png) 0px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-small-freighter-5 {
+	background: url(/images/techhulls01.png) 0px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-small-freighter-6 {
+	background: url(/images/techhulls01.png) 0px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-small-freighter-7 {
+	background: url(/images/techhulls01.png) 0px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-medium-freighter-4 {
+	background: url(/images/techhulls01.png) -64px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-medium-freighter-5 {
+	background: url(/images/techhulls01.png) -64px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-medium-freighter-6 {
+	background: url(/images/techhulls01.png) -64px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-medium-freighter-7 {
+	background: url(/images/techhulls01.png) -64px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-large-freighter-4 {
+	background: url(/images/techhulls01.png) -128px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-large-freighter-5 {
+	background: url(/images/techhulls01.png) -128px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-large-freighter-6 {
+	background: url(/images/techhulls01.png) -128px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-large-freighter-7 {
+	background: url(/images/techhulls01.png) -128px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-super-freighter-4 {
+	background: url(/images/techhulls01.png) -192px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-super-freighter-5 {
+	background: url(/images/techhulls01.png) -192px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-super-freighter-6 {
+	background: url(/images/techhulls01.png) -192px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-super-freighter-7 {
+	background: url(/images/techhulls01.png) -192px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-scout-4 {
+	background: url(/images/techhulls01.png) -256px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-scout-5 {
+	background: url(/images/techhulls01.png) -256px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-scout-6 {
+	background: url(/images/techhulls01.png) -256px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-scout-7 {
+	background: url(/images/techhulls01.png) -256px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-frigate-4 {
+	background: url(/images/techhulls01.png) -320px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-frigate-5 {
+	background: url(/images/techhulls01.png) -320px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-frigate-6 {
+	background: url(/images/techhulls01.png) -320px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-frigate-7 {
+	background: url(/images/techhulls01.png) -320px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-destroyer-4 {
+	background: url(/images/techhulls01.png) -384px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-destroyer-5 {
+	background: url(/images/techhulls01.png) -384px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-destroyer-6 {
+	background: url(/images/techhulls01.png) -384px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-destroyer-7 {
+	background: url(/images/techhulls01.png) -384px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-cruiser-4 {
+	background: url(/images/techhulls01.png) -448px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-cruiser-5 {
+	background: url(/images/techhulls01.png) -448px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-cruiser-6 {
+	background: url(/images/techhulls01.png) -448px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-cruiser-7 {
+	background: url(/images/techhulls01.png) -448px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-battle-cruiser-4 {
+	background: url(/images/techhulls02.png) 0px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-battle-cruiser-5 {
+	background: url(/images/techhulls02.png) 0px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-battle-cruiser-6 {
+	background: url(/images/techhulls02.png) 0px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-battle-cruiser-7 {
+	background: url(/images/techhulls02.png) 0px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-battleship-4 {
+	background: url(/images/techhulls02.png) -64px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-battleship-5 {
+	background: url(/images/techhulls02.png) -64px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-battleship-6 {
+	background: url(/images/techhulls02.png) -64px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-battleship-7 {
+	background: url(/images/techhulls02.png) -64px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-dreadnought-4 {
+	background: url(/images/techhulls02.png) -128px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-dreadnought-5 {
+	background: url(/images/techhulls02.png) -128px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-dreadnought-6 {
+	background: url(/images/techhulls02.png) -128px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-dreadnought-7 {
+	background: url(/images/techhulls02.png) -128px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-privateer-4 {
+	background: url(/images/techhulls02.png) -192px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-privateer-5 {
+	background: url(/images/techhulls02.png) -192px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-privateer-6 {
+	background: url(/images/techhulls02.png) -192px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-privateer-7 {
+	background: url(/images/techhulls02.png) -192px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-rogue-4 {
+	background: url(/images/techhulls02.png) -256px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-rogue-5 {
+	background: url(/images/techhulls02.png) -256px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-rogue-6 {
+	background: url(/images/techhulls02.png) -256px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-rogue-7 {
+	background: url(/images/techhulls02.png) -256px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-galleon-4 {
+	background: url(/images/techhulls02.png) -320px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-galleon-5 {
+	background: url(/images/techhulls02.png) -320px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-galleon-6 {
+	background: url(/images/techhulls02.png) -320px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-galleon-7 {
+	background: url(/images/techhulls02.png) -320px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-mini-colony-ship-4 {
+	background: url(/images/techhulls02.png) -384px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-mini-colony-ship-5 {
+	background: url(/images/techhulls02.png) -384px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-mini-colony-ship-6 {
+	background: url(/images/techhulls02.png) -384px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-mini-colony-ship-7 {
+	background: url(/images/techhulls02.png) -384px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-colony-ship-4 {
+	background: url(/images/techhulls02.png) -448px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-colony-ship-5 {
+	background: url(/images/techhulls02.png) -448px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-colony-ship-6 {
+	background: url(/images/techhulls02.png) -448px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-colony-ship-7 {
+	background: url(/images/techhulls02.png) -448px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-mini-bomber-4 {
+	background: url(/images/techhulls03.png) 0px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-mini-bomber-5 {
+	background: url(/images/techhulls03.png) 0px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-mini-bomber-6 {
+	background: url(/images/techhulls03.png) 0px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-mini-bomber-7 {
+	background: url(/images/techhulls03.png) 0px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-b-17-bomber-4 {
+	background: url(/images/techhulls03.png) -64px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-b-17-bomber-5 {
+	background: url(/images/techhulls03.png) -64px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-b-17-bomber-6 {
+	background: url(/images/techhulls03.png) -64px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-b-17-bomber-7 {
+	background: url(/images/techhulls03.png) -64px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-stealth-bomber-4 {
+	background: url(/images/techhulls03.png) -128px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-stealth-bomber-5 {
+	background: url(/images/techhulls03.png) -128px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-stealth-bomber-6 {
+	background: url(/images/techhulls03.png) -128px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-stealth-bomber-7 {
+	background: url(/images/techhulls03.png) -128px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-b-52-bomber-4 {
+	background: url(/images/techhulls03.png) -192px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-b-52-bomber-5 {
+	background: url(/images/techhulls03.png) -192px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-b-52-bomber-6 {
+	background: url(/images/techhulls03.png) -192px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-b-52-bomber-7 {
+	background: url(/images/techhulls03.png) -192px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-midget-miner-4 {
+	background: url(/images/techhulls03.png) -256px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-midget-miner-5 {
+	background: url(/images/techhulls03.png) -256px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-midget-miner-6 {
+	background: url(/images/techhulls03.png) -256px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-midget-miner-7 {
+	background: url(/images/techhulls03.png) -256px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-mini-miner-4 {
+	background: url(/images/techhulls03.png) -320px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-mini-miner-5 {
+	background: url(/images/techhulls03.png) -320px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-mini-miner-6 {
+	background: url(/images/techhulls03.png) -320px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-mini-miner-7 {
+	background: url(/images/techhulls03.png) -320px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-miner-4 {
+	background: url(/images/techhulls03.png) -384px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-miner-5 {
+	background: url(/images/techhulls03.png) -384px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-miner-6 {
+	background: url(/images/techhulls03.png) -384px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-miner-7 {
+	background: url(/images/techhulls03.png) -384px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-maxi-miner-4 {
+	background: url(/images/techhulls03.png) -448px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-maxi-miner-5 {
+	background: url(/images/techhulls03.png) -448px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-maxi-miner-6 {
+	background: url(/images/techhulls03.png) -448px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-maxi-miner-7 {
+	background: url(/images/techhulls03.png) -448px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-ultra-miner-4 {
+	background: url(/images/techhulls04.png) 0px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-ultra-miner-5 {
+	background: url(/images/techhulls04.png) 0px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-ultra-miner-6 {
+	background: url(/images/techhulls04.png) 0px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-ultra-miner-7 {
+	background: url(/images/techhulls04.png) 0px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-fuel-transport-4 {
+	background: url(/images/techhulls04.png) -64px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-fuel-transport-5 {
+	background: url(/images/techhulls04.png) -64px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-fuel-transport-6 {
+	background: url(/images/techhulls04.png) -64px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-fuel-transport-7 {
+	background: url(/images/techhulls04.png) -64px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-super-fuel-xport-4 {
+	background: url(/images/techhulls04.png) -128px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-super-fuel-xport-5 {
+	background: url(/images/techhulls04.png) -128px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-super-fuel-xport-6 {
+	background: url(/images/techhulls04.png) -128px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-super-fuel-xport-7 {
+	background: url(/images/techhulls04.png) -128px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-mini-mine-layer-4 {
+	background: url(/images/techhulls04.png) -192px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-mini-mine-layer-5 {
+	background: url(/images/techhulls04.png) -192px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-mini-mine-layer-6 {
+	background: url(/images/techhulls04.png) -192px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-mini-mine-layer-7 {
+	background: url(/images/techhulls04.png) -192px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-super-mine-layer-4 {
+	background: url(/images/techhulls04.png) -256px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-super-mine-layer-5 {
+	background: url(/images/techhulls04.png) -256px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-super-mine-layer-6 {
+	background: url(/images/techhulls04.png) -256px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-super-mine-layer-7 {
+	background: url(/images/techhulls04.png) -256px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-meta-morph-4 {
+	background: url(/images/techhulls04.png) -320px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-meta-morph-5 {
+	background: url(/images/techhulls04.png) -320px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-meta-morph-6 {
+	background: url(/images/techhulls04.png) -320px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-meta-morph-7 {
+	background: url(/images/techhulls04.png) -320px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-mini-morph-4 {
+	background: url(/images/techhulls04.png) -384px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-mini-morph-5 {
+	background: url(/images/techhulls04.png) -384px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-mini-morph-6 {
+	background: url(/images/techhulls04.png) -384px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-mini-morph-7 {
+	background: url(/images/techhulls04.png) -384px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-nubian-4 {
+	background: url(/images/techhulls04.png) -448px 0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-nubian-5 {
+	background: url(/images/techhulls04.png) -448px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-nubian-6 {
+	background: url(/images/techhulls04.png) -448px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-nubian-7 {
+	background: url(/images/techhulls04.png) -448px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-orbital-fort-4 {
+	background: url(/images/starbases.png) -0px -0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-orbital-fort-5 {
+	background: url(/images/starbases.png) -0px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-orbital-fort-6 {
+	background: url(/images/starbases.png) -0px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-orbital-fort-7 {
+	background: url(/images/starbases.png) -0px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-space-dock-4 {
+	background: url(/images/starbases.png) -64px -0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-space-dock-5 {
+	background: url(/images/starbases.png) -64px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-space-dock-6 {
+	background: url(/images/starbases.png) -64px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-space-dock-7 {
+	background: url(/images/starbases.png) -64px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-space-station-4 {
+	background: url(/images/starbases.png) -128px -0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-space-station-5 {
+	background: url(/images/starbases.png) -128px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-space-station-6 {
+	background: url(/images/starbases.png) -128px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-space-station-7 {
+	background: url(/images/starbases.png) -128px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-ultra-station-4 {
+	background: url(/images/starbases.png) -192px -0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-ultra-station-5 {
+	background: url(/images/starbases.png) -192px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-ultra-station-6 {
+	background: url(/images/starbases.png) -192px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-ultra-station-7 {
+	background: url(/images/starbases.png) -192px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}
+.hull-death-star-4 {
+	background: url(/images/starbases.png) -256px -0px;
+ filter:sepia(.4) saturate(2) hue-rotate(170deg);}
+.hull-death-star-5 {
+	background: url(/images/starbases.png) -256px -64px;
+ filter:sepia(.45) saturate(2) hue-rotate(290deg);}
+.hull-death-star-6 {
+	background: url(/images/starbases.png) -256px -128px;
+ filter:sepia(.35) saturate(2) hue-rotate(40deg);}
+.hull-death-star-7 {
+	background: url(/images/starbases.png) -256px -192px;
+ filter:sepia(.3) saturate(2) hue-rotate(210deg);}

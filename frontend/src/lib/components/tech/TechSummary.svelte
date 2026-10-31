@@ -166,3 +166,5 @@
 		</div>
 	</div>
 {/if}
+
+{#if hull}<section aria-label="Hull appearance variants" class="my-3"><h3 class="text-lg">Hull variants</h3><div class="grid grid-cols-4 sm:grid-cols-8 gap-2">{#each Array.from({length:8},(_,i)=>i) as variant (variant)}<figure class="flex flex-col items-center"><TechAvatar tech={hull} hullSetNumber={variant} /><figcaption>Variant {variant+1}</figcaption></figure>{/each}</div></section>{/if}

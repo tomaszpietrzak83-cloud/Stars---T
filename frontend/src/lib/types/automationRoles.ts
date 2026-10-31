@@ -1,14 +1,14 @@
 import type { Fleet, ShipDesign } from './cs-proto.js';
 export function automationRoles(fleet: Fleet, designs: ShipDesign[] = [], currentRole = '') {
  const spec=fleet.spec?.shipDesignSpec;
- const roles=[{value:'',label:'Manual'},{value:'scout',label:'Scout: explore unvisited planets'}];
+ const roles=[{value:'',label:'Manual'},{value:'scout',label:'Scout: exploration and incoming fleet reconnaissance'}];
  if(spec?.colonizer && fleet.tokens.length && fleet.tokens.every(t=>designs.find(d=>d.num===t.designNum)?.spec?.colonizer)) {
   for(const [value,label] of [['auto','Auto'],['nearest','Nearest'],['farthest','Farthest'],['best','Best world']]) roles.push({value:`colonizer:${value}`,label:`Colonizer: ${label}`});
  }
  if((spec?.miningRate??0)>0) roles.push({value:'miner',label:'Automatic remote mining'});
  if((spec?.terraformRate??0)>0) roles.push({value:'terraformer',label:'Automatic terraforming'});
  if((spec?.cargoCapacity??0)>0) roles.push({value:'freighter',label:'Automatic transport'});
- if(spec?.bomber) roles.push({value:'bomber',label:'Bomber: escort required in danger'});
+ if(spec?.bomber) roles.push({value:'bomber',label:'Bomber: autonomous raids and wolf packs'});
  if(spec?.hasWeapons) {roles.push({value:'patrol',label:'Auto Patrol: intercept and regroup'});roles.push({value:'escort',label:'Escort'});roles.push({value:'combat',label:'Combat: manual mission with automatic safety'});} 
  if((spec?.fuelCapacity??0)>0) roles.push({value:'tanker',label:'Tanker: automatic fuel supply'});
  if(currentRole && !roles.some(option=>option.value===currentRole)) roles.push({value:currentRole,label:`${currentRole}: enabled, waiting for suitable equipment`});

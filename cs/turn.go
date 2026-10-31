@@ -80,12 +80,16 @@ func (t *turnGenerator) generateTurn() error {
 	t.planTerraformAutomation()
 	t.planColonizationAutomation()
 	t.planLogisticsAutomation()
+	t.resolveLogisticsAutomation()
+	t.unloadOpportunisticInfrastructure()
+	t.dispatchReadyLogistics()
 	t.planBomberEscorts()
 	t.planPatrolAutomation()
 	t.guardAutomaticFuel()
 	t.planFuelNetworks()
 	t.planAutomaticTankers()
 	t.resolveAutomaticTankers()
+	t.planBombingWolfPacks()
 	t.planAutomaticSafety()
 	t.advanceFuelNetworks()
 	t.planAutomaticPackets()
@@ -114,6 +118,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.decayPackets(false)
 	t.detonateMines()
 	t.fleetRemoteMineAR() // sort of a wp1 task, for AR races it happens before production and works on the turn of arrival
+	t.replanDefaultAuto()
 	t.planetMine()
 	if err := t.planetProduction(); err != nil {
 		return err
@@ -131,6 +136,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.randomMineralDeposit()
 	t.randomPlanetaryChange()
 	t.captureScorePopulations()
+	t.scanScoutReconContacts()
 	t.fleetBattle()
 	t.advanceFuelNetworks()
 	t.collectBattleSalvage()
@@ -1280,8 +1286,11 @@ func (t *turnGenerator) fleetPursue(pursuits []*fleetMove) {
 				wp1.Position = fleet.Position
 				t.clearWaypointTarget(fleet, wp1)
 				move.done = true
-				fleet.SetTag(fuelStatusTag, "Patrol interception paused: target left the safe one-turn fuel range")
+				fleet.SetTag(fuelStatusTag, "Interception canceled: target left the funded one-turn range; selecting another task")
 				t.finishPursuit(move)
+				if player := t.game.getPlayer(fleet.PlayerNum); player.Automation.FleetRoles[fleet.Num] == "patrol" {
+					t.declinePatrolTarget(player, fleet)
+				}
 				continue
 			}
 			// move 1/5 of our move toward a target still moving, or the rest of our move if it's done
@@ -1980,6 +1989,7 @@ func (t *turnGenerator) planetProduction() error {
 			if err := t.addBuiltStarbases(player, planet, result.starbases, result.replacedStarbase); err != nil {
 				return err
 			}
+			PlanDefaultAuto(&t.game.Rules, player, planet)
 			for _, starbase := range result.starbases {
 				messager.planetBuiltStarbase(player, planet, starbase)
 			}
@@ -3221,6 +3231,7 @@ func (t *turnGenerator) fleetTransferOwner() {
 			playerFleets := t.game.getFleets(targetPlayer.Num)
 			fleet.Num = targetPlayer.GetNextFleetNum(playerFleets)
 			fleet.PlayerNum = targetPlayer.Num
+			t.game.Universe.fleetOwnerIndex = nil
 
 			// clear out the waypoints
 			wp0.Task = WaypointTaskNone
@@ -3325,7 +3336,10 @@ func (t *turnGenerator) fleetRepair() {
 
 		player := t.game.getPlayer(fleet.PlayerNum)
 		orbiting := t.game.getOrbitingPlanet(fleet)
+		originalBonus := fleet.Spec.RepairBonus
+		fleet.Spec.RepairBonus = t.mobileRepairBonus(player, fleet)
 		fleet.repairFleet(t.log, &t.game.Rules, player, orbiting)
+		fleet.Spec.RepairBonus = originalBonus
 	}
 
 	for _, starbase := range t.game.Starbases {

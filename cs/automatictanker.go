@@ -33,6 +33,7 @@ type automaticTankerJob struct {
 	DeliveryFuel int                 `json:"deliveryFuel,omitempty"`
 	AllowThreat  bool                `json:"allowThreat,omitempty"`
 	ResumeOrders map[int]FleetOrders `json:"resumeOrders,omitempty"`
+	Urgent       bool                `json:"urgent,omitempty"`
 	Status       string              `json:"status"`
 }
 
@@ -142,7 +143,7 @@ func (t *turnGenerator) refreshAutomaticFuelIntel() {
 
 func convoyMembers(player *Player, fleet *Fleet, all []*Fleet) []*Fleet {
 	result := []*Fleet{fleet}
-	if player.Automation.FleetRoles[fleet.Num] == "freighter" || player.Automation.FleetRoles[fleet.Num] == "bomber" {
+	if player.Automation.FleetRoles[fleet.Num] == "freighter" || player.Automation.FleetRoles[fleet.Num] == "bomber" || player.Automation.FleetRoles[fleet.Num] == "tanker" {
 		for _, escort := range all {
 			if !escort.Delete && escort.Position == fleet.Position && escort.GetTag(escortTag) == strconv.Itoa(fleet.Num) && player.Automation.FleetRoles[escort.Num] == "escort" {
 				result = append(result, escort)
@@ -157,7 +158,7 @@ func convoyMembers(player *Player, fleet *Fleet, all []*Fleet) []*Fleet {
 func (t *turnGenerator) guardAutomaticFuel() {
 	for _, player := range t.game.Players {
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if fuelNetworkManaged(fleet) || !isAutomaticFleet(player, fleet) || player.Automation.FleetRoles[fleet.Num] == "tanker" || fleet.GetTag(escortTag) != "" {
+			if (fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet)) || fuelNetworkManaged(fleet) || !isAutomaticFleet(player, fleet) || player.Automation.FleetRoles[fleet.Num] == "tanker" || fleet.GetTag(escortTag) != "" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
 			group := convoyMembers(player, fleet, t.game.getFleets(player.Num))
@@ -171,7 +172,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				continue
 			}
 			goal := fleet.Waypoints[1]
-			allowThreat := len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
+			allowThreat := scoutReconActive(player, fleet) || len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
 			if job := logisticsWork(fleet); job != nil {
 				goal.Position = job.Position
 				allowThreat = knownRouteThreat(player, fleet.Position, job.Position) > 0 && len(group) > 1
@@ -181,6 +182,12 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				target = MapObjectTarget{}
 			}
 			policy := automaticRoutePolicy{AllowThreat: allowThreat, OneWay: colonizationOneWay(player, fleet, goal)}
+			if fleet.GetTag(frontierPatrolTag) != "" {
+				policy.EconomicalPatrol = true
+				policy.MaxWarp = 4
+				policy.MinWarp = 4
+				policy.MaxTurns = 20
+			}
 			// Include cargo that a waypoint-zero loading order may add before movement.
 			budgets := make([]*Fleet, len(group))
 			for i, f := range group {
@@ -217,6 +224,9 @@ func (t *turnGenerator) guardAutomaticFuel() {
 					if goal.TargetType == MapObjectTypeFleet && goal.Task != WaypointTaskNone {
 						fleet.Waypoints = append(fleet.Waypoints, goal)
 					} else {
+						if scoutReconActive(player, fleet) && goal.TargetType == MapObjectTypeFleet {
+							fleet.Waypoints[last].MapObjectTarget = goal.MapObjectTarget
+						}
 						fleet.Waypoints[last].Task = goal.Task
 						fleet.Waypoints[last].TransportTasks = goal.TransportTasks
 						fleet.Waypoints[last].WaitAtWaypoint = goal.WaitAtWaypoint
@@ -290,7 +300,7 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 			return false
 		}
 	}
-	receiverRoute := planAutomaticRoute(&t.game.Rules, player, members, job.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: job.AllowThreat, RefuelRendezvous: true})
+	receiverRoute := planAutomaticRoute(&t.game.Rules, player, members, job.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: job.AllowThreat, RefuelRendezvous: true, EmergencyReturn: job.Urgent, MaxTurns: 10000})
 	if receiverRoute == nil {
 		return false
 	}
@@ -377,6 +387,9 @@ func (t *turnGenerator) planAutomaticTankers() {
 			if tanker.GetTag(fuelNetworkDonorTag) != "" || fuelNetworkManaged(tanker) || tanker.InAutomaticSafety() || tanker.Delete || tanker.Starbase || tanker.InDesignMaintenance() || !automaticFuelDonor(player, tanker) {
 				continue
 			}
+			if player.Automation.FleetRoles[tanker.Num] == "tanker" && t.holdTankerForRepairs(player, tanker) {
+				continue
+			}
 			if player.Automation.FleetRoles[tanker.Num] == "patrol" && readTankerJob(tanker) == nil {
 				patrol := readPatrolJob(tanker)
 				if patrol.Leader != 0 {
@@ -412,7 +425,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 					continue
 				}
 				request := readAutomaticFuelRequest(customer)
-				if player.Automation.FleetRoles[tanker.Num] == "patrol" && (!request.Urgent || tanker.Position.DistanceTo(customer.Position) > 100) {
+				if player.Automation.FleetRoles[tanker.Num] != "tanker" && (!request.Urgent || tanker.Position.DistanceTo(customer.Position) > max(100, 4*tanker.StrategicSpeed(automaticMaxWarp(player, tanker)))) {
 					continue
 				}
 				var group []*Fleet
@@ -446,7 +459,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 					if request.Urgent {
 						positions = append(positions, hub.Anchor)
 					} else {
-						positions = []Vector{tanker.Position, hub.Anchor}
+						positions = []Vector{tanker.Position, hub.Anchor, customer.Position, {(customer.Position.X + tanker.Position.X) / 2, (customer.Position.Y + tanker.Position.Y) / 2}}
 					}
 				}
 				if !request.Urgent && !networkNode && len(customer.Waypoints) > 1 {
@@ -458,7 +471,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 					}
 				}
 				for _, position := range positions {
-					receiverRoute := planAutomaticRoute(&t.game.Rules, player, group, position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: request.AllowThreat, RefuelRendezvous: true})
+					receiverRoute := planAutomaticRoute(&t.game.Rules, player, group, position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: request.AllowThreat, RefuelRendezvous: true, EmergencyReturn: request.Urgent, MaxTurns: 10000})
 					if receiverRoute == nil {
 						continue
 					}
@@ -504,7 +517,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 					}
 					score := float64(eta) + float64(want-min(want, donation))/float64(max(1, want))
 					if score < best {
-						chosen = &automaticTankerJob{TargetNum: customer.Num, Members: fleetNumbers(group), Position: position, DeliveryFuel: donation, AllowThreat: request.AllowThreat, ResumeOrders: map[int]FleetOrders{}}
+						chosen = &automaticTankerJob{Urgent: request.Urgent, TargetNum: customer.Num, Members: fleetNumbers(group), Position: position, DeliveryFuel: donation, AllowThreat: request.AllowThreat, ResumeOrders: map[int]FleetOrders{}}
 						best = score
 					}
 				}
@@ -536,7 +549,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 					t.releaseTankerCustomers(player, tanker, chosen)
 				}
 			} else {
-				if player.Automation.FleetRoles[tanker.Num] == "patrol" {
+				if player.Automation.FleetRoles[tanker.Num] != "tanker" {
 					continue
 				}
 				if t.patrolAutomaticTanker(player, tanker, readTankerJob(tanker)) {
@@ -558,6 +571,7 @@ func (t *turnGenerator) planAutomaticTankers() {
 func (t *turnGenerator) resolveAutomaticTankers() {
 	for _, player := range t.game.Players {
 		for _, tanker := range t.game.getFleets(player.Num) {
+			t.refuelRepairPatients(player, tanker)
 			job := readTankerJob(tanker)
 			if tanker.Delete || job == nil || job.TargetNum == 0 || !automaticFuelDonor(player, tanker) || tanker.Position != job.Position {
 				continue
@@ -612,5 +626,5 @@ func (t *turnGenerator) resolveAutomaticTankers() {
 
 func automaticFuelDonor(player *Player, fleet *Fleet) bool {
 	role := player.Automation.FleetRoles[fleet.Num]
-	return role == "tanker" || role == "patrol"
+	return role == "tanker" || role == "patrol" || role == "escort" && fleet.GetTag(escortTag) == "" && fleet.GetTag(bomberBorrowTag) == "" && !player.FleetInActiveAssembly(fleet)
 }

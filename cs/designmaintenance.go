@@ -68,7 +68,7 @@ func writeMaintenance(f *Fleet, work *fleetMaintenance) {
 // their metadata and paid allocation cannot be forged or duplicated by a client.
 func validateMaintenanceQueueEdits(existing, incoming []ProductionQueueItem) error {
 	used := map[int]bool{}
-	keys := []string{maintenanceTag, replacementGroupTag, replacementOrderTag, logisticsTag, escortTag, assemblyTag, fuelStatusTag, fuelRequestTag, fuelResumeTag, fuelAwaitResumeTag, tankerJobTag, tankerAwaitTag, colonizationTag, terraformTag, safetyTag, bomberTag, automaticPacketTag, patrolTag, passengerRotationTag, fuelNetworkPlanTag, fuelNetworkMemberTag, fuelNetworkDonorTag}
+	keys := []string{frontierPatrolTag, emergencyReturnTag, bombingPackTag, bombingRallyTag, repairTankerTag, patrolSupportTag, scoutReconTag, bomberBorrowTag, logisticsReturnTag, "maintenance-pending", maintenanceTag, replacementGroupTag, replacementOrderTag, logisticsTag, escortTag, assemblyTag, fuelStatusTag, fuelRequestTag, fuelResumeTag, fuelAwaitResumeTag, tankerJobTag, tankerAwaitTag, colonizationTag, terraformTag, safetyTag, bomberTag, automaticPacketTag, patrolTag, passengerRotationTag, fuelNetworkPlanTag, fuelNetworkMemberTag, fuelNetworkDonorTag}
 	for _, item := range incoming {
 		reserved := false
 		for _, key := range keys {
@@ -143,6 +143,22 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 		}
 		if len(player.DesignMaintenance) == 0 && !fleet.InDesignMaintenance() {
 			continue
+		}
+		if !fleet.InDesignMaintenance() && t.maintenanceNeeded(player, fleet) {
+			delivery := logisticsWork(fleet)
+			taskPending := false
+			if job := readTerraformJob(fleet); job != nil && player.Automation.FleetRoles[fleet.Num] == "terraformer" {
+				taskPending = terraformWork(player, t.game.getPlanet(job.PlanetNum))
+			}
+			if job := readMiningJob(fleet); job != nil && player.Automation.FleetRoles[fleet.Num] == "miner" {
+				taskPending = t.game.Year < job.ArrivedYear+miningMinimumStay
+			}
+			if len(fleet.Waypoints) > 1 || delivery != nil || taskPending {
+				fleet.SetTag("maintenance-pending", "Finish current navigation/delivery before rebuilding")
+				fleet.RepeatOrders = false
+				continue
+			}
+			delete(fleet.Tags, "maintenance-pending")
 		}
 		work := readMaintenance(fleet)
 		if work != nil && work.RallyPlanetNum != 0 && !hasMaintenanceTargets(player, fleet) {

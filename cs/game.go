@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"runtime"
 	"time"
 )
 
@@ -469,19 +470,8 @@ func (g *FullGame) computeSpecs() error {
 		}
 	}
 
-	for _, planet := range g.Planets {
-		if planet.Owned() {
-			player := g.getPlayer(planet.PlayerNum)
-			planet.Spec = ComputePlanetSpec(rules, player, planet)
-			if err := planet.PopulateProductionQueueDesigns(player); err != nil {
-				return fmt.Errorf("planet %s unable to populate queue designs: %w", planet.Name, err)
-			}
-			if err := planet.PopulateProductionQueueEstimates(rules, player); err != nil {
-				return fmt.Errorf("planet %s unable to populate queue estimates: %w", planet.Name, err)
-			}
-
-			planet.MarkDirty()
-		}
+	if err := g.computePlanetSpecs(min(8, runtime.GOMAXPROCS(0))); err != nil {
+		return err
 	}
 
 	for _, fleet := range g.Fleets {

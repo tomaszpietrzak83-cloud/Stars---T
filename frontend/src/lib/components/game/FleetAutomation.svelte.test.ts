@@ -44,7 +44,7 @@ it('saves a transport role and a fleet-specific rebuild order', async () => {
 	render(FleetAutomation);
 	await page.getByRole('combobox', { name: 'Role for Transport' }).selectOptions('freighter');
 	expect(get(context.player).playerOrders!.automation!.fleetRoles).toEqual({ 1: 'freighter' });
-	await page.getByRole('button', { name: 'Scrap and rebuild' }).click();
+	await page.getByRole('button', { name: 'Scrap and rebuild', exact:true }).click();
 	expect(get(context.player).playerOrders!.automation!.rebuildFleets).toEqual({ 1: true });
 });
 
@@ -99,4 +99,13 @@ it('keeps future terraforming and opportunistic installation transport as separa
  await page.getByRole('checkbox',{name:'Carry surplus installations on existing routes'}).click();
  expect(get(context.player).playerOrders!.automation!.serveTerraformingWorlds).toBe(true);
  expect(get(context.player).playerOrders!.automation!.infrastructureTransport).toBe(true);
+});
+
+it('checks all eligible rebuilds without issuing the order until requested', async()=>{
+ render(FleetAutomation);
+ await page.getByRole('button',{name:'Check all for scrap and rebuild',exact:true}).click();
+ await expect.element(page.getByRole('button',{name:'Rebuild selected (1)',exact:true})).toBeEnabled();
+ expect(context.updatePlayerOrders).not.toHaveBeenCalled();
+ await page.getByRole('button',{name:'Rebuild selected (1)',exact:true}).click();
+ expect(get(context.player).playerOrders!.automation!.rebuildFleets).toEqual({1:true});
 });

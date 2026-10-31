@@ -96,3 +96,74 @@ func TestPackedInstallationsCannotHideCargoAfterHoldDamage(t *testing.T) {
 	require.Zero(t, f.CargoMass())
 	require.False(t, f.carriesInfrastructure())
 }
+func TestPassengerTransportsReserveDifferentColoniesBeforeDoublingUp(t *testing.T) {
+	u := logisticsUniverse(t)
+	p := u.Player(1)
+	home := u.Planet("Home")
+	home.Cargo.Colonists = 9000
+	home.Spec.MaxPopulation = 1000000
+	home.Spec.Habitability = 100
+	home.Spec.HasStarbase = true
+	home.Spec.DockCapacity = -1
+	p.Automation.DisableMineralSupply = true
+	p.Automation.DisableSalvage = true
+	for i := 0; i < 3; i++ {
+		planet := *home
+		planet.Num = home.Num + 1 + i
+		planet.Position = Vector{20 * (i + 1), 0}
+		planet.Cargo.Colonists = 1
+		u.Game.Planets = append(u.Game.Planets, &planet)
+	}
+	original := u.Fleet("Transport")
+	for i := 0; i < 2; i++ {
+		f := *original
+		f.Num = original.Num + 100 + i
+		f.Tags = nil
+		f.Waypoints = []Waypoint{{Position: home.Position}}
+		u.Game.Fleets = append(u.Game.Fleets, &f)
+		p.Automation.FleetRoles[f.Num] = "freighter"
+	}
+	u.Run((*turnGenerator).refreshAutomaticFuelIntel, (*turnGenerator).planLogisticsAutomation)
+	destinations := map[int]bool{}
+	for _, f := range u.Game.Fleets {
+		if p.Automation.FleetRoles[f.Num] == "freighter" {
+			job := logisticsWork(f)
+			require.NotNil(t, job, "fleet=%d cap=%d fuel=%d homeMax=%d owned=%d status=%s", f.Num, f.Spec.CargoCapacity, f.Fuel, home.Spec.MaxPopulation, len(u.Game.getPlanets(p.Num)), f.GetTag(fuelStatusTag))
+			destinations[job.DeliveryNum] = true
+		}
+	}
+	require.Len(t, destinations, 3)
+}
+func TestScoutItineraryBudgetsBothLegsInsteadOfSpendingTankOnFirstHop(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, f := u.Player(1), u.Fleet("Transport")
+	p.Automation.FleetRoles[f.Num] = "scout"
+	usage := []int{0, 5, 5, 5, 5, 80, 80, 80, 80, 80, 80}
+	f.Spec.Engine.MaxSafeSpeed = 5
+	f.Spec.Engine.FreeSpeed = 0
+	f.Spec.Engine.FuelUsage = usage
+	f.Spec.FuelCapacity = 2000
+	f.Spec.FuelGeneration = 0
+	for _, token := range f.Tokens {
+		token.design.Spec.Engine.MaxSafeSpeed = 5
+		token.design.Spec.Engine.FreeSpeed = 0
+		token.design.Spec.Engine.FuelUsage = usage
+	}
+	home := u.Planet("Home")
+	target := *home
+	target.Num = 44
+	target.PlayerNum = 0
+	target.Position = Vector{20, 0}
+	p.PlanetIntels = []*Planet{home, &target}
+	needed, _, _, ok := automaticLegFuel(p, f, 4, 20, 2000, 0)
+	require.True(t, ok)
+	f.Fuel = 2 * needed
+	f.Spec.FuelCapacity = f.Fuel
+	mission := &scoutMission{Plan: []int{target.Num, home.Num}}
+	require.True(t, optimizeScoutItinerary(&u.Game.Rules, p, f, mission))
+	require.Equal(t, []int{4, 4}, mission.Warps)
+	f.Waypoints = []Waypoint{{Position: f.Position}, {Position: target.Position, MapObjectTarget: target.ToTarget(), WarpSpeed: 4}, {Position: home.Position, MapObjectTarget: home.ToTarget(), WarpSpeed: 4}}
+	require.True(t, fundedScoutWaypoints(&u.Game.Rules, p, f))
+	f.Waypoints[1].WarpSpeed = 5
+	require.False(t, fundedScoutWaypoints(&u.Game.Rules, p, f))
+}

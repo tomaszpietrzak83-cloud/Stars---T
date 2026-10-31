@@ -41,7 +41,7 @@
 	};
 
 	// Make plan-like local state for runes-compliant bindings, then sync back to design
-	let { hull, design = $bindable(), error = '', numHullSets = 4, onSave }: Props = $props();
+	let { hull, design = $bindable(), error = '', numHullSets = 8, onSave }: Props = $props();
 
 	// Local runes state for frequently bound fields
 	let name: string = $state(design.name);

@@ -80,7 +80,7 @@ func TestDesignMaintenanceScrapBuildAndRegroup(t *testing.T) {
 	p, old := u.Player(1), u.Fleet("Fleet")
 	old.Tokens[0].QuantityDamaged = 1
 	old.Tokens[0].Damage = float64(p.Designs[0].Spec.Armor) * 0.4
-	old.Waypoints = append(old.Waypoints, NewPositionWaypoint(Vector{100, 100}, 5))
+	// Idle fleet: a separate regression covers finishing an assigned voyage first.
 	require.NoError(t, u.turn.generateTurn())
 	require.Equal(t, 2, replacementCount(u))
 	for _, fleet := range u.Game.Fleets {
@@ -98,7 +98,7 @@ func TestDesignMaintenanceScrapBuildAndRegroup(t *testing.T) {
 		if !fleet.Delete {
 			live++
 			require.False(t, fleet.InDesignMaintenance())
-			require.Equal(t, Vector{100, 100}, fleet.Waypoints[1].Position)
+			require.Equal(t, u.Planet("Yard").Position, fleet.Position)
 		}
 	}
 	require.Equal(t, 1, live)
@@ -231,4 +231,20 @@ func TestDesignMaintenanceQueueEditsCannotDuplicatePaidWork(t *testing.T) {
 	require.NoError(t, validateMaintenanceQueueEdits([]ProductionQueueItem{item}, nil))
 	require.Error(t, validateMaintenanceQueueEdits(nil, []ProductionQueueItem{item}))
 	require.Error(t, validateMaintenanceQueueEdits([]ProductionQueueItem{item}, []ProductionQueueItem{item, item}))
+}
+
+func TestRebuildFinishesCurrentNavigationBeforeWithdrawing(t *testing.T) {
+	u := maintenanceUniverse(t)
+	requestRebuild(u)
+	f := u.Fleet("Fleet")
+	goal := Vector{25, 0}
+	f.Waypoints = append(f.Waypoints, NewPositionWaypoint(goal, 5))
+	u.Run((*turnGenerator).fleetDesignMaintenance)
+	require.False(t, f.InDesignMaintenance())
+	require.Equal(t, goal, f.Waypoints[1].Position)
+	require.NotEmpty(t, f.GetTag("maintenance-pending"))
+	u.Run((*turnGenerator).fleetMove, (*turnGenerator).fleetDesignMaintenance)
+	require.Equal(t, goal, f.Position)
+	require.True(t, f.InDesignMaintenance())
+	require.Equal(t, u.Planet("Yard").Position, f.Waypoints[len(f.Waypoints)-1].Position)
 }

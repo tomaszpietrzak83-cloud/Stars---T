@@ -17,7 +17,16 @@ func EEEStrategicEngines() []TechHullComponent {
 // Keep each battery a separate slot: quantities affect firing stacks as well
 // as capacity. The perimeter layout leaves cargo in the centre of transports.
 func eeeLateSlots(slots ...TechHullSlot) []TechHullSlot {
-	positions := []VectorFloat64{{-2, 0}, {-1, -1.5}, {0, -1.5}, {1, -1.5}, {2, -.5}, {2, .5}, {1, 1.5}, {0, 1.5}, {-1, 1.5}, {-1, -.5}, {0, -.5}}
+	// Integer-grid silhouettes: engine at the stern, paired equipment on
+	// wings, utilities towards the bow. Cargo carriers reserve the centre.
+	layouts := map[int][]VectorFloat64{
+		4:  {{-2, 0}, {2, 0}, {0, -2}, {0, 2}},
+		5:  {{-2, 0}, {0, -1}, {0, 1}, {2, 0}, {0, 0}},
+		7:  {{-2, 0}, {-1, -1}, {-1, 1}, {0, 0}, {0, -1}, {0, 1}, {2, 0}},
+		8:  {{-2, 0}, {-1, -1}, {-1, 1}, {0, -1}, {0, 1}, {0, 0}, {1, 0}, {2, 0}},
+		10: {{-2, 0}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}, {0, -1}, {0, 1}, {-1, 0}, {1, 0}, {2, 0}},
+	}
+	positions := layouts[len(slots)]
 	for i := range slots {
 		slots[i].Position = positions[i]
 		slots[i].Required = slots[i].Type == HullSlotTypeEngine
@@ -28,13 +37,13 @@ func eeeLateSlots(slots ...TechHullSlot) []TechHullSlot {
 func EEELateHulls() []TechHull {
 	return []TechHull{
 		{Tech: NewTech("EEE Pathfinder", NewCost(18, 2, 16, 55), TechRequirements{TechLevel: TechLevel{Construction: 12, Propulsion: 10, Electronics: 12}}, 45, TechCategoryShipHull), Type: TechHullTypeScout, Class: ShipClassScout,
-			Mass: 40, Armor: 120, CargoCapacity: 80, FuelCapacity: 1600, Initiative: 2, BuiltInScanner: true, CargoSlotSize: VectorFloat64{1, 1},
+			Mass: 40, Armor: 120, CargoCapacity: 80, FuelCapacity: 1600, Initiative: 2, BuiltInScanner: true, CargoSlotPosition: VectorFloat64{1, 0}, CargoSlotSize: VectorFloat64{1, 1},
 			Slots: eeeLateSlots(TechHullSlot{Type: HullSlotTypeEngine, Capacity: 1}, TechHullSlot{Type: HullSlotTypeScanner, Capacity: 2}, TechHullSlot{Type: HullSlotTypeElectrical, Capacity: 2}, TechHullSlot{Type: HullSlotTypeMechanical, Capacity: 2}, TechHullSlot{Type: HullSlotTypeShieldArmor, Capacity: 1})},
 		{Tech: NewTech("EEE Bulk Carrier", NewCost(55, 0, 24, 145), TechRequirements{TechLevel: TechLevel{Construction: 18, Propulsion: 14}}, 35, TechCategoryShipHull), Type: TechHullTypeFreighter, Class: ShipClassFreighter,
-			Mass: 180, Armor: 250, CargoCapacity: 2200, FuelCapacity: 5500, CargoSlotSize: VectorFloat64{2, 2},
+			Mass: 180, Armor: 250, CargoCapacity: 2200, FuelCapacity: 5500, CargoSlotPosition: VectorFloat64{-.5, -.5}, CargoSlotSize: VectorFloat64{2, 2},
 			Slots: eeeLateSlots(TechHullSlot{Type: HullSlotTypeEngine, Capacity: 3}, TechHullSlot{Type: HullSlotTypeScannerElectricalMechanical, Capacity: 2}, TechHullSlot{Type: HullSlotTypeShieldArmor, Capacity: 3}, TechHullSlot{Type: HullSlotTypeElectrical, Capacity: 1})},
 		{Tech: NewTech("EEE Fleet Tender", NewCost(44, 0, 16, 150), TechRequirements{TechLevel: TechLevel{Construction: 17, Propulsion: 14, Energy: 12}}, 275, TechCategoryShipHull), Type: TechHullTypeFuelTransport, Class: ShipClassFuelTransport,
-			Mass: 150, Armor: 160, FuelCapacity: 6500, FuelGeneration: 200, RepairBonus: .1,
+			Mass: 150, Armor: 160, FuelCapacity: 6500, FuelGeneration: 600, RepairBonus: .1,
 			Slots: eeeLateSlots(TechHullSlot{Type: HullSlotTypeEngine, Capacity: 3}, TechHullSlot{Type: HullSlotTypeShield, Capacity: 2}, TechHullSlot{Type: HullSlotTypeScanner, Capacity: 1}, TechHullSlot{Type: HullSlotTypeMechanical, Capacity: 2}, TechHullSlot{Type: HullSlotTypeElectrical, Capacity: 1})},
 		{Tech: NewTech("EEE Expedition Cruiser", NewCost(70, 10, 16, 150), TechRequirements{TechLevel: TechLevel{Construction: 18, Propulsion: 16, Electronics: 12}}, 95, TechCategoryShipHull), Type: TechHullTypeFighter, Class: ShipClassWarship,
 			Mass: 150, Armor: 1100, FuelCapacity: 3500, Initiative: 5,
@@ -42,11 +51,11 @@ func EEELateHulls() []TechHull {
 		{Tech: NewTech("EEE Linebreaker", NewCost(135, 28, 24, 260), TechRequirements{TechLevel: TechLevel{Construction: 23, Propulsion: 20, Electronics: 16}}, 105, TechCategoryShipHull), Type: TechHullTypeCapitalShip, Class: ShipClassWarship,
 			Mass: 270, Armor: 2600, FuelCapacity: 5000, Initiative: 8,
 			Slots: eeeLateSlots(TechHullSlot{Type: HullSlotTypeEngine, Capacity: 5}, TechHullSlot{Type: HullSlotTypeWeapon, Capacity: 6}, TechHullSlot{Type: HullSlotTypeWeapon, Capacity: 6}, TechHullSlot{Type: HullSlotTypeWeapon, Capacity: 3}, TechHullSlot{Type: HullSlotTypeWeapon, Capacity: 3}, TechHullSlot{Type: HullSlotTypeShield, Capacity: 8}, TechHullSlot{Type: HullSlotTypeArmor, Capacity: 6}, TechHullSlot{Type: HullSlotTypeElectrical, Capacity: 3}, TechHullSlot{Type: HullSlotTypeElectrical, Capacity: 3}, TechHullSlot{Type: HullSlotTypeScannerElectricalMechanical, Capacity: 2})},
-		{Tech: NewTech("EEE Expedition Bomber", NewCost(95, 15, 14, 260), TechRequirements{TechLevel: TechLevel{Construction: 21, Propulsion: 18}}, 205, TechCategoryShipHull), Type: TechHullTypeBomber, Class: ShipClassBomber,
+		{Tech: NewTech("EEE Expedition Bomber", NewCost(95, 15, 14, 300), TechRequirements{TechLevel: TechLevel{Construction: 21, Propulsion: 18}}, 205, TechCategoryShipHull), Type: TechHullTypeBomber, Class: ShipClassBomber,
 			Mass: 140, Armor: 600, FuelCapacity: 3200,
-			Slots: eeeLateSlots(TechHullSlot{Type: HullSlotTypeEngine, Capacity: 4}, TechHullSlot{Type: HullSlotTypeBomb, Capacity: 4}, TechHullSlot{Type: HullSlotTypeBomb, Capacity: 4}, TechHullSlot{Type: HullSlotTypeBomb, Capacity: 4}, TechHullSlot{Type: HullSlotTypeShield, Capacity: 2}, TechHullSlot{Type: HullSlotTypeScannerElectricalMechanical, Capacity: 2}, TechHullSlot{Type: HullSlotTypeElectrical, Capacity: 1})},
-		{Tech: NewTech("EEE Prospector", NewCost(42, 0, 10, 155), TechRequirements{TechLevel: TechLevel{Construction: 19, Propulsion: 15, Electronics: 12}, LRTsDenied: OBRM}, 245, TechCategoryShipHull), Type: TechHullTypeMiner, Class: ShipClassMiner,
-			Mass: 140, Armor: 1400, FuelCapacity: 3500,
-			Slots: eeeLateSlots(TechHullSlot{Type: HullSlotTypeEngine, Capacity: 3}, TechHullSlot{Type: HullSlotTypeMining, Capacity: 4}, TechHullSlot{Type: HullSlotTypeMining, Capacity: 4}, TechHullSlot{Type: HullSlotTypeArmorScannerElectricalMechanical, Capacity: 2}, TechHullSlot{Type: HullSlotTypeMechanical, Capacity: 2})},
+			Slots: eeeLateSlots(TechHullSlot{Type: HullSlotTypeEngine, Capacity: 4}, TechHullSlot{Type: HullSlotTypeBomb, Capacity: 5}, TechHullSlot{Type: HullSlotTypeBomb, Capacity: 5}, TechHullSlot{Type: HullSlotTypeBomb, Capacity: 5}, TechHullSlot{Type: HullSlotTypeBomb, Capacity: 5}, TechHullSlot{Type: HullSlotTypeShield, Capacity: 2}, TechHullSlot{Type: HullSlotTypeScannerElectricalMechanical, Capacity: 2}, TechHullSlot{Type: HullSlotTypeElectrical, Capacity: 1})},
+		{Tech: NewTech("EEE Prospector", NewCost(42, 0, 10, 175), TechRequirements{TechLevel: TechLevel{Construction: 19, Propulsion: 15, Electronics: 12}, LRTsDenied: OBRM}, 245, TechCategoryShipHull), Type: TechHullTypeMiner, Class: ShipClassMiner,
+			Mass: 140, Armor: 1700, FuelCapacity: 3500,
+			Slots: eeeLateSlots(TechHullSlot{Type: HullSlotTypeEngine, Capacity: 3}, TechHullSlot{Type: HullSlotTypeMining, Capacity: 6}, TechHullSlot{Type: HullSlotTypeMining, Capacity: 6}, TechHullSlot{Type: HullSlotTypeArmorScannerElectricalMechanical, Capacity: 2}, TechHullSlot{Type: HullSlotTypeMechanical, Capacity: 2})},
 	}
 }

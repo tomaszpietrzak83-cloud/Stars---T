@@ -47,6 +47,7 @@ func planExpeditionRoute(rules *Rules, player *Player, fleet *Fleet, destination
 }
 
 func applyExpeditionRoute(player *Player, fleet *Fleet, route *expeditionRoute) {
+	delete(fleet.Tags, emergencyReturnTag)
 	if route.WaitForFuel {
 		holdAutomaticFleet(player, fleet, "Waiting at dock for actual refuelling")
 		return

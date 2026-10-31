@@ -3,12 +3,14 @@ package server
 import (
 	"context"
 	"github.com/sirgwain/craig-stars/config"
+	"github.com/sirgwain/craig-stars/cs"
 	"github.com/sirgwain/craig-stars/db"
 	"github.com/stretchr/testify/require"
 	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -36,14 +38,44 @@ func TestLocalAutomationOnCopiedSave(t *testing.T) {
 	database := db.NewConn()
 	require.NoError(t, database.Connect(context.Background(), &cfg))
 	defer database.Close()
+	gameID := int64(6)
+	if value := os.Getenv("STARS_COPY_REPRO_GAME"); value != "" {
+		parsed, err := strconv.ParseInt(value, 10, 64)
+		require.NoError(t, err)
+		gameID = parsed
+	}
 	runner := NewGameRunner(database, cfg)
-	before, err := database.NewReadClient().GetFullGame(t.Context(), 6)
+	before, err := database.NewReadClient().GetFullGame(t.Context(), gameID)
 	require.NoError(t, err)
-	_, err = runner.GenerateTurn(6)
+	_, err = runner.GenerateTurn(gameID)
 	require.NoError(t, err)
-	after, err := database.NewReadClient().GetFullGame(t.Context(), 6)
+	after, err := database.NewReadClient().GetFullGame(t.Context(), gameID)
 	require.NoError(t, err)
 	require.Equal(t, before.Year+1, after.Year)
+	beforePositions := map[int]cs.Vector{}
+	for _, fleet := range before.Fleets {
+		if fleet.PlayerNum == 1 {
+			beforePositions[fleet.Num] = fleet.Position
+		}
+	}
+	recoveredScouts, recoveredColonizers := 0, 0
+	for _, fleet := range after.Fleets {
+		if fleet.PlayerNum != 1 {
+			continue
+		}
+		role := after.Players[0].Automation.FleetRoles[fleet.Num]
+		require.GreaterOrEqual(t, fleet.Fuel, 0, "automatic planning must not spend nonexistent fuel")
+		if (role == "scout" || strings.HasPrefix(role, "colonizer:")) && fleet.Position == beforePositions[fleet.Num] && len(fleet.Waypoints) < 2 {
+			t.Logf("Stationary %s role=%s fuel=%d/%d tags=%v", fleet.Name, role, fleet.Fuel, fleet.Spec.FuelCapacity, fleet.Tags)
+		}
+		if role == "scout" && (fleet.Position != beforePositions[fleet.Num] || len(fleet.Waypoints) > 1) {
+			recoveredScouts++
+		}
+		if strings.HasPrefix(role, "colonizer:") && (fleet.Position != beforePositions[fleet.Num] || len(fleet.Waypoints) > 1) {
+			recoveredColonizers++
+		}
+	}
+	t.Logf("Automatic scout fleets moving or routed: %d; colony fleets moving or routed: %d", recoveredScouts, recoveredColonizers)
 	worked := 0
 	patrolsIntercepting := 0
 	for _, fleet := range after.Fleets {

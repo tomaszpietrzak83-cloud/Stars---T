@@ -1,6 +1,9 @@
 package cs
 
-import "fmt"
+import (
+	"fmt"
+	"maps"
+)
 
 // Family IDs are negative counters, independent of reusable design numbers.
 // The latest version is the successor of every previous version on the same hull.
@@ -38,5 +41,27 @@ func (p *Player) RegisterDesignUpgrade(source, next *ShipDesign) error {
 		}
 	}
 	delete(p.DesignMaintenance, next.Num)
+	// Pending compositions follow the replacement, just like production. Keep
+	// completed one-shot orders historical; upgrading must not rebuild them.
+	for id, plan := range p.Automation.FleetAssemblies {
+		if plan.CompletedRevision == plan.Revision {
+			continue
+		}
+		designs := maps.Clone(plan.Designs)
+		changed := false
+		for num, count := range plan.Designs {
+			if num != next.Num && p.Automation.DesignFamilies[num] == family {
+				delete(designs, num)
+				designs[next.Num] += count
+				changed = true
+			}
+		}
+		if changed {
+			plan.Designs = designs
+			plan.Revision++
+			plan.Status = "Composition updated to the latest design version"
+			p.Automation.FleetAssemblies[id] = plan
+		}
+	}
 	return nil
 }

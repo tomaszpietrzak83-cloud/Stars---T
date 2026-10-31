@@ -2754,14 +2754,20 @@ func (c *ProtoConverter) csLRTToUint32(source cs.LRT) uint32 {
 }
 func (c *ProtoConverter) csLogisticsAutomationToPCraig_starsv1LogisticsAutomation(source cs.LogisticsAutomation) *v1.LogisticsAutomation {
 	var craig_starsv1LogisticsAutomation v1.LogisticsAutomation
+	if source.PriorityPlanets != nil {
+		craig_starsv1LogisticsAutomation.PriorityPlanets = make(map[int32]bool, len(source.PriorityPlanets))
+		for key, value := range source.PriorityPlanets {
+			craig_starsv1LogisticsAutomation.PriorityPlanets[IntToInt32(key)] = value
+		}
+	}
 	craig_starsv1LogisticsAutomation.ServeTerraformingWorlds = source.ServeTerraformingWorlds
 	craig_starsv1LogisticsAutomation.InfrastructureTransport = source.InfrastructureTransport
 	craig_starsv1LogisticsAutomation.ManualPassengerThresholds = source.ManualPassengerThresholds
 	craig_starsv1LogisticsAutomation.DisablePassengerTransport = source.DisablePassengerTransport
 	if source.DesignFamilies != nil {
 		craig_starsv1LogisticsAutomation.DesignFamilies = make(map[int32]int32, len(source.DesignFamilies))
-		for key, value := range source.DesignFamilies {
-			craig_starsv1LogisticsAutomation.DesignFamilies[IntToInt32(key)] = IntToInt32(value)
+		for key2, value2 := range source.DesignFamilies {
+			craig_starsv1LogisticsAutomation.DesignFamilies[IntToInt32(key2)] = IntToInt32(value2)
 		}
 	}
 	craig_starsv1LogisticsAutomation.ResearchTax = c.pCsResearchTaxPolicyToPCraig_starsv1ResearchTaxPolicy(source.ResearchTax)
@@ -2772,8 +2778,8 @@ func (c *ProtoConverter) csLogisticsAutomationToPCraig_starsv1LogisticsAutomatio
 	craig_starsv1LogisticsAutomation.AutomaticPackets = source.AutomaticPackets
 	if source.FleetAssemblies != nil {
 		craig_starsv1LogisticsAutomation.FleetAssemblies = make(map[int32]*v1.FleetAssembly, len(source.FleetAssemblies))
-		for key2, value2 := range source.FleetAssemblies {
-			craig_starsv1LogisticsAutomation.FleetAssemblies[IntToInt32(key2)] = c.csFleetAssemblyToPCraig_starsv1FleetAssembly(value2)
+		for key3, value3 := range source.FleetAssemblies {
+			craig_starsv1LogisticsAutomation.FleetAssemblies[IntToInt32(key3)] = c.csFleetAssemblyToPCraig_starsv1FleetAssembly(value3)
 		}
 	}
 	craig_starsv1LogisticsAutomation.PassengerTransport = source.PassengerTransport
@@ -2786,14 +2792,14 @@ func (c *ProtoConverter) csLogisticsAutomationToPCraig_starsv1LogisticsAutomatio
 	craig_starsv1LogisticsAutomation.SingleShipyardRebuild = source.SingleShipyardRebuild
 	if source.FleetRoles != nil {
 		craig_starsv1LogisticsAutomation.FleetRoles = make(map[int32]string, len(source.FleetRoles))
-		for key3, value3 := range source.FleetRoles {
-			craig_starsv1LogisticsAutomation.FleetRoles[IntToInt32(key3)] = value3
+		for key4, value4 := range source.FleetRoles {
+			craig_starsv1LogisticsAutomation.FleetRoles[IntToInt32(key4)] = value4
 		}
 	}
 	if source.RebuildFleets != nil {
 		craig_starsv1LogisticsAutomation.RebuildFleets = make(map[int32]bool, len(source.RebuildFleets))
-		for key4, value4 := range source.RebuildFleets {
-			craig_starsv1LogisticsAutomation.RebuildFleets[IntToInt32(key4)] = value4
+		for key5, value5 := range source.RebuildFleets {
+			craig_starsv1LogisticsAutomation.RebuildFleets[IntToInt32(key5)] = value5
 		}
 	}
 	craig_starsv1LogisticsAutomation.BattleSalvage = source.BattleSalvage
@@ -3663,14 +3669,20 @@ func (c *ProtoConverter) pCraig_starsv1JammerCapToCsJammerCap(source *v1.JammerC
 func (c *ProtoConverter) pCraig_starsv1LogisticsAutomationToCsLogisticsAutomation(source *v1.LogisticsAutomation) cs.LogisticsAutomation {
 	var csLogisticsAutomation cs.LogisticsAutomation
 	if source != nil {
+		if (*source).PriorityPlanets != nil {
+			csLogisticsAutomation.PriorityPlanets = make(map[int]bool, len((*source).PriorityPlanets))
+			for key, value := range (*source).PriorityPlanets {
+				csLogisticsAutomation.PriorityPlanets[Int32ToInt(key)] = value
+			}
+		}
 		csLogisticsAutomation.ServeTerraformingWorlds = (*source).ServeTerraformingWorlds
 		csLogisticsAutomation.InfrastructureTransport = (*source).InfrastructureTransport
 		csLogisticsAutomation.ManualPassengerThresholds = (*source).ManualPassengerThresholds
 		csLogisticsAutomation.DisablePassengerTransport = (*source).DisablePassengerTransport
 		if (*source).DesignFamilies != nil {
 			csLogisticsAutomation.DesignFamilies = make(map[int]int, len((*source).DesignFamilies))
-			for key, value := range (*source).DesignFamilies {
-				csLogisticsAutomation.DesignFamilies[Int32ToInt(key)] = Int32ToInt(value)
+			for key2, value2 := range (*source).DesignFamilies {
+				csLogisticsAutomation.DesignFamilies[Int32ToInt(key2)] = Int32ToInt(value2)
 			}
 		}
 		csLogisticsAutomation.ScoutMaxReturnTurns = Int32ToInt((*source).ScoutMaxReturnTurns)
@@ -3681,8 +3693,8 @@ func (c *ProtoConverter) pCraig_starsv1LogisticsAutomationToCsLogisticsAutomatio
 		csLogisticsAutomation.AutomaticPackets = (*source).AutomaticPackets
 		if (*source).FleetAssemblies != nil {
 			csLogisticsAutomation.FleetAssemblies = make(map[int]cs.FleetAssembly, len((*source).FleetAssemblies))
-			for key2, value2 := range (*source).FleetAssemblies {
-				csLogisticsAutomation.FleetAssemblies[Int32ToInt(key2)] = c.pCraig_starsv1FleetAssemblyToCsFleetAssembly(value2)
+			for key3, value3 := range (*source).FleetAssemblies {
+				csLogisticsAutomation.FleetAssemblies[Int32ToInt(key3)] = c.pCraig_starsv1FleetAssemblyToCsFleetAssembly(value3)
 			}
 		}
 		csLogisticsAutomation.PassengerTransport = (*source).PassengerTransport
@@ -3695,14 +3707,14 @@ func (c *ProtoConverter) pCraig_starsv1LogisticsAutomationToCsLogisticsAutomatio
 		csLogisticsAutomation.SingleShipyardRebuild = (*source).SingleShipyardRebuild
 		if (*source).FleetRoles != nil {
 			csLogisticsAutomation.FleetRoles = make(map[int]string, len((*source).FleetRoles))
-			for key3, value3 := range (*source).FleetRoles {
-				csLogisticsAutomation.FleetRoles[Int32ToInt(key3)] = value3
+			for key4, value4 := range (*source).FleetRoles {
+				csLogisticsAutomation.FleetRoles[Int32ToInt(key4)] = value4
 			}
 		}
 		if (*source).RebuildFleets != nil {
 			csLogisticsAutomation.RebuildFleets = make(map[int]bool, len((*source).RebuildFleets))
-			for key4, value4 := range (*source).RebuildFleets {
-				csLogisticsAutomation.RebuildFleets[Int32ToInt(key4)] = value4
+			for key5, value5 := range (*source).RebuildFleets {
+				csLogisticsAutomation.RebuildFleets[Int32ToInt(key5)] = value5
 			}
 		}
 		csLogisticsAutomation.BattleSalvage = (*source).BattleSalvage

@@ -40,9 +40,9 @@
 	default: true;
 	prefersdark: true;
 	color-scheme: dark;
-	--color-primary: oklch(41.7036% 0.099057 251.473931);
-	--color-primary-content: oklch(88.3407% 0.019811 251.473931);
-	--color-secondary: oklch(64.0924% 0.027405 229.389418);
+	--color-primary: oklch(75% 0.12 251);
+	--color-primary-content: oklch(16% 0.02 251);
+	--color-secondary: oklch(80% 0.025 229);
 	--color-secondary-content: oklch(12.8185% 0.005481 229.389418);
 	--color-accent: oklch(67.271% 0.167726 35.791525);
 	--color-accent-content: oklch(13.4542% 0.033545 35.791525);
@@ -51,7 +51,7 @@
 	--color-base-100: oklch(26.448% 0 0);
 	--color-base-200: oklch(24.7759% 0 0);
 	--color-base-300: oklch(19.5735% 0 0);
-	--color-base-content: oklch(85.2896% 0 0);
+	--color-base-content: oklch(94% 0.006 250);
 	--color-info: oklch(62.6163% 0.143511 240.033697);
 	--color-info-content: oklch(12.5233% 0.028702 240.033697);
 	--color-success: oklch(70.2268% 0.094594 156.59611);
@@ -486,3 +486,8 @@
 .table th:first-child {
 	z-index: 0;
 }
+
+/* Muted labels must remain readable on the dark business panels. */
+:where([data-theme="business"],.dark) :is(.text-gray-400,.text-gray-500,.text-gray-600,.text-gray-700,.text-neutral-500,.text-neutral-600,.text-slate-500,.text-slate-600){color:#c4cfdb;}
+:where([data-theme="business"],.dark) :is(.text-base-content\/50,.text-base-content\/60,.text-base-content\/70){color:#c4cfdb;}
+:where([data-theme="business"],.dark) :is(input,textarea)::placeholder{color:#b9c6d7;opacity:1;}

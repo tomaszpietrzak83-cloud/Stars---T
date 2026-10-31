@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"strconv"
 )
 
 const safetyTag = "automatic-safety"
@@ -71,6 +72,12 @@ func (t *turnGenerator) planAutomaticSafety() {
 			active := json.Unmarshal([]byte(fleet.GetTag(safetyTag)), &job) == nil
 			damage := fleetDamagePercent(fleet)
 			threat := interceptionThreat(player, fleet)
+			if player.Automation.FleetRoles[fleet.Num] == "bomber" || player.Automation.FleetRoles[fleet.Num] == "tanker" {
+				threat = max(threat, bomberChaseThreat(player, fleet))
+				if threat > 0 {
+					t.assignBomberProtection(player, fleet, fleet.Position, true)
+				}
+			}
 			defenders := 0
 			for _, member := range convoyMembers(player, fleet, t.game.getFleets(player.Num)) {
 				if member.Spec.HasWeapons {
@@ -79,10 +86,11 @@ func (t *turnGenerator) planAutomaticSafety() {
 			}
 			role := player.Automation.FleetRoles[fleet.Num]
 			canStand := role != "scout" && colonizationMode(role) == "" && defenders > threat*3/2
-			intercepted := !player.Automation.DisableInterceptionEvasion && threat > 0 && !canStand
-			needsRepair := !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()
+			intercepted := !scoutReconActive(player, fleet) && !player.Automation.DisableInterceptionEvasion && threat > 0 && !canStand
+			needsRepair := !scoutReconActive(player, fleet) && !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()
 			if active && ((job.Kind == "repair" && (damage == 0 || player.Automation.DisableAutomaticRepair)) || (job.Kind == "evade" && !intercepted)) {
 				delete(fleet.Tags, safetyTag)
+				delete(fleet.Tags, repairTankerTag)
 				delete(fleet.Tags, fuelStatusTag)
 				orders := job.Orders
 				orders.Waypoints = slices.Clone(orders.Waypoints)
@@ -112,7 +120,9 @@ func (t *turnGenerator) planAutomaticSafety() {
 			delete(fleet.Tags, tankerAwaitTag)
 			delete(fleet.Tags, fuelAwaitResumeTag)
 			delete(fleet.Tags, fuelRequestTag)
-			t.releaseEscorts(player, fleet)
+			if role != "bomber" && role != "tanker" || !intercepted {
+				t.releaseEscorts(player, fleet)
+			}
 			if fleet.GetTag(escortTag) != "" {
 				delete(fleet.Tags, escortTag)
 			}
@@ -134,9 +144,24 @@ func (t *turnGenerator) planAutomaticSafety() {
 					chosen, route = planet, candidate
 				}
 			}
+			delete(fleet.Tags, repairTankerTag)
+			if needsRepair && !intercepted {
+				if donor, mobile := t.nearestTankerRepair(player, fleet, route, chosen); donor != nil {
+					fleet.SetTag(repairTankerTag, strconv.Itoa(donor.Num))
+					applyExpeditionRoute(player, fleet, mobile)
+					t.protectEvadingBomber(player, fleet)
+					holdAutomaticFleet(player, donor, "Mobile repair service reserved for incoming friendly ships")
+					job.Status = repairTankerStatus(donor)
+					raw, _ := json.Marshal(job)
+					fleet.SetTag(safetyTag, string(raw))
+					fleet.SetTag(fuelStatusTag, job.Status)
+					continue
+				}
+			}
 			if route == nil && intercepted {
 				if escape := t.planOpenSpaceEscape(player, fleet); escape != nil {
 					applyExpeditionRoute(player, fleet, escape)
+					t.protectEvadingBomber(player, fleet)
 					job.Status = "Evading interception in open space; return fuel protected"
 					raw, _ := json.Marshal(job)
 					fleet.SetTag(safetyTag, string(raw))
@@ -150,6 +175,7 @@ func (t *turnGenerator) planAutomaticSafety() {
 				job.Status = "Retreat needs tanker assistance"
 			} else {
 				applyExpeditionRoute(player, fleet, route)
+				t.protectEvadingBomber(player, fleet)
 				job.Status = fmt.Sprintf("%s: whole fleet returning to %s (%d%% worst ship damage)", job.Kind, chosen.Name, damage)
 				if chosen.Position == fleet.Position {
 					holdAutomaticFleet(player, fleet, job.Status)

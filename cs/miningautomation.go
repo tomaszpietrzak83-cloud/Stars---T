@@ -67,7 +67,7 @@ func (t *turnGenerator) planMiningAutomation() {
 			}
 		}
 		for _, fleet := range fleets {
-			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "miner" {
+			if fleet.GetTag("maintenance-pending") != "" || fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "miner" {
 				continue
 			}
 			job := readMiningJob(fleet)

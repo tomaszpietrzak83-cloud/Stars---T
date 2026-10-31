@@ -1,16 +1,20 @@
-tomek-stars program verification — 2026-10-31
+tomek-stars 0.2.0 — verification, 2026-10-31
 
-PASS: full Go suite (AI, server, DB, commands, converters and core); server 126s.
-PASS: final core/AI/converter tests, including zero-opponent edge/center starts, 95% infrastructure surplus, conservation and real cargo mass, damaged holds, terraform opt-in and victory target preference.
-PASS: 65 frontend tests, zero failures/errors. Svelte check: zero errors/warnings. Production build passed.
-PASS: isolated browser smoke using the Windows binary and compiled UI without Vite. A 5400-star galaxy was created; the human capital was on the edge; both new automation permissions remained enabled after reload. Existing research, fleet assembly, upgrades, races, menu, camera and invention tooltip checks also passed.
-PASS: full turn on an isolated copied-save regression database (118s). No personal playthrough was advanced by testing.
-PASS: deployed Windows PowerShell launcher, automatic local session and live scanner inspection. The read-only inspection blocked mutating API requests.
-PASS: source/build candidate scan excluded personal databases, .env files, credentials, private keys, caches, runtime downloads, node_modules and audit backups.
+PASS: full Go suite, plus targeted core/AI automation recovery and design-family regression tests.
+PASS: Svelte check: zero errors and warnings. 108 frontend tests: zero failures/errors.
+PASS: Windows native executable, WASM and production frontend builds.
+PASS: isolated browser integration using the native server and compiled UI, without Vite. A 5400-star game was created only in a test database. The test covered local login, races, saved settings, bulk difficulty, research allocation, fleet composition, tanker assignment, upgrades, camera retention and invention hold-to-preview.
+PASS: active fleet compositions follow upgraded designs without blocking later automation edits; completed compositions remain historical. Planet priority persisted after upgrade and reload.
+PASS: eight distinct starfield hull variants, Hull Makeup return navigation, larger production dialog and readable dark-mode labels; screenshots inspected.
+PASS: copied-save regression: each generated turn used another temporary copy of an audit backup. No live personal playthrough was advanced. Before emergency detours, 16 scout fleets were moving/routed; after detours, 23 of 25 were moving/routed on the same snapshot. Two scouts remained threat-blocked and requested assistance. This is not a guarantee of movement through an enemy blockade.
+PASS: targeted tests cover slow funded emergency recovery, threat-circle detours, fuel conservation, nearby escort rescue without abandoning assigned convoys, disappeared salvage retasking, frontier patrols, actual wolfpack merges and restoration of prior roles, mobile non-stacking repairs, complete scout/transport itineraries and full useful cargo.
 
-The committed program includes the native Windows executable, compiled interface, WASM module, source and artwork. SHA-256 values are in windows/SHA256SUMS.txt.
+Performance: bounded parallel planet forecasting produces the same specs/queues as serial execution. A 128-colony microbenchmark measured 6.09 ms serial versus 2.53 ms with eight workers. This is a component benchmark, not a whole-turn speedup claim. A copied 12,600-star game turn took approximately 60 seconds; CPU profiling also identified DB/cgo, JSON and GC overhead. Owner-indexed fleet lookup removes repeated whole-universe scans.
+LIMITATION: Windows race-detector execution could not complete because the available TSAN runtime failed to allocate its shadow address space. The ordinary suites and serial/parallel equivalence test passed; no race-detector pass is claimed.
 
-Only the program is published. Personal saves remain local in data/data.db. No personal game or backup is included.
+PASS: deployed immutable compiled UI, automatic local login and live scanner inspection with mutating API requests blocked. Personal game 10 remained at year 2444 across restart.
+PASS: candidate path/credential scan excluded saves, secrets, caches and audit copies; native and WASM SHA-256 manifest verified.
 
-PASS: program-only ZIP archive inspected (70.3 MiB), required launch/UI/native files present, no personal data/caches, SHA-256 verified and compiled WASM matches its source build artifact.
-PASS: GitHub main points to fd45421f5a75cdef6d471cedd575c111637f46ce, preserving the repository initialization commit. Later tested corrections are configured to publish to the same repository.
+Deployment and publication are recorded in SUGGESTIONS-CHECKLIST.txt. The program includes the native Windows executable, compiled interface, WASM, source and artwork; hashes are in windows/SHA256SUMS.txt. Personal databases, credentials, runtime downloads, caches, test profiles and audit backups are excluded. The original D:/gry/Stars! WineDVM installation is untouched.
+
+Late starbases remain proposals in docs/STARBASE-PROPOSALS.txt, as requested; they are not claimed as implemented technologies.

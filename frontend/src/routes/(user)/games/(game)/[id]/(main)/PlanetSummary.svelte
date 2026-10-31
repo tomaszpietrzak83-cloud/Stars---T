@@ -1,4 +1,5 @@
 <script lang="ts">
+ import PriorityPlanet from '#lib/components/game/PriorityPlanet.svelte';
 	import { onPointerKeyDown, onPointerKeyUp } from '#lib/services/Events.js';
 	import PlanetHabBars from '#lib/components/game/PlanetHabBars.svelte';
 	import PlanetHabValue from '#lib/components/game/PlanetHabValue.svelte';
@@ -75,6 +76,7 @@
 </script>
 
 <div class="flex flex-col md:min-h-44 select-none w-full">
+ <PriorityPlanet num={planet.mapObject?.num ?? 0} />
 	{#if planet.mapObject?.reportAge === ReportAgeUnexplored}
 		<div class="relative w-full m-auto">
 			<!-- Icon on the left -->

@@ -38,7 +38,7 @@ func (t *turnGenerator) planTerraformAutomation() {
 			}
 		}
 		for _, fleet := range fleets {
-			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || fleet.GetTag(tankerAwaitTag) != "" || player.Automation.FleetRoles[fleet.Num] != "terraformer" || fleet.Spec.TerraformRate <= 0 {
+			if fleet.GetTag("maintenance-pending") != "" || fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || fleet.GetTag(tankerAwaitTag) != "" || player.Automation.FleetRoles[fleet.Num] != "terraformer" || fleet.Spec.TerraformRate <= 0 {
 				continue
 			}
 			job := readTerraformJob(fleet)

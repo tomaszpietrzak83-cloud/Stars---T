@@ -88,3 +88,20 @@ func TestScoutDoesNotUseSlowMultiYearReturnLegs(t *testing.T) {
 	home := p.PlanetIntels[0]
 	require.Nil(t, scoutHomeRoute(&u.Game.Rules, p, f, home), "free warp 1-3 must not justify an eleven-year crawl")
 }
+
+func TestFullTankScoutCompletesHomeLegAndStartsAnotherPetal(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, f := u.Player(1), u.Fleet("Transport")
+	p.Automation.FleetRoles = map[int]string{f.Num: "scout"}
+	p.PlanetIntels = nil
+	addExpeditionTestDock(p, Vector{})
+	home := p.PlanetIntels[len(p.PlanetIntels)-1]
+	p.PlanetIntels = append(p.PlanetIntels, &Planet{MapObject: MapObject{Num: 1, Name: "Unvisited", Position: Vector{10, 0}, ReportAge: ReportAgeUnexplored}})
+	saveScoutMission(f, &scoutMission{Home: home.Num, Plan: []int{home.Num}})
+	f.Fuel = f.Spec.FuelCapacity
+	u.Run((*turnGenerator).planScoutAutomation)
+	require.Equal(t, 1, readScoutMission(f).Cycle)
+	u.Run((*turnGenerator).planScoutAutomation)
+	require.Greater(t, len(f.Waypoints), 1)
+	require.Equal(t, "scout", p.Automation.FleetRoles[f.Num])
+}

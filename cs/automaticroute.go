@@ -9,6 +9,8 @@ const fuelStatusTag = "automatic-fuel-status"
 const fuelRequestTag = "automatic-fuel-request"
 
 type automaticRoutePolicy struct {
+	EconomicalPatrol bool
+	EmergencyReturn  bool
 	MaxTurns         int
 	MinWarp          int
 	ReturnTurnsLimit int
@@ -42,7 +44,7 @@ func automaticLegSafe(rules *Rules, player *Player, from, to Vector, warp int, a
 	if len(strategicSpeed) > 0 {
 		step = strategicSpeed[0]
 	}
-	if !allowThreat && knownRouteThreat(player, from, to) > 0 {
+	if !allowThreat && knownRouteThreat(player, from, to) > 0 && !knownWithdrawalRoute(player, from, to) {
 		return false
 	}
 	for _, field := range player.MinefieldIntels {
@@ -180,10 +182,10 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 		target = MapObjectTarget{}
 	}
 	for _, fleet := range fleets {
-		if isAutomaticFleet(player, fleet) && policy.MaxTurns == 0 {
+		if isAutomaticFleet(player, fleet) && policy.MaxTurns == 0 && !policy.EmergencyReturn {
 			policy.MaxTurns = 20
 		}
-		if player.Automation.FleetRoles[fleet.Num] == "scout" || player.Automation.FleetRoles[fleet.Num] == "patrol" || passengerCruiseFleet(fleet) || colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" {
+		if !policy.EmergencyReturn && !policy.EconomicalPatrol && (player.Automation.FleetRoles[fleet.Num] == "scout" || player.Automation.FleetRoles[fleet.Num] == "patrol" || passengerCruiseFleet(fleet) || colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "") {
 			policy.MinWarp = max(policy.MinWarp, automaticCruiseWarp(player, fleet))
 			if colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" {
 				policy.MaxTurns = 50
@@ -411,6 +413,9 @@ func holdAutomaticFleet(player *Player, fleet *Fleet, status string) {
 
 func automaticReturnLimit(player *Player, fleet *Fleet, target MapObjectTarget) int {
 	if player.Automation.FleetRoles[fleet.Num] == "patrol" {
+		if fleet.GetTag(frontierPatrolTag) != "" {
+			return 20
+		}
 		return 8
 	}
 	if player.Automation.FleetRoles[fleet.Num] == "scout" {
@@ -423,5 +428,8 @@ func automaticReturnLimit(player *Player, fleet *Fleet, target MapObjectTarget) 
 }
 
 func automaticCruiseWarp(player *Player, fleet *Fleet) int {
+	if player.Automation.FleetRoles[fleet.Num] == "patrol" && fleet.GetTag(frontierPatrolTag) != "" {
+		return min(automaticMaxWarp(player, fleet), 4)
+	}
 	return min(automaticMaxWarp(player, fleet), 5)
 }

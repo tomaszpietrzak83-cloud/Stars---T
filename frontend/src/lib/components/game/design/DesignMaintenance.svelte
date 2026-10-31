@@ -44,7 +44,8 @@
 		<h2 class="font-semibold">Modernization and retirement</h2>
 		<p class="text-sm my-2">Choose the replacement design, then order a fleet rebuild in Fleet automation. Obsolete sends all ships of this design for scrapping without replacements.</p>
 		<label class="flex flex-wrap items-center gap-2">
-			<span>Action for {design.name}</span>
+			<button type="button" class="btn btn-warning" disabled={saving||incoming||saved===-1} onclick={()=>{selected='-1';save();}}>Obsolete</button>
+ <span>Action for {design.name}</span>
 			<select class="select select-bordered" bind:value={selected} disabled={saving || incoming}>
 				<option value="0">Keep active</option>
 				<option value="-1">Obsolete — send for scrapping</option>

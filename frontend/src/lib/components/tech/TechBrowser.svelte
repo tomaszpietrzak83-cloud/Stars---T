@@ -1,4 +1,5 @@
 <script lang="ts">
+ import { page } from '$app/state';
 	import TableSearchInput from '../table/TableSearchInput.svelte';
 	import { TechCategory } from '#lib/types/cs-proto.js';
 	import { TechCategories, type TechLike } from '#lib/types/Tech.js';
@@ -8,6 +9,7 @@
 	let { techs }: { techs: TechLike[] } = $props();
 	let search = $state('');
 	let selected = $state('all');
+ $effect(()=>{ const category=page.url.searchParams.get('category'); if(category) selected=category; });
 	let sort = $state('rank');
 	let categories = $derived(
 		TechCategories.filter((c) => techs.some((t) => t.tech?.category === c))

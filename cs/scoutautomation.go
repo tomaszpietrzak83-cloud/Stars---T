@@ -10,6 +10,7 @@ const scoutTag = "scout-job"
 const scoutMissionTag = "scout-mission"
 
 type scoutMission struct {
+	Warps      []int   `json:"warps,omitempty"`
 	Plan       []int   `json:"plan,omitempty"`
 	Leg        int     `json:"leg,omitempty"`
 	ReturnAt   int     `json:"returnAt,omitempty"`
@@ -80,6 +81,9 @@ func (t *turnGenerator) planScoutAutomation() {
 		quota := max(1, min(32, unknown/max(1, active)))
 		for _, fleet := range fleets {
 			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "scout" || fleet.GetTag(tankerAwaitTag) != "" {
+				continue
+			}
+			if !scoutHasRetirement(player, fleet) && t.planScoutRecon(player, fleet) {
 				continue
 			}
 			mission := readScoutMission(fleet)

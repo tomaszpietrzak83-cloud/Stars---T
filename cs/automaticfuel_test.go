@@ -93,7 +93,7 @@ func TestAutomaticTankersSpreadIntoNetworkAndPatrolSlowly(t *testing.T) {
 	require.Equal(t, anchor, readTankerJob(tanker).Anchor, "do not reassign the patrol area every turn")
 }
 
-func TestNetworkCustomerTargetsDeployedTankerAndKeepsConvoyTogether(t *testing.T) {
+func TestNetworkTankerApproachesCustomerAndKeepsConvoyTogether(t *testing.T) {
 	u := tankerUniverse(t)
 	customer, tanker := u.Fleet("Customer"), u.Fleet("Tanker")
 	customer.Position = Vector{20, 0}
@@ -114,9 +114,10 @@ func TestNetworkCustomerTargetsDeployedTankerAndKeepsConvoyTogether(t *testing.T
 	u.Run((*turnGenerator).planAutomaticTankers)
 	job := readTankerJob(tanker)
 	require.Equal(t, customer.Num, job.TargetNum)
-	require.Equal(t, Vector{100, 0}, job.Position)
+	require.NotEqual(t, tanker.Position, job.Position, "a deployed tanker may approach its customer")
 	require.Equal(t, job.Position, customer.Waypoints[len(customer.Waypoints)-1].Position)
-	require.Len(t, tanker.Waypoints, 1, "the deployed node waits; the customer comes to it")
+	require.Greater(t, len(tanker.Waypoints), 1)
+	require.Equal(t, job.Position, tanker.Waypoints[len(tanker.Waypoints)-1].Position)
 }
 
 func TestFuelPlannerWaitsForActualDockRefillAndIgnoresBareColonies(t *testing.T) {
@@ -340,4 +341,31 @@ func TestLostFuelDockDoesNotRevealForeignPlanetData(t *testing.T) {
 	intel := p.GetPlanetIntel(home.Num)
 	require.Zero(t, intel.Spec.DockCapacity)
 	require.Equal(t, oldCargo, intel.Cargo)
+}
+
+func TestIdleEscortCanRescueScoutWithoutAbandoningAssignedConvoy(t *testing.T) {
+	u := tankerUniverse(t)
+	p, scout, escort := u.Player(1), u.Fleet("Customer"), u.Fleet("Tanker")
+	scout.Position = Vector{180, 0}
+	p.Automation.FleetRoles[scout.Num] = "scout"
+	p.Automation.FleetRoles[escort.Num] = "escort"
+	escort.SetTag(escortTag, "99")
+	require.False(t, automaticFuelDonor(p, escort))
+	delete(escort.Tags, escortTag)
+	saveAutomaticFuelRequest(scout, automaticFuelRequest{Destination: scout.Position, Members: []int{scout.Num}, Urgent: true})
+	u.Run((*turnGenerator).planAutomaticTankers)
+	require.Equal(t, strconv.Itoa(escort.Num), scout.GetTag(tankerAwaitTag))
+	for range 20 {
+		u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).planAutomaticTankers, (*turnGenerator).fleetMove, (*turnGenerator).fleetRefuel)
+		before := scout.Fuel + escort.Fuel
+		u.Run((*turnGenerator).resolveAutomaticTankers)
+		require.Equal(t, before, scout.Fuel+escort.Fuel)
+		if scout.GetTag(tankerAwaitTag) == "" {
+			break
+		}
+	}
+	require.Positive(t, scout.Fuel)
+	require.Empty(t, scout.GetTag(tankerAwaitTag))
+	require.Equal(t, "escort", p.Automation.FleetRoles[escort.Num])
+	require.GreaterOrEqual(t, escort.Fuel, automaticReturnFuel(&u.Game.Rules, p, escort, escort.Position, expeditionStations(p, escort), false))
 }
