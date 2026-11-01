@@ -10,6 +10,7 @@
 	import { commandable, getMapObjectName, key } from '#lib/types/MapObject.js';
 	import { onDestroy, untrack } from 'svelte';
 	import CommandTile from './CommandTile.svelte';
+ import { shortFleetOrders } from '#lib/types/shortFleetOrders.js';
 	import { getDisplayColor } from '#lib/utils/colorUtils.js';
 
 	const {
@@ -130,7 +131,7 @@
 						: ''}
 					value={key(m)}
 				>
-					{getMapObjectName(m)}
+					{getMapObjectName(m)}{m?.mapObject?.playerNum===$player.num && m?.mapObject?.type===MapObjectType.FLEET ? ` [${shortFleetOrders(m as Fleet, $player.playerOrders.automation)}]` : ''}
 				</option>
 			{/each}
 			{#each $game.players as p (p.num)}
@@ -141,7 +142,7 @@
 					>
 						{#each cargoDestsByPlayer[p.num] as m (key(m))}
 							<option value={key(m)}>
-								{getMapObjectName(m)}
+								{getMapObjectName(m)}{m?.mapObject?.playerNum===$player.num && m?.mapObject?.type===MapObjectType.FLEET ? ` [${shortFleetOrders(m as Fleet, $player.playerOrders.automation)}]` : ''}
 							</option>
 						{/each}
 					</optgroup>

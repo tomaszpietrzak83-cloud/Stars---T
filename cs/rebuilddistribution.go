@@ -139,7 +139,12 @@ func (t *turnGenerator) rallyReplacementFleet(player *Player, fleet *Fleet, work
 	}
 	work.RallyPlanetNum = rally.Num
 	work.Status = "Regrouping at " + rally.Name
-	routeAutomatically(&t.game.Rules, player, fleet, rally.Position, rally.MapObject.ToTarget(), 0)
+	if route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, rally.Position, rally.ToTarget(), automaticRoutePolicy{AllowThreat: true, EmergencyReturn: true, MaxTurns: 10000}); route != nil {
+		applyExpeditionRoute(player, fleet, route)
+	} else {
+		t.routeEmergencyReturn(player, fleet)
+		requestAutomaticRescue(player, fleet, true)
+	}
 	writeMaintenance(fleet, work)
 	if fleet.Position != rally.Position {
 		return

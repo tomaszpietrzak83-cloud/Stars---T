@@ -1,7 +1,9 @@
 package db
 
 import (
+	"encoding/json"
 	"github.com/sirgwain/craig-stars/config"
+	"github.com/sirgwain/craig-stars/db/generated"
 	"github.com/stretchr/testify/require"
 	"os"
 	"path/filepath"
@@ -35,5 +37,18 @@ func TestLocalSerialAndParallelReportsOnSnapshot(t *testing.T) {
 	require.NoError(t, err)
 	parallelTime := time.Since(started)
 	require.Equal(t, serial, parallel, "every player column/report and row order must match")
+	originalBytes, storedBytes := 0, 0
+	for _, player := range serial {
+		plain, err := json.Marshal(player.PlanetIntels)
+		require.NoError(t, err)
+		encoded, err := player.PlanetIntels.Value()
+		require.NoError(t, err)
+		var decoded generated.PlanetIntels
+		require.NoError(t, decoded.Scan(encoded))
+		require.Equal(t, player.PlanetIntels, &decoded)
+		originalBytes += len(plain)
+		storedBytes += len(encoded.([]byte))
+	}
+	t.Logf("Lossless report storage: %d JSON bytes -> %d stored bytes", originalBytes, storedBytes)
 	t.Logf("Report read+decode: serial=%s parallel=%s workers=%d players=%d", serialTime, parallelTime, runtime.GOMAXPROCS(0), len(serial))
 }

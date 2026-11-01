@@ -37,6 +37,16 @@ This project is an open-source derivative of Craig (sirgwain)'s open-source **cr
 
 Contributions should include a clear behavior description and relevant tests. Never publish personal saves. Our release series starts at **0.2.0** for the automation edition; increment patch versions for fixes and minor versions for new gameplay capabilities. See SUGGESTIONS-CHECKLIST.txt for implementation status, including unfinished requests.
 
+## 0.4.3: manual command priority and faster turns
+
+Manual fleets cannot be recruited as bomber escorts. Disabling automation clears resumable automatic jobs, stale assignments after merging are removed, and legacy manual missions commandeered by the earlier escort controller are restored. Sacrificial fleet reconnaissance uses one real scout; stacked scouts split first. Scouts without unknown planets scan frontier sectors.
+
+Planetary bomb damage is excluded from anti-ship strength estimates. Patrol packs stop waiting indefinitely for distant reinforcements and defer unachievable targets, allowing individual patrols to hunt and regroup. Pack members split again after contact ends. Automation can sort by Rebuilding, and Other Entities Here shows concise order labels for owned fleets.
+
+Civilian pickups can request escort for the delivery leg before loading. Distant threats are bounded by reported interception reach. Fully deliverable cargo is unloaded in the return-fuel forecast; changed/full/foreign destinations retain a loaded return reserve. Useful base mineral deliveries receive a free transporter before routine work. Default development raises annual factory/mine limits to use available production when no ship/base batch takes precedence.
+
+A copied year-2470, 144-player, 30,858-fleet test improved native GenerateTurn wall time from 127.2 to 76.2 seconds on the same machine. Reported-design lookup uses an index. Player planet reports use lossless compressed SQLite blobs, prepared in bounded parallel batches; transactional SQL writes retain their order. Legacy plain JSON remains readable, and APIs/analysis archives remain JSON. **After the first turn saved by 0.4.3, keep using 0.4.3 or later with that database**; keep your separate pre-update backup to return to an older executable. No automatic database vacuum or deletion is performed.
+
 ## 0.4.2: design cleanup and civilian protection
 
 Empty superseded designs disappear from the designer while referenced blueprints remain available for production and reports. An unused older version can be deleted without clearing the whole family's maintenance orders; targets and queued production remain protected.

@@ -225,11 +225,11 @@ func (item *PlanetIntels) Value() (driver.Value, error) {
 		return nil, nil
 	}
 
-	return valueJSON(item)
+	return valuePlanetReports(item)
 }
 
 func (item *PlanetIntels) Scan(src interface{}) error {
-	return scanJSON(src, item)
+	return scanPlanetReports(src, item)
 }
 
 func (item *FleetIntels) Value() (driver.Value, error) {

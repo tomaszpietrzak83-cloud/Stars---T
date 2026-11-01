@@ -4,6 +4,7 @@ package cs
 
 import (
 	"github.com/stretchr/testify/require"
+	"log/slog"
 	"testing"
 )
 
@@ -69,4 +70,23 @@ func TestStarbaseBoostMustImproveNativeCompletionAndIsTemporary(t *testing.T) {
 		require.Empty(t, item.GetTag(starbaseBoostTag))
 	}
 	require.Equal(t, "27", planet.ProductionQueue[0].GetTag(defaultAutoTag))
+}
+
+func TestDefaultAutoUsesAnnualProductionWhenNoManufacturingCompetes(t *testing.T) {
+	u := passengerUniverse(t)
+	p, planet := u.Player(1), u.Planet("Home")
+	planet.Factories = 10
+	planet.Mines = 10
+	planet.Cargo.Germanium = 100000
+	planet.ProductionQueue = []ProductionQueueItem{{Type: QueueItemTypeAutoFactories, Quantity: 250}, {Type: QueueItemTypeAutoMines, Quantity: 250}}
+	planet.Spec = ComputePlanetSpec(&u.Game.Rules, p, planet)
+	before := planet.Factories + planet.Mines
+	PlanDefaultAuto(&u.Game.Rules, p, planet)
+	producer := newProducer(slog.Default(), &u.Game.Rules, planet, p)
+	result, err := producer.produce()
+	require.NoError(t, err)
+	require.Greater(t, planet.Factories+planet.Mines, before)
+	fCost, _ := producer.getItemCost(&u.Game.Rules, p, planet, ProductionQueueItem{Type: QueueItemTypeFactory})
+	mCost, _ := producer.getItemCost(&u.Game.Rules, p, planet, ProductionQueueItem{Type: QueueItemTypeMine})
+	require.Less(t, result.leftoverResources, fCost.Resources+mCost.Resources, "annual auto limits must not leave a large production budget unused")
 }

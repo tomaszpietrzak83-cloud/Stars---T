@@ -66,3 +66,30 @@ func TestDepartureRejectsUnarmedFreighterEnemyFleetWaypoint(t *testing.T) {
 		require.False(t, wp.TargetType == MapObjectTypeFleet && wp.TargetPlayerNum == 2)
 	}
 }
+
+func TestScoutStackSplitsBeforeContactReconnaissance(t *testing.T) {
+	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignLongRangeScout, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Scouts", Design: DesignLongRangeScout.Name, At: "Home"}}}, {Designs: Designs(DesignDestroyerDelta), Fleets: []ScenarioFleet{{Name: "Enemy", Design: DesignDestroyerDelta.Name, Position: Vector{20, 0}}}}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}}})
+	p, f, e := u.Player(1), u.Fleet("Scouts"), u.Fleet("Enemy")
+	f.Tokens[0].Quantity = 4
+	f.Spec = ComputeFleetSpec(&u.Game.Rules, p, f)
+	f.Fuel = f.Spec.FuelCapacity
+	p.Automation.FleetRoles = map[int]string{f.Num: "scout"}
+	p.PlanetIntels = []*Planet{u.Planet("Home")}
+	report := *e
+	report.WarpSpeed = 5
+	report.Heading = VectorFloat64{-1, 0}
+	p.FleetIntels = []*Fleet{&report}
+	u.Run(func(tg *turnGenerator) { require.True(t, tg.planScoutRecon(p, f)) })
+	require.Equal(t, 1, f.Spec.TotalShips)
+	total, contacts := 0, 0
+	for _, ship := range u.Game.getFleets(p.Num) {
+		if !ship.Delete {
+			total += ship.Spec.TotalShips
+			if scoutReconActive(p, ship) {
+				contacts++
+			}
+		}
+	}
+	require.Equal(t, 4, total)
+	require.Equal(t, 1, contacts)
+}

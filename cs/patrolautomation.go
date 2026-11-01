@@ -11,6 +11,7 @@ const patrolTag = "automatic-patrol"
 const patrolSupportTag = "patrol-support-role"
 
 type patrolJob struct {
+	GatheringSince int         `json:"gatheringSince,omitempty"`
 	SupportDesigns map[int]int `json:"supportDesigns,omitempty"`
 	Leader         int         `json:"leader,omitempty"`
 	Enemy          int         `json:"enemy,omitempty"`
@@ -29,8 +30,22 @@ func savePatrolJob(f *Fleet, job patrolJob) {
 	raw, _ := json.Marshal(job)
 	f.SetTag(patrolTag, string(raw))
 }
+
+// Native total rating includes planetary bombs. Those cannot fire on ships.
+func shipCombatPower(spec ShipDesignSpec) int {
+	if spec.Bomber && !spec.HasWeapons {
+		return 0
+	}
+	power := spec.PowerRating
+	for _, bombs := range [][]Bomb{spec.Bombs, spec.SmartBombs, spec.RetroBombs} {
+		for _, bomb := range bombs {
+			power -= int(bomb.KillRate*10+bomb.StructureDestroyRate) * bomb.Quantity * 2
+		}
+	}
+	return max(0, power)
+}
 func patrolPower(f *Fleet) int {
-	return max(0, f.Spec.PowerRating) * (100 - fleetDamagePercent(f)) / 100
+	return shipCombatPower(f.Spec.ShipDesignSpec) * (100 - fleetDamagePercent(f)) / 100
 }
 func patrolEnemy(player *Player, job patrolJob) *Fleet {
 	for _, enemy := range player.FleetIntels {
@@ -48,7 +63,7 @@ func patrolReportedPower(player *Player, enemy *Fleet) int {
 		if enemy.Spec.HasWeapons && enemy.Spec.PowerRating <= 0 {
 			return max(1, reportedWeaponUnit(player)*4)
 		}
-		return max(1, enemy.Spec.PowerRating)
+		return max(1, shipCombatPower(enemy.Spec.ShipDesignSpec))
 	}
 	power := 0
 	for _, token := range enemy.Tokens {
@@ -58,7 +73,7 @@ func patrolReportedPower(player *Player, enemy *Fleet) int {
 			continue
 		}
 		if len(design.Slots) > 0 {
-			power += max(1, design.Spec.PowerRating) * token.Quantity
+			power += max(1, shipCombatPower(design.Spec)) * token.Quantity
 		} else {
 			if design.Hull == Scout.Name {
 				// A basic scout has one general-purpose slot, not the weapons
@@ -330,6 +345,16 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 			job.Grouped = true
 		}
 	}
+	if job.GatheringSince == 0 {
+		job.GatheringSince = t.game.Year - 2
+	}
+	if !allHere && patrolPower(leader) >= needed {
+		allHere = true
+	}
+	if (!allHere || patrolPower(leader) < needed) && t.game.Year-job.GatheringSince >= 2 && leader.Position.DistanceTo(enemy.Position) > leader.StrategicSpeed(automaticMaxWarp(player, leader)) {
+		t.declinePatrolTarget(player, leader)
+		return
+	}
 	if !allHere {
 		job.Status = "Gathering patrol ships before interception"
 		holdAutomaticFleet(player, leader, "")
@@ -419,9 +444,23 @@ func (t *turnGenerator) planPatrolAutomation() {
 				leader := t.game.getFleet(player.Num, job.Leader)
 				if leader == nil || leader.Delete || player.Automation.FleetRoles[leader.Num] != "patrol" {
 					delete(fleet.Tags, patrolTag)
+					if fleet.GetTag(patrolSupportTag) == "escort" {
+						player.Automation.FleetRoles[fleet.Num] = "escort"
+						delete(fleet.Tags, patrolSupportTag)
+					}
 				}
 			}
 		}
+		// Releasing a pack creates new single-ship fleets. Give them work in
+		// this same planning pass, rather than leaving them idle for a year.
+		fleets = slices.Clone(t.game.getFleets(player.Num))
+		sort.Slice(fleets, func(i, j int) bool {
+			a, b := nearest(fleets[i]), nearest(fleets[j])
+			if a == b {
+				return fleets[i].Num < fleets[j].Num
+			}
+			return a < b
+		})
 		for _, fleet := range fleets {
 			if !patrolAvailable(player, fleet) || readPatrolJob(fleet).Leader != 0 || fleet.Fuel < fleet.Spec.FuelCapacity/4 || readAutomaticFuelRequest(fleet) != nil && readAutomaticFuelRequest(fleet).Urgent {
 				continue
@@ -506,7 +545,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 					player.Automation.FleetRoles[e.Num] = "patrol"
 				}
 				for _, member := range members {
-					job := patrolJob{Leader: fleet.Num, Enemy: enemy.PlayerNum, Target: enemy.Num, Status: "Wolf pack gathering before coordinated interception"}
+					job := patrolJob{GatheringSince: t.game.Year, Leader: fleet.Num, Enemy: enemy.PlayerNum, Target: enemy.Num, Status: "Wolf pack gathering before coordinated interception"}
 					if member == fleet {
 						job.SupportDesigns = support
 					}

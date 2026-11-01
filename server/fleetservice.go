@@ -383,6 +383,8 @@ func (s *fleetService) saveSplitMergeFleets(ctx context.Context, player *cs.Play
 				continue
 			}
 			// possible a fleet was created and destroyed in one turn
+			delete(player.Automation.FleetRoles, fleet.Num)
+			delete(player.Automation.RebuildFleets, fleet.Num)
 			if fleet.ID != 0 {
 				if err := c.DeleteFleet(ctx, fleet.ID); err != nil {
 					return fmt.Errorf("delete fleet: %w", err)

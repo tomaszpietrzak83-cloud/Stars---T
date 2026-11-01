@@ -119,6 +119,33 @@ func PlanDefaultAuto(rules *Rules, player *Player, planet *Planet) {
 			}
 		}
 	}
+	hasManufacturing := false
+	for _, item := range best {
+		hasManufacturing = hasManufacturing || manufacturingItem(item)
+	}
+	if !hasManufacturing && !player.Race.Spec.InnateResources && !player.Race.Spec.InnateMining {
+		producer := newProducer(slog.Default(), rules, planet, player)
+		fCost, _ := producer.getItemCost(rules, player, planet, ProductionQueueItem{Type: QueueItemTypeFactory})
+		mCost, _ := producer.getItemCost(rules, player, planet, ProductionQueueItem{Type: QueueItemTypeMine})
+		f, m := 0, 0
+		for _, item := range best {
+			if item.Type == QueueItemTypeAutoFactories {
+				f = item.Quantity
+			}
+			if item.Type == QueueItemTypeAutoMines {
+				m = item.Quantity
+			}
+		}
+		annual := f*fCost.Resources + m*mCost.Resources
+		budget := max(0, planet.Spec.ResourcesPerYearAvailable)
+		if annual > 0 && budget > annual {
+			for i := range best {
+				if best[i].Type == QueueItemTypeAutoFactories || best[i].Type == QueueItemTypeAutoMines {
+					best[i].Quantity = max(best[i].Quantity, best[i].Quantity*budget/annual)
+				}
+			}
+		}
+	}
 	planet.ProductionQueue = best
 	PlanProductionBoost(rules, player, planet)
 }

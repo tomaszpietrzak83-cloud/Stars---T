@@ -279,3 +279,33 @@ func TestIntermediatePatrolStacksSplitWhenPackIsReleased(t *testing.T) {
 		}
 	}
 }
+
+func TestStalledDistantPackDispersesAndDefersItsImpossibleTarget(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, a, b := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
+	b.Position = Vector{15, 0}
+	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
+	e := patrolTestEnemy(100000)
+	e.Position = Vector{130, 0}
+	p.FleetIntels = []*Fleet{e}
+	savePatrolJob(a, patrolJob{Leader: a.Num, Enemy: e.PlayerNum, Target: e.Num, GatheringSince: u.Game.Year - 3})
+	savePatrolJob(b, patrolJob{Leader: a.Num, Enemy: e.PlayerNum, Target: e.Num})
+	u.Run(func(tg *turnGenerator) { tg.advancePatrol(p, a) })
+	require.Zero(t, readPatrolJob(a).Leader)
+	require.Zero(t, readPatrolJob(b).Leader)
+	require.True(t, declinedPatrolTarget(a, e, u.Game.Year))
+	require.True(t, declinedPatrolTarget(b, e, u.Game.Year))
+}
+
+func TestPatrolDoesNotCountPlanetaryBombsAsAntiShipWeapons(t *testing.T) {
+	u := logisticsUniverse(t)
+	p := u.Player(1)
+	known := &ShipDesign{PlayerNum: 2, Num: 90, Slots: []ShipDesignSlot{{Quantity: 4}}, Spec: ShipDesignSpec{Bomber: true, PowerRating: 10000}}
+	p.ShipDesignIntels = []*ShipDesign{known}
+	e := &Fleet{MapObject: MapObject{PlayerNum: 2}, Tokens: []ShipToken{{DesignNum: 90, Quantity: 8}}}
+	require.Equal(t, 8, patrolReportedPower(p, e))
+	known.Spec.HasWeapons = true
+	known.Spec.PowerRating = 110
+	known.Spec.Bombs = []Bomb{{Quantity: 1, KillRate: 5}}
+	require.Equal(t, 80, patrolReportedPower(p, e), "ten anti-ship rating per ship, excluding one hundred bombing rating")
+}

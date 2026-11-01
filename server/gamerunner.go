@@ -980,6 +980,11 @@ func (gr *gameRunner) processAITurns(fullGame *cs.FullGame) {
 
 // generate a turn for a game
 func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGame) error {
+	phaseStarted := time.Now()
+	phase := func(name string) {
+		slog.Info("Turn phase", slog.Int64("game", fullGame.ID), slog.Int("year", fullGame.Year), slog.String("phase", name), slog.Duration("elapsed", time.Since(phaseStarted)))
+		phaseStarted = time.Now()
+	}
 
 	defer func() {
 		// if we panic, update the game state to fail
@@ -1010,8 +1015,10 @@ func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGa
 		return fmt.Errorf("generate turn ->: %w", err)
 	}
 
+	phase("simulation")
 	// ai processing
 	gr.processAITurns(fullGame)
+	phase("AI orders")
 
 	// save the game and update the game state
 	if err := gr.dbConn.WrapInTransaction(func(c db.Client) error {
@@ -1048,6 +1055,7 @@ func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGa
 		return err
 	}
 
+	phase("database commit")
 	if err := gr.archiveTurn(fullGame, "result"); err != nil {
 		slog.Error("Turn saved but result archive failed", slog.Any("error", err), slog.Int64("GameID", fullGame.ID))
 	}

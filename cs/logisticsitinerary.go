@@ -19,7 +19,7 @@ func (t *turnGenerator) appendLogisticsReturn(p *Player, group []*Fleet, job *lo
 	virtual := make([]*Fleet, len(group))
 	dest := p.GetPlanetIntel(job.TargetNum)
 	for i, f := range group {
-		copy := *f
+		copy := *deliveryReturnBudget(p, f, job.Position)
 		copy.Tags = maps.Clone(f.Tags)
 		copy.Position = job.Position
 		copy.Fuel = route.ArrivalFuel[i]
@@ -66,17 +66,19 @@ func fundedLogisticsWaypoints(rules *Rules, p *Player, f *Fleet) bool {
 	if dock == nil || !dock.OwnedBy(p.Num) || !dock.Spec.HasStarbase || dock.Spec.DockCapacity == 0 {
 		return false
 	}
+	budget := *f
 	fuel, from := f.Fuel, f.Position
 	for _, wp := range f.Waypoints[1:] {
 		years := max(1, int(math.Ceil(from.DistanceTo(wp.Position)/max(1, f.StrategicSpeed(wp.WarpSpeed)))))
 		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || years > 20 || wp.WarpSpeed < 4 && years > 2 || !automaticLegSafe(rules, p, from, wp.Position, wp.WarpSpeed, false, f.StrategicSpeed(wp.WarpSpeed)) {
 			return false
 		}
-		_, left, _, ok := automaticLegFuel(p, f, wp.WarpSpeed, from.DistanceTo(wp.Position), fuel, 0)
+		_, left, _, ok := automaticLegFuel(p, &budget, wp.WarpSpeed, from.DistanceTo(wp.Position), fuel, 0)
 		if !ok {
 			return false
 		}
 		fuel = left
+		budget = *deliveryReturnBudget(p, &budget, wp.Position)
 		from = wp.Position
 		planet := p.GetPlanetIntel(wp.TargetNum)
 		if planet != nil && planet.OwnedBy(p.Num) && planet.Spec.HasStarbase && planet.Spec.DockCapacity != 0 {

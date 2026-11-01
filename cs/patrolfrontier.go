@@ -82,6 +82,11 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 }
 func (t *turnGenerator) declinePatrolTarget(p *Player, f *Fleet) {
 	job := readPatrolJob(f)
+	for _, member := range t.game.getFleets(p.Num) {
+		if !member.Delete && readPatrolJob(member).Leader == f.Num {
+			member.SetTag(declinedPatrolTag, fmt.Sprintf("%d:%d:%d", job.Enemy, job.Target, t.game.Year+2))
+		}
+	}
 	f.SetTag(declinedPatrolTag, fmt.Sprintf("%d:%d:%d", job.Enemy, job.Target, t.game.Year+2))
 	t.releasePatrol(p, f)
 }

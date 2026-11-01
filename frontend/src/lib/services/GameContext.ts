@@ -1656,6 +1656,9 @@ export async function createGameContext(
 			fleetNums
 		});
 
+        const current=get(player);
+        for(const num of fleetNums){if(current.playerOrders.automation){delete current.playerOrders.automation.fleetRoles[num];delete current.playerOrders.automation.rebuildFleets[num];}}
+        player.set(current);
 		get(universe).removeFleets(fleetNums);
 		updateFleet(fleet, updatedFleet);
 		await updateCargoTransfers(cargoTransfers);

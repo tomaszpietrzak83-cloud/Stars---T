@@ -197,6 +197,27 @@ func (s *playerService) UpdatePlayerOrders(ctx context.Context, req *connect.Req
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("load composition fleets"))
 	}
+	owned := map[int]bool{}
+	for _, f := range fleets {
+		owned[f.Num] = true
+	}
+	for _, f := range fleets {
+		if player.Automation.FleetRoles[f.Num] != "" && orders.Automation.FleetRoles[f.Num] == "" {
+			delete(orders.Automation.RebuildFleets, f.Num)
+		}
+	}
+	for num := range orders.Automation.RebuildFleets {
+		if !owned[num] && player.Automation.RebuildFleets[num] {
+			delete(orders.Automation.RebuildFleets, num)
+		}
+	}
+	// A merge can remove members while the browser still holds their old roles.
+	for num := range orders.Automation.FleetRoles {
+		if !owned[num] && player.Automation.FleetRoles[num] != "" {
+			delete(orders.Automation.FleetRoles, num)
+			delete(orders.Automation.RebuildFleets, num)
+		}
+	}
 	validationPlayer := *player
 	validationPlayer.DesignMaintenance = orders.DesignMaintenance
 	if err := validationPlayer.ValidateFleetAssemblies(orders.Automation.FleetAssemblies, fleets, planets); err != nil {
@@ -227,11 +248,23 @@ func (s *playerService) UpdatePlayerOrders(ctx context.Context, req *connect.Req
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 	}
+	var manualFleets []*cs.Fleet
+	for _, f := range fleets {
+		if player.Automation.FleetRoles[f.Num] != "" && orders.Automation.FleetRoles[f.Num] == "" {
+			player.TakeManualControl(f)
+			manualFleets = append(manualFleets, f)
+		}
+	}
 	orders.CargoTransfers = player.CargoTransfers // don't let the player update cargoTransfers outside of a fleet transfer function
 	orderer.UpdatePlayerOrders(player, planets, orders, &game.Rules)
 
 	// save the updated fleets back to the database
 	if err := s.db.WrapInTransaction(func(c db.Client) error {
+		for _, f := range manualFleets {
+			if err := c.SaveFleet(ctx, f); err != nil {
+				return err
+			}
+		}
 		// save the player to the database
 		if err := c.UpdatePlayerOrders(ctx, player); err != nil {
 			slog.Error("update player", slog.Any("error", err), slog.Int64("GameID", player.GameID), slog.Int("PlayerNum", player.Num))

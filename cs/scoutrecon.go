@@ -24,7 +24,7 @@ func readScoutRecon(f *Fleet) *scoutReconJob {
 // Sacrificial contact reconnaissance belongs to actual scout hulls, never
 // cargo ships which may carry a stale role from an older saved game.
 func scoutReconEligible(p *Player, f *Fleet) bool {
-	if f == nil || len(f.Tokens) == 0 || f.Cargo.Colonists > 0 {
+	if f == nil || len(f.Tokens) == 0 || f.Spec.TotalShips != 1 || f.Cargo.Colonists > 0 {
 		return false
 	}
 	for _, token := range f.Tokens {
@@ -114,6 +114,30 @@ func unknownFleetEquipment(p *Player, enemy *Fleet) bool {
 	return false
 }
 func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
+	if !t.ordersOnly && f.Spec.TotalShips > 1 && f.Cargo.Colonists == 0 {
+		genuine := true
+		for _, token := range f.Tokens {
+			d := p.GetDesign(token.DesignNum)
+			if d == nil {
+				genuine = false
+				break
+			}
+			h := StaticTechStore.GetHull(d.Hull)
+			if h == nil || h.Type != TechHullTypeScout {
+				genuine = false
+				break
+			}
+		}
+		if genuine {
+			if children, err := NewOrderer().SplitAll(&t.game.Rules, p, t.game.getFleets(p.Num), f); err == nil {
+				for _, child := range children {
+					t.game.Fleets = append(t.game.Fleets, child)
+					_ = t.game.Universe.addFleet(child)
+					p.Automation.FleetRoles[child.Num] = "scout"
+				}
+			}
+		}
+	}
 	if !scoutReconEligible(p, f) {
 		if readScoutRecon(f) != nil {
 			holdAutomaticFleet(p, f, "Cargo ships cannot perform combat reconnaissance")

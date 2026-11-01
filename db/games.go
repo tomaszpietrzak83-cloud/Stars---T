@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"log/slog"
 
@@ -306,10 +307,18 @@ func (c *client) UpdateFullGame(ctx context.Context, fullGame *cs.FullGame) erro
 		return fmt.Errorf("update game: %w", err)
 	}
 
-	for _, player := range fullGame.Players {
+	var reports []driver.Value
+	for index, player := range fullGame.Players {
+		if index%8 == 0 {
+			var err error
+			reports, err = encodePlayerReports(fullGame.Players[index:min(index+8, len(fullGame.Players))])
+			if err != nil {
+				return err
+			}
+		}
 		// in case this player is new, set the gameId
 		player.GameID = fullGame.ID
-		if err := c.SavePlayer(ctx, player); err != nil {
+		if err := c.saveEncodedPlayer(ctx, player, reports[index%8]); err != nil {
 			return fmt.Errorf("update player: %w", err)
 		}
 

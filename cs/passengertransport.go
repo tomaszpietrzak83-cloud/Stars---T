@@ -147,6 +147,10 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 		if a.quality != b.quality {
 			return a.quality > b.quality
 		}
+		af, bf := a.job.Passengers >= fleet.availableColonistSpace(), b.job.Passengers >= fleet.availableColonistSpace()
+		if af != bf {
+			return af
+		}
 		if a.score != b.score {
 			return a.score < b.score
 		}
@@ -160,7 +164,20 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 	best := 0.0
 	alternatives := []*logisticsJob{}
 	seen := map[int]bool{}
-	for _, candidate := range candidates[:min(256, len(candidates))] {
+	attempts := map[int]int{}
+	destinations := 0
+	for _, candidate := range candidates {
+		num := candidate.job.DeliveryNum
+		if attempts[num] >= 4 {
+			continue
+		}
+		if attempts[num] == 0 {
+			if destinations >= 64 {
+				continue
+			}
+			destinations++
+		}
+		attempts[num]++
 		if seen[candidate.job.DeliveryNum] || !t.passengerTripSafe(player, fleet, candidate.job) {
 			continue
 		}
@@ -206,11 +223,14 @@ func (t *turnGenerator) loadAutomaticPassengers(player *Player, fleet *Fleet, jo
 	origin.Cargo.Colonists -= load
 	probe.Cargo.Colonists += load
 	t.topUpLogisticsCargo(player, &probe, &origin, dest)
-	loadedRoute := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet)})
-	safe := load > 0 && load >= minimumPassengers && loadedRoute != nil && !loadedRoute.WaitForFuel
+	loadedRoute := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{AllowThreat: true, MinWarp: automaticCruiseWarp(player, fleet)})
+	safe := t.deliveryEscortReady(player, fleet, dest.Position) && load > 0 && load >= minimumPassengers && loadedRoute != nil && !loadedRoute.WaitForFuel
 	if probe.CargoMass() != fleet.Spec.CargoCapacity || !safe {
 		job.Passengers = initialLoad
 		job.Status = fmt.Sprintf("Waiting empty at source for a full safe load (%d/%d kT available)", probe.CargoMass(), fleet.Spec.CargoCapacity)
+		if probe.CargoMass() == fleet.Spec.CargoCapacity && loadedRoute != nil && !loadedRoute.WaitForFuel && !t.deliveryEscortReady(player, fleet, dest.Position) {
+			job.Status = "Waiting empty for escort before loading: armed enemy on the delivery route"
+		}
 		holdAutomaticFleet(player, fleet, job.Status)
 		saveLogisticsWork(fleet, job)
 		return

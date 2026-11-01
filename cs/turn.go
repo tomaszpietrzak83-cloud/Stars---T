@@ -71,6 +71,7 @@ func (t *turnGenerator) generateTurn() error {
 
 	// wp0 tasks
 	t.fleetInit()
+	t.restoreBorrowedManualFleets()
 	t.repairStaleScoutRoles()
 	t.unloadArrivedColonizers()
 	t.refreshAutomaticFuelIntel()

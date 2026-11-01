@@ -3,6 +3,7 @@
 package cs
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -137,4 +138,32 @@ func TestLogisticsCollectsAfterRealBattle(t *testing.T) {
 	require.NotEmpty(t, u.Player(1).BattleRecords)
 	u.Run((*turnGenerator).collectBattleSalvage)
 	require.Positive(t, u.Fleet("Winner").Cargo.ToMineral().Total())
+}
+
+func TestMineralPickupRequestsDeliveryEscortBeforeLoading(t *testing.T) {
+	for _, auto := range []bool{false, true} {
+		t.Run(fmt.Sprint(auto), func(t *testing.T) {
+			u := passengerUniverse(t)
+			p, f, e := u.Player(1), u.Fleet("Transport"), u.Fleet("Escort")
+			source, dest := u.Planet("Home"), u.Planet("Young colony")
+			p.Automation.DisablePassengerTransport = true
+			source.Cargo.Ironium = 10000
+			p.PlanetIntels = []*Planet{source, dest}
+			p.FleetIntels = []*Fleet{{MapObject: MapObject{PlayerNum: 2, Num: 91, Position: dest.Position}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true, PowerRating: 1}}}}
+			if auto {
+				p.Automation.FleetRoles[e.Num] = "patrol"
+			}
+			saveLogisticsWork(f, &logisticsJob{Kind: "planet", TargetNum: source.Num, Position: source.Position, DeliveryNum: dest.Num, Load: Mineral{Ironium: f.Spec.CargoCapacity}})
+			u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).resolveLogisticsAutomation, (*turnGenerator).dispatchReadyLogistics)
+			if auto {
+				require.Positive(t, f.Cargo.Ironium)
+				require.Greater(t, len(f.Waypoints), 1)
+				require.Equal(t, "escort", p.Automation.FleetRoles[e.Num])
+			} else {
+				require.Zero(t, f.CargoMass())
+				require.Contains(t, logisticsWork(f).Status, "escort")
+				require.Empty(t, p.Automation.FleetRoles[e.Num])
+			}
+		})
+	}
 }

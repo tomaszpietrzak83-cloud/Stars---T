@@ -117,6 +117,7 @@ func (u *Universe) buildMaps(players []*Player) error {
 	u.battlePlansByNum = make(map[playerBattlePlanNum]*BattlePlan, numBattlePlans)
 
 	for _, p := range players {
+		p.buildShipIntelIndex()
 		for _, design := range p.Designs {
 			u.addDesign(design)
 		}

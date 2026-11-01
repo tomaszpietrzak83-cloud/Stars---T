@@ -90,7 +90,12 @@ func (t *turnGenerator) planScoutAutomation() {
 			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "scout" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
+
 			if !scoutHasRetirement(player, fleet) && t.planScoutRecon(player, fleet) {
+				continue
+			}
+			if unknown == 0 && !scoutHasRetirement(player, fleet) && !fleet.InAutomaticSafety() && !scoutReconActive(player, fleet) && t.patrolFrontier(player, fleet) {
+				fleet.SetTag(scoutTag, "Frontier reconnaissance: scanning for enemy traffic")
 				continue
 			}
 			mission := readScoutMission(fleet)

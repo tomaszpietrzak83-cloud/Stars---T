@@ -137,7 +137,7 @@ func automaticLegFuel(player *Player, fleet *Fleet, warp int, distance float64, 
 // is a reachable dock, not a guessed percentage of the fuel tank.
 func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Vector, stations []*Planet, allowThreat bool, returnTurns ...int) int {
 	best := int(^uint(0) >> 2)
-	loaded := fullCargoBudget(fleet)
+	loaded := deliveryReturnBudget(player, fleet, position)
 	limit := 0
 	if len(returnTurns) > 0 {
 		limit = returnTurns[0]
@@ -449,4 +449,33 @@ func automaticCruiseWarp(player *Player, fleet *Fleet) int {
 		return min(automaticMaxWarp(player, fleet), 4)
 	}
 	return min(automaticMaxWarp(player, fleet), 5)
+}
+
+// Reserve an empty return only when a known own colony can accept the entire
+// committed load. Lost/full destinations continue to require a loaded return.
+func deliveryReturnBudget(p *Player, f *Fleet, position Vector) *Fleet {
+	job := logisticsWork(f)
+	if job == nil {
+		return fullCargoBudget(f)
+	}
+	num := job.DeliveryNum
+	if num == 0 {
+		num = job.TargetNum
+	}
+	dest := p.GetPlanetIntel(num)
+	if dest == nil || !dest.OwnedBy(p.Num) || dest.Position != position {
+		return fullCargoBudget(f)
+	}
+	if f.Cargo.Colonists > 0 && populationTarget(dest, max(35, p.Automation.destinationPopulationPercent()))-dest.Cargo.Colonists < f.Cargo.Colonists {
+		return fullCargoBudget(f)
+	}
+	copy := *f
+	copy.Cargo = Cargo{}
+	copy.Spec.CargoCapacity = 0
+	copy.Tags = make(Tags, len(f.Tags))
+	for k, v := range f.Tags {
+		copy.Tags[k] = v
+	}
+	delete(copy.Tags, infrastructureCargoTag)
+	return &copy
 }

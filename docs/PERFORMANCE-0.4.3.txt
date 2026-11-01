@@ -1,0 +1,33 @@
+Turn performance investigation, 2026-11-01 (Europe/Warsaw)
+
+Copied input: 144 players, 12,600 planets, 30,858 fleet/base database rows.
+The private save and CPU profiles are excluded from the repository.
+No personal turn was generated and no simulated result was restored to a player save.
+
+Paired native GenerateTurn measurements on the same input/machine:
+0.4.2: 127.224 seconds; complete copied-save test 146.96 seconds.
+0.4.3 optimization build: 76.169 seconds; complete test 91.22 seconds.
+Approximately 40% less generation wall time for this case. Single paired runs,
+not a universal guarantee; background load, combat and empire growth matter.
+
+CPU evidence: C/SQLite calls 39.45 -> 20.99 sampled CPU seconds; repeated linear
+reported-design lookup previously consumed 15.31 sampled CPU seconds and dropped
+out of the leading costs after indexing. JSON, GC, scan coverage and AI remain
+important costs. Parallel report encoding uses bounded eight-player batches;
+SQLite writes and gameplay/RNG ordering remain sequential. Existing parallel
+report readers and planet-spec calculation are retained.
+
+Physical mobile-fleet counts in archived samples:
+2455: 14,420; 2460: 18,196; 2465: 23,026; 2470: 29,422.
+A linear continuation is roughly 160,000 fleets by 2600. A conditional planning
+range is about 5-15 minutes per turn at that scale, without further optimization.
+This is a scenario, not a prediction: attrition, empire elimination, technology,
+production and the superlinear scanner workload can change the result greatly.
+Do not extrapolate calendar years alone or assume today's speed remains constant.
+
+Storage change: lossless gzip-compressed planet-report SQL blobs with a version
+prefix, plain-JSON backward reading, corruption checks and a 256 MiB decoded-cell
+limit. API responses and per-turn analysis archives remain normal JSON. Strict
+round-trip checks cover all 144 players in the copied database; serial and parallel
+reader results must match. No VACUUM, data deletion or gameplay shortcuts are used.
+Newly saved report blobs require this release's reader (0.4.3 or later).

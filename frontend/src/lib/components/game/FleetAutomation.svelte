@@ -9,6 +9,7 @@
 	let busy = $state(false);
 	let error = $state('');
 	let selected = $state<Record<number, boolean>>({});
+ let sortKey=$state<'role'|'rebuilding'>('role');
  let roleSort = $state<'none'|'ascending'|'descending'>('none');
  function roleLabel(fleet: Fleet) { const role=automation.fleetRoles[fleet.mapObject!.num]??''; return automationRoles(fleet,$universe.getMyDesigns?.()??[],role).find(option=>option.value===role)?.label??role; }
 	let automation = $derived($player.playerOrders.automation ?? create(LogisticsAutomationSchema));
@@ -23,7 +24,7 @@
 		escortStrength=automation.escortStrengthPercent || 100;
 	});
 	let fleets = $derived($universe.fleets.filter((fleet) => fleet.mapObject?.playerNum === $player.num && !fleet.starbase));
- let sortedFleets = $derived(roleSort==='none'?fleets:[...fleets].sort((a,b)=>{const order=roleLabel(a).localeCompare(roleLabel(b),'en')*(roleSort==='ascending'?1:-1); return order || (a.mapObject?.name??'').localeCompare(b.mapObject?.name??'','en',{numeric:true}) || a.mapObject!.num-b.mapObject!.num;}));
+ let sortedFleets = $derived(roleSort==='none'?fleets:[...fleets].sort((a,b)=>{const order=(sortKey==='rebuilding'?Number(!!a.mapObject?.tags['design-maintenance'] || !!automation.rebuildFleets[a.mapObject!.num])-Number(!!b.mapObject?.tags['design-maintenance'] || !!automation.rebuildFleets[b.mapObject!.num]):roleLabel(a).localeCompare(roleLabel(b),'en'))*(roleSort==='ascending'?1:-1); return order || (a.mapObject?.name??'').localeCompare(b.mapObject?.name??'','en',{numeric:true}) || a.mapObject!.num-b.mapObject!.num;}));
 	let fuelBases = $derived(($universe.planets ?? []).filter(p => p.mapObject?.playerNum === $player.num && (p.spec?.planetStarbaseSpec?.dockCapacity ?? 0) !== 0));
 	let fuelTankers = $derived(fleets.filter(f => automation.fleetRoles[f.mapObject!.num] === 'tanker'));
 	async function save(change: (value: LogisticsAutomation) => void) {
@@ -105,7 +106,7 @@
 	<div class="overflow-x-auto">
 		<div class="flex flex-wrap gap-2 my-3"><button class="btn btn-sm" disabled={busy} onclick={() => { selected = Object.fromEntries(fleets.map(f => [f.mapObject!.num, true])); }}>Select all fleets</button><button class="btn btn-sm" disabled={busy} onclick={() => { selected=Object.fromEntries(fleets.filter(f=>canRebuild(f) && !f.mapObject?.tags['design-maintenance'] && !reserved(f)).map(f=>[f.mapObject!.num,true])); }}>Check all for scrap and rebuild</button><button class="btn btn-sm" onclick={() => { selected = {}; }}>Clear selection</button><button class="btn btn-primary btn-sm" disabled={busy || !selectedRebuilds.length} onclick={() => save(value => { for (const fleet of selectedRebuilds) value.rebuildFleets[fleet.mapObject!.num] = true; })}>Rebuild selected ({selectedRebuilds.length})</button></div>
 		<table class="table table-sm">
-			<thead><tr><th>Select</th><th>Fleet</th><th aria-sort={roleSort}><button class="btn btn-ghost btn-xs" onclick={()=>{roleSort=roleSort==='ascending'?'descending':'ascending';}}>Automatic role {roleSort==='ascending'?'↑':roleSort==='descending'?'↓':'↕'}</button></th><th>Rebuilding</th><th>Status</th></tr></thead>
+			<thead><tr><th>Select</th><th>Fleet</th><th aria-sort={sortKey==='role'?roleSort:'none'}><button class="btn btn-ghost btn-xs" onclick={()=>{sortKey='role';roleSort=roleSort==='ascending'?'descending':'ascending';}}>Automatic role {roleSort==='ascending'?'↑':roleSort==='descending'?'↓':'↕'}</button></th><th aria-sort={sortKey==='rebuilding'?roleSort:'none'}><button class="btn btn-ghost btn-xs" onclick={()=>{roleSort=sortKey==='rebuilding' && roleSort==='descending'?'ascending':'descending';sortKey='rebuilding';}}>Rebuilding {sortKey==='rebuilding'?(roleSort==='descending'?'↓':'↑'):'↕'}</button></th><th>Status</th></tr></thead>
 			<tbody>{#each sortedFleets as fleet (fleet.mapObject?.num)}
 				{@const num = fleet.mapObject!.num}
 				{@const maintenance = !!fleet.mapObject?.tags['design-maintenance']}

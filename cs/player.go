@@ -12,6 +12,8 @@ import (
 // A Player contains all intel, messages, tech levels, and research orders for a single empire in the game.
 // It is tied to a single User (or no user, for AI)
 type Player struct {
+	shipIntelIndex map[playerObject]*ShipDesign
+	shipIntelCount int
 	GameDBObject
 	PlayerOrders
 	Intels
@@ -564,7 +566,24 @@ func (p *Player) getWaypointPlanetIntel(wp Waypoint) *Planet {
 	return p.getPlanetIntelAt(wp.Position)
 }
 
+func (p *Player) buildShipIntelIndex() {
+	p.shipIntelIndex = make(map[playerObject]*ShipDesign, len(p.ShipDesignIntels))
+	p.shipIntelCount = len(p.ShipDesignIntels)
+	for _, d := range p.ShipDesignIntels {
+		key := playerObjectKey(d.PlayerNum, d.Num)
+		if p.shipIntelIndex[key] == nil {
+			p.shipIntelIndex[key] = d
+		}
+	}
+}
 func (p *Player) GetShipDesignIntel(playerNum, num int) *ShipDesign {
+	if p.shipIntelIndex != nil {
+		if p.shipIntelCount != len(p.ShipDesignIntels) {
+			p.buildShipIntelIndex()
+		}
+		return p.shipIntelIndex[playerObjectKey(playerNum, num)]
+	}
+
 	for _, intel := range p.ShipDesignIntels {
 		if intel.PlayerNum == playerNum && intel.Num == num {
 			return intel

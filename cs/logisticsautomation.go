@@ -207,14 +207,15 @@ func takeMinerals(fleet *Fleet, cargo *Cargo) int {
 }
 
 // All long-range threat information comes from the player's own intel.
-// A corridor uses a 100 ly margin around the planned straight-line route.
+// The configured corridor is capped by a reported enemy's one-turn reach;
+// distant ships must not freeze otherwise useful civilian routes.
 func knownRouteThreat(player *Player, from, to Vector) int {
 	threat := 0
 	for _, intel := range player.FleetIntels {
 		if intel == nil || intel.Delete || intel.ReportAge != 0 || intel.PlayerNum == player.Num || player.IsFriend(intel.PlayerNum) || !patrolReportedCombatant(player, intel) {
 			continue
 		}
-		if segmentDistance(intel.Position, from, to) <= float64(player.Automation.escortMargin()) {
+		if segmentDistance(intel.Position, from, to) <= math.Min(float64(player.Automation.escortMargin()), max(20, intel.observedStrategicSpeed()+5)) {
 			threat = min(1_000_000_000, threat+patrolReportedPower(player, intel))
 		}
 	}
@@ -265,6 +266,14 @@ func (t *turnGenerator) prepareConvoy(player *Player, fleet *Fleet, job *logisti
 func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, job *logisticsJob, target MapObjectTarget, minimum int) {
 
 	threat := int(math.Ceil(float64(knownRouteThreat(player, fleet.Position, job.Position)) * float64(player.Automation.escortStrength()) / 100))
+	if knownWithdrawalRoute(player, fleet.Position, job.Position) {
+		threat = 0
+	}
+	if (job.Kind == "planet" || job.Kind == "passengers" || job.Kind == "invade-load") && fleet.Position == job.Position && job.DeliveryNum != 0 {
+		if dest := t.game.getPlanet(job.DeliveryNum); dest != nil {
+			threat = max(threat, int(math.Ceil(float64(knownRouteThreat(player, fleet.Position, dest.Position))*float64(player.Automation.escortStrength())/100)))
+		}
+	}
 	threat = max(threat, minimum)
 	var escorts []*Fleet
 	power := 0
@@ -276,6 +285,9 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		return cmp.Compare(a.Position.DistanceTo(fleet.Position), b.Position.DistanceTo(fleet.Position))
 	})
 	for _, escort := range escortCandidates {
+		if threat > power && player.Automation.FleetRoles[escort.Num] == "patrol" && readPatrolJob(escort).Leader == 0 && escort.Position.DistanceTo(fleet.Position) <= 100 && escort.Spec.HasWeapons && !escort.Delete && !escort.InDesignMaintenance() && !escort.InAutomaticSafety() && !player.FleetInActiveAssembly(escort) && !fuelNetworkReserved(escort) && readTankerJob(escort) == nil && escort.GetTag("maintenance-pending") == "" {
+			borrowBomberProtection(player, escort, fleet)
+		}
 		if readTankerJob(escort) != nil || fuelNetworkManaged(escort) || escort.InAutomaticSafety() || escort.Delete || escort.InDesignMaintenance() || player.Automation.FleetRoles[escort.Num] != "escort" || !escort.Spec.HasWeapons {
 			continue
 		}
@@ -289,7 +301,7 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 			delete(escort.Tags, frontierPatrolTag)
 			escort.SetTag(escortTag, strconv.Itoa(fleet.Num))
 			escorts = append(escorts, escort)
-			power += max(1, escort.Spec.PowerRating)
+			power += patrolPower(escort)
 		}
 	}
 	if threat > power {
@@ -446,6 +458,13 @@ func (t *turnGenerator) planLogisticsAutomation() {
 					job = t.findAutomaticInvasion(player, fleet)
 					if job != nil {
 						target = t.game.getPlanet(job.TargetNum).MapObject.ToTarget()
+					}
+				}
+				if job == nil && !player.Automation.DisableMineralSupply {
+					job = t.findShipyardSupply(player, fleet, claimed)
+					if job != nil {
+						target = t.game.getPlanet(job.TargetNum).ToTarget()
+						claimed[fmt.Sprintf("yard:%d", job.DeliveryNum)] = true
 					}
 				}
 				if job == nil && !player.Automation.DisablePassengerTransport {
@@ -636,9 +655,12 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 					origin.Cargo.Colonists -= passengers
 					probe.Cargo.Colonists += passengers
 				}
-				route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet)})
-				if probe.CargoMass() != fleet.Spec.CargoCapacity || route == nil || route.WaitForFuel {
+				route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{AllowThreat: true, MinWarp: automaticCruiseWarp(player, fleet)})
+				if probe.CargoMass() != fleet.Spec.CargoCapacity || route == nil || route.WaitForFuel || !t.deliveryEscortReady(player, fleet, dest.Position) {
 					job.Status = fmt.Sprintf("Waiting empty at source for a full safe load (%d/%d kT available)", probe.CargoMass(), fleet.Spec.CargoCapacity)
+					if probe.CargoMass() == fleet.Spec.CargoCapacity && route != nil && !route.WaitForFuel && !t.deliveryEscortReady(player, fleet, dest.Position) {
+						job.Status = "Waiting empty for escort before loading: armed enemy on the delivery route"
+					}
 					holdAutomaticFleet(player, fleet, job.Status)
 					saveLogisticsWork(fleet, job)
 					continue
@@ -702,4 +724,23 @@ func (t *turnGenerator) dispatchReadyLogistics() {
 			saveLogisticsWork(f, job)
 		}
 	}
+}
+
+// Pickups may request their delivery escort before loading. Loading and physical
+// departure must agree on the same threat and co-located protection budget.
+func (t *turnGenerator) deliveryEscortReady(p *Player, f *Fleet, to Vector) bool {
+	need := int(math.Ceil(float64(knownRouteThreat(p, f.Position, to)) * float64(p.Automation.escortStrength()) / 100))
+	if knownWithdrawalRoute(p, f.Position, to) {
+		need = 0
+	}
+	power := 0
+	if f.Spec.HasWeapons {
+		power = patrolPower(f)
+	}
+	for _, e := range t.game.getFleets(p.Num) {
+		if !e.Delete && e.Position == f.Position && e.Spec.HasWeapons && p.Automation.FleetRoles[e.Num] == "escort" && e.GetTag(escortTag) == strconv.Itoa(f.Num) {
+			power += patrolPower(e)
+		}
+	}
+	return power >= need
 }

@@ -109,3 +109,12 @@ it('checks all eligible rebuilds without issuing the order until requested', asy
  await page.getByRole('button',{name:'Rebuild selected (1)',exact:true}).click();
  expect(get(context.player).playerOrders!.automation!.rebuildFleets).toEqual({1:true});
 });
+
+it('sorts rebuilding fleets before other fleets', async()=>{
+ const first=get(context.universe).fleets[0];
+ const rebuilding=create(FleetSchema,{...first,mapObject:create(MapObjectSchema,{num:2,playerNum:1,name:'Rebuilding fleet',tags:{'design-maintenance':'{}'}})});
+ context.universe.set({fleets:[first,rebuilding]});render(FleetAutomation);
+ await page.getByRole('button',{name:/^Rebuilding/}).click();
+ const rows=Array.from(document.querySelectorAll('section[aria-label="Fleet automation"] tbody tr')).filter(row=>row.querySelector('select[aria-label^="Role for"]'));
+ expect(rows[0]?.textContent).toContain('Rebuilding fleet');
+});

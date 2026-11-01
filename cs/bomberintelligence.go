@@ -155,7 +155,7 @@ func (t *turnGenerator) assignBomberProtection(p *Player, bomber *Fleet, target 
 		if f == bomber || f.Delete || !f.Spec.HasWeapons || f.InDesignMaintenance() || f.InAutomaticSafety() || fuelNetworkManaged(f) || readTankerJob(f) != nil || f.GetTag(tankerAwaitTag) != "" || f.GetTag(escortTag) != "" || f.GetTag("maintenance-pending") != "" || p.FleetInActiveAssembly(f) {
 			continue
 		}
-		if role != "patrol" && role != "combat" && role != "" {
+		if role != "patrol" && role != "combat" {
 			continue
 		}
 		if role == "patrol" && (readPatrolJob(f).Leader != 0 || !emergency) {

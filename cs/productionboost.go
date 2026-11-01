@@ -199,7 +199,7 @@ func PlanProductionBoost(rules *Rules, player *Player, planet *Planet) {
 	}{
 		planet.Cargo, planet.Factories, planet.Mines, planet.Hab, planet.MineralConcentration, planet.MineYears, player.ResearchAmount, planet.ContributesOnlyLeftoverToResearch, player.TechLevels, player.Race, keyItems, planet.Spec.StarbaseDesignNum, planet.Spec.ResourcesPerYearAvailable, planet.Spec.MaxFactories, planet.Spec.MaxMines}
 	encoded, _ := json.Marshal(input)
-	key := fmt.Sprintf("v041-%x", sha256.Sum256(encoded))
+	key := fmt.Sprintf("v043-%x", sha256.Sum256(encoded))
 	var cached productionBoostPlan
 	if json.Unmarshal([]byte(planet.GetTag(productionBoostCacheTag)), &cached) == nil && cached.Key == key {
 		planet.ProductionQueue = productionPlanQueue(queue, cached)
