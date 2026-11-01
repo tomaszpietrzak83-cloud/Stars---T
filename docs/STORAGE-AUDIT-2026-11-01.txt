@@ -1,0 +1,69 @@
+TOMEK-STARS — STORAGE AUDIT AND CLEANUP
+2026-11-01
+
+Measured workspace: 101.494 GB before, approximately 6.356 GB after cleanup
+(94.52 GiB -> 5.92 GiB). Approximately 95.14 GB reclaimed. These are logical
+file lengths; filesystem allocated size and later activity can differ.
+
+Actions completed
+- Created a compact fresh safety backup and a compact copy of the exact
+  year-2477 performance input. All tables/schema/values matched logical SHA-256
+  digests; compact copies passed SQLite quick_check. Only those two audit
+  databases were retained; 37 redundant test/backup database files were removed.
+- Removed the regenerable Go compilation cache, an archived source checkout
+  recoverable from Git, old immutable UI versions and duplicate build binaries.
+  Retained the active UI, one prior UI, compiler/module/browser dependencies,
+  current active executable, Windows distribution and full Git history.
+- Compressed eight large logs/diagnostic outputs with byte-for-byte verification
+  after decompression. Retained their full contents, CPU profiles, important
+  regression inputs, screenshots, turn archives and the private prompt archive.
+- Compacted the active database by making a separately verified VACUUM INTO
+  copy while only this project's server/UI were stopped. Every table matched
+  before installation; the original was retained until live read-only smoke
+  passed. The current compact safety copy remains available privately.
+- No personal turn generated, no queue recalculation, no logical game changes.
+  Personal game remains year 2477 WaitingForPlayers. Original WineDVM untouched.
+
+Why the database had grown
+The previous file was 2,691,682,304 bytes. SQLite reported 572,349 free pages of
+4096 bytes each: 2,344,341,504 bytes were reusable free space, approximately 87%.
+Rewriting/removing large historical JSON reports and compressing stored reports
+had freed pages without shrinking the SQLite file itself. VACUUM INTO rebuilt
+the same contents into 330,797,056 bytes (about 315.5 MiB), with zero free pages.
+
+Before compaction, major allocated objects were players ~265 MB, fleets ~54 MB,
+planets ~15 MB and ship designs ~8.5 MB. The players table contains each player's
+independent reports/messages: fleet intel ~137 MB, planet intel ~40 MB, design
+intel ~35 MB and messages ~24 MB. This actual game contains 144 players, 12,600
+planets and 41,946 stored fleet/base rows. Large maps and separate knowledge per
+player increase real data volume; the former 2.69-GB file was mostly free space.
+
+Why the development checkout is larger than a download
+After cleanup the checkout including personal data is ~2.16 GiB. Its data
+directory is ~0.66 GiB (compact live database plus retained turn archives).
+It also includes development dependencies, Git history, source/build copies and
+an installed runtime UI. The wider workspace includes ~2.25 GiB of development
+tools and ~1.49 GiB of retained private audit/backup material.
+
+Published 0.4.5 tree: 290,923,519 bytes (~277.45 MiB), excluding personal saves,
+test databases and local tools/cache. Large parts include the Windows binary
+(73.46 MiB), source and compiled WASM (13.33 MiB each), and EEE artwork
+(78.45 MiB in source, another 78.45 MiB in compiled output). Several new PNGs
+are 1254x1254; native-size delivery assets could reduce the distributable further
+without discarding artwork masters. That optimization has not been performed
+as part of database/cache cleanup.
+
+GitHub API reported repository size 224,007 KiB (~218.76 MiB / 229.38 MB),
+including history, for the 0.4.5 publication. A local ZIP of that exact Git tree
+was 196,200,312 bytes (~187.11 MiB); GitHub's generated ZIP can differ slightly.
+Source: https://api.github.com/repos/tomaszpietrzak83-cloud/Stars---T
+
+Private verification/manifests are in ../audit-results/: storage-cleanup-report.json,
+database-compaction-verification.json, active-database-compaction.json,
+database-size-audit.json, database-size-after.json, compressed-audit-files.json,
+disk-usage-audit.json, disk-usage-after.json and github-download-size.json.
+No private databases, profiles or transcripts are included in the public repo.
+
+Astra handoff: docs/ASTRA-PERFORMANCE-AUDIT.txt contains the requested prompt
+and mandatory report/return instructions. Its retained compact benchmark input
+is identified by ../audit-results/astra-input-path.txt.

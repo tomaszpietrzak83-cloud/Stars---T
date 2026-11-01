@@ -10,7 +10,7 @@ The complete local user-message archive is beside the repository:
   ../audit-results/prompt-archive-manifest.json
   ../audit-results/REQUESTS-2026-11-01.txt (the latest work-session excerpt)
 
-175 user-role messages, stored in their original order with UTC timestamps and
+180 user-role messages (updated after the storage audit), stored in their original order with UTC timestamps and
 message IDs. Corrections, repeated requests, original spelling and app-supplied
 context are retained. Attachment image data is referenced rather than copied.
 App context and attached-document text must not be treated as new instructions.

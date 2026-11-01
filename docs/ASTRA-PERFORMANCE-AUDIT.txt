@@ -1,0 +1,86 @@
+ZADANIE DLA ASTRY — AUDYT WYDAJNOSCI TOMEK-STARS I RAPORT DLA GLOWNEGO AGENTA
+
+Cel
+Przeanalizuj i zmniejsz czas generowania tury bez zmiany zasad gry, decyzji AI,
+widocznosci, wynikow losowan ani poprawnego zachowania automatyzacji. Punktem
+odniesienia jest tomek-stars 0.4.5, commit 2f9c1977. Aktualny checkout ma jeszcze
+historyczna nazwe katalogu craig-stars; nazwa naszego programu to tomek-stars.
+Nie przyjmuj 71 sekund jako gwarantowanego wyniku na dowolnym komputerze.
+
+Najpierw przeczytaj
+- AGENTS.md oraz SUGGESTIONS-CHECKLIST.txt.
+- docs/AUDIT-0.4.5.txt i docs/PERFORMANCE-0.4.4.txt.
+- docs/AUDIT-REQUESTS.txt; wszystkie oryginalne wiadomosci uzytkownika sa lokalnie
+  w ../USER-PROMPTS.txt i ../USER-PROMPTS.jsonl. Zachowaj kolejnosc korekt wymagan.
+- ../audit-results/storage-cleanup-report.json opisuje pozostawione dane i cache.
+
+Dane i pomiary
+- Powtarzalny input: ../audit-results/v045-input-20261101-210407.db albo jego
+  skompaktowany odpowiednik wskazany w ../audit-results/astra-input-path.txt.
+- Profil: ../audit-results/v045-optimized-turn.cpu; poprzedni profil porownawczy:
+  ../audit-results/v045-turn.cpu. Nie usuwaj tych plikow.
+- Zapisane podsumowania: tmp/v045-optimized-profile.txt i tmp/v045-profile.txt.
+- Obecny test: server/localautomationrepro_test.go,
+  TestLocalAutomationOnCopiedSave. STARS_COPY_REPRO_DB musi wskazywac plik
+  w audit-results; test kopiuje go ponownie do wlasnego katalogu tymczasowego.
+  STARS_COPY_REPRO_GAME=10. Nie wlaczaj eksportu calego FullGame JSON, chyba ze
+  potrzebujesz tego do konkretnej diagnozy; pojedynczy eksport mial ok. 874 MB.
+- Uzyta gra: rok 2477, 144 graczy i 12600 planet. Zmierz aktualne liczby flot.
+- Ostatni native GenerateTurn: 71.074 s; caly test 94.95 s. Poprzedni kandydat
+  tej samej rewizji/inputu: 187.681 s. Profile CPU obejmuja caly test, a czasy CPU
+  wielu watkow nie sa rozlacznymi skladnikami tych 71 sekund czasu sciennego.
+
+Kierunki do sprawdzenia, nie zalozone z gory rozwiazania
+1. Powtarzane liniowe przegladanie raportow planet/flot, m.in. OwnedBy i getFleets.
+2. JSON i kopiowanie duzych raportow wywiadowczych; serializacja tylko zmian,
+   normalizacja/wspoldzielenie danych przy zachowaniu roznych raportow graczy.
+3. Alokacje i GC, niepotrzebne kopie duzych struktur.
+4. Osobno czas zapytan SQLite, przygotowania danych, kodowania i transakcji.
+   cgocall nie jest automatycznie dowodem, ze caly ten czas to SQLite.
+5. Rownolegle skanowanie i AI juz istnieja. Sprawdz skalowanie, narzut, ownership
+   i deterministycznosc przed dodaniem kolejnych goroutines. Nie rownoleglij
+   zaleznosci produkcji, walki i zapisow bez dowodu poprawnosci.
+6. Wzrost rozmiaru bazy i duze/intensywnie przepisywane raporty. Oddziel faktyczne
+   dane od freelist SQLite. VACUUM nie naprawia samego modelu danych.
+
+Zasady pracy
+- Oryginal D:/gry/Stars! WineDVM jest nietykalny.
+- Nigdy nie generuj tury, nie migruj i nie optymalizuj osobistego data/data.db.
+  Testuj wylacznie na kolejnych izolowanych kopiach zachowanego inputu.
+- Nie zmieniaj ekonomii, podatkow, kolejek, paliwa, poziomow trudnosci ani
+  zachowania automatow jako sposobu na lepszy benchmark.
+- Przed zmianami zmierz baze na tej maszynie. Dla baseline i kandydata wykonaj
+  po 3 pomiary z identycznym inputem, seedem i konfiguracja. Nie uruchamiaj
+  duzych buildow ani innych benchmarkow podczas pomiaru. Podaj mediany i rozrzut.
+- Weryfikuj zgodnosc serial/parallel oraz istotnego stanu gry. Jesli wykluczasz
+  niestabilne pola (np. czas wygenerowania), wypisz je i uzasadnij. Zachowaj RNG.
+- Dodaj testy faktycznie odtwarzajace blad lub ryzyko nowej optymalizacji.
+  Windows race runtime poprzednio nie mogl zaalokowac shadow memory; nie oglaszaj
+  testow race jako zaliczonych, jesli ten problem nadal wystepuje.
+- Zmiany etapuj, porownuj i odrzucaj regresje. Nie zostawiaj polowicznego buildu
+  w dzialajacej grze. Nowy native/WASM/frontend i ich hashe sprawdz na osobnych
+  portach oraz osobnej bazie przed propozycja wdrozenia.
+- Zachowaj jeden input benchmarkowy, jeden aktualny backup i istotne male
+  regresje; nie mnoz wielogigabajtowych kopii i pelnych eksportow FullGame.
+- Nie publikuj zapisow gry, prywatnego archiwum promptow, auth, profili ani cache.
+- Nie wylaczaj komputera: po swoim etapie oddaj raport glownemu agentowi.
+
+OBOWIAZKOWE PRZEKAZANIE WYNIKU
+Zapisz raport jako docs/ASTRA-PERFORMANCE-REPORT.txt. Raport ma zawierac:
+1. Commit baseline, maszyne/rdzenie, wersje narzedzi, hash inputu, rok i rozmiar gry.
+2. Czasy faz, mediany 3 pomiarow baseline/kandydata i najwazniejsze stosy CPU.
+3. Lista zmian: plik/funkcja, przyczyna kosztu, dowod przyspieszenia.
+4. Wyniki testow, porownanie stanu i RNG, status race, ograniczenia.
+5. Zmiany odrzucone, nierozwiazane problemy i nastepne propozycje wg wartosci.
+6. Commit/branch lub dokladna lista zmienionych plikow, stan buildu i brak
+   wdrozenia do osobistej gry, chyba ze glowny agent je osobno przeprowadzi.
+7. Co konkretnie glowny agent powinien sprawdzic i zrobic dalej.
+
+Nastepnie przekaz raport glownemu agentowi. Jesli dzialasz jako subagent, uzyj
+collaboration.send_message do /root i zakoncz odpowiedzia zawierajaca sciezke
+raportu, mediany oraz najwazniejsze wnioski. Jesli jestes w osobnym czacie Codex,
+wyslij podsumowanie i sciezke raportu do czatu lokalnego
+01a187ca-6ca4-75f1-b3b0-637a74606b3c przez send_message_to_thread, jesli narzedzie
+jest dostepne. Uzytkownik zlecil przekazanie raportu do tego czatu. Jesli nie ma
+takiego narzedzia, wyraznie popros uzytkownika o przekazanie raportu tutaj.
+Nie koncz tylko stwierdzeniem, ze kod zostal zmieniony.
