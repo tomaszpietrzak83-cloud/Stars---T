@@ -187,3 +187,33 @@ func (t *turnGenerator) planAutomaticSafety() {
 		}
 	}
 }
+
+// Release old evasion before mission assignment, rather than wasting another
+// year at the dock after the threat has passed. Final safety runs again after
+// planning and validates the new course and any newly assigned escorts.
+func (t *turnGenerator) resumeCompletedEvades() {
+	for _, p := range t.game.Players {
+		for _, f := range t.game.getFleets(p.Num) {
+			var job automaticSafetyJob
+			if !isAutomaticFleet(p, f) || f.InDesignMaintenance() || json.Unmarshal([]byte(f.GetTag(safetyTag)), &job) != nil || job.Kind != "evade" {
+				continue
+			}
+			threat := interceptionThreat(p, f)
+			if p.Automation.FleetRoles[f.Num] == "bomber" || p.Automation.FleetRoles[f.Num] == "tanker" {
+				threat = max(threat, bomberChaseThreat(p, f))
+			}
+			if threat > 0 && !p.Automation.DisableInterceptionEvasion {
+				continue
+			}
+			delete(f.Tags, safetyTag)
+			delete(f.Tags, repairTankerTag)
+			delete(f.Tags, fuelStatusTag)
+			f.FleetOrders = job.Orders
+			f.Waypoints = slices.Clone(job.Orders.Waypoints)
+			if len(f.Waypoints) > 0 {
+				f.Waypoints[0] = Waypoint{Position: f.Position}
+			}
+			f.ComputeFuelUsage(p)
+		}
+	}
+}

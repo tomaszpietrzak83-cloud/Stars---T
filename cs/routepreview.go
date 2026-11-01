@@ -69,6 +69,8 @@ func (g *FullGame) PreviewAutomaticRoutes(playerNum int) (*AutomaticRoutesPrevie
 	}
 	t := newTurnGenerator(work)
 	t.ordersOnly = true
+	t.enablePlanningThreatIndex()
+	defer t.disablePlanningThreatIndex()
 	// Keep all player indices intact; filter only the automation controllers.
 	t.ordersPlayerNum = p.Num
 	t.repairStaleScoutRoles()

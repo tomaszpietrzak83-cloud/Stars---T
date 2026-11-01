@@ -175,7 +175,7 @@ func Test_newBattleToken_orders(t *testing.T) {
 			r := NewRulesWithSeed(1)
 			design := &ShipDesign{Hull: SmallFreighter.Name, Spec: ShipDesignSpec{HullType: tt.hullType, HasWeapons: tt.armed}}
 			token := &ShipToken{Quantity: 1, design: design}
-			plan := BattlePlan{Tactic: BattleTacticMinimizeDamageToSelf, PrimaryTarget: BattleTargetFreighters, SecondaryTarget: BattleTargetArmedShips}
+			plan := BattlePlan{Num: 6, Tactic: BattleTacticMinimizeDamageToSelf, PrimaryTarget: BattleTargetFreighters, SecondaryTarget: BattleTargetArmedShips}
 			got := newBattleToken(&r, 1, Vector{}, token, plan, testPlayer().WithNum(1))
 			assert.Equal(t, tt.wantTactic, got.Tactic)
 			assert.Equal(t, tt.wantPrimary, got.PrimaryTarget)

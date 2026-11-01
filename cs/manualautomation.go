@@ -16,7 +16,7 @@ func (p *Player) TakeManualControl(f *Fleet) {
 	delete(p.Automation.FleetRoles, f.Num)
 	delete(p.Automation.RebuildFleets, f.Num)
 	for key := range f.Tags {
-		if strings.HasPrefix(key, "automatic-") || strings.HasPrefix(key, "scout-") || strings.HasPrefix(key, "patrol-") || strings.HasPrefix(key, "bomber-") || strings.HasPrefix(key, "bombing-") || strings.HasPrefix(key, "escort-") || strings.HasPrefix(key, "fuel-network-") || strings.HasPrefix(key, "logistics-") || key == tankerAwaitTag || key == frontierPatrolTag {
+		if strings.HasPrefix(key, "automatic-") || strings.HasPrefix(key, "scout-") || strings.HasPrefix(key, "patrol-") || strings.HasPrefix(key, "bomber-") || strings.HasPrefix(key, "bombing-") || strings.HasPrefix(key, "escort-") || strings.HasPrefix(key, "fuel-network-") || strings.HasPrefix(key, "logistics-") || key == tankerAwaitTag || key == frontierPatrolTag || key == anticipatedSalvageTag || key == priorityReconTag {
 			delete(f.Tags, key)
 		}
 	}
@@ -31,4 +31,9 @@ func (t *turnGenerator) restoreBorrowedManualFleets() {
 			}
 		}
 	}
+}
+
+func (p *Player) resetFleetAutomationNumber(num int) {
+	delete(p.Automation.FleetRoles, num)
+	delete(p.Automation.RebuildFleets, num)
 }

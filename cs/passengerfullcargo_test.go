@@ -73,7 +73,7 @@ func TestPriorityBombingEndsAtOneHundredThousandPeople(t *testing.T) {
 	planet.Cargo.Colonists = 1001
 	require.Equal(t, planet, priorityBombingTarget(p, u.Fleet("Colony Ship")))
 	planet.Cargo.Colonists = 1000
-	require.Nil(t, priorityBombingTarget(p, u.Fleet("Colony Ship")))
+	require.Equal(t, planet, priorityBombingTarget(p, u.Fleet("Colony Ship")), "without an assigned landing bombers continue working")
 	planet.Defenses = 1
 	require.Equal(t, planet, priorityBombingTarget(p, u.Fleet("Colony Ship")))
 }

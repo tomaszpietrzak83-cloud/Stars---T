@@ -162,6 +162,8 @@ message ResearchTaxPolicy {
  int32 medium_percent = 6;
  int32 large_percent = 7;
  string basis = 8;
+ bool disable_mature_economy = 9;
+ optional int32 mature_research_percent = 10;
 }
 
 message FleetAssembly {

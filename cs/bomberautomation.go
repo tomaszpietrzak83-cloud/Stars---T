@@ -31,7 +31,7 @@ func (t *turnGenerator) planBomberEscorts() {
 				saved.Orders.Waypoints = slices.Clone(fleet.Waypoints)
 			}
 			target := t.automaticBombingTarget(player, fleet)
-			if target == nil && bomberAtLandingReadyPriority(player, fleet) {
+			if target == nil && bomberAtLandingReadyPriority(player, fleet, t.game.getFleets(player.Num)...) {
 				var best *expeditionRoute
 				for _, dock := range expeditionStations(player, fleet) {
 					route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, dock.Position, dock.ToTarget(), automaticRoutePolicy{})
@@ -98,11 +98,11 @@ func (a LogisticsAutomation) escortMarginAsFloat() float64 { return float64(a.es
 
 // Only targets visible in this player's reports; do not bomb a landing-ready
 // colony merely because it remains marked for colonization or reinforcement.
-func priorityBombingTarget(p *Player, f *Fleet) *Planet {
+func priorityBombingTarget(p *Player, f *Fleet, landings ...*Fleet) *Planet {
 	var best *Planet
 	distance := math.Inf(1)
 	for _, planet := range p.PlanetIntels {
-		if planet == nil || !p.Automation.PriorityPlanets[planet.Num] || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || (planet.Cargo.Colonists <= 1000 && planet.Defenses == 0 && !planet.Spec.HasStarbase) {
+		if planet == nil || !p.Automation.PriorityPlanets[planet.Num] || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || !priorityNeedsBombing(planet) && bombingDelegatedToLanding(p, planet, landings) {
 			continue
 		}
 		d := f.Position.DistanceTo(planet.Position)
@@ -113,9 +113,34 @@ func priorityBombingTarget(p *Player, f *Fleet) *Planet {
 	return best
 }
 
-func bomberAtLandingReadyPriority(p *Player, f *Fleet) bool {
+func bomberAtLandingReadyPriority(p *Player, f *Fleet, landings ...*Fleet) bool {
 	for _, planet := range p.PlanetIntels {
-		if planet != nil && p.Automation.PriorityPlanets[planet.Num] && planet.Position == f.Position && planet.Owned() && planet.PlayerNum != p.Num && !p.IsFriend(planet.PlayerNum) && planet.Cargo.Colonists <= 1000 && planet.Defenses == 0 && !planet.Spec.HasStarbase {
+		if planet != nil && p.Automation.PriorityPlanets[planet.Num] && planet.Position == f.Position && planet.Owned() && planet.PlayerNum != p.Num && !p.IsFriend(planet.PlayerNum) && !priorityNeedsBombing(planet) && bombingDelegatedToLanding(p, planet, landings) {
+			return true
+		}
+	}
+	return false
+}
+
+// Old population reports cannot certify that a priority colony is still a tiny
+// landing target. Refresh it with bombers/recon instead of ignoring it forever.
+func priorityNeedsBombing(planet *Planet) bool {
+	if planet == nil {
+		return false
+	}
+	if planet.Spec.HasStarbase || planet.Defenses > 0 || planet.Cargo.Colonists > 1000 {
+		return true
+	}
+	return planet.ReportAge > 2 && float64(planet.Cargo.Colonists)*math.Pow(1.25, float64(min(30, planet.ReportAge))) > 1000
+}
+
+func bombingDelegatedToLanding(p *Player, planet *Planet, fleets []*Fleet) bool {
+	for _, f := range fleets {
+		if f == nil || f.Delete || p.Automation.FleetRoles[f.Num] != "freighter" || f.InAutomaticSafety() || f.InDesignMaintenance() {
+			continue
+		}
+		job := logisticsWork(f)
+		if job != nil && job.DeliveryNum == planet.Num && (job.Kind == "invade" || job.Kind == "invade-load") {
 			return true
 		}
 	}

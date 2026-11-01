@@ -41,6 +41,7 @@ type battleToken struct {
 // newBattleToken creates a new battle token from a shipToken. Mass and movement
 // depend on cargo, so they are set when the battle is prepared.
 func newBattleToken(rules *Rules, num int, position Vector, token *ShipToken, battlePlan BattlePlan, player *Player) *battleToken {
+	battlePlan = designBattlePlan(rules, player, token.design, battlePlan)
 	battleToken := battleToken{
 		BattleRecordToken: BattleRecordToken{
 			Num:                     num,

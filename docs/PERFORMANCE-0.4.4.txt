@@ -1,0 +1,16 @@
+tomek-stars 0.4.4 — measured performance and validation
+
+Same private, online-backup input at year 2476, 144 empires. Each test copied that backup again to a temporary directory. No personal turn was generated.
+Baseline source a219e0c2 (0.4.3): native GenerateTurn 184.454 seconds; complete test 210.06 seconds.
+0.4.4 candidate: native GenerateTurn 84.826 seconds; complete test 103.76 seconds.
+Sequential single measurements, same machine. Approximately 54% less elapsed native generation time. Gameplay changes can alter resulting orders and battle outcomes. OS caching, antivirus, workload and database size affect timing; this does not guarantee a year-2600 duration.
+
+Exact fleet-visibility comparison on a copied analysis archive: 144 players, 30,825 fleets. Original loops 9.857 seconds; indexed/parallel evaluation 0.126 seconds. Visibility flags matched for every player and fleet. Scanner order, cloak rules and serial discovery/ally sharing are retained.
+AI order planning on a copied saved game: serial 3.330 seconds; parallel 0.911 seconds with 12 workers; full normalized game digest identical. Separate deterministic fixture compares serial/eight-worker orders. KD-tree nearest-planet search preserves active-map removals and lowest-designation ties.
+Route audit on the same year-2475 archive: approximately 86.5 seconds before threat classification indexing and 5.84 seconds after it, with matching outcomes. Harmless scout/cargo reports are classified once per orders phase; the index is discarded before physical universe changes.
+
+Simulation stages with dependencies, discovery/allied intel updates and SQLite writes stay serial. Read-only scanner calculations and independent AI owners use bounded workers. Native owner-worker failures propagate to the parent transaction handler rather than killing the process from a child goroutine.
+
+Validation: complete native core, AI, server, database and converter tests; updated synthetic AI battle recordings for the intentional new combat tactics; 72 selected frontend tests; Svelte check with zero errors/warnings; compiled isolated browser smoke with real API persistence. Production forecast gates compare all ship/base batch deadlines with native UI estimates. The Windows race linker was supplied its synchronization import library, but the race runtime failed shadow-memory allocation on this host; race testing remains unavailable here. Equivalence tests and ownership isolation are evidence, not a substitute for a successful race run.
+
+Open work is tracked in SUGGESTIONS-CHECKLIST.txt. No private snapshots, player profiles, authentication data, analysis archives, compiler caches or temporary test executables are published.

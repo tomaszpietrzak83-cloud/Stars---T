@@ -95,6 +95,7 @@ func TestAutomaticTankersSpreadIntoNetworkAndPatrolSlowly(t *testing.T) {
 
 func TestNetworkTankerApproachesCustomerAndKeepsConvoyTogether(t *testing.T) {
 	u := tankerUniverse(t)
+	u.Player(1).Automation.FleetRoles[u.Fleet("Customer").Num] = "combat"
 	customer, tanker := u.Fleet("Customer"), u.Fleet("Tanker")
 	customer.Position = Vector{20, 0}
 	customer.Fuel = 70
@@ -381,4 +382,18 @@ func TestIdleEscortCanRescueScoutWithoutAbandoningAssignedConvoy(t *testing.T) {
 	require.Empty(t, scout.GetTag(tankerAwaitTag))
 	require.Equal(t, "escort", p.Automation.FleetRoles[escort.Num])
 	require.GreaterOrEqual(t, escort.Fuel, automaticReturnFuel(&u.Game.Rules, p, escort, escort.Position, expeditionStations(p, escort), false))
+}
+
+func TestFuelAssistanceIsForRescueOrActiveCombat(t *testing.T) {
+	u := tankerUniverse(t)
+	p, f := u.Player(1), u.Fleet("Customer")
+	routine := &automaticFuelRequest{BaselineTurns: 20}
+	require.False(t, fuelAssistanceUseful(p, f, routine))
+	routine.Urgent = true
+	require.True(t, fuelAssistanceUseful(p, f, routine))
+	routine.Urgent = false
+	p.Automation.FleetRoles[f.Num] = "patrol"
+	require.False(t, fuelAssistanceUseful(p, f, routine))
+	savePatrolJob(f, patrolJob{Leader: f.Num, Enemy: 2, Target: 99})
+	require.True(t, fuelAssistanceUseful(p, f, routine))
 }

@@ -102,7 +102,7 @@ func (b *battle) movementSearch(token *battleToken, targetType BattleTarget) (in
 			distance++
 		}
 		canReach := distance <= rangeToConsider+moves
-		if maxRange == 3 && enemy.stackShields == 0 && nonSapperRange < maxRange {
+		if maxRange == 3 && enemy.stackShields == 0 && nonSapperRange >= 0 && nonSapperRange < maxRange {
 			canReach = canReach && distance <= nonSapperRange+moves
 		}
 		if canReach && len(token.weaponSlots) > 0 {
@@ -152,6 +152,20 @@ func (b *battle) movementScore(token *battleToken, position Vector, targetType B
 		takenTotal += bestTaken
 	}
 	score := battleDamageScore(givenBest, takenTotal, token.Tactic)
+	if token.Tactic == BattleTacticMaximizeRange {
+		// Firing is preferable to sitting outside range. Among firing positions,
+		// prioritize avoiding damage, then the greatest distance to any enemy.
+		if givenBest <= 0 {
+			return 1e9 + takenTotal
+		}
+		nearest := battleWidth + battleHeight
+		for _, enemy := range b.tokens {
+			if enemy.isStillInBattle() && token.willAttack(enemy.PlayerNum) {
+				nearest = min(nearest, position.chebyshevDistance(enemy.Position))
+			}
+		}
+		return -1e9 + takenTotal*1000 - float64(nearest)*10 - givenBest/(givenBest+1)
+	}
 	if flee {
 		for _, friend := range b.tokens {
 			if friend.PlayerNum == token.PlayerNum && friend.Position == position {

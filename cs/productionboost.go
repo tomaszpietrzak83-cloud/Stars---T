@@ -72,7 +72,7 @@ func forecastManufacturing(rules *Rules, player *Player, original *Planet, queue
 			return productionForecast{}, err
 		}
 		for _, item := range production.itemsBuilt {
-			if goal, ok := goals[item.index]; ok && item.numBuilt > 0 {
+			if goal, ok := goals[item.index]; ok && item.numBuilt > 0 && (item.queueItemType == QueueItemTypeShipToken || item.queueItemType == QueueItemTypeStarbase) {
 				built[goal] += item.numBuilt
 				if built[goal] >= quantities[goal] {
 					result.Finish[goal] = year
@@ -88,7 +88,9 @@ func forecastManufacturing(rules *Rules, player *Player, original *Planet, queue
 	}
 	p.Spec = ComputePlanetSpec(rules, &local, &p)
 	result.Factories, result.Mines = p.Factories, p.Mines
-	result.Economy = p.Spec.ResourcesPerYearAvailable*4 + p.Spec.MiningOutput.Total()
+	// Compare gross productive capacity: entering mature research/alchemy mode
+	// must not make a fully developed colony appear economically worse.
+	result.Economy = p.Spec.ResourcesPerYear*4 + p.Spec.MiningOutput.Total()
 	return result, nil
 }
 
@@ -166,7 +168,7 @@ func PlanProductionBoost(rules *Rules, player *Player, planet *Planet) {
 		if item.Type.IsAuto() && item.GetTag(starbaseBoostTag) != "" {
 			continue
 		}
-		if hasWork && item.Type.IsAuto() && item.GetTag(defaultAutoTag) != "" {
+		if hasWork && (item.Type == QueueItemTypeAutoFactories || item.Type == QueueItemTypeAutoMines || item.Type.IsAuto() && item.GetTag(defaultAutoTag) != "") {
 			tail = append(tail, item)
 			continue
 		}
@@ -199,11 +201,20 @@ func PlanProductionBoost(rules *Rules, player *Player, planet *Planet) {
 	}{
 		planet.Cargo, planet.Factories, planet.Mines, planet.Hab, planet.MineralConcentration, planet.MineYears, player.ResearchAmount, planet.ContributesOnlyLeftoverToResearch, player.TechLevels, player.Race, keyItems, planet.Spec.StarbaseDesignNum, planet.Spec.ResourcesPerYearAvailable, planet.Spec.MaxFactories, planet.Spec.MaxMines}
 	encoded, _ := json.Marshal(input)
-	key := fmt.Sprintf("v043-%x", sha256.Sum256(encoded))
+	designInput, _ := json.Marshal(struct {
+		Designs     []*ShipDesign
+		Tax         any
+		Maintenance DesignMaintenance
+	}{player.Designs, player.Automation.ResearchTax, player.DesignMaintenance})
+	encoded = append(encoded, designInput...)
+	key := fmt.Sprintf("v044b-%x", sha256.Sum256(encoded))
 	var cached productionBoostPlan
 	if json.Unmarshal([]byte(planet.GetTag(productionBoostCacheTag)), &cached) == nil && cached.Key == key {
-		planet.ProductionQueue = productionPlanQueue(queue, cached)
-		return
+		candidate := productionPlanQueue(queue, cached)
+		if displayedManufacturingNoLater(rules, player, planet, candidate, queue) {
+			planet.ProductionQueue = candidate
+			return
+		}
 	}
 	baseline, err := forecastManufacturing(rules, player, planet, queue, 0, Mineral{})
 	if err != nil || len(baseline.Finish) == 0 {
@@ -213,6 +224,9 @@ func PlanProductionBoost(rules *Rules, player *Player, planet *Planet) {
 	bestResult := baseline
 	seen := map[[3]int]bool{}
 	try := func(f, m, a int) {
+		if a > 0 && (planet.Factories < planet.Spec.MaxFactories || planet.Mines < planet.Spec.MaxMines) {
+			return
+		}
 		if player.Race.Spec.InnateResources {
 			f = 0
 		}
@@ -278,8 +292,48 @@ func PlanProductionBoost(rules *Rules, player *Player, planet *Planet) {
 	try(0, 0, 1)
 	try(best.Factories, best.Mines, 1)
 	try(best.Factories, best.Mines, 2)
-	planet.ProductionQueue = productionPlanQueue(queue, best)
+	final := productionPlanQueue(queue, best)
+	if !displayedManufacturingNoLater(rules, player, planet, final, queue) {
+		best = productionBoostPlan{Key: key}
+		final = queue
+	}
+	planet.ProductionQueue = final
 	planet.Tags = maps.Clone(planet.Tags)
 	data, _ := json.Marshal(best)
 	planet.SetTag(productionBoostCacheTag, string(data))
+}
+
+// The native UI estimate is an independent final gate, including cached plans.
+func displayedManufacturingNoLater(r *Rules, p *Player, planet *Planet, candidate, baseline []ProductionQueueItem) bool {
+	dates := func(q []ProductionQueueItem) ([]int, error) {
+		copy := *planet
+		copy.ProductionQueue = slices.Clone(q)
+		local := *p
+		e := NewCompletionEstimator()
+		items, _, err := e.GetProductionWithEstimates(r, &local, copy)
+		if err != nil {
+			return nil, err
+		}
+		out := []int{}
+		for _, item := range items {
+			if manufacturingItem(item) {
+				out = append(out, item.YearsToBuildAll)
+			}
+		}
+		return out, nil
+	}
+	a, err := dates(candidate)
+	if err != nil {
+		return false
+	}
+	b, err := dates(baseline)
+	if err != nil || len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if b[i] >= 0 && (a[i] < 0 || a[i] > b[i]) {
+			return false
+		}
+	}
+	return true
 }

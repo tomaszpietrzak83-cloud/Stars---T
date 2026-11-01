@@ -86,6 +86,7 @@ func (scan *playerScanner) scan() error {
 
 // scan all planets with this player's scanners
 func (scan *playerScanner) scanPlanets(scanners []scanner, cargoScanners []scanner, starGateScanners []scanner) error {
+	regularGrid, cargoGrid, gateGrid := newScannerGrid(scanners), newScannerGrid(cargoScanners), newScannerGrid(starGateScanners)
 	for _, planet := range scan.universe.Planets {
 		if planet.OwnedBy(scan.player.Num) {
 			// scan owned planets
@@ -96,7 +97,8 @@ func (scan *playerScanner) scanPlanets(scanners []scanner, cargoScanners []scann
 		}
 
 		// try and scan the planet with this scanner
-		for _, scanner := range scanners {
+		for _, index := range regularGrid.at(planet.Position) {
+			scanner := scanners[index]
 			scanned, err := scan.scanPlanet(planet, scanner)
 			if err != nil {
 				return err
@@ -109,7 +111,8 @@ func (scan *playerScanner) scanPlanets(scanners []scanner, cargoScanners []scann
 
 		// try and scan the planet's stargate
 		if planet.Spec.PlanetStarbaseSpec.HasStargate {
-			for _, scanner := range starGateScanners {
+			for _, index := range gateGrid.at(planet.Position) {
+				scanner := starGateScanners[index]
 				if scan.fleetInScannerRange(planet.Starbase, scanner) {
 					scanned, err := scan.scanPlanet(planet, scanner)
 					if err != nil {
@@ -123,7 +126,8 @@ func (scan *playerScanner) scanPlanets(scanners []scanner, cargoScanners []scann
 		}
 
 		// try and scan the planet with a cargo scanner
-		for _, scanner := range cargoScanners {
+		for _, index := range cargoGrid.at(planet.Position) {
+			scanner := cargoScanners[index]
 			scanned, err := scan.scanPlanet(planet, scanner)
 			if err != nil {
 				return err
@@ -184,33 +188,14 @@ func (scan *playerScanner) scanPlanet(planet *Planet, scanner scanner) (scanned 
 
 // scan all fleets and discover their designs if we should
 func (scan *playerScanner) scanFleets(scanners []scanner, cargoScanners []scanner) {
-	// scan fleets
-	fleetsToScan := []*Fleet{}
-	fleetsToCargoScan := []*Fleet{}
-	for _, fleet := range scan.universe.Fleets {
-		// skip deleted fleets
-		if fleet.Delete {
-			continue
+	flags := scan.fleetVisibility(scanners, cargoScanners, scannerWorkers())
+	fleetsToScan, fleetsToCargoScan := []*Fleet{}, []*Fleet{}
+	for i, fleet := range scan.universe.Fleets {
+		if flags[i]&1 != 0 {
+			fleetsToScan = append(fleetsToScan, fleet)
 		}
-		if fleet.OwnedBy(scan.player.Num) {
-			// The player already gets a copy of all their own fleets
-			continue
-		}
-
-		// try and scan the fleet with this scanner
-		for _, scanner := range scanners {
-			if scan.fleetInScannerRange(fleet, scanner) {
-				fleetsToScan = append(fleetsToScan, fleet)
-				break
-			}
-		}
-
-		// try and scan the fleet with a cargo scanner
-		for _, scanner := range cargoScanners {
-			if scan.fleetInScannerRange(fleet, scanner) {
-				fleetsToCargoScan = append(fleetsToScan, fleet)
-				break
-			}
+		if flags[i]&2 != 0 {
+			fleetsToCargoScan = append(fleetsToCargoScan, fleet)
 		}
 	}
 

@@ -62,6 +62,8 @@ func (t *turnGenerator) generateTurn() error {
 	}
 
 	t.computeSpecs()
+	t.enablePlanningThreatIndex()
+	defer t.disablePlanningThreatIndex()
 	t.packetInit()
 	t.planetInit()
 
@@ -72,9 +74,11 @@ func (t *turnGenerator) generateTurn() error {
 	// wp0 tasks
 	t.fleetInit()
 	t.restoreBorrowedManualFleets()
+	t.resumeCompletedEvades()
 	t.repairStaleScoutRoles()
 	t.unloadArrivedColonizers()
 	t.refreshAutomaticFuelIntel()
+	t.releaseColonizerFuelDetours()
 	t.advanceFuelNetworks()
 	t.resolveAutomaticTankers()
 	t.shareOpportunisticFuel()
@@ -85,22 +89,26 @@ func (t *turnGenerator) generateTurn() error {
 	t.planMiningAutomation()
 	t.planTerraformAutomation()
 	t.planColonizationAutomation()
+	t.splitAutomaticCombatPools()
+	t.planPatrolSalvage()
 	t.planLogisticsAutomation()
 	t.resolveLogisticsAutomation()
 	t.unloadOpportunisticInfrastructure()
 	t.dispatchReadyLogistics()
 	t.planBomberEscorts()
 	t.planPatrolAutomation()
+	t.planPatrolSalvage()
 	t.planEscortStaging()
 	t.guardAutomaticFuel()
-	t.planFuelNetworks()
 	t.planAutomaticTankers()
+	t.planFuelNetworks()
 	t.resolveAutomaticTankers()
 	t.planBombingWolfPacks()
 	t.planAutomaticSafety()
 	t.recoverIdleAutomaticFleets()
 	t.advanceFuelNetworks()
 	t.planAutomaticPackets()
+	t.disablePlanningThreatIndex()
 	t.fleetByHandTransfers()
 	t.fleetScrap()
 	t.fleetUnload()
@@ -2661,6 +2669,7 @@ func (t *turnGenerator) fleetBattle() {
 		if battler.hasHostility() {
 			// someone wants to fight, run the battle!
 			record := battler.runBattle()
+			t.markSurvivingPatrolTarget(record)
 			fleetsAtPosition := fleets
 			fleets = record.fleets
 

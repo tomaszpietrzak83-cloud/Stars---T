@@ -1188,17 +1188,19 @@ func (x *LogisticsAutomation) GetOffloadCombatCargo() bool {
 }
 
 type ResearchTaxPolicy struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Enabled         bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	LeftoverUntil   int32                  `protobuf:"varint,2,opt,name=leftover_until,json=leftoverUntil,proto3" json:"leftover_until,omitempty"`
-	MediumThreshold int32                  `protobuf:"varint,3,opt,name=medium_threshold,json=mediumThreshold,proto3" json:"medium_threshold,omitempty"`
-	LargeThreshold  int32                  `protobuf:"varint,4,opt,name=large_threshold,json=largeThreshold,proto3" json:"large_threshold,omitempty"`
-	SmallPercent    int32                  `protobuf:"varint,5,opt,name=small_percent,json=smallPercent,proto3" json:"small_percent,omitempty"`
-	MediumPercent   int32                  `protobuf:"varint,6,opt,name=medium_percent,json=mediumPercent,proto3" json:"medium_percent,omitempty"`
-	LargePercent    int32                  `protobuf:"varint,7,opt,name=large_percent,json=largePercent,proto3" json:"large_percent,omitempty"`
-	Basis           string                 `protobuf:"bytes,8,opt,name=basis,proto3" json:"basis,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	Enabled               bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	LeftoverUntil         int32                  `protobuf:"varint,2,opt,name=leftover_until,json=leftoverUntil,proto3" json:"leftover_until,omitempty"`
+	MediumThreshold       int32                  `protobuf:"varint,3,opt,name=medium_threshold,json=mediumThreshold,proto3" json:"medium_threshold,omitempty"`
+	LargeThreshold        int32                  `protobuf:"varint,4,opt,name=large_threshold,json=largeThreshold,proto3" json:"large_threshold,omitempty"`
+	SmallPercent          int32                  `protobuf:"varint,5,opt,name=small_percent,json=smallPercent,proto3" json:"small_percent,omitempty"`
+	MediumPercent         int32                  `protobuf:"varint,6,opt,name=medium_percent,json=mediumPercent,proto3" json:"medium_percent,omitempty"`
+	LargePercent          int32                  `protobuf:"varint,7,opt,name=large_percent,json=largePercent,proto3" json:"large_percent,omitempty"`
+	Basis                 string                 `protobuf:"bytes,8,opt,name=basis,proto3" json:"basis,omitempty"`
+	DisableMatureEconomy  bool                   `protobuf:"varint,9,opt,name=disable_mature_economy,json=disableMatureEconomy,proto3" json:"disable_mature_economy,omitempty"`
+	MatureResearchPercent *int32                 `protobuf:"varint,10,opt,name=mature_research_percent,json=matureResearchPercent,proto3,oneof" json:"mature_research_percent,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *ResearchTaxPolicy) Reset() {
@@ -1285,6 +1287,20 @@ func (x *ResearchTaxPolicy) GetBasis() string {
 		return x.Basis
 	}
 	return ""
+}
+
+func (x *ResearchTaxPolicy) GetDisableMatureEconomy() bool {
+	if x != nil {
+		return x.DisableMatureEconomy
+	}
+	return false
+}
+
+func (x *ResearchTaxPolicy) GetMatureResearchPercent() int32 {
+	if x != nil && x.MatureResearchPercent != nil {
+		return *x.MatureResearchPercent
+	}
+	return 0
 }
 
 type FleetAssembly struct {
@@ -2019,7 +2035,7 @@ const file_craig_stars_v1_player_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a@\n" +
 	"\x12RebuildFleetsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xaf\x02\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xbe\x03\n" +
 	"\x11ResearchTaxPolicy\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12%\n" +
 	"\x0eleftover_until\x18\x02 \x01(\x05R\rleftoverUntil\x12)\n" +
@@ -2028,7 +2044,11 @@ const file_craig_stars_v1_player_proto_rawDesc = "" +
 	"\rsmall_percent\x18\x05 \x01(\x05R\fsmallPercent\x12%\n" +
 	"\x0emedium_percent\x18\x06 \x01(\x05R\rmediumPercent\x12#\n" +
 	"\rlarge_percent\x18\a \x01(\x05R\flargePercent\x12\x14\n" +
-	"\x05basis\x18\b \x01(\tR\x05basis\"\xc5\x04\n" +
+	"\x05basis\x18\b \x01(\tR\x05basis\x124\n" +
+	"\x16disable_mature_economy\x18\t \x01(\bR\x14disableMatureEconomy\x12;\n" +
+	"\x17mature_research_percent\x18\n" +
+	" \x01(\x05H\x00R\x15matureResearchPercent\x88\x01\x01B\x1a\n" +
+	"\x18_mature_research_percent\"\xc5\x04\n" +
 	"\rFleetAssembly\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12(\n" +
 	"\x10rally_planet_num\x18\x02 \x01(\x05R\x0erallyPlanetNum\x12D\n" +
@@ -2253,6 +2273,7 @@ func file_craig_stars_v1_player_proto_init() {
 	file_craig_stars_v1_salvage_proto_init()
 	file_craig_stars_v1_shipdesign_proto_init()
 	file_craig_stars_v1_wormhole_proto_init()
+	file_craig_stars_v1_player_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

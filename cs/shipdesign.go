@@ -36,6 +36,8 @@ type ShipDesignSlot struct {
 }
 
 type ShipDesignSpec struct {
+	// Persisted with the design spec: 0 chooses by equipment, otherwise plan number + 1.
+	DefaultBattlePlan         int                   `json:"defaultBattlePlan,omitempty"`
 	AdditionalMassDrivers     int                   `json:"additionalMassDrivers,omitempty"`
 	Armor                     int                   `json:"armor"`
 	BasePacketSpeed           int                   `json:"basePacketSpeed,omitempty"`
@@ -188,6 +190,18 @@ func (sd *ShipDesign) WithSpec(rules *Rules, player *Player) *ShipDesign {
 // validate that this ship design is correct and is avaliable for the given player
 func (sd *ShipDesign) Validate(rules *Rules, player *Player) error {
 	// Basic design/hull checks
+	if sd.Spec.DefaultBattlePlan < 0 {
+		return fmt.Errorf("invalid default battle plan")
+	}
+	if sd.Spec.DefaultBattlePlan > 0 {
+		found := false
+		for _, plan := range player.BattlePlans {
+			found = found || plan.Num == sd.Spec.DefaultBattlePlan-1
+		}
+		if !found {
+			return fmt.Errorf("default battle plan not found")
+		}
+	}
 	if strings.TrimSpace(sd.Name) == "" {
 		return fmt.Errorf("design has no name")
 	}
@@ -349,6 +363,7 @@ func ComputeShipDesignSpec(rules *Rules, techLevels TechLevel, raceSpec RaceSpec
 	}
 	c := NewCostCalculator()
 	spec := ShipDesignSpec{
+		DefaultBattlePlan:        design.Spec.DefaultBattlePlan,
 		Mass:                     hull.Mass,
 		Armor:                    hull.Armor,
 		Shields:                  hull.Shield,

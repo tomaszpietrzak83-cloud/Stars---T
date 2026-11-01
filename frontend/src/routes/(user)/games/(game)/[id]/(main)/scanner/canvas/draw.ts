@@ -508,8 +508,8 @@ function drawYearTicks(
 
 function drawPlanets(ctx: CanvasRenderingContext2D, view: ScannerView, frame: ScannerFrame) {
 	const { colors } = frame;
-	const s = view.iconScale;
 	for (const draw of frame.planets) {
+        const s = planetIconScale(draw,view.iconScale);
 		const p = view.anchor(draw.planet.mapObject?.position);
 		if (!view.visible(p, 40 * s)) {
 			continue;
@@ -563,7 +563,7 @@ function drawNormalPlanet(
 	const xOffset = normal.starbaseXOffset * s;
 	const yOffset = normal.starbaseYOffset * s;
 	if (normal.starbase) {
-		drawMarker(ctx, p.x + xOffset, p.y - yOffset, w, normal.starbase, s);
+		drawStarbaseMarker(ctx, p.x + xOffset, p.y - yOffset, w, normal.starbase);
 	}
 	if (normal.stargate) {
 		drawMarker(ctx, p.x - xOffset - w, p.y - yOffset, w, colors.stargate, s);
@@ -571,6 +571,23 @@ function drawNormalPlanet(
 	if (normal.massDriver) {
 		drawMarker(ctx, p.x - w / 2, p.y - yOffset - w / 2, w, colors.massDriver, s);
 	}
+}
+
+// Keep station silhouettes legible in a zoomed-out normal scanner view.
+export function planetIconScale(draw: PlanetDraw,scale: number): number {
+ return draw.normal?.starbase ? Math.max(0.85,scale) : scale;
+}
+function drawStarbaseMarker(ctx: CanvasRenderingContext2D,x:number,y:number,w:number,style:{fill:string;stroke:string}) {
+ const cx=x+w/2,cy=y+w/2;
+ ctx.save();
+ ctx.beginPath();ctx.arc(cx,cy,w*.58,0,Math.PI*2);
+ ctx.strokeStyle='#080b12';ctx.lineWidth=4;ctx.stroke();
+ ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;ctx.stroke();
+ ctx.fillStyle=style.fill;ctx.strokeStyle='#080b12';ctx.lineWidth=1.5;
+ for(const [left,top,width,height] of [[x+w*.27,y+w*.2,w*.46,w*.6],[x-w*.13,y+w*.3,w*.25,w*.4],[x+w*.88,y+w*.3,w*.25,w*.4]]) {
+  ctx.beginPath();ctx.rect(left,top,width,height);ctx.fill();ctx.stroke();
+ }
+ ctx.restore();
 }
 
 function drawMarker(
@@ -693,8 +710,8 @@ function drawMineralGraph(
  * counts, the selection arrow and waypoint paths can be placed around it.
  */
 function planetExtents(draw: PlanetDraw, view: ScannerView) {
-	let top = draw.top * view.iconScale;
-	let bottom = draw.bottom * view.iconScale;
+	let top = draw.top * planetIconScale(draw,view.iconScale);
+	let bottom = draw.bottom * planetIconScale(draw,view.iconScale);
 	if (draw.pop) {
 		const r = populationRadius(view, draw.pop) + 0.5;
 		top = Math.min(top, -r);

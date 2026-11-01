@@ -123,6 +123,9 @@ func (t *turnGenerator) unloadOpportunisticInfrastructure() {
 	}
 }
 func (t *turnGenerator) topUpLogisticsCargo(player *Player, f *Fleet, source, dest *Planet) {
+	if colonizationMode(player.Automation.FleetRoles[f.Num]) != "" {
+		return
+	}
 	if source == nil || dest == nil || source.Num == dest.Num || !source.OwnedBy(player.Num) || !dest.OwnedBy(player.Num) {
 		return
 	}

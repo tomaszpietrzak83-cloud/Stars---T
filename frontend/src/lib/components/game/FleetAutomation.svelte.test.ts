@@ -35,6 +35,7 @@ it('saves the automatic remote mining role', async () => {
 });
 
 it('saves the unvisited-planet scout role', async () => {
+ get(context.universe).fleets[0].spec!.shipDesignSpec!.scanner=true;
 	render(FleetAutomation);
 	await page.getByRole('combobox', { name: 'Role for Transport' }).selectOptions('scout');
 	expect(get(context.player).playerOrders!.automation!.fleetRoles).toEqual({ 1: 'scout' });
@@ -117,4 +118,9 @@ it('sorts rebuilding fleets before other fleets', async()=>{
  await page.getByRole('button',{name:/^Rebuilding/}).click();
  const rows=Array.from(document.querySelectorAll('section[aria-label="Fleet automation"] tbody tr')).filter(row=>row.querySelector('select[aria-label^="Role for"]'));
  expect(rows[0]?.textContent).toContain('Rebuilding fleet');
+});
+
+it('does not offer Scout to an armed fleet without scanners', async () => {
+ render(FleetAutomation);
+ expect(page.getByRole('combobox',{name:'Role for Transport'}).getByRole('option',{name:'Scout: exploration and incoming fleet reconnaissance'}).query()).toBeNull();
 });

@@ -3,6 +3,7 @@
 	import FormError from '#lib/components/FormError.svelte';
 	import TextAreaInput from '#lib/components/TextAreaInput.svelte';
 	import TextInput from '#lib/components/TextInput.svelte';
+	import DesignBattleStrategy from './DesignBattleStrategy.svelte';
 	import Hull from '#lib/components/game/design/Hull.svelte';
 	import TechAvatar from '#lib/components/tech/TechAvatar.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
@@ -48,6 +49,7 @@
 	let description: string = $state(design.description);
 	let hullSetNumber: number = $state(design.hullSetNumber);
 	let slots: ShipDesignSlot[] = $state(design.slots);
+	let defaultBattlePlan = $state(design.spec?.defaultBattlePlan ?? 0);
 
 	// Derived/spec state from wasm
 	let designSpec: ShipDesignSpec = $state(create(ShipDesignSpecSchema));
@@ -58,6 +60,8 @@
 		design.description = description;
 		design.hullSetNumber = hullSetNumber;
 		design.slots = slots;
+		design.spec ??= create(ShipDesignSpecSchema);
+		design.spec.defaultBattlePlan = defaultBattlePlan;
 	});
 
 	// Recompute spec when design changes
@@ -249,6 +253,7 @@
 					/>
 				</div>
 			</div>
+			<DesignBattleStrategy bind:selection={defaultBattlePlan} spec={designSpec} />
 			<div class="flex flex-row justify-center">
 				<Hull
 					bind:shipDesignSlots={slots}

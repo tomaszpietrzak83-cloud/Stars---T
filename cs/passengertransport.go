@@ -29,7 +29,7 @@ func populationTarget(planet *Planet, percent int) int {
 func (t *turnGenerator) passengerReservations(player *Player, exclude int) (incoming, outgoing map[int]int) {
 	incoming, outgoing = map[int]int{}, map[int]int{}
 	for _, fleet := range t.game.getFleets(player.Num) {
-		if fleet.Delete || fleet.Num == exclude || player.Automation.FleetRoles[fleet.Num] != "freighter" {
+		if fleet.Delete || fleet.Num == exclude || !passengerCarrier(player, fleet) {
 			continue
 		}
 		job := logisticsWork(fleet)
@@ -335,6 +335,9 @@ func (t *turnGenerator) destinationCanFillTransport(p *Player, f *Fleet, source,
 }
 
 func (t *turnGenerator) preparePassengerMixedCargo(p *Player, f *Fleet, source, dest *Planet, passengers int) int {
+	if colonizationMode(p.Automation.FleetRoles[f.Num]) != "" {
+		return 0
+	}
 	minimum := 0
 	placeholder := 0
 	if t.prefetchStarbaseMinerals(p, dest).Total() > 0 {
@@ -348,4 +351,19 @@ func (t *turnGenerator) preparePassengerMixedCargo(p *Player, f *Fleet, source, 
 	t.loadStarbasePrefetch(p, f, source, dest)
 	f.Cargo.Colonists -= placeholder
 	return minimum
+}
+
+// Colonizers retain their colonization role while doing passenger-only work.
+func passengerCarrier(p *Player, f *Fleet) bool {
+	if p.Automation.FleetRoles[f.Num] == "patrol" && f.GetTag(patrolSalvageTag) != "" {
+		return true
+	}
+	if p.Automation.FleetRoles[f.Num] == "freighter" {
+		return true
+	}
+	job := readColonizationJob(f)
+	return colonizationMode(p.Automation.FleetRoles[f.Num]) != "" && job != nil && job.Kind == "passengers"
+}
+func colonizerPassengerCarrier(p *Player, f *Fleet) bool {
+	return passengerCarrier(p, f) && colonizationMode(p.Automation.FleetRoles[f.Num]) != ""
 }

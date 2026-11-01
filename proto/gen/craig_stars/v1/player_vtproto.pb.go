@@ -1376,6 +1376,21 @@ func (m *ResearchTaxPolicy) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.MatureResearchPercent != nil {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(*m.MatureResearchPercent))
+		i--
+		dAtA[i] = 0x50
+	}
+	if m.DisableMatureEconomy {
+		i--
+		if m.DisableMatureEconomy {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x48
+	}
 	if len(m.Basis) > 0 {
 		i -= len(m.Basis)
 		copy(dAtA[i:], m.Basis)
@@ -2506,6 +2521,12 @@ func (m *ResearchTaxPolicy) SizeVT() (n int) {
 	l = len(m.Basis)
 	if l > 0 {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if m.DisableMatureEconomy {
+		n += 2
+	}
+	if m.MatureResearchPercent != nil {
+		n += 1 + protohelpers.SizeOfVarint(uint64(*m.MatureResearchPercent))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -6658,6 +6679,46 @@ func (m *ResearchTaxPolicy) UnmarshalVT(dAtA []byte) error {
 			}
 			m.Basis = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DisableMatureEconomy", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.DisableMatureEconomy = bool(v != 0)
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MatureResearchPercent", wireType)
+			}
+			var v int32
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.MatureResearchPercent = &v
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

@@ -1,7 +1,7 @@
 import { MapObjectType, WaypointSchema } from '#lib/types/cs-proto.js';
 import { create } from '@bufbuild/protobuf';
 import { expect, it } from 'vitest';
-import { waypointClearance } from './draw';
+import { planetIconScale, waypointClearance } from './draw';
 
 type Args = Parameters<typeof waypointClearance>;
 
@@ -19,4 +19,11 @@ it('leaves a gap in the path at targets but not in deep space', () => {
 		mapObjectTarget: { targetType: MapObjectType.FLEET, targetNum: 1, targetPlayerNum: 2 }
 	});
 	expect(waypointClearance(frame, view, atFleet)).toBeGreaterThan(0);
+});
+
+it('keeps station markers visible when normal planet dots shrink',()=>{
+ const station={normal:{starbase:{fill:'yellow',stroke:'black'}}} as Parameters<typeof planetIconScale>[0];
+ expect(planetIconScale(station,.1)).toBe(.85);
+ expect(planetIconScale(station,1)).toBe(1);
+ expect(planetIconScale({} as Parameters<typeof planetIconScale>[0],.1)).toBe(.1);
 });

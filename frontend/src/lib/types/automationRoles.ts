@@ -1,7 +1,8 @@
 import type { Fleet, ShipDesign } from './cs-proto.js';
 export function automationRoles(fleet: Fleet, designs: ShipDesign[] = [], currentRole = '') {
  const spec=fleet.spec?.shipDesignSpec;
- const roles=[{value:'',label:'Manual'},{value:'scout',label:'Scout: exploration and incoming fleet reconnaissance'}];
+ const roles=[{value:'',label:'Manual'}];
+ if(spec?.scanner || !spec?.hasWeapons) roles.push({value:'scout',label:'Scout: exploration and incoming fleet reconnaissance'});
  if(spec?.colonizer && fleet.tokens.length && fleet.tokens.every(t=>designs.find(d=>d.num===t.designNum)?.spec?.colonizer)) {
   for(const [value,label] of [['auto','Auto'],['nearest','Nearest'],['farthest','Farthest'],['best','Best world']]) roles.push({value:`colonizer:${value}`,label:`Colonizer: ${label}`});
  }

@@ -474,6 +474,8 @@ func Test_completionEstimate_GetProductionWithEstimates(t *testing.T) {
 			e := NewCompletionEstimator()
 
 			player := NewPlayer(1, NewRace().WithSpec(&rules)).withSpec(&rules)
+			// This fixture tests ordinary tax; mature mode has separate coverage.
+			player.Automation.ResearchTax = &ResearchTaxPolicy{DisableMatureEconomy: true}
 			planet := NewPlanet().WithPlayerNum(1)
 			planet.Hab = Hab{50, 50, 50}                         // perfect hab
 			planet.MineralConcentration = Mineral{100, 100, 100} // perfect concentration for a 1kT per mine output

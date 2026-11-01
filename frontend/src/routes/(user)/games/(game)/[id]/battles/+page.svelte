@@ -120,7 +120,11 @@
 							title="goto">Goto</button
 						>
 					</div>
-				{:else if column.key == 'present'}
+				{:else if column.key == 'ourDead'}
+                    <span class="text-error font-semibold">{cell ?? 0}</span>
+                {:else if column.key == 'theirDead'}
+                    <span class="text-success font-semibold">{cell ?? 0}</span>
+                {:else if column.key == 'present'}
 					{#if row.present}
 						<Icon src={Check} size="24" class="stroke-success" />
 					{/if}

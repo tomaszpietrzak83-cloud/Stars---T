@@ -66,3 +66,44 @@ func TestThreatenedBomberRequestsNearbyPatrolBeforeContact(t *testing.T) {
 	require.True(t, b.InAutomaticSafety())
 	require.Greater(t, len(b.Waypoints), 1)
 }
+
+func TestBomberDoesNotInventWarpTenPursuitForDistantWarpFiveShip(t *testing.T) {
+	u := automaticBomberUniverse(t)
+	p, b := u.Player(1), u.Fleet("Bomber")
+	p.FleetIntels = []*Fleet{{MapObject: MapObject{PlayerNum: 2, Num: 100, Position: Vector{130, 0}}, WarpSpeed: 5, Heading: VectorFloat64{X: -1}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true, PowerRating: 24}}}}
+	require.Zero(t, bomberChaseThreat(p, b))
+	p.FleetIntels[0].Position = Vector{40, 0}
+	require.Positive(t, bomberChaseThreat(p, b))
+	p.FleetIntels[0].WarpSpeed = 0
+	p.FleetIntels[0].Heading = VectorFloat64{}
+	require.Zero(t, bomberChaseThreat(p, b))
+}
+func TestStaleSmallPriorityColonyGetsBombardmentInsteadOfBeingIgnored(t *testing.T) {
+	u := automaticBomberUniverse(t)
+	p, b := u.Player(1), u.Fleet("Bomber")
+	target := u.Planet("Enemy")
+	p.Automation.PriorityPlanets = map[int]bool{target.Num: true}
+	target.Cargo.Colonists = 200
+	target.ReportAge = 19
+	require.True(t, priorityNeedsBombing(target))
+	require.Same(t, target, priorityBombingTarget(p, b))
+	target.ReportAge = 0
+	require.False(t, priorityNeedsBombing(target))
+	require.Same(t, target, priorityBombingTarget(p, b))
+	transport := u.Fleet("Cover")
+	p.Automation.FleetRoles[transport.Num] = "freighter"
+	saveLogisticsWork(transport, &logisticsJob{Kind: "invade", DeliveryNum: target.Num})
+	require.Nil(t, priorityBombingTarget(p, b, transport))
+}
+func TestCompletedBomberEvasionResumesMissionBeforePlanning(t *testing.T) {
+	u := automaticBomberUniverse(t)
+	p, b := u.Player(1), u.Fleet("Bomber")
+	_ = p
+	b.SetTag(safetyTag, `{"kind":"evade","orders":{"waypoints":[{"position":{"x":0,"y":0}}]}}`)
+	u.Run((*turnGenerator).resumeCompletedEvades)
+	require.False(t, b.InAutomaticSafety())
+	u.Fleet("Cover").Spec.HasWeapons = true
+	p.Automation.FleetRoles[u.Fleet("Cover").Num] = "escort"
+	u.Run((*turnGenerator).planBomberEscorts)
+	require.Greater(t, len(b.Waypoints), 1)
+}

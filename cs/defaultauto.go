@@ -49,6 +49,8 @@ func developmentForecast(rules *Rules, player *Player, original *Planet, queue [
 }
 
 func PlanDefaultAuto(rules *Rules, player *Player, planet *Planet) {
+	planet.ProductionQueue = slices.DeleteFunc(slices.Clone(planet.ProductionQueue), func(item ProductionQueueItem) bool { return item.GetTag(matureAlchemyTag) != "" })
+	defer planMatureAlchemy(player, planet)
 	if player.AIControlled || player.Race.Spec.InnateResources && player.Race.Spec.InnateMining {
 		PlanProductionBoost(rules, player, planet)
 		return

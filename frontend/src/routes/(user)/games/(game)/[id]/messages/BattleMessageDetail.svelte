@@ -1,4 +1,5 @@
 <script lang="ts">
+	import BattleLosses from '#lib/components/game/battle/BattleLosses.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { getBattleRecordDetails } from '#lib/types/Battle.js';
 	import { create } from '@bufbuild/protobuf';
@@ -146,5 +147,5 @@
 {/if}
 
 {#if $universe.getBattle(message.battleNum)}
- <a class="btn btn-sm btn-primary ml-2" href={`/games/${$game.id}/battles/${message.battleNum}`}>Watch battle</a>
+ <a class="btn btn-sm btn-primary ml-2" href={`/games/${$game.id}/battles/${message.battleNum}`} aria-label="Watch battle"><BattleLosses own={details?.ourDead ?? 0} enemy={details?.theirDead ?? 0} /></a>
 {/if}

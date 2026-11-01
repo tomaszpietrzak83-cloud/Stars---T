@@ -175,7 +175,7 @@ func (t *turnGenerator) planColonizationAutomation() {
 					}
 				}
 			}
-			if fleet.Cargo.Colonists == 0 || topUp {
+			if (fleet.Cargo.Colonists == 0 || topUp) && job.Kind != "passengers" {
 				if !t.loadColonizer(player, fleet, job) {
 					writeColonizationJob(fleet, job)
 					continue
@@ -228,16 +228,21 @@ func (t *turnGenerator) planColonizationAutomation() {
 				chosen, route = t.assistedColonyTarget(player, fleet, mode, claimed)
 			}
 			if chosen == nil {
+				if t.stageColonizerForBombing(player, fleet, job) {
+					continue
+				}
 				job.TargetNum = 0
 				job.Mode = mode
-				job.Status = "Waiting for a known, habitable, unclaimed planet with a safe fuel route"
-				holdAutomaticFleet(player, fleet, job.Status)
-				if !expeditionRefuel(&t.game.Rules, player, fleet) && !t.routeEmergencyReturn(player, fleet) {
-					requestAutomaticRescue(player, fleet, true)
+				job.Kind = "passengers"
+				job.Status = "No reachable unclaimed colony: carrying passengers until a new world becomes available"
+				if logisticsWork(fleet) == nil {
+					holdAutomaticFleet(player, fleet, job.Status)
 				}
 				writeColonizationJob(fleet, job)
 				continue
 			}
+			delete(fleet.Tags, logisticsTag)
+			t.releaseEscorts(player, fleet)
 			job.TargetNum, job.Mode, job.Kind = chosen.Num, mode, "colonize"
 			claimed[chosen.Num] = fleet.Num
 			if faster := t.planAutomaticMission(player, []*Fleet{fleet}, chosen.Position, chosen.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true, MaxTurns: 50}); faster != nil {
@@ -270,6 +275,9 @@ func (t *turnGenerator) planColonizationAutomation() {
 // Inherit roles, not reservations or rendezvous: new fleets choose independent jobs.
 func (p *Player) InheritAutomaticRole(source, child *Fleet) {
 	role := p.Automation.FleetRoles[source.Num]
+	if child != nil {
+		p.resetFleetAutomationNumber(child.Num)
+	}
 	if role == "" || child == nil || child.Delete {
 		return
 	}

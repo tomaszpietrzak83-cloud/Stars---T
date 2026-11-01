@@ -102,6 +102,9 @@ func (t *turnGenerator) planAutomaticMission(player *Player, group []*Fleet, pos
 	if maximum > 0 && basic != nil && basic.Turns <= max(1, int(math.Ceil(group[0].Position.DistanceTo(position)/group[0].StrategicSpeed(maximum)))) {
 		return basic
 	}
+	if basic != nil && !fuelSupportForRole(player, group[0]) {
+		return basic
+	}
 	donors := t.availableFuelNetworkDonors(player, group)
 	if len(donors) == 0 {
 		return basic

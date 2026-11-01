@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -953,28 +954,60 @@ func (gr *gameRunner) generateUniverse(fullGame *cs.FullGame) error {
 }
 
 // process an ai player's turns
-func (gr *gameRunner) processAITurns(fullGame *cs.FullGame) {
+func (gr *gameRunner) processAITurns(g *cs.FullGame) {
+	gr.processAITurnsWorkers(g, runtime.GOMAXPROCS(0))
+}
+func (gr *gameRunner) processAITurnsWorkers(g *cs.FullGame, workers int) {
 	victors := []int{}
-	for _, p := range fullGame.Players {
+	for _, p := range g.Players {
 		if p.Victor && !p.AIControlled {
 			victors = append(victors, p.Num)
 		}
 	}
-	for _, player := range fullGame.Players {
-		if !player.AIControlled {
-			continue
+	type job struct {
+		p       *cs.Player
+		objects cs.PlayerMapObjects
+	}
+	jobs := []job{}
+	// Owner indices and slices are prepared before any worker mutates its own ships.
+	for _, p := range g.Players {
+		if p.AIControlled {
+			jobs = append(jobs, job{p, g.Universe.GetPlayerMapObjects(p.Num)})
 		}
-		// TODO: make this use copies to ensure the ai only updates orders?
-		// TODO: ai only ai processing
-		pmo := fullGame.Universe.GetPlayerMapObjects(player.Num)
-		ai := ai.NewAIPlayer(fullGame.Game, fullGame.TechStore, player, pmo, victors...)
-		if err := ai.ProcessTurn(); err != nil {
-			slog.Error("AI process turn error", slog.Any("error", err), slog.Int64("GameID", fullGame.ID), slog.Int("PlayerNum", player.Num))
-		}
-
-		if player.AIControlled {
-			player.SubmittedTurn = true
-		}
+	}
+	input := make(chan job)
+	failures := make(chan any, len(jobs))
+	var wg sync.WaitGroup
+	for range min(max(1, workers), len(jobs)) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := range input {
+				func() {
+					defer func() {
+						if failure := recover(); failure != nil {
+							failures <- failure
+						}
+					}()
+					computer := ai.NewAIPlayer(g.Game, g.TechStore, j.p, j.objects, victors...)
+					if err := computer.ProcessTurn(); err != nil {
+						slog.Error("AI process turn error", slog.Any("error", err), slog.Int64("GameID", g.ID), slog.Int("PlayerNum", j.p.Num))
+					}
+					j.p.SubmittedTurn = true
+				}()
+			}
+		}()
+	}
+	for _, j := range jobs {
+		input <- j
+	}
+	close(input)
+	wg.Wait()
+	// Re-raise on the turn runner so its existing transaction/error handler can recover.
+	select {
+	case failure := <-failures:
+		panic(failure)
+	default:
 	}
 }
 

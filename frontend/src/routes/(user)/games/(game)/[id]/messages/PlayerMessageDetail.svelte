@@ -1,4 +1,7 @@
 <script lang="ts">
+	import BattleLosses from '#lib/components/game/battle/BattleLosses.svelte';
+ import { getBattleRecordDetails } from '#lib/types/Battle.js';
+ import { noteworthyBattle } from '#lib/types/BattleSummary.js';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { PlayerMessageType, TechCategory, type PlayerMessage } from '#lib/types/cs-proto.js';
 	import TechnologyPressPreview from '#lib/components/tech/TechnologyPressPreview.svelte';
@@ -93,7 +96,10 @@
 {/if}
 
 {#if message.type===PlayerMessageType.BATTLE_REPORTS}
- {#each $universe.battleRecords as battle (battle.num)}
-  <a class="btn btn-sm btn-primary m-1" href={`/games/${$game.id}/battles/${battle.num}`}>Watch battle: {$universe.getBattleLocation(battle)}</a>
+ {@const minor = $universe.battleRecords.filter(b => !noteworthyBattle(b, $universe)).length}
+ {#if minor}<span>{minor} minor {minor === 1 ? 'battle' : 'battles'} without ship losses.</span>{/if}
+ {#each $universe.battleRecords.filter(b => noteworthyBattle(b, $universe)) as battle (battle.num)}
+  {@const details = getBattleRecordDetails(battle, $player, $universe)}
+  <a class="btn btn-sm btn-outline m-1" href={`/games/${$game.id}/battles/${battle.num}`} aria-label={`Battle ${battle.num}: enemy losses ${details.theirDead}, our losses ${details.ourDead}`}><BattleLosses own={details.ourDead} enemy={details.theirDead} /></a>
  {/each}
 {/if}

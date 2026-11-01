@@ -237,6 +237,13 @@ func (m *ShipDesignSpec) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.DefaultBattlePlan != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DefaultBattlePlan))
+		i--
+		dAtA[i] = 0x4
+		i--
+		dAtA[i] = 0x98
+	}
 	if m.MineralCargoBonus != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.MineralCargoBonus))
 		i--
@@ -1102,6 +1109,9 @@ func (m *ShipDesignSpec) SizeVT() (n int) {
 	}
 	if m.MineralCargoBonus != 0 {
 		n += 2 + protohelpers.SizeOfVarint(uint64(m.MineralCargoBonus))
+	}
+	if m.DefaultBattlePlan != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.DefaultBattlePlan))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -3079,6 +3089,25 @@ func (m *ShipDesignSpec) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.MineralCargoBonus |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 67:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DefaultBattlePlan", wireType)
+			}
+			m.DefaultBattlePlan = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DefaultBattlePlan |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

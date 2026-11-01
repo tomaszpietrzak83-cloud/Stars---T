@@ -130,6 +130,8 @@ func BattleTacticToCSBattleTactic(m craig_starsv1.BattleTactic) cs.BattleTactic 
 		return cs.BattleTacticMaximizeDamageRatio
 	case craig_starsv1.BattleTactic_BATTLE_TACTIC_MAXIMIZE_DAMAGE:
 		return cs.BattleTacticMaximizeDamage
+	case craig_starsv1.BattleTactic_BATTLE_TACTIC_MAXIMIZE_RANGE:
+		return cs.BattleTacticMaximizeRange
 	default:
 		return cs.BattleTactic("")
 	}
@@ -151,6 +153,8 @@ func CSBattleTacticToBattleTactic(m cs.BattleTactic) craig_starsv1.BattleTactic 
 		return craig_starsv1.BattleTactic_BATTLE_TACTIC_MAXIMIZE_DAMAGE_RATIO
 	case cs.BattleTacticMaximizeDamage:
 		return craig_starsv1.BattleTactic_BATTLE_TACTIC_MAXIMIZE_DAMAGE
+	case cs.BattleTacticMaximizeRange:
+		return craig_starsv1.BattleTactic_BATTLE_TACTIC_MAXIMIZE_RANGE
 	default:
 		return craig_starsv1.BattleTactic_BATTLE_TACTIC_UNSPECIFIED
 	}

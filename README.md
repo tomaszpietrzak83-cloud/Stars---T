@@ -12,6 +12,14 @@ Open the game at `http://localhost:5173`. The launcher signs into the local game
 
 The source is Go and Svelte/TypeScript. Developers need the Go version from `go.mod`, Node.js 22.17 or newer, and a CGO-capable C compiler. Run `npm ci` in `frontend`; build `wasm/main.go` using `GOOS=js GOARCH=wasm CGO_ENABLED=0` into `frontend/src/lib/wasm/cs.wasm`; run `npm run build` in `frontend`; build the native server with CGO into `windows/stars-local.exe`. The committed edition can be played without rebuilding.
 
+## Version 0.4.4
+
+Automatic patrol/escort stacks can split into independent ships and regroup for combat. Weapon-based design strategies include ranged Sniper tactics; the designer previews and edits shared battle plans without leaving the draft. Manual fleet plans override design defaults.
+
+Automatic colony ships without a colonization target can carry passengers, then resume colonization; nearby bombing can trigger staging at a friendly base. Marked enemy colonies receive fresh scout reconnaissance. Tankers prioritize fuel rescue and active combat over optional civilian top-ups. Mature colonies default to 50% research and 50% alchemy, configurable in Automation; ship/base orders restore ordinary taxation. Temporary production investments must preserve every native manufacturing deadline; automatic alchemy requires full factory/mine capacity. Battle summaries emphasize losses, and station markers have larger, outlined silhouettes.
+
+Scanner visibility uses an exact spatial index and bounded parallel work. AI planning runs per owner on available CPU cores. A paired copied-save measurement at year 2476 improved native turn generation from about 184 to 85 seconds; this is one measurement on one machine. Details and limits are in [the performance notes](docs/PERFORMANCE-0.4.4.txt). Personal saves and credentials are never included in this repository.
+
 ## Automation additions
 
 - Fuel planning uses actual engine economy, payload, safe speeds, owned fuel docks and reserved finite tanker stocks. Routes stop and replan when a service becomes unavailable. Unknown enemies and future enemy orders cannot be predicted.

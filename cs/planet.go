@@ -707,6 +707,9 @@ func (spec *PlanetSpec) computeResourcesPerYearAvailable(player *Player, planet 
 	if policy := player.Automation.ResearchTax; policy != nil && policy.Enabled {
 		percent, leftoversOnly = policy.Contribution(policy.value(planet.Cargo.Colonists*100, spec.ResourcesPerYear))
 	}
+	if matureColonyEconomy(player, planet, spec) {
+		percent, leftoversOnly = matureResearchRate(player), false
+	}
 	if leftoversOnly {
 		spec.ResourcesPerYearAvailable = spec.ResourcesPerYear
 		spec.ResourcesPerYearResearch = 0

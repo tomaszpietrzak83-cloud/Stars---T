@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/stretchr/testify/require"
 	"math"
+	"slices"
 	"testing"
 )
 
@@ -112,14 +113,16 @@ func TestManufacturingAlchemyMustReallyAccelerateMineralBlockedWork(t *testing.T
 	planet.ProductionQueue[0].Quantity = 1
 	_ = d
 	planet.Spec = ComputePlanetSpec(&u.Game.Rules, p, planet)
+	planet.Factories, planet.Mines = planet.Spec.MaxFactories, planet.Spec.MaxMines
+	planet.Spec = ComputePlanetSpec(&u.Game.Rules, p, planet)
 	baseline, err := forecastManufacturing(&u.Game.Rules, p, planet, planet.ProductionQueue, 0, Mineral{})
 	require.NoError(t, err)
-	require.Equal(t, math.MaxInt, baseline.Finish[0])
+	require.Greater(t, baseline.Finish[0], 1)
 	PlanDefaultAuto(&u.Game.Rules, p, planet)
 	after, err := forecastManufacturing(&u.Game.Rules, p, planet, planet.ProductionQueue, 0, Mineral{})
 	require.NoError(t, err)
 	require.Less(t, after.Finish[0], 100)
-	require.Equal(t, QueueItemTypeAutoMineralAlchemy, planet.ProductionQueue[0].Type)
+	require.True(t, slices.ContainsFunc(planet.ProductionQueue, func(item ProductionQueueItem) bool { return item.Type == QueueItemTypeAutoMineralAlchemy }), "queue: %+v; capacity: %d/%d, %d/%d", planet.ProductionQueue, planet.Factories, planet.Spec.MaxFactories, planet.Mines, planet.Spec.MaxMines)
 	require.Zero(t, planet.Cargo.Ironium, "forecast must not create real minerals")
 }
 
@@ -246,5 +249,33 @@ func TestUnitRefinementDoesNotLeaveAnImprovingAdjacentShipBatchInvestment(t *tes
 		if manufacturingDatesNoLater(candidate, baseline) {
 			require.False(t, betterManufacturing(candidate, result), "an adjacent one-unit improvement was missed: %d/%d", f, m)
 		}
+	}
+}
+
+func TestEightShipsCannotBeDelayedByAutomaticDevelopmentOrCache(t *testing.T) {
+	u, p, planet, d := manufacturingTestWorld(t)
+	planet.Cargo.Colonists = 9000
+	p.Race.NumFactories = 15
+	p.Race.Spec = ComputeRaceSpec(&p.Race, &u.Game.Rules)
+	planet.Factories = 1000
+	planet.Spec = ComputePlanetSpec(&u.Game.Rules, p, planet)
+	batch := ProductionQueueItem{Type: QueueItemTypeShipToken, DesignNum: d.Num, Quantity: 8, design: d}
+	baseline := []ProductionQueueItem{batch}
+	planet.ProductionQueue = []ProductionQueueItem{{Type: QueueItemTypeAutoFactories, Quantity: 70}, {Type: QueueItemTypeAutoMines, Quantity: 72}, batch}
+	PlanProductionBoost(&u.Game.Rules, p, planet)
+	require.True(t, displayedManufacturingNoLater(&u.Game.Rules, p, planet, planet.ProductionQueue, baseline))
+	first := planet.ProductionQueue
+	PlanProductionBoost(&u.Game.Rules, p, planet)
+	require.True(t, displayedManufacturingNoLater(&u.Game.Rules, p, planet, planet.ProductionQueue, baseline))
+	require.Equal(t, first, planet.ProductionQueue)
+}
+
+func TestAutomaticAlchemyIsForbiddenBelowInstallationCapacity(t *testing.T) {
+	u, p, planet, _ := manufacturingTestWorld(t)
+	planet.Cargo.Ironium, planet.Cargo.Boranium, planet.Cargo.Germanium = 0, 0, 0
+	require.Less(t, planet.Factories, planet.Spec.MaxFactories)
+	PlanDefaultAuto(&u.Game.Rules, p, planet)
+	for _, item := range planet.ProductionQueue {
+		require.False(t, item.Type == QueueItemTypeAutoMineralAlchemy && item.GetTag(starbaseBoostTag) != "")
 	}
 }

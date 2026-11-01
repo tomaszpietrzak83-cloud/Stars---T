@@ -48,6 +48,7 @@ export function battleTargetToString(target: BattleTarget): string {
 export const BattleTacticDescriptions: {
 	[key in BattleTactic]: string;
 } = {
+	[BattleTactic.MAXIMIZE_RANGE]: 'Sniper: fire from the greatest usable distance, preferring positions with less incoming damage. Approach only when no target is in range.',
 	[BattleTactic.UNSPECIFIED]: '',
 	[BattleTactic.DISENGAGE]:
 		'Ships will not attack and will move away from enemy weapons, leaving the battle after 7 moves.',

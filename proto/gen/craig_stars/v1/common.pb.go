@@ -765,6 +765,7 @@ const (
 	BattleTactic_BATTLE_TACTIC_MAXIMIZE_NET_DAMAGE     BattleTactic = 4
 	BattleTactic_BATTLE_TACTIC_MAXIMIZE_DAMAGE_RATIO   BattleTactic = 5
 	BattleTactic_BATTLE_TACTIC_MAXIMIZE_DAMAGE         BattleTactic = 6
+	BattleTactic_BATTLE_TACTIC_MAXIMIZE_RANGE          BattleTactic = 7
 )
 
 // Enum value maps for BattleTactic.
@@ -777,6 +778,7 @@ var (
 		4: "BATTLE_TACTIC_MAXIMIZE_NET_DAMAGE",
 		5: "BATTLE_TACTIC_MAXIMIZE_DAMAGE_RATIO",
 		6: "BATTLE_TACTIC_MAXIMIZE_DAMAGE",
+		7: "BATTLE_TACTIC_MAXIMIZE_RANGE",
 	}
 	BattleTactic_value = map[string]int32{
 		"BATTLE_TACTIC_UNSPECIFIED":             0,
@@ -786,6 +788,7 @@ var (
 		"BATTLE_TACTIC_MAXIMIZE_NET_DAMAGE":     4,
 		"BATTLE_TACTIC_MAXIMIZE_DAMAGE_RATIO":   5,
 		"BATTLE_TACTIC_MAXIMIZE_DAMAGE":         6,
+		"BATTLE_TACTIC_MAXIMIZE_RANGE":          7,
 	}
 )
 
@@ -1896,7 +1899,7 @@ const file_craig_stars_v1_common_proto_rawDesc = "" +
 	" BATTLE_TARGET_BOMBERS_FREIGHTERS\x10\x04\x12\x1f\n" +
 	"\x1bBATTLE_TARGET_UNARMED_SHIPS\x10\x05\x12!\n" +
 	"\x1dBATTLE_TARGET_FUEL_TRANSPORTS\x10\x06\x12\x1c\n" +
-	"\x18BATTLE_TARGET_FREIGHTERS\x10\a*\x93\x02\n" +
+	"\x18BATTLE_TARGET_FREIGHTERS\x10\a*\xb5\x02\n" +
 	"\fBattleTactic\x12\x1d\n" +
 	"\x19BATTLE_TACTIC_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17BATTLE_TACTIC_DISENGAGE\x10\x01\x12)\n" +
@@ -1904,7 +1907,8 @@ const file_craig_stars_v1_common_proto_rawDesc = "" +
 	"%BATTLE_TACTIC_MINIMIZE_DAMAGE_TO_SELF\x10\x03\x12%\n" +
 	"!BATTLE_TACTIC_MAXIMIZE_NET_DAMAGE\x10\x04\x12'\n" +
 	"#BATTLE_TACTIC_MAXIMIZE_DAMAGE_RATIO\x10\x05\x12!\n" +
-	"\x1dBATTLE_TACTIC_MAXIMIZE_DAMAGE\x10\x06*\x9f\x01\n" +
+	"\x1dBATTLE_TACTIC_MAXIMIZE_DAMAGE\x10\x06\x12 \n" +
+	"\x1cBATTLE_TACTIC_MAXIMIZE_RANGE\x10\a*\x9f\x01\n" +
 	"\x0fBattleAttackWho\x12!\n" +
 	"\x1dBATTLE_ATTACK_WHO_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19BATTLE_ATTACK_WHO_ENEMIES\x10\x01\x12*\n" +

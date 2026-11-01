@@ -77,8 +77,9 @@ func (ai *aiPlayer) scout() error {
 		slog.Int64("GameID", ai.GameID),
 		slog.Int("PlayerNum", ai.Num))
 
+	planetIndex := newPlanetIntelIndex(unknownPlanetsByNum)
 	for _, fleet := range scannerFleets {
-		closestPlanet := ai.getClosestPlanetIntel(fleet.Position, unknownPlanetsByNum)
+		closestPlanet := planetIndex.nearest(fleet.Position, unknownPlanetsByNum)
 		if closestPlanet != nil {
 
 			fastest := float64(fleet.Fuel)/float64(fleet.Spec.FuelCapacity) > .5

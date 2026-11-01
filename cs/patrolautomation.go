@@ -11,6 +11,7 @@ const patrolTag = "automatic-patrol"
 const patrolSupportTag = "patrol-support-role"
 
 type patrolJob struct {
+	RecruitPower   int         `json:"recruitPower,omitempty"`
 	GatheringSince int         `json:"gatheringSince,omitempty"`
 	SupportDesigns map[int]int `json:"supportDesigns,omitempty"`
 	Leader         int         `json:"leader,omitempty"`
@@ -154,7 +155,7 @@ func patrolCanAttack(player *Player, fleet *Fleet) bool {
 	return job.Leader == fleet.Num && enemy != nil && patrolPower(fleet) >= patrolThreat(player, enemy)*3/2+1
 }
 func patrolAvailable(player *Player, f *Fleet) bool {
-	return f.GetTag("maintenance-pending") == "" && !fuelNetworkManaged(f) && !f.Delete && !f.Starbase && (player.Automation.FleetRoles[f.Num] == "patrol" || player.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(escortTag) == "" && f.GetTag(bomberBorrowTag) == "") && f.Spec.HasWeapons && patrolPower(f) > 0 && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !player.FleetInActiveAssembly(f) && f.GetTag(tankerAwaitTag) == "" && readTankerJob(f) == nil && fleetDamagePercent(f) < player.Automation.repairThreshold()
+	return f.GetTag(patrolSalvageTag) == "" && f.GetTag(anticipatedSalvageTag) == "" && f.GetTag("maintenance-pending") == "" && !fuelNetworkManaged(f) && !f.Delete && !f.Starbase && (player.Automation.FleetRoles[f.Num] == "patrol" || player.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(escortTag) == "" && f.GetTag(bomberBorrowTag) == "") && f.Spec.HasWeapons && patrolPower(f) > 0 && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !player.FleetInActiveAssembly(f) && f.GetTag(tankerAwaitTag) == "" && readTankerJob(f) == nil && fleetDamagePercent(f) < player.Automation.repairThreshold()
 }
 func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 	job := readPatrolJob(leader)
@@ -303,7 +304,7 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 	}
 	needed := patrolThreat(player, enemy)*3/2 + 1
 	for _, m := range t.game.getFleets(player.Num) {
-		if current >= needed {
+		if current >= max(needed, job.RecruitPower) {
 			break
 		}
 		if m == leader || !patrolAvailable(player, m) || readPatrolJob(m).Leader != 0 || m.Position.DistanceTo(leader.Position) > 100 || m.Fuel < m.Spec.FuelCapacity/4 {
@@ -438,6 +439,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 				}
 			}
 			if job.Leader == fleet.Num && !fleet.Delete {
+				t.retargetPatrolOpportunity(player, fleet)
 				t.advancePatrol(player, fleet)
 			}
 			if job.Leader != 0 && job.Leader != fleet.Num {

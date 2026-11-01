@@ -167,3 +167,17 @@ func TestMineralPickupRequestsDeliveryEscortBeforeLoading(t *testing.T) {
 		})
 	}
 }
+
+func TestBombardmentEscortDoesNotBlockPassingCivilianRoute(t *testing.T) {
+	u := logisticsUniverse(t)
+	p := u.Player(1)
+	planet := u.Planet("Home")
+	planet.Position = Vector{20, 10}
+	p.PlanetIntels = []*Planet{planet}
+	enemy := &Fleet{MapObject: MapObject{PlayerNum: 2, Num: 90, Position: planet.Position}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true, Bomber: true, PowerRating: 100}}}
+	p.FleetIntels = []*Fleet{enemy}
+	require.Zero(t, knownRouteThreat(p, Vector{0, 0}, Vector{40, 0}))
+	require.Positive(t, knownRouteThreat(p, Vector{0, 0}, planet.Position), "entering the occupied orbit can still cause native combat")
+	enemy.WarpSpeed = 6
+	require.Positive(t, knownRouteThreat(p, Vector{0, 0}, Vector{40, 0}), "a moving formation must be treated as mobile again")
+}

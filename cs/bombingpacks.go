@@ -85,7 +85,7 @@ func (t *turnGenerator) finishBombingPacks() {
 				continue
 			}
 			target := p.GetPlanetIntel(pack.Target)
-			done := target == nil || !target.Owned() || target.PlayerNum == p.Num || p.IsFriend(target.PlayerNum) || p.Automation.PriorityPlanets[pack.Target] && target.Cargo.Colonists <= 1000 && target.Defenses == 0 && !target.Spec.HasStarbase
+			done := target == nil || !target.Owned() || target.PlayerNum == p.Num || p.IsFriend(target.PlayerNum) || !priorityNeedsBombing(target) && bombingDelegatedToLanding(p, target, t.game.getFleets(p.Num))
 			if done || p.Automation.FleetRoles[f.Num] != "bomber" {
 				t.dissolveBombingPack(p, f, pack)
 			}

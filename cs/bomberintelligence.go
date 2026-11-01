@@ -84,7 +84,7 @@ func bomberChaseThreat(p *Player, f *Fleet) int {
 			continue
 		}
 		distance := f.Position.DistanceTo(enemy.Position)
-		speed := max(100, enemy.observedStrategicSpeed())
+		speed := max(0, enemy.observedStrategicSpeed())
 		toward := f.Position.Subtract(enemy.Position).Normalized()
 		closing := enemy.Heading.X*toward.X + enemy.Heading.Y*toward.Y
 		if distance <= speed+3 || closing > .5 && distance <= 2*speed+3 {
@@ -94,22 +94,50 @@ func bomberChaseThreat(p *Player, f *Fleet) int {
 	return power
 }
 func (t *turnGenerator) automaticBombingTarget(p *Player, f *Fleet) *Planet {
-	if target := priorityBombingTarget(p, f); target != nil {
-		return target
-	}
-	var best *Planet
-	score := math.Inf(1)
+	candidates := []*Planet{}
 	for _, planet := range p.PlanetIntels {
-		if planet == nil || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || p.Automation.PriorityPlanets[planet.Num] && planet.Cargo.Colonists <= 1000 && planet.Defenses == 0 && !planet.Spec.HasStarbase {
+		if planet == nil || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || !priorityNeedsBombing(planet) && bombingDelegatedToLanding(p, planet, t.game.getFleets(p.Num)) {
 			continue
 		}
-		candidate := f.Position.DistanceTo(planet.Position)
-		if candidate < score || candidate == score && (best == nil || planet.Num < best.Num) {
-			best, score = planet, candidate
+		candidates = append(candidates, planet)
+	}
+	owned := t.game.getPlanets(p.Num)
+	distances := map[int]float64{}
+	borderDistance := func(planet *Planet) float64 {
+		if cached, ok := distances[planet.Num]; ok {
+			return cached
+		}
+		nearest := math.Inf(1)
+		for _, colony := range owned {
+			nearest = min(nearest, planet.Position.DistanceTo(colony.Position))
+		}
+		value := f.Position.DistanceTo(planet.Position) + nearest*.25
+		distances[planet.Num] = value
+		return value
+	}
+	sort.SliceStable(candidates, func(i, j int) bool {
+		a, b := p.Automation.PriorityPlanets[candidates[i].Num], p.Automation.PriorityPlanets[candidates[j].Num]
+		if a != b {
+			return a
+		}
+		x, y := borderDistance(candidates[i]), borderDistance(candidates[j])
+		if x == y {
+			return candidates[i].Num < candidates[j].Num
+		}
+		return x < y
+	})
+	for _, target := range candidates[:min(32, len(candidates))] {
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, target.Position, target.ToTarget(), automaticRoutePolicy{AllowThreat: true, MinWarp: automaticCruiseWarp(p, f), MaxTurns: 20})
+		if route != nil {
+			return target
 		}
 	}
-	return best
+	if len(candidates) > 0 {
+		return candidates[0]
+	} // Retain an explicit fuel/escort request, never silently disable the role.
+	return nil
 }
+
 func borrowBomberProtection(p *Player, escort, bomber *Fleet) {
 	if escort.GetTag(bomberBorrowTag) == "" {
 		orders := escort.FleetOrders

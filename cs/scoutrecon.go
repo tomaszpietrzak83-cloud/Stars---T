@@ -46,6 +46,17 @@ func (t *turnGenerator) repairStaleScoutRoles() {
 			if f.Delete || p.Automation.FleetRoles[f.Num] != "scout" {
 				continue
 			}
+			if f.Spec.HasWeapons && !f.Spec.Scanner {
+				p.Automation.FleetRoles[f.Num] = "patrol"
+				delete(f.Tags, scoutReconTag)
+				delete(f.Tags, scoutMissionTag)
+				delete(f.Tags, scoutTag)
+				if work := readMaintenance(f); work != nil {
+					work.OriginalRole = "patrol"
+					writeMaintenance(f, work)
+				}
+				continue
+			}
 			freight := len(f.Tokens) > 0
 			for _, token := range f.Tokens {
 				d := p.GetDesign(token.DesignNum)

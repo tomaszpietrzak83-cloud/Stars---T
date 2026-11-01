@@ -4,17 +4,22 @@ import "fmt"
 
 // Population thresholds are people, while Cargo.Colonists is hundreds of people.
 type ResearchTaxPolicy struct {
-	Basis           string `json:"basis,omitempty"`
-	Enabled         bool   `json:"enabled,omitempty"`
-	LeftoverUntil   int    `json:"leftoverUntil,omitempty"`
-	MediumThreshold int    `json:"mediumThreshold,omitempty"`
-	LargeThreshold  int    `json:"largeThreshold,omitempty"`
-	SmallPercent    int    `json:"smallPercent,omitempty"`
-	MediumPercent   int    `json:"mediumPercent,omitempty"`
-	LargePercent    int    `json:"largePercent,omitempty"`
+	DisableMatureEconomy  bool   `json:"disableMatureEconomy,omitempty"`
+	MatureResearchPercent *int   `json:"matureResearchPercent,omitempty"`
+	Basis                 string `json:"basis,omitempty"`
+	Enabled               bool   `json:"enabled,omitempty"`
+	LeftoverUntil         int    `json:"leftoverUntil,omitempty"`
+	MediumThreshold       int    `json:"mediumThreshold,omitempty"`
+	LargeThreshold        int    `json:"largeThreshold,omitempty"`
+	SmallPercent          int    `json:"smallPercent,omitempty"`
+	MediumPercent         int    `json:"mediumPercent,omitempty"`
+	LargePercent          int    `json:"largePercent,omitempty"`
 }
 
 func (p ResearchTaxPolicy) Validate() error {
+	if p.MatureResearchPercent != nil && (*p.MatureResearchPercent < 0 || *p.MatureResearchPercent > 100) {
+		return fmt.Errorf("mature colony research must be 0-100 percent")
+	}
 	if p.Basis != "" && p.Basis != "population" && p.Basis != "resources" {
 		return fmt.Errorf("research tax basis must be population or resources")
 	}
@@ -54,4 +59,38 @@ func (p ResearchTaxPolicy) value(population, resources int) int {
 		return resources
 	}
 	return population
+}
+
+const matureAlchemyTag = "mature-economy"
+
+func matureColonyEconomy(player *Player, planet *Planet, spec *PlanetSpec) bool {
+	if player.AIControlled || player.Automation.ResearchTax != nil && player.Automation.ResearchTax.DisableMatureEconomy {
+		return false
+	}
+	if !(player.Race.Spec.InnateResources || spec.MaxFactories > 0 && planet.Factories >= spec.MaxFactories) || !(player.Race.Spec.InnateMining || spec.MaxMines > 0 && planet.Mines >= spec.MaxMines) {
+		return false
+	}
+	for _, item := range planet.ProductionQueue {
+		if manufacturingItem(item) && item.Quantity > 0 {
+			return false
+		}
+	}
+	return true
+}
+func matureResearchRate(player *Player) int {
+	if policy := player.Automation.ResearchTax; policy != nil && policy.MatureResearchPercent != nil {
+		return Clamp(*policy.MatureResearchPercent, 0, 100)
+	}
+	return 50
+}
+func planMatureAlchemy(player *Player, planet *Planet) {
+	if !matureColonyEconomy(player, planet, &planet.Spec) || matureResearchRate(player) >= 100 {
+		return
+	}
+	for _, item := range planet.ProductionQueue {
+		if item.Type == QueueItemTypeAutoMineralAlchemy {
+			return
+		}
+	}
+	planet.ProductionQueue = append(planet.ProductionQueue, ProductionQueueItem{Type: QueueItemTypeAutoMineralAlchemy, Quantity: 1, Tags: Tags{matureAlchemyTag: "1"}})
 }

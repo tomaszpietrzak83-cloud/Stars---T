@@ -393,6 +393,7 @@ func (o *orders) SplitFleet(rules *Rules, player *Player, playerFleets []*Fleet,
 		}
 	}
 
+	newDestination := dest == nil
 	// create a new dest fleet if dest is nil
 	if dest == nil {
 		// create a new fleet
@@ -466,6 +467,10 @@ func (o *orders) SplitFleet(rules *Rules, player *Player, playerFleets []*Fleet,
 	source.Spec = splitSource.Spec
 	dest.Spec = splitDest.Spec
 
+	if newDestination {
+		player.resetFleetAutomationNumber(dest.Num)
+		player.InheritAutomaticRole(source, dest)
+	}
 	// a fleet shouldn't keep the name of a design that moved to the other fleet
 	source.resetDefaultName(dest)
 	dest.resetDefaultName(source)
@@ -739,6 +744,7 @@ func (o *orders) splitFleetTokens(rules *Rules, player *Player, playerFleets []*
 	source.ComputeFuelUsage(player)
 	fleet.ComputeFuelUsage(player)
 
+	player.resetFleetAutomationNumber(fleet.Num)
 	return &fleet, nil
 }
 

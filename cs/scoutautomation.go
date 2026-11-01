@@ -94,6 +94,9 @@ func (t *turnGenerator) planScoutAutomation() {
 			if !scoutHasRetirement(player, fleet) && t.planScoutRecon(player, fleet) {
 				continue
 			}
+			if !scoutHasRetirement(player, fleet) && t.planPriorityColonyRecon(player, fleet) {
+				continue
+			}
 			if unknown == 0 && !scoutHasRetirement(player, fleet) && !fleet.InAutomaticSafety() && !scoutReconActive(player, fleet) && t.patrolFrontier(player, fleet) {
 				fleet.SetTag(scoutTag, "Frontier reconnaissance: scanning for enemy traffic")
 				continue

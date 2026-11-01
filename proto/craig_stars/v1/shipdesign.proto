@@ -193,4 +193,6 @@ message ShipDesignSpec {
   repeated ShipDesignSlot weapon_slots = 64;
   ShipClass ship_class = 65;
   int32 mineral_cargo_bonus = 66;
+  // 0: automatic equipment-based strategy; otherwise battle plan number + 1.
+  int32 default_battle_plan = 67;
 }

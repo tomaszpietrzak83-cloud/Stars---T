@@ -1025,6 +1025,7 @@ func (c *ProtoConverter) ConvertCSShipDesignSpec(source cs.ShipDesignSpec) *v1.S
 	}
 	craig_starsv1ShipDesignSpec.ShipClass = CSShipClassToShipClass(source.ShipClass)
 	craig_starsv1ShipDesignSpec.MineralCargoBonus = IntToInt32(source.MineralCargoBonus)
+	craig_starsv1ShipDesignSpec.DefaultBattlePlan = IntToInt32(source.DefaultBattlePlan)
 	return &craig_starsv1ShipDesignSpec
 }
 func (c *ProtoConverter) ConvertCSShipDesigns(source []*cs.ShipDesign) []*v1.ShipDesign {
@@ -2146,6 +2147,7 @@ func (c *ProtoConverter) ConvertShipDesignSpec(source *v1.ShipDesignSpec) *cs.Sh
 	var pCsShipDesignSpec *cs.ShipDesignSpec
 	if source != nil {
 		var csShipDesignSpec cs.ShipDesignSpec
+		csShipDesignSpec.DefaultBattlePlan = Int32ToInt((*source).DefaultBattlePlan)
 		csShipDesignSpec.AdditionalMassDrivers = Int32ToInt((*source).AdditionalMassDrivers)
 		csShipDesignSpec.Armor = Int32ToInt((*source).Armor)
 		csShipDesignSpec.BasePacketSpeed = Int32ToInt((*source).BasePacketSpeed)
@@ -4132,6 +4134,11 @@ func (c *ProtoConverter) pCraig_starsv1ResearchTaxPolicyToPCsResearchTaxPolicy(s
 	var pCsResearchTaxPolicy *cs.ResearchTaxPolicy
 	if source != nil {
 		var csResearchTaxPolicy cs.ResearchTaxPolicy
+		csResearchTaxPolicy.DisableMatureEconomy = (*source).DisableMatureEconomy
+		if (*source).MatureResearchPercent != nil {
+			xint := Int32ToInt(*(*source).MatureResearchPercent)
+			csResearchTaxPolicy.MatureResearchPercent = &xint
+		}
 		csResearchTaxPolicy.Basis = (*source).Basis
 		csResearchTaxPolicy.Enabled = (*source).Enabled
 		csResearchTaxPolicy.LeftoverUntil = Int32ToInt((*source).LeftoverUntil)
@@ -4168,6 +4175,7 @@ func (c *ProtoConverter) pCraig_starsv1ShipDesignSlotToCsShipDesignSlot(source *
 func (c *ProtoConverter) pCraig_starsv1ShipDesignSpecToCsShipDesignSpec(source *v1.ShipDesignSpec) cs.ShipDesignSpec {
 	var csShipDesignSpec cs.ShipDesignSpec
 	if source != nil {
+		csShipDesignSpec.DefaultBattlePlan = Int32ToInt((*source).DefaultBattlePlan)
 		csShipDesignSpec.AdditionalMassDrivers = Int32ToInt((*source).AdditionalMassDrivers)
 		csShipDesignSpec.Armor = Int32ToInt((*source).Armor)
 		csShipDesignSpec.BasePacketSpeed = Int32ToInt((*source).BasePacketSpeed)
@@ -4623,6 +4631,11 @@ func (c *ProtoConverter) pCsResearchTaxPolicyToPCraig_starsv1ResearchTaxPolicy(s
 		craig_starsv1ResearchTaxPolicy.MediumPercent = IntToInt32((*source).MediumPercent)
 		craig_starsv1ResearchTaxPolicy.LargePercent = IntToInt32((*source).LargePercent)
 		craig_starsv1ResearchTaxPolicy.Basis = (*source).Basis
+		craig_starsv1ResearchTaxPolicy.DisableMatureEconomy = (*source).DisableMatureEconomy
+		if (*source).MatureResearchPercent != nil {
+			xint32 := IntToInt32(*(*source).MatureResearchPercent)
+			craig_starsv1ResearchTaxPolicy.MatureResearchPercent = &xint32
+		}
 		pCraig_starsv1ResearchTaxPolicy = &craig_starsv1ResearchTaxPolicy
 	}
 	return pCraig_starsv1ResearchTaxPolicy

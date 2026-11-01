@@ -12,8 +12,9 @@ import (
 // A Player contains all intel, messages, tech levels, and research orders for a single empire in the game.
 // It is tied to a single User (or no user, for AI)
 type Player struct {
-	shipIntelIndex map[playerObject]*ShipDesign
-	shipIntelCount int
+	routeThreatIndex *routeThreatIndex
+	shipIntelIndex   map[playerObject]*ShipDesign
+	shipIntelCount   int
 	GameDBObject
 	PlayerOrders
 	Intels
@@ -188,6 +189,8 @@ const (
 	BattleTacticMaximizeNetDamage    BattleTactic = "MaximizeNetDamage"
 	BattleTacticMaximizeDamageRatio  BattleTactic = "MaximizeDamageRatio"
 	BattleTacticMaximizeDamage       BattleTactic = "MaximizeDamage"
+	// Maintain the longest firing distance, minimizing incoming damage first.
+	BattleTacticMaximizeRange BattleTactic = "MaximizeRange"
 )
 
 type BattleAttackWho string
@@ -786,9 +789,9 @@ func (p *Player) defaultPlans() PlayerPlans {
 			{
 				Num:             3,
 				Name:            "Sniper",
-				PrimaryTarget:   BattleTargetUnarmedShips,
-				SecondaryTarget: BattleTargetNone,
-				Tactic:          BattleTacticDisengageIfChallenged,
+				PrimaryTarget:   BattleTargetArmedShips,
+				SecondaryTarget: BattleTargetAny,
+				Tactic:          BattleTacticMaximizeRange,
 				AttackWho:       BattleAttackWhoEnemiesAndNeutrals,
 			},
 			{

@@ -331,6 +331,9 @@ func (t *turnGenerator) planFuelNetworks() {
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
 		for _, customer := range fleets {
 			request := readAutomaticFuelRequest(customer)
+			if !fuelAssistanceUseful(player, customer, request) {
+				continue
+			}
 			if request == nil || customer.Delete || customer.InAutomaticSafety() || fuelNetworkManaged(customer) || customer.GetTag(tankerAwaitTag) != "" {
 				continue
 			}

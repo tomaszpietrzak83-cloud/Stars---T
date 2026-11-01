@@ -445,3 +445,37 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 0.4.3 evidence: current copied database has 144 players, 12,600 planets, 30,858 fleet/base rows. Paired native generation: 127.224s -> 76.169s. CPU profiles identify linear design-intel lookup, SQLite and JSON; indexed reports and bounded parallel lossless encoding implemented. Full Go suite (including core) passed; real 144-player reports round-trip exactly, serial/parallel reads equal. Core regressions cover manual control, stale merged roles, cancellation of pending rebuild flags on Manual, keeping newer manual orders, single-ship contact scouting, deferred impossible patrol targets, bomb power excluded from anti-ship strength, funded empty returns, full-load mineral pickup with prior escort request, and productive defaultauto annual limits. Frontend: zero check errors/warnings and 19 tests passed, including rebuilding sort and own order labels. Isolated compiled native/WASM/static UI smoke passed. Rebuild audit: latest versions include 60 destroyers, 16 frigates, 23 scouts and 22 total freighters built; no outstanding reserved replacement queues at year 2470. One old rally route was blocked and now uses funded recovery. Wayfarer ironium delivery has a real enemy group with 16 frigates at the destination; protection is requested before loading, rather than silently treating an available full load as unavailable. Current-save manual repair is tested first on a separate copied database with a fingerprint of every non-repair game column. Items 177-179 and 182 retain their open status until their complete requirements have been verified.
 
 0.4.3 live deployment: fresh pre-update backup at year 2470; restored own manual groups 99, 57, 68 and 20 from their saved pre-borrow orders. Fingerprint of every other game column remained equal; no turn, movement, cargo, fuel or production edits. Deployment-only coordinate encoding was corrected to integral JSON and live UI/API rechecked successfully. Live read-only verification passed autologin, rebuilding sort, Manual for the 51-ship group and scanner with mutating API calls blocked. No save, authentication data, profiles or audit copies are published. Open larger coordination/logistics items remain recorded above.
+
+[x] 195. Accelerate scanner visibility with exact spatial pruning and parallel read-only work; preserve native discoveries, cloaking, ally sharing and ordering.
+[x] 196. Parallel AI planning by disjoint owner with serial/parallel equivalence on a copied current game.
+[ ] 197. Distinguish committed bomber escorts from interceptors using visible course, weapon range/reach and protected planet position; mobilize opposition without blanket freezing civilian corridors.
+[x] 198. Petra eight-destroyer order: validate cached/new boosters against every native displayed deadline, prioritizing earlier completion and never delaying a batch; replay the submitted turn.
+
+[x] 199. Split large automated patrol/escort fleets into an assignable pool; preserve active wolf packs and Manual.
+[x] 200. Equipment-based design battle strategies, Sniper ranged movement, preview/edit in designer without losing draft.
+[x] 201. Audit idle bombers and priority enemy colonies on copied current save.
+[x] 202. First-message battle loss links: green enemy/red own, aggregate minor no-loss battles, retain >10 warship battles; report colors.
+
+[x] 203. Henbane: automatic F/M before base only without delay; automatic alchemy only when existing F/M reach current maxima.
+
+[x] 204. Investigate incorrect Scout inheritance on unscanned destroyers; prevent stale roles on reused split fleet IDs and repair armed non-scanner scouts.
+[x] 205. Idle colonizers carry passengers only, retain colonization role, resume when worlds become available; pre-position against visible bombing targets.
+[x] 206. Mature colonies: configurable default 50% research / 50% alchemy; ship/base orders restore ordinary taxation.
+[x] 207. Bombers prioritize reachable enemy border colonies, including non-priority worlds; refresh stale priority reports with scouts.
+
+[x] 208. Surviving patrol targets recruit nearby reinforcements without freezing the original hunter. Size-match salvage collectors, and stage collectors for clearly superior attacks against confirmed unarmed fleets.
+
+[x] 209. Patrols abandon distant/receding chases for nearby funded one-turn opportunities; retain urgent bomber defense and avoid duplicating a sufficient nearby hunter.
+
+[x] 210. Fueled colonizers with a valid fixed-dock route abandon optional stationary tanker nodes; routine assistance uses moving rendezvous, retaining necessary multi-stop rescue. Audit live 2475 tanker 62 / Santa Maria 54 on a copy.
+
+[x] 211. Tanker scope: prioritize real fuel rescue and active combat/interception; suppress optional top-ups for fueled civilian ships. Mobile rendezvous planning precedes static multi-node fallback and requires tanker motion toward customers.
+
+[x] 212. Normal scanner: larger station silhouette, high-contrast halo and minimum on-screen scale, aligned labels/selection.
+
+[ ] 213. Re-evaluate every patrol target yearly using reachable predicted enemy endpoints; clean owned territory inside-out, assemble nearby patrols for multi-ship unarmed targets and account for usable gates, not merely visible gates.
+[ ] 214. Mystery Trader priority: reserve the engine-required mineral cargo and transport capacity, assemble a trade convoy and intercept the trader at a suitable point on its visible course through owned space.
+
+[ ] 215. Stable base-centered patrol sectors across the whole empire; cover birth/nearby bases and local easy targets before outward relocation, rebalance uncovered colonies while retaining fuel, repair and mutual defense support.
+
+0.4.4 evidence: native cs/ai/database/server/converter suites pass; 72 selected frontend tests and Svelte check (zero errors/warnings) pass. Isolated compiled UI/native smoke covers inline strategy editing with preserved design draft and persisted default plan. Copied year-2470 Petra case: eight destroyers retain a one-year native ETA with one temporary factory and two mines. Copied year-2475 tanker/colonizer case: optional stationary reservation released; colony ship selects an independently funded 10-year mission instead. Exact fleet visibility matches original code for 144 players / 30,825 fleets. Per-owner AI decisions match serial execution, and worker panics propagate to the turn runner. Windows race runtime could not reserve its required shadow memory; no race-clean claim is made. Stationary siege guards have a narrow orbital threat corridor; moving escort intent remains under item 197. Items 177,178,179,182,197 and the newest 213-215 requests remain open where complete integration has not been verified.

@@ -445,7 +445,7 @@ function setNormal(
 
 	const radius = owned(planet) ? (commanded ? 6 : 3) : commanded ? 4 : 2;
 	const ringRadius = radius * 2.5;
-	const starbaseWidth = commanded ? 6 : 4;
+	const starbaseWidth = commanded ? 12 : 10;
 	const starbaseSpec = markers ? planet.spec?.planetStarbaseSpec : undefined;
 
 	let ring: NonNullable<PlanetDraw['normal']>['ring'];

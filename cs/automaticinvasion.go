@@ -37,10 +37,10 @@ func (t *turnGenerator) findAutomaticInvasion(player *Player, fleet *Fleet) *log
 		}
 		priority := player.Automation.PriorityPlanets[target.Num]
 		// Bombers soften dense priority colonies before new transports depart.
-		if priority && target.Cargo.Colonists > 1000 {
+		if priority && priorityNeedsBombing(target) {
 			continue
 		}
-		if !invasionColony(player, target) || target.ReportAge > 2 || !priority && (claimed[target.Num] || active >= max(1, (workers+2)/3)) {
+		if !invasionColony(player, target) || !priority && target.ReportAge > 2 || !priority && (claimed[target.Num] || active >= max(1, (workers+2)/3)) {
 			continue
 		}
 		virtual := *fleet
@@ -101,8 +101,8 @@ func (t *turnGenerator) loadAutomaticInvaders(player *Player, fleet *Fleet, job 
 		return
 	}
 	target := player.GetPlanetIntel(job.DeliveryNum)
-	if player.Automation.PriorityPlanets[target.Num] && target.Cargo.Colonists > 1000 {
-		job.Status = "Waiting empty at source for bombers to reduce the target below 100,000 inhabitants"
+	if player.Automation.PriorityPlanets[target.Num] && priorityNeedsBombing(target) {
+		job.Status = "Waiting empty for bombardment or fresh reconnaissance of the priority target"
 		holdAutomaticFleet(player, fleet, job.Status)
 		saveLogisticsWork(fleet, job)
 		return
