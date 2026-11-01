@@ -91,6 +91,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.planColonizationAutomation()
 	t.splitAutomaticCombatPools()
 	t.planPatrolSalvage()
+	t.planTraderAutomation()
 	t.planLogisticsAutomation()
 	t.resolveLogisticsAutomation()
 	t.unloadOpportunisticInfrastructure()
@@ -1383,6 +1384,18 @@ func (t *turnGenerator) updateFleetTarget(fleet *Fleet) {
 	if target == nil || target.Delete {
 		t.clearWaypointTarget(fleet, wp1)
 	} else if target.Position != wp1.Position {
+		if wp1.TargetType == MapObjectTypeMysteryTrader && readTraderConvoy(fleet) != nil {
+			p := t.game.getPlayer(fleet.PlayerNum)
+			distance := fleet.Position.DistanceTo(target.Position)
+			reserve := automaticReturnFuel(&t.game.Rules, p, fleet, target.Position, expeditionStations(p, fleet), false)
+			_, _, _, funded := automaticLegFuel(p, fleet, wp1.WarpSpeed, distance, fleet.Fuel, reserve)
+			if !funded || distance > fleet.StrategicSpeed(wp1.WarpSpeed) || !automaticLegSafe(&t.game.Rules, p, fleet.Position, target.Position, wp1.WarpSpeed, false, fleet.StrategicSpeed(wp1.WarpSpeed)) {
+				// An unexpected trader course change must not turn a funded
+				// rendezvous into an unlimited chase. Retain the safe staging leg.
+				t.clearWaypointTarget(fleet, wp1)
+				return
+			}
+		}
 		// update the position
 		wp1.Position = target.Position
 		t.log.Debug("fleet target moved, updating position",

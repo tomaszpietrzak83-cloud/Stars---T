@@ -144,12 +144,12 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 		if a.crowded != b.crowded {
 			return !a.crowded
 		}
-		if a.quality != b.quality {
-			return a.quality > b.quality
-		}
 		af, bf := a.job.Passengers >= fleet.availableColonistSpace(), b.job.Passengers >= fleet.availableColonistSpace()
 		if af != bf {
 			return af
+		}
+		if a.quality != b.quality {
+			return a.quality > b.quality
 		}
 		if a.score != b.score {
 			return a.score < b.score
@@ -287,7 +287,7 @@ func (t *turnGenerator) passengerTripSafe(player *Player, fleet *Fleet, job *log
 	}
 	budget := *fleet
 	budget.Tags = maps.Clone(fleet.Tags)
-	saveLogisticsWork(&budget, &logisticsJob{Kind: "passengers"})
+	saveLogisticsWork(&budget, &logisticsJob{Kind: "passengers", TargetNum: source.Num, DeliveryNum: dest.Num, Position: dest.Position, Passengers: job.Passengers})
 	first := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&budget}, source.Position, source.MapObject.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet), MaxTurns: 20})
 	if first == nil {
 		return false
@@ -366,4 +366,25 @@ func passengerCarrier(p *Player, f *Fleet) bool {
 }
 func colonizerPassengerCarrier(p *Player, f *Fleet) bool {
 	return passengerCarrier(p, f) && colonizationMode(p.Automation.FleetRoles[f.Num]) != ""
+}
+
+// A source-growth wait must not reserve an empty transport forever while a
+// different source can fill it now. This preview uses only real stock and the
+// same mixed-load rules as physical loading; no cargo or planet is changed.
+func (t *turnGenerator) passengerPickupReady(p *Player, f *Fleet, job *logisticsJob) bool {
+	source, dest := t.game.getPlanet(job.TargetNum), t.game.getPlanet(job.DeliveryNum)
+	if source == nil || dest == nil {
+		return false
+	}
+	probe, origin := *f, *source
+	probe.Tags = maps.Clone(f.Tags)
+	incoming, outgoing := t.passengerReservations(p, f.Num)
+	available := max(0, source.Cargo.Colonists-sourcePopulationReserve(p, source)-outgoing[source.Num])
+	room := max(0, populationTarget(dest, p.Automation.destinationPopulationPercent())-dest.Cargo.Colonists-incoming[dest.Num])
+	minimum := t.preparePassengerMixedCargo(p, &probe, &origin, dest, min(available, room, probe.availableColonistSpace()))
+	load := max(0, min(available, room, probe.availableColonistSpace()))
+	probe.Cargo.Colonists += load
+	origin.Cargo.Colonists -= load
+	t.topUpLogisticsCargo(p, &probe, &origin, dest)
+	return load > 0 && load >= minimum && probe.CargoMass() == f.Spec.CargoCapacity
 }

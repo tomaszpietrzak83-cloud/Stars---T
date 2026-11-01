@@ -55,7 +55,9 @@ func TestScoutOnlyTargetsUnexploredReports(t *testing.T) {
 	require.Equal(t, Vector{20, 0}, fleet.Waypoints[1].Position)
 	p.PlanetIntels[1].ReportAge = 0
 	u.Run((*turnGenerator).planScoutAutomation)
-	require.Len(t, fleet.Waypoints, 1)
+	require.Contains(t, fleet.GetTag(scoutTag), "reconnaissance")
+	require.Greater(t, len(fleet.Waypoints), 1)
+	require.NotEqual(t, Vector{20, 0}, fleet.Waypoints[1].Position)
 }
 
 func TestScoutsDistributeTargetsAndAvoidKnownThreats(t *testing.T) {

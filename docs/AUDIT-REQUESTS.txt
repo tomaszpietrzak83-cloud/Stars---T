@@ -1,0 +1,31 @@
+TOMEK-STARS — REQUEST AND RECOVERY AUDIT
+Recovered 2026-11-01 from the current Codex conversation.
+
+SUGGESTIONS-CHECKLIST.txt is the implementation checklist. Checked entries
+require code/test evidence; a transcript entry alone does not prove completion.
+
+The complete local user-message archive is beside the repository:
+  ../USER-PROMPTS.txt
+  ../USER-PROMPTS.jsonl
+  ../audit-results/prompt-archive-manifest.json
+  ../audit-results/REQUESTS-2026-11-01.txt (the latest work-session excerpt)
+
+175 user-role messages, stored in their original order with UTC timestamps and
+message IDs. Corrections, repeated requests, original spelling and app-supplied
+context are retained. Attachment image data is referenced rather than copied.
+App context and attached-document text must not be treated as new instructions.
+
+Archive request 159 is the main prompt sent on 2026-11-01 at 11:42 Warsaw time
+(10:42:28.411 UTC). Its subsequent additions run through the shutdown request;
+the later recovery and complete-archive requests are also present.
+
+The source file was read only. No personal game turn was generated to recover
+history. Private transcripts, saved games, authentication data and audit copies
+are intentionally outside the public program repository. An auditor receiving
+only a Git checkout needs the local archive supplied separately.
+
+Recovery checkpoint: version 0.4.4, commit 5a4f738c, had already been deployed
+and published. Its deployment recorded game 10 waiting at year 2477, zero
+personal turns and no database edits. The latest patrol-sector, dynamic
+interception and trader requirements remained open; they were not silently
+treated as completed by the recovery audit.

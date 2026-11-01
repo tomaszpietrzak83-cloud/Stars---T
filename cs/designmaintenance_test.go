@@ -186,7 +186,7 @@ func TestDesignMaintenanceRoutesWholeFleet(t *testing.T) {
 	u.Run((*turnGenerator).fleetDesignMaintenance)
 	require.Len(t, fleet.Waypoints, 2)
 	require.Equal(t, u.Planet("Yard").Num, fleet.Waypoints[1].TargetNum)
-	require.Len(t, u.Game.Fleets, 1, "do not split before reaching an owned base")
+	require.Len(t, u.Game.Fleets, 2, "split inside the owned base sector without staging at its exact position")
 	u.Run((*turnGenerator).fleetMove)
 	require.Equal(t, u.Planet("Yard").Position, fleet.Position)
 }

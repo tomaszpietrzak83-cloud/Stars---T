@@ -1,1 +1,0 @@
-import{J as e,X as t,vt as n,zt as r}from"./Dgn-K8f2.js";import{a as i}from"./Dqk1k77a.js";import{t as a}from"./B1_6vuHw.js";var o=t(`<div><!></div>`);function s(t,i){var s=o(),c=n(s);a(c,{get design(){return i.design},get damage(){return i.damage}}),r(s),e(t,s)}function c(e,t,n){e.preventDefault(),t&&i(e.x,e.y,s,{design:t,damage:n})}export{c as t};

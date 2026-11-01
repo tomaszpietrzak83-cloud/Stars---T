@@ -176,6 +176,7 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 // All intermediate nodes are actual known fuel docks. Separate budgets and
 // return reserves for every member prevent a convoy from spending its escort's fuel.
 func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position Vector, target MapObjectTarget, policy automaticRoutePolicy) *expeditionRoute {
+	defer scopedRouteThreatIndex(player)()
 	if len(fleets) == 0 {
 		return nil
 	}
@@ -227,7 +228,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 	hasGates := false
 	for _, station := range stations {
 		docks[station.Position] = station
-		hasGates = hasGates || station.Spec.HasStargate
+		hasGates = hasGates || automaticGateCompatible(player, fleets, station)
 	}
 	maxWarp := 10
 	reserve := make([]int, len(fleets))
@@ -409,10 +410,34 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 	}
 	var reverse []Waypoint
 	for at := 1; at != 0; at = previous[at] {
-		reverse = append(reverse, Waypoint{Position: positions[at], MapObjectTarget: targets[at], WarpSpeed: speeds[at]})
+		target := targets[at]
+		if speeds[at] == StargateWarpSpeed && docks[positions[at]] != nil {
+			target = docks[positions[at]].ToTarget()
+		}
+		reverse = append(reverse, Waypoint{Position: positions[at], MapObjectTarget: target, WarpSpeed: speeds[at]})
 	}
 	slices.Reverse(reverse)
 	return &expeditionRoute{Waypoints: append([]Waypoint{{Position: start}}, reverse...), Turns: times[1], Fuel: used[1], ArrivalFuel: arrival[1], WaitForFuel: len(reverse) > 0 && reverse[0].Position == start}
+}
+
+// A visible gate cannot improve this convoy's route if even its destination
+// rejects a hull or the ordinary gate cannot carry its cargo. This deliberately
+// overestimates connectivity; every actual edge still uses Fleet.CanJump.
+func automaticGateCompatible(player *Player, fleets []*Fleet, station *Planet) bool {
+	if !station.Spec.HasStargate || station.Spec.SafeRange <= 0 {
+		return false
+	}
+	for _, f := range fleets {
+		if !f.Spec.CanJump && !player.Race.Spec.CanGateCargo && f.CargoMass() > 0 {
+			return false
+		}
+		for _, token := range f.Tokens {
+			if token.design != nil && token.design.Spec.Mass > station.Spec.SafeHullMass {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func holdAutomaticFleet(player *Player, fleet *Fleet, status string) {

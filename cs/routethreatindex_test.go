@@ -30,3 +30,23 @@ func TestPlanningThreatIndexPreservesExactThreatValues(t *testing.T) {
 	u.Run((*turnGenerator).disablePlanningThreatIndex)
 	require.Nil(t, p.routeThreatIndex)
 }
+
+func TestStandaloneRouteIndexIsScopedAndWithdrawalMatchesReference(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, f := u.Player(1), u.Fleet("Escort")
+	p.Automation.FleetRoles[f.Num] = "patrol"
+	route := planAutomaticRoute(&u.Game.Rules, p, []*Fleet{f}, Vector{10, 0}, MapObjectTarget{}, automaticRoutePolicy{})
+	require.NotNil(t, route)
+	require.Nil(t, p.routeThreatIndex)
+	p.FleetIntels = []*Fleet{patrolTestEnemy(100)}
+	for _, to := range []Vector{{-40, 0}, {40, 0}, {0, 40}, {0, -40}} {
+		expected := knownWithdrawalRoute(p, Vector{}, to)
+		cleanup := scopedRouteThreatIndex(p)
+		_ = knownRouteThreat(p, Vector{}, to)
+		require.Equal(t, expected, knownWithdrawalRoute(p, Vector{}, to))
+		cleanup()
+		require.Nil(t, p.routeThreatIndex)
+	}
+	p.FleetIntels[0].Position = Vector{1000, 1000}
+	require.Zero(t, knownRouteThreat(p, Vector{}, Vector{40, 0}), "a completed route search must not freeze an old report position")
+}

@@ -235,7 +235,7 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 			}
 		}
 		if closest != nil {
-			if best == 0 && work.Stage == "" && hasShipsToReplace(player, fleet) {
+			if work.Stage == "" && hasShipsToReplace(player, fleet) && closest.Position.DistanceTo(fleet.Position) <= 100 {
 				work.RallyPlanetNum = closest.Num
 				t.scatterReplacementFleet(player, fleet, work)
 				continue

@@ -1,0 +1,87 @@
+TOMEK-STARS 0.4.5 — RESUMED IMPLEMENTATION AND VERIFICATION
+2026-11-01
+
+Recovery
+The earlier run had published/deployed 0.4.4. It had not finished the newest
+requests. SUGGESTIONS-CHECKLIST.txt retains historical entries and evidence;
+docs/AUDIT-REQUESTS.txt indexes the complete private user-message archive.
+
+Previously open requirements addressed in this revision
+177: Passenger round-trip preflight retains the actual delivery destination,
+so a fully unloaded return is not rejected as though the cargo were still full.
+Full useful loads outrank source-growth waits. An empty waiting transporter
+can switch to another currently full source; existing cargo is not discarded.
+178: Rebuilds can disperse inside an owned fuel-base sector rather than first
+visiting the exact rally coordinate. Native yard reservations persist, include
+incoming workload and resolve to the latest family design. Actual incoming
+scrap/rebuild assignments create mineral demand before the replacement queue
+exists; source production remains protected and scrap mineral credit is counted.
+179: Planet priorities influence nearby base-sector patrol/escort coverage in
+addition to the existing bombardment, landing, reinforcement and scout refresh
+controllers. Actual funded routes and combat-strength checks remain mandatory.
+182: Radiating escorts accompany passenger transports as separate fleets;
+their engines do not contaminate the passenger fleet's native radiation flag.
+197: Fresh mixed bomber formations visibly approaching an owned planet have
+a narrow observed siege corridor, rather than a broad interception circle.
+Their actual estimated firepower remains relevant to planetary defense.
+213: Patrol leaders reconsider fresh targets yearly using public predicted
+endpoints and local owned-territory opportunities. Nearby assigned hunters can
+join one physical group against multi-ship unarmed targets. Moving away at warp
+9 is not assumed interceptable from behind. Native gate mass/cargo/range limits
+are checked; gate waypoints retain a planetary target through departure checks.
+214: Mystery Trader priority persists through the API/UI. A one-shot convoy
+reserves real surplus minerals and available automatic freighters, loads,
+physically merges, stages on the reported course, and uses the native meeting.
+The whole offering fleet is absorbed. Insufficient cargo capacity/stock does
+not reserve a partial offering or borrow manual ships. Cancelling priority or
+losing the trader releases the reservation. Unexpected course changes cannot
+silently extend the final interception beyond its funded movement budget.
+215: Idle patrol/escort coverage uses stable fuel-base sectors, short economical
+local loops, local contacts and uncovered/prioritized bases. It no longer scores
+destinations higher simply because they are farther from the homeworld.
+216: Complete local archive of 175 user-role messages, including corrections.
+
+Native regression evidence
+cs/resumedaudit_test.go covers head-on choice, base coverage, siege corridors,
+gate compatibility/actual departure, the 5000-kT offering and native absorption,
+insufficient capacity/manual isolation, local group merging, radiating separate
+escort, persistent rebuild demand, real mineral dispatch to the second yard,
+an empty passenger return, switching a waiting pickup and priority escort cover.
+cs/routethreatindex_test.go compares indexed/reference threats and withdrawal
+decisions and checks that a standalone search does not retain a stale index.
+The complete native cs/AI/database/server/converter suite passed. Server tests
+include the existing deterministic AI recordings and serial/parallel fixtures.
+Svelte check passed with zero errors/warnings; 20 selected frontend tests passed,
+including trader priority persistence/cancellation and rollback on save failure.
+Native Windows executable, WASM and compiled frontend were rebuilt together.
+
+Copied-save performance
+A fresh online backup of the personal year-2477 waiting state was copied again
+to a temporary test database. The personal game did not advance. The copied
+integration test verifies fuel non-negativity, moving/routed automatic fleets,
+actual logistics work and actual patrol interceptions.
+Intermediate 0.4.5 native GenerateTurn: 187.681 seconds.
+Optimized 0.4.5 native GenerateTurn: 71.074 seconds; complete test 94.95 seconds.
+Same backup and machine, sequential single measurements, with CPU profiling.
+The intermediate profile attributed 92.11 CPU seconds to repeated unindexed
+threat classification. Scoped indexes now cover standalone emergency searches
+and reuse fresh armed reports for detour and withdrawal edges. The scope ends
+before returning, so later movement/intel changes cannot reuse its snapshot.
+Other functional corrections also differ between the two candidates; this is
+not a controlled single-factor benchmark or a guarantee for year 2600.
+The earlier 0.4.4 figures concern year 2476 and are not a same-save comparison.
+
+Read-only scanner indexing and per-owner AI parallelism from 0.4.4 are retained.
+Dependent simulation stages and transactional database writes remain ordered.
+No claim is made that every stage can use every core, or that race testing is
+clean: the Windows race runtime limitation documented in 0.4.4 still applies.
+Private databases, profiles, transcripts and diagnostic snapshots are not
+published with the program.
+
+Compiled isolated smoke passed: desktop/mobile launcher and local autologin,
+5400-star new game, real player-order persistence including priorityTraders,
+design strategy editing with preserved draft, fleet composition, production,
+research, scanner/camera retention and the existing EEE content checks. No
+browser errors. This sandbox uses separate ports and its own synthetic database.
+
+Deployment verified at year 2477 WaitingForPlayers after a fresh backup. Only program files were replaced; no personal turn, database edits or queue recalculation. Live read-only autologin, rebuilding sort and scanner smoke passed. Program/WASM checksums match windows/SHA256SUMS.txt.

@@ -12,6 +12,16 @@ Open the game at `http://localhost:5173`. The launcher signs into the local game
 
 The source is Go and Svelte/TypeScript. Developers need the Go version from `go.mod`, Node.js 22.17 or newer, and a CGO-capable C compiler. Run `npm ci` in `frontend`; build `wasm/main.go` using `GOOS=js GOARCH=wasm CGO_ENABLED=0` into `frontend/src/lib/wasm/cs.wasm`; run `npm run build` in `frontend`; build the native server with CGO into `windows/stars-local.exe`. The committed edition can be played without rebuilding.
 
+## Version 0.4.5
+
+Patrols reconsider reported targets each year, predict head-on interception points and use stable sectors around fuel bases. Nearby patrols can physically merge for multi-ship targets, then resume their roles. Planet priorities influence escort and patrol coverage. Gate routes preserve their destination planet and respect real hull-mass, cargo and range limits.
+
+Marking a Mystery Trader requests a one-shot mineral offering from available automatic freighters. The controller reserves actual surplus minerals, assembles and merges the offering, and stages an interception along the reported course. **The native trader rule absorbs the entire offering fleet.** Manual ships and committed planetary production are protected; insufficient capacity or stock does not create a partial offering.
+
+Passenger planning budgets the empty return after delivery and redirects empty waiting transports when another source can provide a full useful load. Rebuilds disperse within owned base sectors without an unnecessary exact-position rally; incoming assignments reserve yard workload and mineral demand before scrapping. Radiating escorts remain separate from passenger fleets.
+
+Request history, audit status and verification are indexed in [docs/AUDIT-REQUESTS.txt](docs/AUDIT-REQUESTS.txt). Private transcripts and saves are not included in the public repository.
+
 ## Version 0.4.4
 
 Automatic patrol/escort stacks can split into independent ships and regroup for combat. Weapon-based design strategies include ranged Sniper tactics; the designer previews and edits shared battle plans without leaving the draft. Manual fleet plans override design defaults.

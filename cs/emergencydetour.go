@@ -9,31 +9,23 @@ import (
 // Emergency recovery may need to leave a threat circle sideways before turning
 // home. These are navigation points, never refuelling services.
 func emergencyDetourRoute(rules *Rules, p *Player, f *Fleet, dock *Planet) *expeditionRoute {
+	defer scopedRouteThreatIndex(p)()
+	_ = knownRouteThreat(p, f.Position, dock.Position) // Build the same fresh armed report set once.
 	points := []Vector{f.Position, dock.Position}
-	enemies := slices.Clone(p.FleetIntels)
-	slices.SortStableFunc(enemies, func(a, b *Fleet) int {
-		if a == nil && b == nil {
-			return 0
-		}
-		if a == nil {
-			return 1
-		}
-		if b == nil {
-			return -1
-		}
-		return cmp.Compare(segmentDistance(a.Position, f.Position, dock.Position), segmentDistance(b.Position, f.Position, dock.Position))
+	enemies := slices.Clone(p.routeThreatIndex.threats)
+	slices.SortStableFunc(enemies, func(a, b indexedRouteThreat) int {
+		return cmp.Compare(segmentDistance(a.position, f.Position, dock.Position), segmentDistance(b.position, f.Position, dock.Position))
 	})
 	margin := p.Automation.escortMarginAsFloat()
 	count := 0
 	for _, e := range enemies {
-		if e == nil || e.Delete || e.ReportAge != 0 || e.PlayerNum == p.Num || p.IsFriend(e.PlayerNum) || !patrolReportedCombatant(p, e) || segmentDistance(e.Position, f.Position, dock.Position) > 2*margin {
+		if segmentDistance(e.position, f.Position, dock.Position) > 2*margin {
 			continue
 		}
-		// A circumscribed polygon leaves even its chords outside the danger zone.
 		for i := 0; i < 16; i++ {
 			angle := 2 * math.Pi * float64(i) / 16
 			radius := margin/math.Cos(math.Pi/16) + 3
-			v := Vector{X: e.Position.X + int(math.Round(radius*math.Cos(angle))), Y: e.Position.Y + int(math.Round(radius*math.Sin(angle)))}
+			v := Vector{X: e.position.X + int(math.Round(radius*math.Cos(angle))), Y: e.position.Y + int(math.Round(radius*math.Sin(angle)))}
 			if !slices.Contains(points, v) {
 				points = append(points, v)
 			}

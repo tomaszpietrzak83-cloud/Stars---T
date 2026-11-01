@@ -83,6 +83,15 @@ func TestLocalAutomationOnCopiedSave(t *testing.T) {
 	after, err := database.NewReadClient().GetFullGame(t.Context(), gameID)
 	require.NoError(t, err)
 	require.Equal(t, before.Year+1, after.Year)
+	if output := os.Getenv("STARS_COPY_RESULT_JSON"); output != "" {
+		absolute, err := filepath.Abs(output)
+		require.NoError(t, err)
+		require.Contains(t, strings.ToLower(filepath.ToSlash(absolute)), "/audit-results/", "private copied results stay outside published source")
+		data, err := json.Marshal(after)
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(absolute, data, 0600))
+	}
+
 	if cfg.Game.TurnArchives {
 		files, e := filepath.Glob(filepath.Join(filepath.Dir(destination), "turn-archives", "game-*", "*.json.gz"))
 		require.NoError(t, e)

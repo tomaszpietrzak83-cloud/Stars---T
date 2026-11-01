@@ -11,6 +11,7 @@ const patrolTag = "automatic-patrol"
 const patrolSupportTag = "patrol-support-role"
 
 type patrolJob struct {
+	RequiredShips  int         `json:"requiredShips,omitempty"`
 	RecruitPower   int         `json:"recruitPower,omitempty"`
 	GatheringSince int         `json:"gatheringSince,omitempty"`
 	SupportDesigns map[int]int `json:"supportDesigns,omitempty"`
@@ -152,7 +153,7 @@ func patrolReportedCombatant(player *Player, enemy *Fleet) bool {
 func patrolCanAttack(player *Player, fleet *Fleet) bool {
 	job := readPatrolJob(fleet)
 	enemy := patrolEnemy(player, job)
-	return job.Leader == fleet.Num && enemy != nil && patrolPower(fleet) >= patrolThreat(player, enemy)*3/2+1
+	return job.Leader == fleet.Num && enemy != nil && patrolPower(fleet) >= patrolThreat(player, enemy)*3/2+1 && fleet.Spec.TotalShips >= job.RequiredShips
 }
 func patrolAvailable(player *Player, f *Fleet) bool {
 	return f.GetTag(patrolSalvageTag) == "" && f.GetTag(anticipatedSalvageTag) == "" && f.GetTag("maintenance-pending") == "" && !fuelNetworkManaged(f) && !f.Delete && !f.Starbase && (player.Automation.FleetRoles[f.Num] == "patrol" || player.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(escortTag) == "" && f.GetTag(bomberBorrowTag) == "") && f.Spec.HasWeapons && patrolPower(f) > 0 && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !player.FleetInActiveAssembly(f) && f.GetTag(tankerAwaitTag) == "" && readTankerJob(f) == nil && fleetDamagePercent(f) < player.Automation.repairThreshold()
@@ -244,6 +245,9 @@ func (t *turnGenerator) preparePatrolPursuits() {
 				continue
 			}
 			wp := &fleet.Waypoints[1]
+			if wp.WarpSpeed == StargateWarpSpeed {
+				continue
+			}
 			for speed := automaticMaxWarp(player, fleet); speed >= automaticCruiseWarp(player, fleet); speed-- {
 				if fleet.Position.DistanceTo(wp.Position) > fleet.StrategicSpeed(speed) {
 					continue
@@ -297,14 +301,16 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 	}
 	// A pack can recruit fresh nearby support when the reported enemy grows.
 	current := patrolPower(leader)
+	currentShips := leader.Spec.TotalShips
 	for _, m := range t.game.getFleets(player.Num) {
 		if m != leader && !m.Delete && readPatrolJob(m).Leader == leader.Num {
 			current += patrolPower(m)
+			currentShips += m.Spec.TotalShips
 		}
 	}
 	needed := patrolThreat(player, enemy)*3/2 + 1
 	for _, m := range t.game.getFleets(player.Num) {
-		if current >= max(needed, job.RecruitPower) {
+		if current >= max(needed, job.RecruitPower) && currentShips >= job.RequiredShips {
 			break
 		}
 		if m == leader || !patrolAvailable(player, m) || readPatrolJob(m).Leader != 0 || m.Position.DistanceTo(leader.Position) > 100 || m.Fuel < m.Spec.FuelCapacity/4 {
@@ -322,6 +328,7 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 		}
 		savePatrolJob(m, patrolJob{Leader: leader.Num, Enemy: job.Enemy, Target: job.Target, Status: "Joining nearby combat group"})
 		current += patrolPower(m)
+		currentShips += m.Spec.TotalShips
 	}
 	allHere := true
 	for _, member := range slices.Clone(t.game.getFleets(player.Num)) {
@@ -349,12 +356,16 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 	if job.GatheringSince == 0 {
 		job.GatheringSince = t.game.Year - 2
 	}
-	if !allHere && patrolPower(leader) >= needed {
+	if !allHere && patrolPower(leader) >= needed && leader.Spec.TotalShips >= job.RequiredShips {
 		allHere = true
 	}
 	if (!allHere || patrolPower(leader) < needed) && t.game.Year-job.GatheringSince >= 2 && leader.Position.DistanceTo(enemy.Position) > leader.StrategicSpeed(automaticMaxWarp(player, leader)) {
 		t.declinePatrolTarget(player, leader)
 		return
+	}
+	if !allHere && t.game.Year-job.GatheringSince >= 2 && patrolPower(leader) >= needed {
+		job.RequiredShips = leader.Spec.TotalShips
+		allHere = true
 	}
 	if !allHere {
 		job.Status = "Gathering patrol ships before interception"
@@ -380,12 +391,7 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 	}
 	// Recompute a bounded interception from fresh reports each turn. A fixed waypoint
 	// prevents native pursuit from silently extending the fuel budget mid-movement.
-	position := enemy.Position
-	if enemy.WarpSpeed > 0 && enemy.WarpSpeed <= 10 {
-		delta := enemy.Heading.Scale(enemy.observedStrategicSpeed())
-		position.X += int(math.Round(delta.X))
-		position.Y += int(math.Round(delta.Y))
-	}
+	position := patrolInterceptPosition(enemy)
 	job.Status = "Intercepting " + enemy.Name
 	savePatrolJob(leader, job)
 	if !t.patrolRoute(player, leader, position, true) {
@@ -440,7 +446,10 @@ func (t *turnGenerator) planPatrolAutomation() {
 			}
 			if job.Leader == fleet.Num && !fleet.Delete {
 				t.retargetPatrolOpportunity(player, fleet)
-				t.advancePatrol(player, fleet)
+				job = readPatrolJob(fleet)
+				if !fleet.Delete && job.Leader == fleet.Num {
+					t.advancePatrol(player, fleet)
+				}
 			}
 			if job.Leader != 0 && job.Leader != fleet.Num {
 				leader := t.game.getFleet(player.Num, job.Leader)
@@ -487,16 +496,23 @@ func (t *turnGenerator) planPatrolAutomation() {
 			})
 			assigned := false
 			for _, enemy := range enemies {
-				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || player.IsFriend(enemy.PlayerNum) || (fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy)) {
+				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || player.IsFriend(enemy.PlayerNum) || (fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
 					continue
 				}
 				claimed := false
 				for _, other := range fleets {
 					j := readPatrolJob(other)
 					if !other.Delete && j.Leader != 0 && j.Target == enemy.Num && j.Enemy == enemy.PlayerNum {
+						if j.Leader == other.Num && patrolDesiredShips(player, enemy) > patrolGroupShips(fleets, other) && other.Position.DistanceTo(fleet.Position) <= 100 {
+							t.joinPatrolOpportunity(player, fleet, other, enemy)
+							assigned = true
+						}
 						claimed = true
 						break
 					}
+				}
+				if assigned {
+					break
 				}
 				if declinedPatrolTarget(fleet, enemy, t.game.Year) || claimed {
 					continue
@@ -504,21 +520,24 @@ func (t *turnGenerator) planPatrolAutomation() {
 				delete(fleet.Tags, frontierPatrolTag)
 				members := []*Fleet{fleet}
 				power := patrolPower(fleet)
+				ships := fleet.Spec.TotalShips
+				wanted := patrolDesiredShips(player, enemy)
 				needed := patrolThreat(player, enemy)*3/2 + 1
 				for _, member := range fleets {
-					if power >= needed {
+					if power >= needed && ships >= wanted {
 						break
 					}
 					if member != fleet && patrolAvailable(player, member) && readPatrolJob(member).Leader == 0 && member.Position.DistanceTo(fleet.Position) <= 100 {
 						members = append(members, member)
 						power += patrolPower(member)
+						ships += member.Spec.TotalShips
 					}
 				}
 				borrowed := []*Fleet{}
 				support := map[int]int{}
-				if power < needed {
+				if power < needed || ships < wanted {
 					for _, e := range t.game.getFleets(player.Num) {
-						if power >= needed {
+						if power >= needed && ships >= wanted {
 							break
 						}
 						if slices.Contains(members, e) || e.Delete || e.InDesignMaintenance() || e.InAutomaticSafety() || fuelNetworkManaged(e) || readTankerJob(e) != nil || player.FleetInActiveAssembly(e) || player.Automation.FleetRoles[e.Num] != "escort" || e.GetTag(escortTag) != "" || !e.Spec.HasWeapons || e.Position.DistanceTo(fleet.Position) > 100 || e.Fuel < e.Spec.FuelCapacity/4 {
@@ -527,6 +546,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 						members = append(members, e)
 						borrowed = append(borrowed, e)
 						power += patrolPower(e)
+						ships += e.Spec.TotalShips
 
 					}
 				}
@@ -547,7 +567,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 					player.Automation.FleetRoles[e.Num] = "patrol"
 				}
 				for _, member := range members {
-					job := patrolJob{GatheringSince: t.game.Year, Leader: fleet.Num, Enemy: enemy.PlayerNum, Target: enemy.Num, Status: "Wolf pack gathering before coordinated interception"}
+					job := patrolJob{RequiredShips: min(wanted, ships), GatheringSince: t.game.Year, Leader: fleet.Num, Enemy: enemy.PlayerNum, Target: enemy.Num, Status: "Wolf pack gathering before coordinated interception"}
 					if member == fleet {
 						job.SupportDesigns = support
 					}
@@ -565,7 +585,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 			}
 			job := readPatrolJob(fleet)
 			if t.patrolFrontier(player, fleet) {
-				job.Status = "Patrolling frontier sectors with fuel reserved for return"
+				job.Status = fleet.GetTag(frontierPatrolTag)
 				savePatrolJob(fleet, job)
 				continue
 			}

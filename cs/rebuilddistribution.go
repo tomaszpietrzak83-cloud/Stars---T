@@ -67,7 +67,7 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 			unit.SetTag(replacementGroupTag, work.Group)
 			continue
 		}
-		target := player.GetDesign(player.DesignMaintenance[unit.Tokens[0].DesignNum])
+		target := player.GetDesign(player.LatestReplacement(player.DesignMaintenance[unit.Tokens[0].DesignNum]))
 		if target == nil {
 			target = unit.Tokens[0].design
 		}

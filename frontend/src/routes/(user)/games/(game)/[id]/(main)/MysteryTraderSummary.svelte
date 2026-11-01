@@ -1,4 +1,5 @@
 <script lang="ts">
+ import PriorityTrader from "#lib/components/game/PriorityTrader.svelte";
 	import type { MysteryTrader } from '#lib/types/cs-proto.js';
 
 	type Props = {
@@ -19,8 +20,9 @@
 
 	<div class="flex flex-col grow gap-y-1 mx-1">
 		{#if !mysteryTrader.spec?.rewarded}
+			<PriorityTrader num={mysteryTrader.mapObject?.num ?? 0} />
 			<div class="flex flex-row">
-				The trader requests interested parties to send it a feet with at least {mysteryTrader.requestedBoon}kT
+				The trader requests interested parties to send it a fleet with at least {mysteryTrader.requestedBoon}kT
 				of minerals on board to be absorbed into the trader. It offers technological assistance in
 				return.
 			</div>

@@ -12,6 +12,7 @@ import (
 )
 
 type LogisticsAutomation struct {
+	PriorityTraders              map[int]bool          `json:"priorityTraders,omitempty"`
 	PriorityPlanets              map[int]bool          `json:"priorityPlanets,omitempty"`
 	ServeTerraformingWorlds      bool                  `json:"serveTerraformingWorlds,omitempty"`
 	InfrastructureTransport      bool                  `json:"infrastructureTransport,omitempty"`
@@ -223,12 +224,12 @@ func knownRouteThreat(player *Player, from, to Vector) int {
 				if observedBombardmentGuard(player, intel) {
 					reach = math.Min(reach, 3)
 				}
-				index.threats = append(index.threats, indexedRouteThreat{intel.Position, reach, patrolReportedPower(player, intel)})
+				index.threats = append(index.threats, indexedRouteThreat{position: intel.Position, end: observedGuardEndpoint(player, intel), reach: reach, power: patrolReportedPower(player, intel)})
 			}
 		}
 		total := 0
 		for _, threat := range index.threats {
-			if segmentDistance(threat.position, from, to) <= threat.reach {
+			if segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach {
 				total = min(1_000_000_000, total+threat.power)
 			}
 		}
@@ -246,7 +247,7 @@ func originalKnownRouteThreat(player *Player, from, to Vector) int {
 		if observedBombardmentGuard(player, intel) {
 			reach = math.Min(reach, 3)
 		}
-		if segmentDistance(intel.Position, from, to) <= reach {
+		if segmentSegmentDistance(intel.Position, observedGuardEndpoint(player, intel), from, to) <= reach {
 			threat = min(1_000_000_000, threat+patrolReportedPower(player, intel))
 		}
 	}
@@ -419,10 +420,18 @@ func (t *turnGenerator) planLogisticsAutomation() {
 			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() {
 				continue
 			}
-			if fleet.GetTag(anticipatedSalvageTag) != "" {
+			if fleet.GetTag(anticipatedSalvageTag) != "" || fleet.GetTag(traderConvoyTag) != "" {
 				continue
 			}
 			job := t.currentLogisticsWork(player, fleet)
+			if job != nil && job.Kind == "passengers" && fleet.CargoMass() == 0 && strings.HasPrefix(job.Status, "Waiting") && !t.passengerPickupReady(player, fleet, job) {
+				if replacement := t.findPassengerTransfer(player, fleet); replacement != nil && replacement.Kind == "passengers" && t.passengerPickupReady(player, fleet, replacement) {
+					t.releaseEscorts(player, fleet)
+					job = replacement
+					saveLogisticsWork(fleet, job)
+				}
+			}
+
 			if fleet.GetTag(patrolSalvageTag) != "" && job == nil {
 				delete(fleet.Tags, patrolSalvageTag)
 				continue
@@ -783,14 +792,54 @@ func (t *turnGenerator) deliveryEscortReady(p *Player, f *Fleet, to Vector) bool
 	return power >= need
 }
 
+// A mixed bomber formation visibly committed to an owned planet is a siege
+// group, not a roaming interceptor. Only its observed travel corridor blocks
+// civilian routes; its real firepower still enters planetary defense planning.
 func observedBombardmentGuard(p *Player, f *Fleet) bool {
-	if f == nil || f.ReportAge != 0 || f.WarpSpeed != 0 || !patrolReportedBomber(p, f) {
+	if f == nil || f.ReportAge != 0 || !patrolReportedBomber(p, f) {
 		return false
 	}
 	for _, planet := range p.PlanetIntels {
-		if planet != nil && planet.OwnedBy(p.Num) && planet.Position == f.Position {
+		if planet == nil || !planet.OwnedBy(p.Num) {
+			continue
+		}
+		if planet.Position == f.Position {
+			return f.WarpSpeed == 0
+		}
+		if f.WarpSpeed <= 0 || f.WarpSpeed > 10 {
+			continue
+		}
+		heading := f.Heading
+		toward := planet.Position.Subtract(f.Position)
+		if heading.X*float64(toward.X)+heading.Y*float64(toward.Y) <= 0 {
+			continue
+		}
+		end := f.Position.ToFloat64().Add(heading.Scale(2 * f.observedStrategicSpeed())).ToInt(true)
+		if segmentDistance(planet.Position, f.Position, end) <= 3 {
 			return true
 		}
 	}
 	return false
+}
+func observedGuardEndpoint(p *Player, f *Fleet) Vector {
+	if observedBombardmentGuard(p, f) {
+		return patrolInterceptPosition(f)
+	}
+	return f.Position
+}
+func segmentSegmentDistance(a, b, c, d Vector) float64 {
+	if a == b {
+		return segmentDistance(a, c, d)
+	}
+	if c == d {
+		return segmentDistance(c, a, b)
+	}
+	cross := func(p, q, r Vector) float64 {
+		return float64(q.X-p.X)*float64(r.Y-p.Y) - float64(q.Y-p.Y)*float64(r.X-p.X)
+	}
+	abC, abD, cdA, cdB := cross(a, b, c), cross(a, b, d), cross(c, d, a), cross(c, d, b)
+	if (abC > 0 && abD < 0 || abC < 0 && abD > 0) && (cdA > 0 && cdB < 0 || cdA < 0 && cdB > 0) {
+		return 0
+	}
+	return min(segmentDistance(a, c, d), segmentDistance(b, c, d), segmentDistance(c, a, b), segmentDistance(d, a, b))
 }

@@ -98,6 +98,10 @@ func (t *turnGenerator) planScoutAutomation() {
 				continue
 			}
 			if unknown == 0 && !scoutHasRetirement(player, fleet) && !fleet.InAutomaticSafety() && !scoutReconActive(player, fleet) && t.patrolFrontier(player, fleet) {
+				if mission := readScoutMission(fleet); mission != nil && atOwnFuelDock(player, fleet) {
+					mission.Complete = true
+					saveScoutMission(fleet, mission)
+				}
 				fleet.SetTag(scoutTag, "Frontier reconnaissance: scanning for enemy traffic")
 				continue
 			}

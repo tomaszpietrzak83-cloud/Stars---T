@@ -52,7 +52,8 @@ func TestPatrolSelectsFrontierAndKeepsEconomicalRouteThroughFuelGuard(t *testing
 	p.PlanetIntels = []*Planet{u.Planet("Home"), {MapObject: MapObject{Num: 2, Position: Vector{100, 0}, ReportAge: ReportAgeUnexplored}}}
 	u.Run((*turnGenerator).planPatrolAutomation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture)
 	require.Greater(t, len(f.Waypoints), 1)
-	require.GreaterOrEqual(t, f.Waypoints[len(f.Waypoints)-1].Position.X, 60)
+	require.LessOrEqual(t, f.Waypoints[len(f.Waypoints)-1].Position.DistanceTo(u.Planet("Home").Position), float64(48))
+	require.NotEmpty(t, f.GetTag(patrolSectorTag))
 	require.LessOrEqual(t, f.Waypoints[1].WarpSpeed, 4)
 }
 func TestBombingWolfPackMergesAndRestoresOriginalRolesAfterMission(t *testing.T) {

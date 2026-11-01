@@ -1,5 +1,5 @@
 TOMEK-STARS — REQUEST CHECKLIST
-Updated: 2026-10-31
+Updated: 2026-11-01
 
 Legend: [x] implemented and tested (evidence below); [~] partial / current audit; [ ] still missing.
 Historical questions, corrections and withdrawn alternatives are recorded separately below.
@@ -416,12 +416,12 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 
 0.4.1 live deployment: fresh backup of actual current game 10 at year 2454. Updated only 6 own planet production_queue values and 57 own fleet waypoint/tag plans. Each transaction fingerprinted all other current-game fields; initial transaction compared the fresh backup. No personal turn, movement, fuel or cargo changes. Program restarted with immutable compiled UI. Earlier year-2450 tests used a copied backup only; the newer live progress was retained.
 
-[ ] 177. Assign full useful passenger loads to farther and priority colonies, reinforce threatened valuable colonies and prevent idle eligible transports while viable transfers exist.
-[ ] 178. Rebuild fleets disperse directly among usable yards; persist reservations, count incoming rebuild/mineral workload and support the second yard with minerals. Avoid capital staging loops.
-[ ] 179. Priority planets drive patrol, escort staging, bombardment, reinforcement and recapture assignments, with explicit reachable/fuel/strength status.
+[x] 177. Assign full useful passenger loads to farther and priority colonies, reinforce threatened valuable colonies and prevent idle eligible transports while viable transfers exist.
+[x] 178. Rebuild fleets disperse directly among usable yards; persist reservations, count incoming rebuild/mineral workload and support the second yard with minerals. Avoid capital staging loops.
+[x] 179. Priority planets drive patrol, escort staging, bombardment, reinforcement and recapture assignments, with explicit reachable/fuel/strength status.
 [x] 180. Audit defaultauto idle resources during rebuilds; preserve development and unblock useful production without discarding paid work.
 [x] 181. Scout replacement terminates old expeditions at docks and resumes exploration; family rebuild goes directly oldest-to-latest even across further new versions.
-[ ] 182. Radiating combat ships may escort passengers as separate fleets/forward screens without contaminating the passenger fleet or forcing dangerous cargo merges.
+[x] 182. Radiating combat ships may escort passengers as separate fleets/forward screens without contaminating the passenger fleet or forcing dangerous cargo merges.
 [x] 183. Profile and improve serialization/DB write stages while preserving transactional state and full data equality; no personal saves published.
 
 [x] 184. Superseded zero-ship designs automatically disappear from the designer; safe manual deletion is permitted when no ships/queued work depend on them. This supersedes the earlier request to keep all zero-instance history visible.
@@ -448,7 +448,7 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 
 [x] 195. Accelerate scanner visibility with exact spatial pruning and parallel read-only work; preserve native discoveries, cloaking, ally sharing and ordering.
 [x] 196. Parallel AI planning by disjoint owner with serial/parallel equivalence on a copied current game.
-[ ] 197. Distinguish committed bomber escorts from interceptors using visible course, weapon range/reach and protected planet position; mobilize opposition without blanket freezing civilian corridors.
+[x] 197. Distinguish committed bomber escorts from interceptors using visible course, weapon range/reach and protected planet position; mobilize opposition without blanket freezing civilian corridors.
 [x] 198. Petra eight-destroyer order: validate cached/new boosters against every native displayed deadline, prioritizing earlier completion and never delaying a batch; replay the submitted turn.
 
 [x] 199. Split large automated patrol/escort fleets into an assignable pool; preserve active wolf packs and Manual.
@@ -473,9 +473,16 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 
 [x] 212. Normal scanner: larger station silhouette, high-contrast halo and minimum on-screen scale, aligned labels/selection.
 
-[ ] 213. Re-evaluate every patrol target yearly using reachable predicted enemy endpoints; clean owned territory inside-out, assemble nearby patrols for multi-ship unarmed targets and account for usable gates, not merely visible gates.
-[ ] 214. Mystery Trader priority: reserve the engine-required mineral cargo and transport capacity, assemble a trade convoy and intercept the trader at a suitable point on its visible course through owned space.
+[x] 213. Re-evaluate every patrol target yearly using reachable predicted enemy endpoints; clean owned territory inside-out, assemble nearby patrols for multi-ship unarmed targets and account for usable gates, not merely visible gates.
+[x] 214. Mystery Trader priority: reserve the engine-required mineral cargo and transport capacity, assemble a trade convoy and intercept the trader at a suitable point on its visible course through owned space.
 
-[ ] 215. Stable base-centered patrol sectors across the whole empire; cover birth/nearby bases and local easy targets before outward relocation, rebalance uncovered colonies while retaining fuel, repair and mutual defense support.
+[x] 215. Stable base-centered patrol sectors across the whole empire; cover birth/nearby bases and local easy targets before outward relocation, rebalance uncovered colonies while retaining fuel, repair and mutual defense support.
 
 0.4.4 evidence: native cs/ai/database/server/converter suites pass; 72 selected frontend tests and Svelte check (zero errors/warnings) pass. Isolated compiled UI/native smoke covers inline strategy editing with preserved design draft and persisted default plan. Copied year-2470 Petra case: eight destroyers retain a one-year native ETA with one temporary factory and two mines. Copied year-2475 tanker/colonizer case: optional stationary reservation released; colony ship selects an independently funded 10-year mission instead. Exact fleet visibility matches original code for 144 players / 30,825 fleets. Per-owner AI decisions match serial execution, and worker panics propagate to the turn runner. Windows race runtime could not reserve its required shadow memory; no race-clean claim is made. Stationary siege guards have a narrow orbital threat corridor; moving escort intent remains under item 197. Items 177,178,179,182,197 and the newest 213-215 requests remain open where complete integration has not been verified.
+
+[x] 216. Recover all user prompts verbatim for an auditor, including follow-up instructions and corrections.
+    Evidence: 175 stored user-role messages recovered from this conversation, with UTC timestamps and message IDs. Local files: ../USER-PROMPTS.txt and ../USER-PROMPTS.jsonl. Request 159 is the 2026-11-01 11:42 Europe/Warsaw prompt (10:42 UTC); requests through 175 include its later additions and this recovery request. Image binaries are referenced, not duplicated. SHA-256 manifest: ../audit-results/prompt-archive-manifest.json. Private transcript is outside the published repository; see docs/AUDIT-REQUESTS.txt.
+
+0.4.5 recovery evidence: complete native Go suite passed, including cs/AI/database/server/converters; Svelte check zero errors/warnings; 20 selected frontend tests passed. Native Windows + WASM + compiled UI rebuilt. Isolated compiled browser smoke passed real player-order API persistence (including priorityTraders), new-game creation, design strategy editing, production, research, fleet composition and scanner/camera checks with no browser errors. Native regressions in cs/resumedaudit_test.go cover yearly head-on interception, physical merging of already assigned hunters, stable/priority base sectors, valid gate departure, the complete 5000-kT trader meeting/absorption and cancellation, insufficient capacity/manual protection, empty-return passenger budgeting, switching a waiting source, separate radiating escorts, persistent incoming rebuild demand and a real full mineral shipment to the second yard. Index/reference and scope-cleanup tests pass. Same copied year-2477 backup: intermediate generation 187.681s; optimized generation 71.074s, copied integration test passed (94.95s overall). No personal turn generated. Detailed evidence/limits: docs/AUDIT-0.4.5.txt. Earlier open-status statements above describe their historical releases; the current item markers reflect the verified resumed implementation.
+
+0.4.5 deployment: fresh backup at year 2477 WaitingForPlayers; program-only replacement, databaseEdits=false, zero personal turns and no queue recalculation. Windows binary/WASM SHA-256 file matches actual files. Live read-only autologin, rebuilding sort and scanner smoke passed with mutating API calls blocked. Private transcripts and personal saved games remain outside Git.

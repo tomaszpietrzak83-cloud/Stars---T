@@ -18,7 +18,7 @@ export function automationRoles(fleet: Fleet, designs: ShipDesign[] = [], curren
 export function automationStatus(fleet: Fleet): string {
  const tags=fleet.mapObject?.tags??{};
  if(tags['automatic-fuel-status']) return tags['automatic-fuel-status'];
- for(const key of ['automatic-patrol','automatic-tanker','design-maintenance','logistics-job','mining-job','colonization-job','terraform-job','automatic-safety','bomber-orders']) {
+ for(const key of ['automatic-trader','automatic-patrol','automatic-tanker','design-maintenance','logistics-job','mining-job','colonization-job','terraform-job','automatic-safety','bomber-orders']) {
   try {if(tags[key]) return JSON.parse(tags[key]).status??'Order pending';} catch { /* legacy status */ }
  }
  return tags['scout-job']??(tags['escort-for']?`Escorting fleet #${tags['escort-for']}`:'Orders take effect on the next turn');

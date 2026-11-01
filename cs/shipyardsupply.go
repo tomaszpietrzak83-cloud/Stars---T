@@ -6,7 +6,7 @@ import (
 )
 
 func (t *turnGenerator) productionMinerals(player *Player, planet *Planet, shipsOnly bool) Mineral {
-	need := manufacturingStockTarget(&t.game.Rules, player, planet)
+	need := manufacturingStockTarget(&t.game.Rules, player, planet).Add(t.incomingRebuildMinerals(player, planet))
 	calculator := newProducer(t.log, &t.game.Rules, planet, player)
 	for _, item := range planet.ProductionQueue {
 		if item.Type == QueueItemTypeShipToken && player.DesignMaintenance[item.DesignNum] != 0 {
@@ -63,7 +63,7 @@ func (t *turnGenerator) findShipyardSupply(player *Player, fleet *Fleet, claimed
 				continue
 			}
 			travel := max(1, int(math.Ceil((fleet.Position.DistanceTo(source.Position)+source.Position.DistanceTo(yard.Position))/max(1, fleet.StrategicSpeed(automaticCruiseWarp(player, fleet))))))
-			if !manufacturingDeliveryUseful(&t.game.Rules, player, yard, load, travel) {
+			if !manufacturingDeliveryUseful(&t.game.Rules, player, yard, load, travel) && t.incomingRebuildMinerals(player, yard).Total() == 0 {
 				continue
 			}
 			score := fleet.Position.DistanceTo(source.Position) + source.Position.DistanceTo(yard.Position)
@@ -94,4 +94,30 @@ func (t *turnGenerator) canCollectMiningPlanet(player *Player, planet *Planet) b
 		}
 	}
 	return false
+}
+
+// Assigned incoming rebuilds are real future yard demand before the ship is
+// scrapped and its replacement enters the queue. Count mineral scrap credit
+// and bound reservations to approximately three years of yard output.
+func (t *turnGenerator) incomingRebuildMinerals(p *Player, yard *Planet) Mineral {
+	need := Mineral{}
+	budget := max(1, yard.Spec.ResourcesPerYearAvailable) * 3
+	for _, f := range t.game.getFleets(p.Num) {
+		w := readMaintenance(f)
+		if f.Delete || w == nil || w.Stage != "scrap" || w.PlanetNum != yard.Num {
+			continue
+		}
+		for _, token := range f.Tokens {
+			target := p.GetDesign(p.LatestReplacement(p.DesignMaintenance[token.DesignNum]))
+			if target == nil {
+				continue
+			}
+			for i := 0; i < token.Quantity && budget > 0; i++ {
+				credit := MultiplyCost(token.design.Spec.Cost, t.game.Rules.ScrapMineralAmount+p.Race.Spec.ScrapMineralOffsetStarbase)
+				need = need.Add(target.Spec.Cost.Subtract(credit).MinZero().ToMineral())
+				budget -= max(1, target.Spec.Cost.Resources)
+			}
+		}
+	}
+	return need
 }

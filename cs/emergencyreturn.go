@@ -13,13 +13,25 @@ func knownWithdrawalRoute(p *Player, from, to Vector) bool {
 	}
 	seen := false
 	margin := p.Automation.escortMarginAsFloat()
-	for _, enemy := range p.FleetIntels {
-		if enemy == nil || enemy.Delete || enemy.ReportAge != 0 || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) || !patrolReportedCombatant(p, enemy) || segmentDistance(enemy.Position, from, to) > margin {
+	positions := []Vector{}
+	if index := p.routeThreatIndex; index != nil && index.built && index.margin == p.Automation.escortMargin() {
+		for _, threat := range index.threats {
+			positions = append(positions, threat.position)
+		}
+	} else {
+		for _, enemy := range p.FleetIntels {
+			if enemy != nil && !enemy.Delete && enemy.ReportAge == 0 && enemy.PlayerNum != p.Num && !p.IsFriend(enemy.PlayerNum) && patrolReportedCombatant(p, enemy) {
+				positions = append(positions, enemy.Position)
+			}
+		}
+	}
+	for _, position := range positions {
+		if segmentDistance(position, from, to) > margin {
 			continue
 		}
 		seen = true
-		start := from.Subtract(enemy.Position).ToFloat64()
-		if from.DistanceTo(enemy.Position) > margin || start.X*movement.X+start.Y*movement.Y < 0 || to.DistanceTo(enemy.Position) <= from.DistanceTo(enemy.Position) {
+		start := from.Subtract(position).ToFloat64()
+		if from.DistanceTo(position) > margin || start.X*movement.X+start.Y*movement.Y < 0 || to.DistanceTo(position) <= from.DistanceTo(position) {
 			return false
 		}
 	}
