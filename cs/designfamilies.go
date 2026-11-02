@@ -57,14 +57,19 @@ func (p *Player) RegisterDesignUpgrade(source, next *ShipDesign) error {
 		p.Automation.DesignFamilies[source.Num] = family
 	}
 	next.Version = max(1, source.Version) + 1
+	previous := source
 	for _, design := range p.Designs {
 		if p.Automation.DesignFamilies[design.Num] == family {
 			if design.Hull != next.Hull {
 				return fmt.Errorf("design family cannot span different hulls")
 			}
 			next.Version = max(next.Version, design.Version+1)
+			if design.Version > previous.Version || design.Version == previous.Version && design.Num > previous.Num {
+				previous = design
+			}
 		}
 	}
+	next.Spec.PreviousVersionNum = previous.Num
 	p.Automation.DesignFamilies[next.Num] = family
 	if p.DesignMaintenance == nil {
 		p.DesignMaintenance = DesignMaintenance{}

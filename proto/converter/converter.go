@@ -269,6 +269,7 @@ type Converter interface {
 	ConvertShipDesignP(source *craig_starsv1.ShipDesign) *cs.ShipDesign
 	ConvertShipDesigns(source []*craig_starsv1.ShipDesign) []*cs.ShipDesign
 
+	// goverter:ignore VersionCreatedYear PreviousVersionNum
 	ConvertShipDesignSpec(source *craig_starsv1.ShipDesignSpec) *cs.ShipDesignSpec
 	ConvertCSShipDesignSpec(source cs.ShipDesignSpec) *craig_starsv1.ShipDesignSpec
 

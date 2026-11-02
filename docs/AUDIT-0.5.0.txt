@@ -1,0 +1,60 @@
+0.5.0: consecutive-upgrade recycling, 2026-11-02
+
+Request 250
+The final requirement supersedes the initial proposal to charge 10% of the new
+ship's price. A qualifying automatic rebuild instead scraps the old ship for
+90% of its own current design cost, including resources and all three minerals.
+The successor is queued at its full normal construction price. Cargo is still
+unloaded normally and is not part of the 90% recycling calculation.
+
+Eligibility
+- Owned, non-transferred ship designs on the same hull and in the same family.
+- The physical old ship must use the direct preceding version of the successor.
+  Jumping over an intermediate version does not qualify.
+- Known project creation years must differ by 0-4 game years, inclusive.
+- The interval refers to project dates; finishing a delivery or returning to a
+  shipyard later does not invalidate the qualifying pair.
+- This special recovery is exactly 90%, rounded down per resource for each
+  scrapped quantity. Ordinary racial/EEE recycling bonuses are not added again.
+- Manual scrapping, retirement without replacement, unrelated designs and
+  starbase replacements keep their existing rules.
+
+Example: old ship R100/I40/B20/G10, new ship R120/I50/B25/G15.
+Recovery is R90/I36/B18/G9; full-price construction leaves a net requirement
+of R30/I14/B7/G6. It is not 10% of the successor's price.
+
+Persistence and existing games
+The server now records project creation year and direct predecessor in existing
+design-spec JSON. These are server-owned history fields, preserved by spec
+recomputation and allowed blueprint edits. New games also date starter designs.
+No database schema migration is needed. Older saved designs without a creation
+year retain normal recovery; their historical dates are not guessed. Creating
+new dated versions establishes history for subsequent rapid upgrades.
+The newest version records the actual latest family predecessor even when the
+user starts editing from an older family member.
+
+Planning
+Actual scrapping credits the real shipyard stock once. Replacement queue items
+retain their normal unit cost and do not receive a second paid allocation.
+Yard distribution, incoming rebuild workload and mineral-supply reservations
+use the qualifying credit. Task-completion and funded-return precedence remain
+unchanged.
+
+Verification
+- Full native cs, server, db and db/generated suites pass.
+- Protocol converter suite passes.
+- New regressions cover 0/4/5-year gaps, missing/reversed dates, skipped versions,
+  family/hull/ownership exclusions, rounding, no bonus stacking, native scrap
+  credit, full successor price, unchanged manual/retirement recovery and planning.
+- Database and API tests verify persisted dates/predecessors, preserved metadata
+  after recalculation/editing and server-controlled version/history values.
+- The previous copied-2434 transport regression passes with ordinary recovery
+  for its legacy undated designs; no personal turn is generated or saved.
+- Native/WASM/frontend builds and Svelte diagnostics pass (zero errors/warnings).
+- Final native/UI smoke on isolated ports 18089/18775 passed: production UI,
+  WASM map, starter creation years, two successive upgrade API calls and persisted
+  dates/predecessors verified directly in the isolated database. No turn generated.
+- Installed the verified native binary, rebuilt UI/WASM and matching hashes.
+  All games were waiting for orders before restarting only this copy. Startup
+  reports 0.5.0, schema 30 current/no migration and local-ready HTTP 200. The prior
+  executable remains under tmp/; personal saves/orders were not replaced.

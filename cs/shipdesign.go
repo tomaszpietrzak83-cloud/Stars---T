@@ -36,6 +36,9 @@ type ShipDesignSlot struct {
 }
 
 type ShipDesignSpec struct {
+	// Server-owned history, persisted in spec JSON without changing the wire API.
+	VersionCreatedYear int `json:"versionCreatedYear,omitempty"`
+	PreviousVersionNum int `json:"previousVersionNum,omitempty"`
 	// Persisted with the design spec: 0 chooses by equipment, otherwise plan number + 1.
 	DefaultBattlePlan         int                   `json:"defaultBattlePlan,omitempty"`
 	AdditionalMassDrivers     int                   `json:"additionalMassDrivers,omitempty"`
@@ -363,6 +366,8 @@ func ComputeShipDesignSpec(rules *Rules, techLevels TechLevel, raceSpec RaceSpec
 	}
 	c := NewCostCalculator()
 	spec := ShipDesignSpec{
+		VersionCreatedYear:       design.Spec.VersionCreatedYear,
+		PreviousVersionNum:       design.Spec.PreviousVersionNum,
 		DefaultBattlePlan:        design.Spec.DefaultBattlePlan,
 		Mass:                     hull.Mass,
 		Armor:                    hull.Armor,

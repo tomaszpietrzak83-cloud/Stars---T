@@ -836,6 +836,7 @@ func (ug *universeGenerator) generatePlayerShipDesigns() error {
 					return fmt.Errorf("DesignShip returned error %w", err)
 				}
 				player.Designs = append(player.Designs, design)
+				design.Spec.VersionCreatedYear = ug.Game.Year
 				designNames[design.Name] = true
 				num++
 			}
@@ -850,6 +851,7 @@ func (ug *universeGenerator) generatePlayerShipDesigns() error {
 				return fmt.Errorf("ComputeShipDesignSpec returned error: %w", err)
 			}
 			player.Designs = append(player.Designs, design)
+			design.Spec.VersionCreatedYear = ug.Game.Year
 		}
 	}
 	return nil

@@ -83,8 +83,13 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 			if route == nil {
 				continue
 			}
-			productionYears := (load[planet.Num] + float64(target.Spec.Cost.Resources)) / float64(planet.Spec.ResourcesPerYearAvailable)
 			credit := MultiplyCost(unit.Tokens[0].design.Spec.Cost, t.game.Rules.ScrapMineralAmount+player.Race.Spec.ScrapMineralOffsetStarbase)
+			buildResources := target.Spec.Cost.Resources
+			if rapid, ok := rapidUpgradeRecovery(player, unit.Tokens[0].design, target, unit.Tokens[0].design.Spec.Cost); ok {
+				credit = rapid
+				buildResources = max(0, buildResources-credit.Resources)
+			}
+			productionYears := (load[planet.Num] + float64(buildResources)) / float64(planet.Spec.ResourcesPerYearAvailable)
 			for _, kind := range []ResourceType{Ironium, Boranium, Germanium} {
 				missing := max(0, target.Spec.Cost.GetAmount(kind)-credit.GetAmount(kind)-planet.Cargo.GetAmount(kind))
 				if missing > 0 {
@@ -104,7 +109,11 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 		if chosen != nil {
 			assignment.PlanetNum = chosen.Num
 			assignment.Status = "Assigned to shipyard " + chosen.Name
-			load[chosen.Num] += float64(target.Spec.Cost.Resources)
+			resources := target.Spec.Cost.Resources
+			if credit, ok := rapidUpgradeRecovery(player, unit.Tokens[0].design, target, unit.Tokens[0].design.Spec.Cost); ok {
+				resources = max(0, resources-credit.Resources)
+			}
+			load[chosen.Num] += float64(resources)
 			if route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{unit}, chosen.Position, chosen.ToTarget(), automaticRoutePolicy{AllowThreat: true, EmergencyReturn: true, MaxTurns: 10000}); route != nil {
 				applyExpeditionRoute(player, unit, route)
 			}
@@ -221,7 +230,11 @@ func (t *turnGenerator) rebuildYardLoads(p *Player, exclude string) map[int]floa
 		}
 		for _, token := range f.Tokens {
 			if d := p.GetDesign(p.LatestReplacement(p.DesignMaintenance[token.DesignNum])); d != nil {
-				loads[w.PlanetNum] += float64(d.Spec.Cost.Resources * token.Quantity)
+				resources := d.Spec.Cost.Resources * token.Quantity
+				if credit, ok := rapidUpgradeRecovery(p, token.design, d, MultiplyCost(token.design.Spec.Cost, token.Quantity)); ok {
+					resources = max(0, resources-credit.Resources)
+				}
+				loads[w.PlanetNum] += float64(resources)
 			}
 		}
 	}

@@ -232,8 +232,13 @@ func (t *turnGenerator) incomingRebuildMinerals(p *Player, yard *Planet) Mineral
 			}
 			for i := 0; i < token.Quantity && budget > 0; i++ {
 				credit := MultiplyCost(token.design.Spec.Cost, t.game.Rules.ScrapMineralAmount+p.Race.Spec.ScrapMineralOffsetStarbase)
+				resources := target.Spec.Cost.Resources
+				if rapid, ok := rapidUpgradeRecovery(p, token.design, target, token.design.Spec.Cost); ok {
+					credit = rapid
+					resources = max(0, resources-credit.Resources)
+				}
 				need = need.Add(target.Spec.Cost.Subtract(credit).MinZero().ToMineral())
-				budget -= max(1, target.Spec.Cost.Resources)
+				budget -= max(1, resources)
 			}
 		}
 	}

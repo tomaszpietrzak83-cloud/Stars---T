@@ -303,6 +303,9 @@ func (t *turnGenerator) maintainShipsAtPlanet(player *Player, planet *Planet, av
 			scrap := *fleet
 			scrap.Spec.Cost = MultiplyCost(token.design.Spec.Cost, token.Quantity)
 			recovered := scrap.getScrapAmount(&t.game.Rules, player, planet, false)
+			if rapid, ok := rapidUpgradeRecovery(player, token.design, target, scrap.Spec.Cost); ok {
+				recovered = rapid
+			}
 			*available = available.Add(recovered)
 			report := t.maintenanceReport(player)
 			report.scrapped[token.DesignNum] += token.Quantity

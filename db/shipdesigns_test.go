@@ -6,7 +6,29 @@ import (
 	"github.com/sirgwain/craig-stars/cs"
 	"github.com/sirgwain/craig-stars/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestDesignVersionHistoryPersistence(t *testing.T) {
+	c := connectTestDB()
+	game, p := c.createTestGameWithPlayer(t.Context())
+	rules := cs.NewRules()
+	d := cs.NewShipDesign(p.Num, 1).WithHull(cs.Scout.Name).WithSpec(&rules, p)
+	d.GameID = game.ID
+	d.Spec.VersionCreatedYear = 2443
+	d.Spec.PreviousVersionNum = 7
+	require.NoError(t, c.SaveShipDesign(t.Context(), d))
+	loaded, err := c.GetShipDesign(t.Context(), d.ID)
+	require.NoError(t, err)
+	require.Equal(t, 2443, loaded.Spec.VersionCreatedYear)
+	require.Equal(t, 7, loaded.Spec.PreviousVersionNum)
+	loaded.WithSpec(&rules, p)
+	require.NoError(t, c.SaveShipDesign(t.Context(), loaded))
+	loaded, err = c.GetShipDesign(t.Context(), d.ID)
+	require.NoError(t, err)
+	require.Equal(t, 2443, loaded.Spec.VersionCreatedYear)
+	require.Equal(t, 7, loaded.Spec.PreviousVersionNum)
+}
 
 func TestCreateShipDesign(t *testing.T) {
 

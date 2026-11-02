@@ -61,6 +61,10 @@ func TestAutomaticColonizerRolePersistsAfterSplitAllAPI(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, upgraded.Msg.PlayerOrders)
 	newest := upgraded.Msg.Design.Num
+	storedUpgrade, err := c.GetShipDesignByNum(ctx, full.ID, p.Num, int(newest))
+	require.NoError(t, err)
+	require.Equal(t, game.Year, storedUpgrade.Spec.VersionCreatedYear)
+	require.Equal(t, original.Num, storedUpgrade.Spec.PreviousVersionNum)
 	require.Equal(t, newest, upgraded.Msg.PlayerOrders.DesignMaintenance[int32(original.Num)])
 	draft = upgraded.Msg.Design
 	draft.Name = "Colony Mk 3"
@@ -68,6 +72,10 @@ func TestAutomaticColonizerRolePersistsAfterSplitAllAPI(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, third.Msg.Design.Num, third.Msg.PlayerOrders.DesignMaintenance[int32(original.Num)])
 	require.Equal(t, third.Msg.Design.Num, third.Msg.PlayerOrders.DesignMaintenance[newest])
+	storedThird, err := c.GetShipDesignByNum(ctx, full.ID, p.Num, int(third.Msg.Design.Num))
+	require.NoError(t, err)
+	require.Equal(t, game.Year, storedThird.Spec.VersionCreatedYear)
+	require.Equal(t, int(newest), storedThird.Spec.PreviousVersionNum)
 	require.Equal(t, third.Msg.PlayerOrders.Automation.DesignFamilies[int32(original.Num)], third.Msg.PlayerOrders.Automation.DesignFamilies[third.Msg.Design.Num])
 
 	// The intermediate zero-instance version remains historical after Mk 3.

@@ -94,6 +94,8 @@ func (s *shipDesignService) CreateShipDesign(ctx context.Context, req *connect.R
 	}
 
 	if req.Msg.UpgradeFromDesignNum != 0 {
+		design.Spec.VersionCreatedYear = game.Year
+		design.Spec.PreviousVersionNum = 0
 		source := player.GetDesign(int(req.Msg.UpgradeFromDesignNum))
 		if err := player.RegisterDesignUpgrade(source, design); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -106,8 +108,12 @@ func (s *shipDesignService) CreateShipDesign(ctx context.Context, req *connect.R
 		}); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-	} else if err := dbWriteClient.SaveShipDesign(ctx, design); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+	} else {
+		design.Spec.VersionCreatedYear = game.Year
+		design.Spec.PreviousVersionNum = 0
+		if err := dbWriteClient.SaveShipDesign(ctx, design); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	slog.Info("created player design", slog.Int64("GameID", design.GameID), slog.Int("PlayerNum", player.Num), slog.String("DesignName", design.Name))
@@ -172,6 +178,9 @@ func (s *shipDesignService) UpdateShipDesign(ctx context.Context, req *connect.R
 	}
 
 	// Recompute spec and save
+	design.Version = existingDesign.Version
+	design.Spec.VersionCreatedYear = existingDesign.Spec.VersionCreatedYear
+	design.Spec.PreviousVersionNum = existingDesign.Spec.PreviousVersionNum
 	design.PlayerNum = gamePlayer.Num
 	design.GameID = game.ID
 	design.Spec, err = cs.ComputeShipDesignSpec(&game.Rules, player.TechLevels, player.Race.Spec, design)
