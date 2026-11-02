@@ -14,6 +14,7 @@ import (
 
 // Generate a turn after all players submit their orders.
 type turnGenerator struct {
+	statisticsBefore map[int]StatisticsCounters
 	ordersOnly       bool
 	ordersPlayerNum  int
 	game             *FullGame
@@ -47,6 +48,7 @@ func newTurnGenerator(game *FullGame) turnGenerator {
 func (t *turnGenerator) generateTurn() error {
 	t.log.Debug("begin generating turn")
 	t.game.Year++
+	t.beginStatistics()
 
 	// reset players for start of the turn
 	for _, player := range t.game.Players {
@@ -79,6 +81,8 @@ func (t *turnGenerator) generateTurn() error {
 	t.unloadArrivedColonizers()
 	t.refreshAutomaticFuelIntel()
 	t.releaseColonizerFuelDetours()
+	t.releaseCombatCruiseNetworks()
+	t.prepareRadiatingTransports()
 	t.advanceFuelNetworks()
 	t.resolveAutomaticTankers()
 	t.shareOpportunisticFuel()
@@ -144,6 +148,9 @@ func (t *turnGenerator) generateTurn() error {
 	t.planetGrow()
 	if err := t.playerResearch(researchBudget); err != nil {
 		return err
+	}
+	for _, p := range t.game.Players {
+		p.accounting(t.game.Year).ResearchResourcesSpent += int64(max(0, p.ResearchSpentLastYear))
 	}
 	t.wormholeJiggle()   // wormholes move after production, like the original
 	t.packetMove(true)   // move packets built this turn
@@ -215,6 +222,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.calculateScores()
 	t.checkDeath()
 	t.pruneAutomationAssignments()
+	t.finishStatistics()
 
 	// merges and splits during the turn record by hand transfers. Next turn's by hand transfers start fresh
 	for _, player := range t.game.Players {
@@ -547,6 +555,13 @@ func (t *turnGenerator) scrapFleet(fleet *Fleet, colonize bool) {
 	player := t.game.getPlayer(fleet.PlayerNum)
 	planet := t.game.getOrbitingPlanet(fleet)
 
+	if !colonize {
+		c := player.accounting(t.game.Year)
+		c.ShipsScrapped += int64(fleet.Spec.TotalShips)
+		for _, token := range fleet.Tokens {
+			c.ScrappedTonnage += int64(token.Quantity) * int64(token.design.Spec.Mass)
+		}
+	}
 	cost := fleet.getScrapAmount(&t.game.Rules, player, planet, colonize)
 
 	if planet != nil {
@@ -1809,7 +1824,9 @@ func (t *turnGenerator) detonateMines() {
 func (t *turnGenerator) planetMine() {
 	for _, planet := range t.game.Planets {
 		if planet.Owned() {
+			before := planet.Cargo.ToMineral()
 			planet.mine(&t.game.Rules, planet.Spec.MiningOutput, planet.Mines)
+			t.recordMined(t.game.getPlayer(planet.PlayerNum), planet.Cargo.ToMineral().ToCost().Subtract(before.ToCost()).ToMineral())
 			t.log.Debug("planet mined",
 				slog.Int("Player", planet.PlayerNum),
 				slog.String("Planet", planet.Name),
@@ -1908,7 +1925,9 @@ func (t *turnGenerator) remoteMine(fleet *Fleet, player *Player, planet *Planet)
 	if player.Race.HasEEE(EEEExtractionSpecialists) {
 		output = Mineral{output.Ironium * 5 / 4, output.Boranium * 5 / 4, output.Germanium * 5 / 4}
 	}
+	before := planet.Cargo.ToMineral()
 	planet.mine(&t.game.Rules, output, fleet.Spec.MiningRate)
+	t.recordMined(player, planet.Cargo.ToMineral().ToCost().Subtract(before.ToCost()).ToMineral())
 	planet.MarkDirty()
 
 	// make sure we know about this planet's cargo after remote mining;
@@ -1934,12 +1953,18 @@ func (t *turnGenerator) planetProduction() error {
 
 		player := t.game.Players[planet.PlayerNum-1]
 		producer := newProducer(t.log, &t.game.Rules, planet, player)
+		producer.onSpend = func(delta Cost) { recordProductionSpending(player.accounting(t.game.Year), delta) }
 		producer.maintainShips = func(available *Cost) { t.maintainShipsAtPlanet(player, planet, available) }
 		result, err := producer.produce()
 		if err != nil {
 			return err
 		}
 
+		counters := player.accounting(t.game.Year)
+		counters.ResourcesProduced += int64(planet.Spec.ResourcesPerYear)
+		counters.FactoriesBuilt += int64(result.factories)
+		counters.MinesBuilt += int64(result.mines)
+		counters.DefensesBuilt += int64(result.defenses)
 		// Now it's time to handle the fruits of our labor!
 
 		// Send any pre-made error messages as well as installation messages
@@ -1980,6 +2005,8 @@ func (t *turnGenerator) planetProduction() error {
 
 			player.Stats.FleetsBuilt++
 			player.Stats.TokensBuilt += token.Quantity
+			counters.ShipsBuilt += int64(token.Quantity)
+			counters.BuiltTonnage += int64(design.Spec.Mass) * int64(token.Quantity)
 			if id, err := strconv.Atoi(token.tags[assemblyTag]); err == nil && id > 0 {
 				if _, ok := player.Automation.FleetAssemblies[id]; ok {
 					fleet, err := t.buildFleet(player, planet, token.ShipToken, Tags{assemblyTag: token.tags[assemblyTag]}, nil)
@@ -2682,6 +2709,7 @@ func (t *turnGenerator) fleetBattle() {
 		if battler.hasHostility() {
 			// someone wants to fight, run the battle!
 			record := battler.runBattle()
+			t.recordBattleStatistics(record)
 			t.markSurvivingPatrolTarget(record)
 			fleetsAtPosition := fleets
 			fleets = record.fleets

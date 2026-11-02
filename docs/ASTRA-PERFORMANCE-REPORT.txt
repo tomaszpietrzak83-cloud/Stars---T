@@ -1,0 +1,405 @@
+TOMEK-STARS — ASTRA PERFORMANCE AUDIT / HANDOFF
+2026-11-01, Europe/Warsaw
+
+HISTORICAL ROUND 1: 2026-11-01. Its results are summarized at the end.
+
+1. BASELINE, MACHINE AND INPUT
+Requested engine baseline: tomek-stars 0.4.5, commit 2f9c1977.
+Actual frozen checkout: 85b03889e131fa5338e43a5f227e8f123583ec2b.
+Its differences from 2f9c1977 were documentation/checklist files, not engine code.
+The main working copy was being changed concurrently for new gameplay requests.
+Therefore candidate sources/builds were isolated under ../audit-results/astra-src;
+the performance patch has NOT been applied over those concurrent source edits.
+No audit commit/branch was created in the main agent's working copy.
+
+Host: Windows NT 10.0.19045.0, AMD Ryzen 5 1600 Six-Core Processor,
+6 physical / 12 logical processors; benchmark GOMAXPROCS=12.
+Tools: Go 1.27.3 windows/amd64; Zig 0.15.2, x86_64-windows-gnu CGO compiler;
+Node v25.8.2. CGO_ENABLED=1 for native, 0 / js / wasm for the WASM build.
+Ordinary compiler settings, no new goroutines or changed gameplay configuration.
+
+Input: ../audit-results/astra-input-2477.db, 330,784,768 bytes.
+SHA-256: d38e0f893298d3679fd16c86b7e22e65b8a401b2d7cbbd40c5ec9ceb604b6cab
+Game 10, year 2477; 144 players, 12,600 planets, 40,054 mobile fleets,
+1,892 starbases: 41,946 fleet/base rows before generation.
+Game seed: 1793438041421581100. Existing loading logic seeds Rules with seed+year.
+STARS_COPY_REPRO_GAME=10; archives, previews and FullGame JSON export disabled.
+Every copied-save test copied the input again into its own temporary directory.
+The input hash was checked again after the audit and remained identical.
+Neither D:/gry/Stars! WineDVM nor the personal data/data.db was used for mutation,
+migration, optimization or turn generation. The user could keep playing separately.
+
+2. TIMINGS AND PROFILES
+Unprofiled native GenerateTurn wall times, seconds:
+                 run 1       run 2       run 3       median      min..max
+baseline         85.208033   59.426851   60.909853   60.909853   59.426851..85.208033
+candidate        44.656420   47.452240   45.248634   45.248634   44.656420..47.452240
+Range: baseline 25.781182 s; candidate 2.795820 s. The slow first baseline was
+retained. Its cause was not isolated; no claim of a guaranteed cold/warm time.
+No large builds or other audit benchmarks ran during the timed series. The
+existing personal server remained running; short process samples showed it idle
+relative to the benchmark. No antivirus or system protection was disabled.
+
+Phase medians, wall seconds; phase medians need not sum to the whole-run median:
+                                baseline       candidate
+loadGame                         6.817087       7.059996
+simulation                      29.765704      16.814144
+AI orders                        1.862999       1.584709
+database commit                 22.467038      20.121001
+The database phase includes report encoding, writes and the surrounding
+transaction. loadGame includes SQL queries, decompression, JSON decoding and
+preparation. This audit did NOT separately instrument pure SQLite query wall
+time versus every preparation/encoding/commit subphase. Do not label the whole
+database phase or all cgocall samples as SQLite execution time.
+
+State hashing/comparison occurred AFTER the native timer. Baseline runs included
+slow normalized hashing after generation; the three unprofiled candidate timings
+disabled that post-timer hash after a separate full-state diagnostic comparison.
+Consequently total test durations are not a controlled baseline/candidate metric.
+The previously recorded 71.074 s is a historical single measurement, not the
+baseline median used here. Compact input layout, caching and background work can
+affect timings; this audit does not attribute its difference from 71.074 s to code.
+
+Separate profiled runs, excluded from the medians: baseline 66.420505 s,
+candidate 44.405840 s. Profiles start immediately before GenerateTurn and stop
+immediately afterward, excluding the additional initial/final test reads and hash.
+CPU sample totals: 112.30 CPU s baseline; 86.69 CPU s candidate. These totals
+include simultaneous workers and must not be summed as wall-time components.
+Selected cumulative CPU costs:
+  Universe.getFleets                  8.85 s -> 0.16 s
+  MapObject.OwnedBy                   9.87 s -> 1.32 s
+  enemyApproachingColony, candidate   0.61 s (sort-cache caller 0.27 s)
+  runtime.scanObject                12.42 s -> 8.99 s
+Remaining candidate stacks include SQLiteConn.exec 12.14 CPU s, JSON Unmarshal
+16.69 CPU s, JSON Marshal 10.99 CPU s, scoutPackets 4.64 CPU s, and GC scanning.
+These are overlapping cumulative call-tree costs, not independent percentages
+of the 45-second generation. SQLite remains material, with JSON/GC also material.
+
+3. CHANGES AND EVIDENCE
+A. cs/patrolsort.go: sortedPatrolTargets, called from
+   cs/patrolautomation.go: turnGenerator.planPatrolAutomation.
+   The old stable comparator repeatedly called enemyApproachingColony for the
+   same contact; each call could scan all 12,600 planet reports. A local map
+   remembers that boolean only during one sort. All old ranking criteria,
+   distance comparisons, nil placement and stable ties remain unchanged. The
+   input intel slice is cloned and no cache survives movement/intel changes.
+   The independent original-comparator oracle tests pointer order, equal
+   distances, duplicate pointers, nil/stale/deleted reports and refreshed input.
+
+B. cs/universe.go: Universe.addFleet.
+   getFleets rebuilt the universe-wide owner index after every single fleet
+   append during production. addFleet now extends an already valid owner index
+   only when exactly one tail fleet was appended and it is that exact pointer.
+   Bulk append/compaction still take the existing rebuild path. Queries still
+   filter deleted fleets and return a separate result slice. Tests cover many
+   production appends, deletion, reused fleet numbers, other owners, result-slice
+   independence, bulk append and compaction.
+
+The 3+3 timings measure A+B together. They are not separate factorial benchmarks
+for each change; the CPU call trees support both identified cost reductions.
+
+C. Test-only instrumentation in server/localautomationrepro_test.go and
+   server/copyaudit_test.go: optional phase summaries, game-size logging,
+   turn-only CPU profiles and bounded-object normalized state hashing/diagnostic
+   gzip JSONL. New private output paths must be under audit-results. No production
+   logging, API, database schema, report serialization or rules were changed.
+
+4. CORRECTNESS, RNG, TESTS AND LIMITS
+PASS: all six unprofiled copied-save integration runs, plus both diagnostic runs.
+PASS: complete native suite: go test ./... ./cs/... (using the existing
+Go-TestWait wrapper for Windows executable-release delays). Core, AI, server,
+database, generated storage, command and converter packages passed.
+This includes TestParallelAIFixtureKeepsOrdersDeterministic,
+TestParallelPlanetForecastsMatchSequentialResults and
+TestScannerGridMatchesNativeVisibilityAndParallelOrder, plus the new regressions.
+Optional archive/current-copy AI comparison tests were not independently enabled;
+do not claim those optional tests passed from their skipped default invocation.
+
+Full post-turn persisted/serialized state was compared, a bounded object at a
+time, including every player's independent reports, AI orders, scores, designs,
+combat records, planet state, fleet/cargo/fuel/movement, packets, mines, salvage
+and traders. Result: 0 differing records after the specific normalization below.
+Result sizes: 144 players, 12,600 planets, 41,473 mobile fleets, 1,950 starbases,
+108 wormholes, 2,484 packets, 150 minefields, 3 traders and 8 salvage objects.
+No gameplay fields or report contents were dropped.
+
+Normalization, explicitly limited to:
+  - createdAt and updatedAt: wall-clock database bookkeeping at all depths;
+  - shipDesignIntels list order: sort by (playerNum,num), first verifying unique
+    natural keys; retain and compare all report values;
+  - each CONTIGUOUS run of PlayerDiscovery messages (type 4): compare the sorted
+    complete messages within the same run, retaining every other message's
+    order and position. No global message sorting or removal was performed.
+Raw differences affected 69 player records: design-report order in 35 players
+and discovery-message order in 44, with overlap. Raw digests also differed
+between unmodified baseline runs. cs/scan.go:discoverPlayers ranges over a Go
+map and appends discovery notifications; exact list order is already unstable.
+The normalized comparison does not prove byte-identical notification order.
+It proves equal values under those disclosed ordering exceptions. No other
+field exclusion was used to obtain equality; physical objects and AI orders match.
+
+RNG seed/setup and all random-call sites were retained; neither optimization
+introduces a random draw or changes the order of simulation stages. Matching
+post-turn gameplay/combat state supports preservation of outcomes. Internal
+unexported PRNG cursor state was not separately serialized or sampled; do not
+describe this as an independent bit-for-bit PRNG-state test.
+
+Race: NOT PASSED. The first link attempt lacked synchronization symbols.
+After explicitly linking the retained libsynchronization.a, the runtime failed:
+ThreadSanitizer failed to allocate 69,206,016 bytes, error code 87.
+This reproduces the host limitation; ordinary equivalence tests do not replace
+a successful race run. Repeat race testing on a supported host/CI before claiming
+race-clean execution. No additional concurrency was introduced by this patch.
+
+5. BUILD AND ISOLATED SMOKE
+Native server and WASM rebuilt successfully; Svelte check: 0 errors, 0 warnings;
+compiled frontend build passed. Native server used port 18897, local compiled
+UI host port 15197, and another disposable copy of the retained benchmark input.
+PASS: local session login, compiled HTML, three compiled entry modules, served
+WASM byte/hash equality to the rebuilt module, authenticated native GetGame
+returning year 2477. Test-created processes were stopped and smoke DB removed.
+This was an HTTP/API/asset smoke, not a new interactive browser gameplay audit.
+
+SHA-256:
+native: 85e9dbfc7ca930a30f40d3989cabd7a7c84d154bc86c672f98e2174ddad4c589
+WASM: ad5f0c9250e7f5f39130033d945771c3f82bb326d3afada22c194d94e191f1ba
+frontend index: 7a03c87cb08af2cbaa0a6d8bb32b94f2f64d9387ff0495f5b3968bb445d36b3d
+Full frontend/source hashes: ../audit-results/astra-build-manifest.json.
+Staged checksums: ../audit-results/astra-stage/SHA256SUMS.txt.
+These are private 0.4.5 audit builds, NOT replacements for the main agent's
+newer gameplay work. Live Windows/WASM/frontend release files were not replaced.
+
+6. HANDOFF FILES AND NEXT ACTIONS
+Patch: ../audit-results/astra-performance.patch (12,709 bytes), SHA-256:
+8cffae517e7b7862fd3edda0d719bef0ccf490a95f309dba4b5af13809590a91
+Exact candidate changes relative to frozen 85b03889:
+  cs/patrolautomation.go
+  cs/universe.go
+  cs/patrolsort.go (new)
+  cs/patrolsort_test.go (new)
+  cs/fleetownerindex_test.go (new)
+  server/localautomationrepro_test.go
+  server/copyaudit_test.go (new)
+Patch forward check passed on the frozen reference with --ignore-space-change
+for its CRLF context; reverse check passed against the formatted candidate.
+Do not blindly overwrite the main agent's concurrently modified patrol code.
+
+Private evidence under ../audit-results/:
+  astra-metrics.json; astra-baseline-{1,2,3}.log;
+  astra-candidate-{1,2,3}.log; astra-{reference,candidate}-diagnostic.log;
+  astra-{reference,candidate}-turn.cpu and profile summaries;
+  astra-state-differences-raw.json, astra-state-differences.json;
+  astra-compare.py; astra-{reference,candidate}-result.jsonl.gz;
+  astra-full-tests.log; astra-focused-tests.log; astra-race-linked.log;
+  astra-frontend-{check,build}.log; astra-smoke.log;
+  astra-env.ps1, astra-package.py, astra-smoke.ps1/mjs;
+  astra-src (isolated candidate) and astra-stage (native executable/checksums).
+The two compressed normalized results (~76 MB each) were made specifically to
+diagnose the raw digest mismatch; no 874-MB uncompressed FullGame JSON was saved.
+The redundant source TAR and initial duplicate baseline executable were removed.
+One retained benchmark input and the pre-existing safety backup remain; test DB
+copies were temporary. Go caches regenerated during required builds. Do not
+publish audit data, profiles, auth, transcripts, caches or these diagnostic saves.
+
+Rejected/unfinished alternatives:
+  - No tested optimization was reverted for regression; both selected changes
+    remain in the isolated candidate.
+  - Wider persistent intel caches, report sharing/normalization, incremental DB
+    serialization and extra goroutines were not implemented or benchmarked.
+    They need ownership, report-age, invalidation and migration proofs first.
+  - Exact message/report-list order is not deterministic in baseline; it was
+    documented and normalized for comparison, not changed as part of this audit.
+  - Pure SQL/encoding/transaction subphase wall measurements and a successful
+    race run remain missing; the large first-baseline spread remains unexplained.
+
+Main agent should:
+1. Review and adapt the two small optimizations to the current gameplay branch;
+   preserve the newer patrol ranking/target logic. Do not install the older audit
+   binaries or replace whole edited source files with this 0.4.5 snapshot.
+2. Retain the append-index guard and sort-local cache scope; run the new oracle
+   and index regressions, full native suites and current gameplay regressions.
+3. Repeat copied-input state comparison and 3+3 timings after integration. The
+   measured 25.71% is specific to this frozen engine/input and may not transfer
+   unchanged to a newer patrol implementation or a later galaxy.
+4. Obtain a real race run on a supported host, instrument encoding/SQL/transaction
+   wall phases separately, then prioritize report encoding/storage and remaining
+   GC/allocation work. scoutPackets/spatial work is another measured candidate.
+5. Rebuild native/WASM/frontend together, refresh release hashes and recheck them
+   on isolated ports/database before any separately managed personal-game update.
+6. Keep benchmark input/profiles/patch/evidence; remove staging/checkouts and
+   redundant diagnostic outputs after integration if storage is needed.
+
+Scope correction from user: gameplay prompts sent to this audit chat were meant
+for the primary chat. Their original text and later corrections were forwarded
+in order to 01a187ca-6ca4-75f1-b3b0-637a74606b3c. Started trader work in the shared
+tree (traderautomation.go, tradercarriers.go/test) was explicitly handed to that
+agent and is NOT included in this performance patch or any benchmark/build above.
+The primary agent owns those feature requests and their deployment. This audit
+did not implement bombardment/scout/mine-clearing changes and did not shut down
+the computer. Final report is to be delivered to the primary chat.
+
+9. FOLLOW-UP: STORAGE AND REPORTS (2026-11-02)
+
+Scope and reference
+The user requested further improvement below approximately 45 seconds, starting
+with storage/reports, without any gameplay changes, and a same-input complete
+result comparison. This round starts from the previous isolated candidate
+(astra-performance.patch on commit 85b03889e131fa5338e43a5f227e8f123583ec2b),
+not from the original 60-second baseline. All new product changes are in db/.
+Machine, tools, 12 workers, year 2477, game 10, seed and input are as in section 1.
+The input SHA-256 was rechecked and is unchanged:
+d38e0f893298d3679fd16c86b7e22e65b8a401b2d7cbbd40c5ec9ceb604b6cab
+No personal save or original Stars! installation was modified.
+
+Method and measurements
+Three unprofiled reference/candidate pairs, in alternating R1/C1/R2/C2/R3/C3
+order, each on a fresh temporary copy of the exact same input. Archives,
+previews and full JSON export disabled; the expensive post-turn digest was
+reserved for a separate correctness run. No audit builds or other audit
+benchmarks ran during the final six measurements. The user explicitly paused
+turn generation/previews during this final measurement window.
+
+Native GenerateTurn seconds:
+reference: 45.9797503 / 43.6295274 / 43.6381287
+candidate: 40.5867373 / 39.6645234 / 40.0843917
+reference median: 43.6381287; range 43.6295274..45.9797503
+candidate median: 40.0843917; range 39.6645234..40.5867373
+Reduction: 8.14% (3.5537370 seconds).
+
+Phase medians, seconds (independent medians need not sum to total median):
+                       reference     candidate
+loadGame                6.8939273     7.0653861
+simulation             16.1231585    16.3700581
+AI orders               1.4260015     1.3958373
+database commit        19.1228203    15.2488350
+The whole save phase is 20.26% shorter. This phase includes encoding,
+SQL execution and transaction commit; it is not a pure disk/SQLite measurement.
+
+Earlier exploratory results were retained, not silently mixed into this series:
+reference 67.6566021 / 56.3778586 / 44.9617860 seconds; profiled diagnostic
+candidate 61.5010302 seconds and unprofiled trial 70.1047211 seconds. Other
+Go processes and increasing CPU/memory usage of the live game were observed
+while these runs took place. A preliminary 73.7454310-second turn was stopped
+later during the expensive post-turn verification; that test did not complete.
+The quiet-window rerun was declared before its results were known. This is why
+its complete alternating series is the performance comparison above.
+
+Implementation and ownership
+- db/turnstatements.go, db/games.go: prepare each distinct Exec SQL statement
+  once per UpdateFullGame transaction, reuse it, close it on exit and restore
+  the original writer. No writes are skipped or reordered. Read queries still
+  use the original transaction. There is no cache across saves/transactions.
+- db/playerreports.go, db/games.go: encode the next batch of eight immutable
+  PlanetIntels while the caller serially saves the current batch. Existing
+  encoding workers remain bounded by min(8, GOMAXPROCS, batch size). An
+  unbuffered hand-off permits only the current and next batches to be live.
+  On early SQL/encoding failure, stop unblocks the hand-off and joins workers
+  before returning. Player IDs/designs and all SQL writes remain on the caller.
+  No report fields are mutated during the asynchronous read.
+- db/generated/planet_report_storage.go: pool gzip writers to reuse their
+  compression tables; reset destinations to io.Discard before returning a writer
+  to the pool. Each encoded report retains its own byte buffer. JSON, compression
+  level, threshold, magic header, decoder and storage schema are unchanged.
+
+Diagnostics and remaining costs
+An instrumented diagnostic counted 59,533 Exec calls but only 20 distinct SQL
+statements. Report worker encoding took 2.3249709 s while waiting for batches on
+the saving thread took 0.1891488 s: the overlap works. Statement preparation took
+0.0535533 s; execution including driver.Value serialization took 27.3626337 s;
+transaction commit alone took 4.6079659 s. That diagnostic had external load and
+a total 61.5010302 s; do NOT interpret its absolute phase values as the final
+15.2488350-second save breakdown or add overlapping worker times.
+Instrumentation was removed from product source before final timings/builds.
+The diagnostic source snapshot is astra-storage-instrumented-sources.json.
+No isolated ablation timings were taken for each of the three changes; the
+measured performance gain belongs to their combined, tested implementation.
+
+A separate final turn-only CPU profile covered 40.5594674 s wall time / 87.28 s
+CPU samples. UpdateFullGame cumulative CPU: 12.98 s; statement Exec: 12.94 s;
+JSON Unmarshal: 16.31 s; JSON Marshal: 11.58 s. These call-tree costs overlap and
+include parallel work. They cannot be summed into wall time. Current wall-time
+priorities are simulation (~16.37 s), save (~15.25 s), load (~7.07 s). SQL row
+execution/remaining JSON and loading remain candidates for future investigation.
+Dirty-write skipping, alternate codecs/schema, reduced report contents, weaker
+visibility and gameplay shortcuts were not introduced.
+
+Correctness
+All six measured copied-save tests passed. A separate copied-input turn was
+reloaded from SQLite and compared against the previous candidate's complete
+post-turn snapshot (astra-candidate-result.jsonl.gz), including game, tech store,
+144 players and every serialized universe object. The new diagnostic snapshot
+is astra-storage-result.jsonl.gz (76,152,937 bytes, compressed JSONL; no monolithic
+FullGame JSON export). The comparison returned changedRecords=0.
+It includes 12,600 planets, 41,473 fleets, 1,950 starbases, 108 wormholes,
+2,484 packets, 150 minefields, 3 traders and 8 salvages after the turn.
+
+The EXACT SAME narrowly documented round-1 normalization was retained:
+- omit createdAt/updatedAt bookkeeping timestamps;
+- order shipDesignIntels by (playerNum, num), rejecting duplicate natural keys;
+- order complete PlayerDiscovery/type-4 messages only within their existing
+  contiguous type-4 runs, preserving all other message positions/order/content.
+Before the last two normalizations, 62 player records differed: 31 in design
+report ordering and 40 in discovery-message ordering (overlap between groups).
+No additional fields, values or differences were ignored. Baseline Go-map
+iteration instability was established in round 1. Therefore the result is
+identical normalized persisted game state, not byte-identical database files.
+RNG seed, call sites and simulation/AI code were unchanged; the internal RNG
+cursor was not separately exported or compared.
+
+Validation and artifacts
+- Full go test ./... ./cs/...: PASS (server 103.134 s; cs 2.603 s).
+- Database suites: PASS, including new transaction-binding/constraint/valuer
+  failure/rollback/fresh-transaction tests, batch ordering/lossless/error/early
+  cancellation tests and parallel compressor output-ownership tests.
+- Race retry for db/...: NOT PASSED. Linking succeeded with the existing Windows
+  synchronization library, but ThreadSanitizer failed before tests with allocation
+  error 87 (69,468,160 / 69,140,480 bytes). A supported-host race run remains open.
+- Native, WASM and compiled frontend rebuilt; Svelte check: 0 errors / 0 warnings.
+- Isolated HTTP/API/assets smoke: PASS, ports 18898 / 15198, disposable copied DB,
+  local login, compiled HTML/entry modules, served WASM hash and authenticated
+  GetGame at year 2477. This was not an interactive gameplay/browser audit.
+  Smoke servers were stopped and the explicitly named disposable DB removed.
+
+Native SHA-256: eff96a982702f14be498400a389192659590da622781c046f841107cdf85fe93
+WASM SHA-256: a2175b19a375f9a23f4442063728ac2a0120a7ee1c5b49adaaabeec215bb7a8b
+Frontend index SHA-256: 59c236c7995e7f10e7fa944f01eb26dcc06e9f156fea5e964c79b3946b96488b
+New stage: ../audit-results/astra-storage-stage; full metadata and source hashes:
+../audit-results/astra-storage-manifest.json. Rebuilt frontend/WASM assets in the
+shared isolated source directory supersede that directory's round-1 build hashes.
+
+Integration handoff
+Storage-only patch: ../audit-results/astra-storage.patch (10154 bytes).
+SHA-256: 2a0963cbccaae75fde8044d6eaad034f028dce876c5e5ef0d38df7ddeee7eb91
+Files: db/games.go; db/playerreports.go; db/turnstatements.go;
+db/turnstatements_test.go; db/playerreports_test.go;
+db/generated/planet_report_storage.go; db/generated/planet_report_storage_test.go.
+The patch applies cleanly with --check --ignore-space-change to the current main
+working copy at handoff preparation. This check did not modify that copy.
+No product commit or live deployment was made by the audit chat. The main chat
+must review/integrate this patch along with any outstanding round-1 patch, retain
+newer gameplay changes, rerun current-branch validation, then rebuild/deploy its
+own current version. Do not install this older isolated 0.4.5 native binary over
+newer gameplay code. Private input, snapshots, profiles and compiler caches must
+not be committed. Shared docs/checklist contain the audit evidence.
+
+Evidence under ../audit-results/: astra-storage-final-reference-1..3.log,
+astra-storage-final-candidate-1..3.log, astra-storage-metrics.json,
+astra-storage-state.log, astra-storage-state-differences.json,
+astra-storage-final.cpu, astra-storage-profile-cum.txt,
+astra-storage-full-tests.log, astra-storage-db-tests.log,
+astra-storage-race.log, astra-storage-frontend-check.log,
+astra-storage-frontend-build.log, astra-storage-smoke.log.
+
+Power-off coordination
+The user requested normal Windows shutdown only AFTER both chats finish, and
+explicitly required the main chat to make commits and confirm completion first.
+An idle status alone is not sufficient. The audit chat will wait for that explicit
+confirmation before shutdown, and will not interrupt another chat's work.
+
+PODSUMOWANIE (na dole raportu, zgodnie z prosba uzytkownika)
+Pierwszy etap: mediana 60,91 -> 45,25 s. Drugi etap, nowa seria porownawcza:
+43,64 -> 40,08 s (o 8,14% szybciej), zapis 19,12 -> 15,25 s (o 20,26% szybciej).
+Wszystkie trzy nowe pomiary: 39,66-40,59 s. Pelny znormalizowany stan po turze
+jest identyczny (0 roznic). Testy natywne, buildy i izolowany smoke przeszly;
+race pozostaje nieweryfikowalny na tym Windows. Patch jest gotowy do integracji
+przez glowny czat; audyt nie zmienil osobistej gry ani jej nie wdrozyl.

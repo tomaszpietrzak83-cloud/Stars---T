@@ -40,6 +40,7 @@ type producer struct {
 	estimating bool
 	// Only actual turn production supplies this; estimates never mutate fleets.
 	maintainShips func(*Cost)
+	onSpend       func(Cost)
 }
 
 type QueueItemCompletionEstimate struct {
@@ -258,6 +259,15 @@ func (p *producer) produce() (productionResult, error) {
 	alchemy := false // true if the previous item is auto alchemy
 	for i := 0; i < len(queue); {
 		item := queue[i]
+		// A base already under construction follows its latest family version,
+		// retaining paid allocations and the operational station until completion.
+		if item.Type == QueueItemTypeStarbase && p.player.DesignMaintenance[item.DesignNum] > 0 {
+			if next := p.player.GetDesign(p.player.LatestReplacement(item.DesignNum)); next != nil && item.design != nil && next.Spec.Starbase && next.Hull == item.design.Hull {
+				item.DesignNum = next.Num
+				item.design = next
+				queue[i] = item
+			}
+		}
 		// An already scrapped ship must not lose its replacement if a newer family
 		// version appears during construction. Preserve quantities and paid costs.
 		if item.Type == QueueItemTypeShipToken && item.GetTag(replacementOrderTag) != "" {
@@ -270,6 +280,9 @@ func (p *producer) produce() (productionResult, error) {
 		if item.Type == QueueItemTypeShipToken && p.player.DesignMaintenance[item.DesignNum] != 0 {
 			// Do not build old ships only to scrap or refit them immediately.
 			available = available.Add(item.Allocated)
+			if p.onSpend != nil {
+				p.onSpend(Cost{}.Subtract(item.Allocated))
+			}
 			result.messages = append(result.messages, PlayerMessage{Type: PlayerMessageInfo, Text: "Canceled production of a retired or replaced ship design; its allocation was returned."})
 			queue, i = removeQueueItem(queue, i, alchemy)
 			alchemy = false
@@ -322,6 +335,7 @@ func (p *producer) produce() (productionResult, error) {
 			quantity = maxBuildable
 		}
 
+		beforeAvailable := available
 		built, err := p.buildItem(item, cost, quantity, &available, alchemy)
 		if err != nil {
 			return productionResult{}, err
@@ -330,10 +344,14 @@ func (p *producer) produce() (productionResult, error) {
 		// A reserved replacement's already paid resources remain invested while
 		// waiting for minerals after a family retarget. Only retain unspent credit;
 		// ordinary annual production and alchemy are not duplicated.
-		if item.GetTag(replacementOrderTag) != "" && built.numBuilt == 0 {
+		if (item.GetTag(replacementOrderTag) != "" || item.Type == QueueItemTypeStarbase && p.player.Automation.DesignFamilies[item.DesignNum] != 0) && built.numBuilt == 0 {
 			keep := min(max(0, min(item.Allocated.Resources, cost.Resources)-built.allocated.Resources), max(0, available.Resources))
 			built.allocated.Resources += keep
 			available.Resources -= keep
+		}
+		if p.onSpend != nil {
+			delta := beforeAvailable.Subtract(available).AddToAllMineral(built.alchemy)
+			p.onSpend(delta)
 		}
 		result.alchemy += built.alchemy
 		if built.numBuilt > 0 {
@@ -385,6 +403,9 @@ func (p *producer) produce() (productionResult, error) {
 		if cost.Resources > 0 {
 			converted := available.Resources / cost.Resources
 			available.Resources -= converted * cost.Resources
+			if p.onSpend != nil {
+				p.onSpend(Cost{Resources: converted * cost.Resources})
+			}
 			available = available.AddToAllMineral(converted)
 			result.alchemy += converted
 		}

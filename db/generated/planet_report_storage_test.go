@@ -3,6 +3,7 @@ package generated
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -24,4 +25,24 @@ func TestPlanetReportStorageLosslessAndLegacy(t *testing.T) {
 	var decoded []string
 	require.Error(t, scanPlanetReports(append(append([]byte{}, planetReportMagic...), 1, 2), &decoded))
 	require.NoError(t, scanPlanetReports(nil, &decoded))
+}
+
+func TestPlanetReportWriterReuseOwnsOutput(t *testing.T) {
+	for worker := range 12 {
+		t.Run(fmt.Sprint(worker), func(t *testing.T) {
+			t.Parallel()
+			original := []string{fmt.Sprint(worker), string(bytes.Repeat([]byte("report "), 2000))}
+			first, err := valuePlanetReports(original)
+			require.NoError(t, err)
+			retained := bytes.Clone(first.([]byte))
+			for i := range 20 {
+				_, err := valuePlanetReports([]string{fmt.Sprint(i), original[1]})
+				require.NoError(t, err)
+			}
+			require.Equal(t, retained, first, "later encodes must not overwrite earlier outputs")
+			var decoded []string
+			require.NoError(t, scanPlanetReports(first, &decoded))
+			require.Equal(t, original, decoded)
+		})
+	}
 }

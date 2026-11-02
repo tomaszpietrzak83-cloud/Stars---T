@@ -54,7 +54,7 @@ func TestPatrolSelectsFrontierAndKeepsEconomicalRouteThroughFuelGuard(t *testing
 	require.Greater(t, len(f.Waypoints), 1)
 	require.LessOrEqual(t, f.Waypoints[len(f.Waypoints)-1].Position.DistanceTo(u.Planet("Home").Position), float64(48))
 	require.NotEmpty(t, f.GetTag(patrolSectorTag))
-	require.LessOrEqual(t, f.Waypoints[1].WarpSpeed, 4)
+	require.LessOrEqual(t, f.Waypoints[1].WarpSpeed, 6)
 }
 func TestBombingWolfPackMergesAndRestoresOriginalRolesAfterMission(t *testing.T) {
 	u := automaticBomberUniverse(t)

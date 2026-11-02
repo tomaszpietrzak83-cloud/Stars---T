@@ -146,7 +146,7 @@
 			queuedStarbases
 		);
 		availableShipDesigns=availableShipDesigns.filter(item=>!$player.playerOrders.designMaintenance?.[item.designNum]);
-  availableStarbaseDesigns = planet.getAvailableProductionQueueStarbaseDesigns($universe.designs);
+  availableStarbaseDesigns = planet.getAvailableProductionQueueStarbaseDesigns($universe.designs).filter(item=>!$player.playerOrders.designMaintenance?.[item.designNum]);
 		for (const item of [...availableShipDesigns, ...availableStarbaseDesigns, ...availableItems]) {
 			item.queueItemCompletionEstimate = estimates.get(key(item));
 		}

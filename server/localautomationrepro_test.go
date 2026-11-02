@@ -50,6 +50,24 @@ func TestLocalAutomationOnCopiedSave(t *testing.T) {
 	runner := NewGameRunner(database, cfg)
 	before, err := database.NewReadClient().GetFullGame(t.Context(), gameID)
 	require.NoError(t, err)
+	if output := os.Getenv("STARS_COPY_NAVIGATION_SNAPSHOT"); output != "" {
+		absolute, err := filepath.Abs(output)
+		require.NoError(t, err)
+		require.Contains(t, strings.ToLower(filepath.ToSlash(absolute)), "/audit-results/")
+		for _, p := range before.Players {
+			if p.Num != 1 {
+				p.Intels = cs.Intels{}
+				p.Messages = nil
+				p.BattleRecords = nil
+				p.Stats = nil
+			}
+		}
+		data, err := json.Marshal(before)
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(absolute, data, 0600))
+		t.Logf("Exported planning-only snapshot: %d bytes; other players' reports omitted", len(data))
+		return
+	}
 	if os.Getenv("STARS_COPY_PREVIEW_PRODUCTION") != "" {
 		plan, err := before.PreviewProductionOrders(1)
 		require.NoError(t, err)

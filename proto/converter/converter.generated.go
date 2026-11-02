@@ -3112,6 +3112,40 @@ func (c *ProtoConverter) csStartingPlanetToPCraig_starsv1StartingPlanet(source c
 	craig_starsv1StartingPlanet.PopulationFromHomeworld = IntToInt32(source.PopulationFromHomeworld)
 	return &craig_starsv1StartingPlanet
 }
+func (c *ProtoConverter) csStatisticsCountersToPCraig_starsv1StatisticsCounters(source cs.StatisticsCounters) *v1.StatisticsCounters {
+	var craig_starsv1StatisticsCounters v1.StatisticsCounters
+	craig_starsv1StatisticsCounters.ShipsDestroyed = source.ShipsDestroyed
+	craig_starsv1StatisticsCounters.DestroyedTonnage = source.DestroyedTonnage
+	craig_starsv1StatisticsCounters.ShipsLost = source.ShipsLost
+	craig_starsv1StatisticsCounters.LostTonnage = source.LostTonnage
+	craig_starsv1StatisticsCounters.ShipsBuilt = source.ShipsBuilt
+	craig_starsv1StatisticsCounters.BuiltTonnage = source.BuiltTonnage
+	craig_starsv1StatisticsCounters.ShipsScrapped = source.ShipsScrapped
+	craig_starsv1StatisticsCounters.ScrappedTonnage = source.ScrappedTonnage
+	craig_starsv1StatisticsCounters.BattlesFought = source.BattlesFought
+	craig_starsv1StatisticsCounters.BattlesWon = source.BattlesWon
+	craig_starsv1StatisticsCounters.ResourcesProduced = source.ResourcesProduced
+	craig_starsv1StatisticsCounters.ProductionResourcesSpent = source.ProductionResourcesSpent
+	craig_starsv1StatisticsCounters.ResearchResourcesSpent = source.ResearchResourcesSpent
+	craig_starsv1StatisticsCounters.AllocationRefundsResources = source.AllocationRefundsResources
+	craig_starsv1StatisticsCounters.IroniumSpent = source.IroniumSpent
+	craig_starsv1StatisticsCounters.BoraniumSpent = source.BoraniumSpent
+	craig_starsv1StatisticsCounters.GermaniumSpent = source.GermaniumSpent
+	craig_starsv1StatisticsCounters.IroniumMined = source.IroniumMined
+	craig_starsv1StatisticsCounters.BoraniumMined = source.BoraniumMined
+	craig_starsv1StatisticsCounters.GermaniumMined = source.GermaniumMined
+	craig_starsv1StatisticsCounters.FactoriesBuilt = source.FactoriesBuilt
+	craig_starsv1StatisticsCounters.MinesBuilt = source.MinesBuilt
+	craig_starsv1StatisticsCounters.DefensesBuilt = source.DefensesBuilt
+	craig_starsv1StatisticsCounters.MineralsSalvaged = source.MineralsSalvaged
+	return &craig_starsv1StatisticsCounters
+}
+func (c *ProtoConverter) csStatisticsYearToPCraig_starsv1StatisticsYear(source cs.StatisticsYear) *v1.StatisticsYear {
+	var craig_starsv1StatisticsYear v1.StatisticsYear
+	craig_starsv1StatisticsYear.Year = IntToInt32(source.Year)
+	craig_starsv1StatisticsYear.Counters = c.csStatisticsCountersToPCraig_starsv1StatisticsCounters(source.Counters)
+	return &craig_starsv1StatisticsYear
+}
 func (c *ProtoConverter) csStealsResearchToPCraig_starsv1StealsResearch(source cs.StealsResearch) *v1.StealsResearch {
 	var craig_starsv1StealsResearch v1.StealsResearch
 	craig_starsv1StealsResearch.Energy = source.Energy
@@ -3938,6 +3972,22 @@ func (c *ProtoConverter) pCraig_starsv1PlanetStarbaseSpecToCsPlanetStarbaseSpec(
 	}
 	return csPlanetStarbaseSpec
 }
+func (c *ProtoConverter) pCraig_starsv1PlayerAccountingToPCsPlayerAccounting(source *v1.PlayerAccounting) *cs.PlayerAccounting {
+	var pCsPlayerAccounting *cs.PlayerAccounting
+	if source != nil {
+		var csPlayerAccounting cs.PlayerAccounting
+		csPlayerAccounting.SinceYear = Int32ToInt((*source).SinceYear)
+		csPlayerAccounting.Counters = c.pCraig_starsv1StatisticsCountersToCsStatisticsCounters((*source).Counters)
+		if (*source).History != nil {
+			csPlayerAccounting.History = make([]cs.StatisticsYear, len((*source).History))
+			for i := 0; i < len((*source).History); i++ {
+				csPlayerAccounting.History[i] = c.pCraig_starsv1StatisticsYearToCsStatisticsYear((*source).History[i])
+			}
+		}
+		pCsPlayerAccounting = &csPlayerAccounting
+	}
+	return pCsPlayerAccounting
+}
 func (c *ProtoConverter) pCraig_starsv1PlayerIntelToCsPlayerIntel(source *v1.PlayerIntel) cs.PlayerIntel {
 	var csPlayerIntel cs.PlayerIntel
 	if source != nil {
@@ -4103,6 +4153,7 @@ func (c *ProtoConverter) pCraig_starsv1PlayerStatsToPCsPlayerStats(source *v1.Pl
 	var pCsPlayerStats *cs.PlayerStats
 	if source != nil {
 		var csPlayerStats cs.PlayerStats
+		csPlayerStats.Accounting = c.pCraig_starsv1PlayerAccountingToPCsPlayerAccounting((*source).Accounting)
 		csPlayerStats.FleetsBuilt = Int32ToInt((*source).FleetsBuilt)
 		csPlayerStats.StarbasesBuilt = Int32ToInt((*source).StarbasesBuilt)
 		csPlayerStats.TokensBuilt = Int32ToInt((*source).TokensBuilt)
@@ -4321,6 +4372,44 @@ func (c *ProtoConverter) pCraig_starsv1StartingPlanetToCsStartingPlanet(source *
 		csStartingPlanet.Homeworld = (*source).Homeworld
 	}
 	return csStartingPlanet
+}
+func (c *ProtoConverter) pCraig_starsv1StatisticsCountersToCsStatisticsCounters(source *v1.StatisticsCounters) cs.StatisticsCounters {
+	var csStatisticsCounters cs.StatisticsCounters
+	if source != nil {
+		csStatisticsCounters.ShipsDestroyed = (*source).ShipsDestroyed
+		csStatisticsCounters.DestroyedTonnage = (*source).DestroyedTonnage
+		csStatisticsCounters.ShipsLost = (*source).ShipsLost
+		csStatisticsCounters.LostTonnage = (*source).LostTonnage
+		csStatisticsCounters.ShipsBuilt = (*source).ShipsBuilt
+		csStatisticsCounters.BuiltTonnage = (*source).BuiltTonnage
+		csStatisticsCounters.ShipsScrapped = (*source).ShipsScrapped
+		csStatisticsCounters.ScrappedTonnage = (*source).ScrappedTonnage
+		csStatisticsCounters.BattlesFought = (*source).BattlesFought
+		csStatisticsCounters.BattlesWon = (*source).BattlesWon
+		csStatisticsCounters.ResourcesProduced = (*source).ResourcesProduced
+		csStatisticsCounters.ProductionResourcesSpent = (*source).ProductionResourcesSpent
+		csStatisticsCounters.ResearchResourcesSpent = (*source).ResearchResourcesSpent
+		csStatisticsCounters.AllocationRefundsResources = (*source).AllocationRefundsResources
+		csStatisticsCounters.IroniumSpent = (*source).IroniumSpent
+		csStatisticsCounters.BoraniumSpent = (*source).BoraniumSpent
+		csStatisticsCounters.GermaniumSpent = (*source).GermaniumSpent
+		csStatisticsCounters.IroniumMined = (*source).IroniumMined
+		csStatisticsCounters.BoraniumMined = (*source).BoraniumMined
+		csStatisticsCounters.GermaniumMined = (*source).GermaniumMined
+		csStatisticsCounters.FactoriesBuilt = (*source).FactoriesBuilt
+		csStatisticsCounters.MinesBuilt = (*source).MinesBuilt
+		csStatisticsCounters.DefensesBuilt = (*source).DefensesBuilt
+		csStatisticsCounters.MineralsSalvaged = (*source).MineralsSalvaged
+	}
+	return csStatisticsCounters
+}
+func (c *ProtoConverter) pCraig_starsv1StatisticsYearToCsStatisticsYear(source *v1.StatisticsYear) cs.StatisticsYear {
+	var csStatisticsYear cs.StatisticsYear
+	if source != nil {
+		csStatisticsYear.Year = Int32ToInt((*source).Year)
+		csStatisticsYear.Counters = c.pCraig_starsv1StatisticsCountersToCsStatisticsCounters((*source).Counters)
+	}
+	return csStatisticsYear
 }
 func (c *ProtoConverter) pCraig_starsv1StealsResearchToCsStealsResearch(source *v1.StealsResearch) cs.StealsResearch {
 	var csStealsResearch cs.StealsResearch
@@ -4577,6 +4666,22 @@ func (c *ProtoConverter) pCsMysteryTraderToPCraig_starsv1MysteryTrader(source *c
 	}
 	return pCraig_starsv1MysteryTrader
 }
+func (c *ProtoConverter) pCsPlayerAccountingToPCraig_starsv1PlayerAccounting(source *cs.PlayerAccounting) *v1.PlayerAccounting {
+	var pCraig_starsv1PlayerAccounting *v1.PlayerAccounting
+	if source != nil {
+		var craig_starsv1PlayerAccounting v1.PlayerAccounting
+		craig_starsv1PlayerAccounting.SinceYear = IntToInt32((*source).SinceYear)
+		craig_starsv1PlayerAccounting.Counters = c.csStatisticsCountersToPCraig_starsv1StatisticsCounters((*source).Counters)
+		if (*source).History != nil {
+			craig_starsv1PlayerAccounting.History = make([]*v1.StatisticsYear, len((*source).History))
+			for i := 0; i < len((*source).History); i++ {
+				craig_starsv1PlayerAccounting.History[i] = c.csStatisticsYearToPCraig_starsv1StatisticsYear((*source).History[i])
+			}
+		}
+		pCraig_starsv1PlayerAccounting = &craig_starsv1PlayerAccounting
+	}
+	return pCraig_starsv1PlayerAccounting
+}
 func (c *ProtoConverter) pCsPlayerMessageSpecCargoTransferToPCraig_starsv1PlayerMessageSpecCargoTransfer(source *cs.PlayerMessageSpecCargoTransfer) *v1.PlayerMessageSpecCargoTransfer {
 	var pCraig_starsv1PlayerMessageSpecCargoTransfer *v1.PlayerMessageSpecCargoTransfer
 	if source != nil {
@@ -4623,6 +4728,7 @@ func (c *ProtoConverter) pCsPlayerStatsToPCraig_starsv1PlayerStats(source *cs.Pl
 	var pCraig_starsv1PlayerStats *v1.PlayerStats
 	if source != nil {
 		var craig_starsv1PlayerStats v1.PlayerStats
+		craig_starsv1PlayerStats.Accounting = c.pCsPlayerAccountingToPCraig_starsv1PlayerAccounting((*source).Accounting)
 		craig_starsv1PlayerStats.FleetsBuilt = IntToInt32((*source).FleetsBuilt)
 		craig_starsv1PlayerStats.StarbasesBuilt = IntToInt32((*source).StarbasesBuilt)
 		craig_starsv1PlayerStats.TokensBuilt = IntToInt32((*source).TokensBuilt)

@@ -50,6 +50,25 @@ func (t *turnGenerator) dissolveBombingPack(p *Player, leader *Fleet, pack *bomb
 		t.game.Fleets = append(t.game.Fleets, child)
 		_ = t.game.Universe.addFleet(child)
 	}
+	// Keep the bombers together: splitting five bombers into five clients would
+	// immediately recruit five separate escorts again, recreating the excess.
+	bombers := []*Fleet{}
+	for _, f := range append([]*Fleet{leader}, children...) {
+		if !f.Delete && p.Automation.FleetRoles[f.Num] == "bomber" {
+			bombers = append(bombers, f)
+		}
+	}
+	if len(bombers) > 1 {
+		merged, err := NewOrderer().Merge(&t.game.Rules, p, bombers)
+		if err == nil {
+			for _, f := range bombers {
+				if f != merged {
+					t.game.deleteFleet(f)
+				}
+			}
+			p.Automation.FleetRoles[merged.Num] = "bomber"
+		}
+	}
 }
 func restoreBombingPackRoles(p *Player, leader *Fleet, children []*Fleet, pack *bombingPack) {
 	for _, f := range append([]*Fleet{leader}, children...) {
@@ -86,7 +105,7 @@ func (t *turnGenerator) finishBombingPacks() {
 			}
 			target := p.GetPlanetIntel(pack.Target)
 			done := target == nil || !target.Owned() || target.PlayerNum == p.Num || p.IsFriend(target.PlayerNum) || !priorityNeedsBombing(target) && bombingDelegatedToLanding(p, target, t.game.getFleets(p.Num))
-			if done || p.Automation.FleetRoles[f.Num] != "bomber" {
+			if done || p.Automation.FleetRoles[f.Num] != "bomber" || t.bombingPackHasSurplusCover(p, f, pack) {
 				t.dissolveBombingPack(p, f, pack)
 			}
 		}
@@ -226,4 +245,29 @@ func (t *turnGenerator) planBombingWolfPacks() {
 			}
 		}
 	}
+}
+
+func packNeedsArmedOrbit(p *Player, pack *bombingPack) bool {
+	target := p.GetPlanetIntel(pack.Target)
+	if target == nil || !target.Spec.HasStarbase {
+		return false
+	}
+	d := p.GetShipDesignIntel(target.PlayerNum, target.Spec.StarbaseDesignNum)
+	return d == nil || len(d.Slots) == 0 || d.Spec.HasWeapons
+}
+
+// An unknown orbital base can justify minimal cover, not a permanent lock on
+// every destroyer that once joined the mission. Re-evaluate the remaining
+// requirement through the convoy controller after restoring original roles.
+func (t *turnGenerator) bombingPackHasSurplusCover(p *Player, f *Fleet, pack *bombingPack) bool {
+	if !f.Spec.HasWeapons || knownRouteThreat(p, f.Position, f.Position) > 0 || bomberChaseThreat(p, f) > 0 {
+		return false
+	}
+	armed := 0
+	for _, token := range f.Tokens {
+		if d := p.GetDesign(token.DesignNum); d != nil && d.Spec.HasWeapons {
+			armed += token.Quantity
+		}
+	}
+	return armed > 1 || !packNeedsArmedOrbit(p, pack) && t.bomberUnescortedSafe(p, f, f.Position)
 }

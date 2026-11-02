@@ -67,8 +67,8 @@ func (t *turnGenerator) planBomberEscorts() {
 			wp := saved.Orders.Waypoints[1]
 			minimum := 0
 			planet := player.GetPlanetIntel(wp.TargetNum)
-			if !t.bomberUnescortedSafe(player, fleet, wp.Position) || planet != nil && planet.Spec.HasStarbase {
-				minimum = max(1, fleet.Spec.TotalShips)
+			if !t.bomberUnescortedSafe(player, fleet, wp.Position) || planet != nil && packNeedsArmedOrbit(player, &bombingPack{Target: planet.Num}) {
+				minimum = 1
 			}
 
 			job := &logisticsJob{Position: wp.Position, TargetNum: wp.TargetNum}
@@ -140,7 +140,7 @@ func bombingDelegatedToLanding(p *Player, planet *Planet, fleets []*Fleet) bool 
 			continue
 		}
 		job := logisticsWork(f)
-		if job != nil && job.DeliveryNum == planet.Num && (job.Kind == "invade" || job.Kind == "invade-load") {
+		if job != nil && job.DeliveryNum == planet.Num && job.Kind == "invade" && f.Cargo.Colonists > 0 && f.Position.DistanceTo(planet.Position) <= max(100, 2*f.StrategicSpeed(automaticMaxWarp(p, f))) {
 			return true
 		}
 	}

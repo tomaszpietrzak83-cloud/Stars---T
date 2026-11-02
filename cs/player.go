@@ -108,10 +108,11 @@ type PlayerOrders struct {
 }
 
 type PlayerStats struct {
-	FleetsBuilt      int `json:"fleetsBuilt,omitempty"`
-	StarbasesBuilt   int `json:"starbasesBuilt,omitempty"`
-	TokensBuilt      int `json:"tokensBuilt,omitempty"`
-	PlanetsColonized int `json:"planetsColonized,omitempty"`
+	Accounting       *PlayerAccounting `json:"accounting,omitempty"`
+	FleetsBuilt      int               `json:"fleetsBuilt,omitempty"`
+	StarbasesBuilt   int               `json:"starbasesBuilt,omitempty"`
+	TokensBuilt      int               `json:"tokensBuilt,omitempty"`
+	PlanetsColonized int               `json:"planetsColonized,omitempty"`
 }
 
 type PlayerRelationship struct {

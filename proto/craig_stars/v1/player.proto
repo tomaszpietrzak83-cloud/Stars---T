@@ -182,6 +182,7 @@ message FleetAssembly {
 }
 
 message PlayerStats {
+  PlayerAccounting accounting = 5;
   int32 fleets_built = 1;
   int32 starbases_built = 2;
   int32 tokens_built = 3;
@@ -227,4 +228,40 @@ message ProductionPlanItem {
   QueueItemType type = 1;
   int32 design_num = 2;
   int32 quantity = 3;
+}
+
+message PlayerAccounting {
+ int32 since_year = 1;
+ StatisticsCounters counters = 2;
+ repeated StatisticsYear history = 3;
+}
+message StatisticsYear {
+ int32 year = 1;
+ StatisticsCounters counters = 2;
+}
+message StatisticsCounters {
+ int64 ships_destroyed = 1;
+ int64 destroyed_tonnage = 2;
+ int64 ships_lost = 3;
+ int64 lost_tonnage = 4;
+ int64 ships_built = 5;
+ int64 built_tonnage = 6;
+ int64 ships_scrapped = 7;
+ int64 scrapped_tonnage = 8;
+ int64 battles_fought = 9;
+ int64 battles_won = 10;
+ int64 resources_produced = 11;
+ int64 production_resources_spent = 12;
+ int64 research_resources_spent = 13;
+ int64 allocation_refunds_resources = 14;
+ int64 ironium_spent = 15;
+ int64 boranium_spent = 16;
+ int64 germanium_spent = 17;
+ int64 ironium_mined = 18;
+ int64 boranium_mined = 19;
+ int64 germanium_mined = 20;
+ int64 factories_built = 21;
+ int64 mines_built = 22;
+ int64 defenses_built = 23;
+ int64 minerals_salvaged = 24;
 }

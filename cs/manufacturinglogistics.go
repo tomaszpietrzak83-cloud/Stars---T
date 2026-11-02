@@ -5,6 +5,8 @@ import (
 	"math"
 )
 
+const automaticShipyardMineralStock = 300
+
 // Stock follows committed work: cover at least its next unit and roughly three
 // production years, rather than hoarding the minerals for a decades-long queue.
 func manufacturingStockTarget(rules *Rules, p *Player, planet *Planet) Mineral {
@@ -41,12 +43,24 @@ func manufacturingStockTarget(rules *Rules, p *Player, planet *Planet) Mineral {
 			break
 		}
 	}
+	if planet.Spec.HasStarbase && planet.Spec.DockCapacity != 0 {
+		need = need.Max(Mineral{Ironium: automaticShipyardMineralStock, Boranium: automaticShipyardMineralStock, Germanium: automaticShipyardMineralStock})
+	}
 	return need
 }
 
 func manufacturingDeliveryUseful(rules *Rules, p *Player, planet *Planet, load Mineral, arrival int) bool {
 	base, err := forecastManufacturing(rules, p, planet, planet.ProductionQueue, 0, Mineral{})
-	if err != nil || len(base.Finish) == 0 {
+	if err != nil {
+		return false
+	}
+	if planet.Spec.HasStarbase && planet.Spec.DockCapacity != 0 {
+		short := Mineral{Ironium: automaticShipyardMineralStock, Boranium: automaticShipyardMineralStock, Germanium: automaticShipyardMineralStock}.ToCost().Subtract(planet.Cargo.ToMineral().ToCost()).MinZero().ToMineral()
+		if min(short.Ironium, load.Ironium)+min(short.Boranium, load.Boranium)+min(short.Germanium, load.Germanium) > 0 {
+			return true
+		}
+	}
+	if len(base.Finish) == 0 {
 		return false
 	}
 	with, err := forecastManufacturing(rules, p, planet, planet.ProductionQueue, max(1, arrival), load)

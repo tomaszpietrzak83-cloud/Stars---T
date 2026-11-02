@@ -29,7 +29,7 @@ func (t *turnGenerator) recoverIdleAutomaticFleets() {
 			if !isAutomaticFleet(p, f) || f.Delete || f.Starbase || len(f.Waypoints) > 1 || atOwnFuelDock(p, f) || fuelNetworkManaged(f) || f.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
-			waiting := false
+			waiting := p.Automation.FleetRoles[f.Num] == "patrol" && f.GetTag(patrolMineSweepTag) != ""
 			if job := readTankerJob(f); job != nil && job.TargetNum > 0 {
 				for _, m := range t.tankerMembers(p, job) {
 					waiting = waiting || m.Position != f.Position && len(m.Waypoints) > 1

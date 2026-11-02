@@ -35,6 +35,12 @@ func (t *turnGenerator) planPriorityColonyRecon(p *Player, f *Fleet) bool {
 			continue
 		}
 		value := float64(candidate.Turns)*1000 + f.Position.DistanceTo(planet.Position)
+		for _, bomber := range t.game.getFleets(p.Num) {
+			if !bomber.Delete && p.Automation.FleetRoles[bomber.Num] == "bomber" && bomberGoal(bomber) == planet.Num {
+				value /= 1e6
+				break
+			}
+		}
 		if value < score || value == score && (best == nil || planet.Num < best.Num) {
 			best, route, score = planet, candidate, value
 		}
@@ -43,6 +49,7 @@ func (t *turnGenerator) planPriorityColonyRecon(p *Player, f *Fleet) bool {
 		delete(f.Tags, priorityReconTag)
 		return false
 	}
+	delete(f.Tags, scoutReconTag)
 	f.SetTag(priorityReconTag, strconv.Itoa(best.Num))
 	f.SetTag(scoutTag, "Refreshing intelligence at priority enemy colony "+best.Name+"; return fuel reserved")
 	applyExpeditionRoute(p, f, route)

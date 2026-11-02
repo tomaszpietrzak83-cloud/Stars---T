@@ -42,8 +42,8 @@ func (p *Player) NormalizeDesignMaintenance(policies DesignMaintenance) {
 // Family IDs are negative counters, independent of reusable design numbers.
 // The latest version is the successor of every previous version on the same hull.
 func (p *Player) RegisterDesignUpgrade(source, next *ShipDesign) error {
-	if source == nil || next == nil || source.PlayerNum != p.Num || next.PlayerNum != p.Num || source.OriginalPlayerNum != 0 || source.Spec.Starbase || source.Hull != next.Hull || source.Num == next.Num {
-		return fmt.Errorf("upgrade requires a different owned design on the same ship hull")
+	if source == nil || next == nil || source.PlayerNum != p.Num || next.PlayerNum != p.Num || source.OriginalPlayerNum != 0 || next.OriginalPlayerNum != 0 || source.Spec.Starbase != next.Spec.Starbase || source.Hull != next.Hull || source.Num == next.Num {
+		return fmt.Errorf("upgrade requires a different owned design on the same hull")
 	}
 	if p.Automation.DesignFamilies == nil {
 		p.Automation.DesignFamilies = map[int]int{}

@@ -1,7 +1,8 @@
 <script lang="ts">
+ import {CommandedPlanet} from '#lib/types/Planet.js';
  import UpgradeAll from '#lib/components/game/design/UpgradeAll.svelte';
 	import { clone,create } from '@bufbuild/protobuf';
- import { LogisticsAutomationSchema } from '#lib/types/cs-proto.js';
+ import { LogisticsAutomationSchema, ProductionQueueItemSchema } from '#lib/types/cs-proto.js';
  import {designFamilyMembers,latestFamilyDesign,hideSupersededDesign} from '#lib/types/designFamilies.js';
  import Breadcrumb from '#lib/components/game/Breadcrumb.svelte';
 	import DesignCard from '#lib/components/game/DesignCard.svelte';
@@ -10,13 +11,27 @@
 	import { QueueItemType, type ShipDesign } from '#lib/types/cs-proto.js';
 	import { getGameContext } from '#lib/services/GameContext.js';
 
-	const { game, player, universe, settings, deleteDesign, readOnly,updatePlayerOrders } = getGameContext();
+	const { game, player, universe, settings, deleteDesign, readOnly,updatePlayerOrders,updatePlanetOrders } = getGameContext();
 
 	let familyError=$state('');
  function members(num:number){return designFamilyMembers($universe.getMyDesigns(),$player.playerOrders.automation?.designFamilies??{},num);}
  function latest(num:number){return latestFamilyDesign($universe.getMyDesigns(),$player.playerOrders.automation?.designFamilies??{},num);}
- function familyFleets(num:number){const target=latest(num);const previous=new Set(members(num).filter(d=>d.num!==target?.num).map(d=>d.num));return $universe.fleets.filter(f=>f.mapObject?.playerNum===$player.num && !f.starbase && !f.mapObject?.tags['design-maintenance'] && f.tokens.some(t=>previous.has(t.designNum)));}
+ function starbaseFamilyCount(num:number){const target=latest(num);const old=new Set(members(num).filter(d=>d.num!==target?.num).map(d=>d.num));return $universe.planets.filter(p=>p.mapObject?.playerNum===$player.num && old.has(p.spec?.planetStarbaseSpec?.starbaseDesignNum??0) && !p.planetOrders?.productionQueue.some(i=>i.type===QueueItemType.STARBASE)).length;}
+ function familyFleets(num:number){const target=latest(num);const previous=new Set(members(num).filter(d=>d.num!==target?.num).map(d=>d.num));return (target?.spec?.starbase?$universe.starbases:$universe.fleets).filter(f=>f.mapObject?.playerNum===$player.num && !f.mapObject?.tags['design-maintenance'] && f.tokens.some(t=>previous.has(t.designNum)));}
  async function rebuildFamily(num:number){
+  const selected=latest(num);
+  if(selected?.spec?.starbase){
+   familyError='';
+   const old=new Set(members(num).filter(d=>d.num!==selected.num).map(d=>d.num));
+   for(const original of $universe.planets){
+    const planet=new CommandedPlanet(original);
+    if(planet.mapObject.playerNum!==$player.num || !old.has(planet.spec.planetStarbaseSpec?.starbaseDesignNum??0) || planet.planetOrders.productionQueue.some(i=>i.type===QueueItemType.STARBASE))continue;
+    const before=planet.planetOrders.productionQueue;
+    planet.planetOrders.productionQueue=[create(ProductionQueueItemSchema,{type:QueueItemType.STARBASE,designNum:selected.num,quantity:1}),...before];
+    try{await updatePlanetOrders(planet);}catch(cause){planet.planetOrders.productionQueue=before;familyError=String(cause);return;}
+   }
+   return;
+  }
   const before=$player.playerOrders.automation;
   const previousMaintenance={...$player.playerOrders.designMaintenance};
   const target=latest(num);
@@ -122,6 +137,11 @@
 			numQueued={queuedByDesign[design.num] ?? 0}
 			href={`/games/${$game.id}/designer/${design.num}`}
 			copyhref={`/games/${$game.id}/designer/create/${design.hull}?copy=${design.num}`}
+   upgradehref={`/games/${$game.id}/designer/create/${design.hull}?upgrade=${design.num}`}
+   familyLabel={members(design.num).length>1?`Family: ${members(design.num).map(d=>d.name).join(' → ')}`:undefined}
+   onRebuildFamily={members(design.num).length>1 && latest(design.num)?.num===design.num ? ()=>rebuildFamily(design.num):undefined}
+   familyFleetCount={starbaseFamilyCount(design.num)}
+
 			onDelete={async (design) => {
 				if (design.num) {familyError=''; try {await deleteDesign(design.num);} catch(cause) {familyError=String(cause);}}
 			}}

@@ -91,10 +91,10 @@ func (t *turnGenerator) planScoutAutomation() {
 				continue
 			}
 
-			if !scoutHasRetirement(player, fleet) && t.planScoutRecon(player, fleet) {
+			if !scoutHasRetirement(player, fleet) && t.planPriorityColonyRecon(player, fleet) {
 				continue
 			}
-			if !scoutHasRetirement(player, fleet) && t.planPriorityColonyRecon(player, fleet) {
+			if !scoutHasRetirement(player, fleet) && t.planScoutRecon(player, fleet) {
 				continue
 			}
 			if unknown == 0 && !scoutHasRetirement(player, fleet) && !fleet.InAutomaticSafety() && !scoutReconActive(player, fleet) && t.patrolFrontier(player, fleet) {

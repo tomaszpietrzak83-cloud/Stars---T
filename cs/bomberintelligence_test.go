@@ -92,6 +92,7 @@ func TestStaleSmallPriorityColonyGetsBombardmentInsteadOfBeingIgnored(t *testing
 	require.Same(t, target, priorityBombingTarget(p, b))
 	transport := u.Fleet("Cover")
 	p.Automation.FleetRoles[transport.Num] = "freighter"
+	transport.Cargo.Colonists = 100
 	saveLogisticsWork(transport, &logisticsJob{Kind: "invade", DeliveryNum: target.Num})
 	require.Nil(t, priorityBombingTarget(p, b, transport))
 }

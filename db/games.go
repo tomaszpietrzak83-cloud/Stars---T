@@ -302,19 +302,30 @@ func (c *client) UpdateGameState(ctx context.Context, gameID int64, state cs.Gam
 // Save an entire game in the database. This should always be wrapped in a transaction
 // TODO: move this into gameRunner so it's clear it should be wrapped in a transaction?
 func (c *client) UpdateFullGame(ctx context.Context, fullGame *cs.FullGame) error {
+	if c.tx != nil {
+		statements := &turnStatements{DBTX: c.tx}
+		originalWriter := c.writer
+		c.writer = generated.New(statements)
+		defer func() {
+			c.writer = originalWriter
+			statements.close()
+		}()
+	}
 
 	if err := c.SaveGame(ctx, fullGame.Game); err != nil {
 		return fmt.Errorf("update game: %w", err)
 	}
 
+	batches, stopReports := prefetchPlayerReports(fullGame.Players)
+	defer stopReports()
 	var reports []driver.Value
 	for index, player := range fullGame.Players {
 		if index%8 == 0 {
-			var err error
-			reports, err = encodePlayerReports(fullGame.Players[index:min(index+8, len(fullGame.Players))])
-			if err != nil {
-				return err
+			batch := <-batches
+			if batch.err != nil {
+				return batch.err
 			}
+			reports = batch.reports
 		}
 		// in case this player is new, set the gameId
 		player.GameID = fullGame.ID

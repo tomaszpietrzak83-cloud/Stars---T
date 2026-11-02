@@ -100,6 +100,6 @@
  {#if minor}<span>{minor} minor {minor === 1 ? 'battle' : 'battles'} without ship losses.</span>{/if}
  {#each $universe.battleRecords.filter(b => noteworthyBattle(b, $universe)) as battle (battle.num)}
   {@const details = getBattleRecordDetails(battle, $player, $universe)}
-  <a class="btn btn-sm btn-outline m-1" href={`/games/${$game.id}/battles/${battle.num}`} aria-label={`Battle ${battle.num}: enemy losses ${details.theirDead}, our losses ${details.ourDead}`}><BattleLosses own={details.ourDead} enemy={details.theirDead} /></a>
+  <a class="btn btn-sm btn-outline m-1" href={`/games/${$game.id}/battles/${battle.num}`} aria-label={`Battle ${battle.num}: enemy losses ${details.theirDead}, our losses ${details.ourDead}`}><BattleLosses ownMass={details?.ourDeadTonnage} enemyMass={details?.theirDeadTonnage} own={details.ourDead} enemy={details.theirDead} /></a>
  {/each}
 {/if}

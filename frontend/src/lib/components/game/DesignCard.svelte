@@ -111,7 +111,7 @@
 		</div>
 	</div>
  {#if familyLabel}<p class="text-xs px-3 pb-2">{familyLabel}</p>{/if}
- {#if onRebuildFamily && !readOnly}<button class="btn btn-sm btn-outline m-2" disabled={!familyFleetCount} onclick={onRebuildFamily}>Rebuild family fleets ({familyFleetCount})</button>{/if}
+ {#if onRebuildFamily && !readOnly}<button class="btn btn-sm btn-outline m-2" disabled={!familyFleetCount} onclick={onRebuildFamily}>Rebuild family {design.spec?.starbase?'starbases':'fleets'} ({familyFleetCount})</button>{/if}
 </div>
 
 <ConfirmDialog

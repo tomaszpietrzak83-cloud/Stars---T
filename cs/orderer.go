@@ -103,6 +103,9 @@ func (o *orders) UpdatePlanetOrders(rules *Rules, player *Player, planet *Planet
 	if err := validateMaintenanceQueueEdits(planet.ProductionQueue, orders.ProductionQueue); err != nil {
 		return err
 	}
+	if err := validateRetiredQueueEdits(player, planet.ProductionQueue, orders.ProductionQueue); err != nil {
+		return err
+	}
 	if err := cleanProductionQueueNotes(orders.ProductionQueue); err != nil {
 		return err
 	}
@@ -137,9 +140,6 @@ func (o *orders) updatePlanetSpec(rules *Rules, player *Player, planet *Planet) 
 
 	// make sure we can actually build this stuff
 	for _, item := range planet.ProductionQueue {
-		if item.Type == QueueItemTypeShipToken && player.DesignMaintenance[item.DesignNum] != 0 {
-			return fmt.Errorf("cannot build a retired or replaced ship design")
-		}
 		if item.design != nil && item.design.OriginalPlayerNum != None {
 			return fmt.Errorf("cannot build %s, it was transferred from another player", item.design.Name)
 		}

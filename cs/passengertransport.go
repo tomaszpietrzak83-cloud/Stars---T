@@ -83,6 +83,9 @@ func (t *turnGenerator) passengerDestination(player *Player, fleet *Fleet, prefe
 }
 
 func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *logisticsJob {
+	if !automaticPassengersAllowed(player, fleet) {
+		return nil
+	}
 	if fleet.Cargo.Colonists > 0 {
 		if dest := t.passengerDestination(player, fleet, 0); dest != nil {
 			return &logisticsJob{Kind: "settle", TargetNum: dest.Num, DeliveryNum: dest.Num, Position: dest.Position}
@@ -206,6 +209,10 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 }
 
 func (t *turnGenerator) loadAutomaticPassengers(player *Player, fleet *Fleet, job *logisticsJob) {
+	if !automaticPassengersAllowed(player, fleet) {
+		delete(fleet.Tags, logisticsTag)
+		return
+	}
 	source, dest := t.game.getPlanet(job.TargetNum), t.game.getPlanet(job.DeliveryNum)
 	if source == nil || !source.OwnedBy(player.Num) || !suitableColony(player, dest) {
 		delete(fleet.Tags, logisticsTag)

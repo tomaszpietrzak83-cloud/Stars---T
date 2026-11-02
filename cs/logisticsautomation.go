@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"encoding/json"
 	"fmt"
-	"maps"
 	"math"
 	"slices"
 	"strconv"
@@ -116,13 +115,14 @@ const logisticsTag = "logistics-job"
 const escortTag = "escort-for"
 
 type logisticsJob struct {
-	Passengers  int     `json:"passengers,omitempty"`
-	DeliveryNum int     `json:"deliveryNum,omitempty"`
-	Load        Mineral `json:"load,omitzero"`
-	Kind        string  `json:"kind"`
-	TargetNum   int     `json:"targetNum"`
-	Position    Vector  `json:"position"`
-	Status      string  `json:"status"`
+	BombingStage bool    `json:"bombingStage,omitempty"`
+	Passengers   int     `json:"passengers,omitempty"`
+	DeliveryNum  int     `json:"deliveryNum,omitempty"`
+	Load         Mineral `json:"load,omitzero"`
+	Kind         string  `json:"kind"`
+	TargetNum    int     `json:"targetNum"`
+	Position     Vector  `json:"position"`
+	Status       string  `json:"status"`
 }
 
 func logisticsWork(fleet *Fleet) *logisticsJob {
@@ -326,6 +326,7 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		assigned := escort.GetTag(escortTag)
 		if assigned == strconv.Itoa(fleet.Num) && power >= threat {
 			delete(escort.Tags, escortTag)
+			restoreBomberProtection(player, escort)
 			continue
 		}
 		if assigned == strconv.Itoa(fleet.Num) || threat > power && assigned == "" && (escort.Idle() || escort.GetTag(escortStagingTag) != "") {
@@ -424,6 +425,9 @@ func (t *turnGenerator) planLogisticsAutomation() {
 				continue
 			}
 			job := t.currentLogisticsWork(player, fleet)
+			if job != nil && job.Kind == "radiation-return" {
+				continue
+			}
 			if job != nil && job.Kind == "passengers" && fleet.CargoMass() == 0 && strings.HasPrefix(job.Status, "Waiting") && !t.passengerPickupReady(player, fleet, job) {
 				if replacement := t.findPassengerTransfer(player, fleet); replacement != nil && replacement.Kind == "passengers" && t.passengerPickupReady(player, fleet, replacement) {
 					t.releaseEscorts(player, fleet)
@@ -508,7 +512,7 @@ func (t *turnGenerator) planLogisticsAutomation() {
 					}
 				}
 				if job == nil && !colonizerPassengerCarrier(player, fleet) && !player.Automation.DisableMineralSupply {
-					job = t.findShipyardSupply(player, fleet, claimed)
+					job = t.findShipyardSupplyMode(player, fleet, claimed, false)
 					if job != nil {
 						target = t.game.getPlanet(job.TargetNum).ToTarget()
 						claimed[fmt.Sprintf("yard:%d", job.DeliveryNum)] = true
@@ -571,8 +575,7 @@ func (t *turnGenerator) planLogisticsAutomation() {
 					t.releaseEscorts(player, fleet)
 					continue
 				}
-				job.Position = intel.Position
-				target = intel.MapObject.ToTarget()
+				target = t.invasionDestination(player, fleet, job, intel)
 			} else if job.Kind == "planet" || job.Kind == "passengers" || job.Kind == "invade-load" {
 				source := t.game.getPlanet(job.TargetNum)
 				if source == nil || (!source.OwnedBy(player.Num) && (job.Kind != "planet" || !t.canCollectMiningPlanet(player, source))) {
@@ -630,7 +633,7 @@ func (t *turnGenerator) collectBattleSalvage() {
 			}
 			for _, fleet := range t.game.getFleets(player.Num) {
 				if !fleet.Delete && fleet.Position == record.Position && fleet.Spec.HasWeapons && !fleet.InDesignMaintenance() {
-					takeMinerals(fleet, &salvage.Cargo)
+					player.accounting(t.game.Year).MineralsSalvaged += int64(takeMinerals(fleet, &salvage.Cargo))
 				}
 			}
 			if salvage.Cargo.ToMineral().Total() == 0 {
@@ -651,6 +654,14 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 				continue
 			}
 			switch job.Kind {
+			case "radiation-return":
+				planet := t.game.getPlanet(job.TargetNum)
+				if planet != nil && planet.OwnedBy(player.Num) {
+					planet.Cargo.Colonists += fleet.Cargo.Colonists
+					fleet.Cargo.Colonists = 0
+					delete(fleet.Tags, logisticsTag)
+				}
+
 			case "return":
 				planet := t.game.getPlanet(job.TargetNum)
 				if planet == nil || !planet.OwnedBy(player.Num) {
@@ -687,21 +698,7 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 				if dest == nil {
 					continue
 				}
-				probe, origin := *fleet, *source
-				probe.Tags = maps.Clone(fleet.Tags)
-				t.loadOpportunisticInfrastructure(player, &probe, &origin, dest, 0)
-				spare := origin.Cargo.ToMineral().ToCost().Subtract(t.productionMinerals(player, &origin, false).ToCost()).ToMineral()
-				load := Cargo{Ironium: max(0, min(spare.Ironium, job.Load.Ironium)), Boranium: max(0, min(spare.Boranium, job.Load.Boranium)), Germanium: max(0, min(spare.Germanium, job.Load.Germanium))}
-				before := load
-				takeMinerals(&probe, &load)
-				origin.Cargo = origin.Cargo.Subtract(before.Subtract(load))
-				t.topUpLogisticsCargo(player, &probe, &origin, dest)
-				if suitableColony(player, dest) && !player.Automation.DisablePassengerTransport {
-					incoming, _ := t.passengerReservations(player, fleet.Num)
-					passengers := max(0, min(probe.availableColonistSpace(), origin.Cargo.Colonists-sourcePopulationReserve(player, &origin), populationTarget(dest, player.Automation.destinationPopulationPercent())-dest.Cargo.Colonists-incoming[dest.Num]))
-					origin.Cargo.Colonists -= passengers
-					probe.Cargo.Colonists += passengers
-				}
+				probe, origin := t.previewShipyardPickup(player, fleet, source, dest, job.Load)
 				route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{AllowThreat: true, MinWarp: automaticCruiseWarp(player, fleet)})
 				if probe.CargoMass() != fleet.Spec.CargoCapacity || route == nil || route.WaitForFuel || !t.deliveryEscortReady(player, fleet, dest.Position) {
 					job.Status = fmt.Sprintf("Waiting empty at source for a full safe load (%d/%d kT available)", probe.CargoMass(), fleet.Spec.CargoCapacity)
@@ -766,8 +763,17 @@ func (t *turnGenerator) dispatchReadyLogistics() {
 			if len(f.Waypoints) > 1 && f.Waypoints[1].Position == destination.Position {
 				continue
 			}
-			job.Position = destination.Position
-			t.prepareConvoy(p, f, job, destination.ToTarget())
+			target := destination.ToTarget()
+			if job.Kind == "invade" {
+				intel := p.GetPlanetIntel(job.DeliveryNum)
+				if intel == nil {
+					continue
+				}
+				target = t.invasionDestination(p, f, job, intel)
+			} else {
+				job.Position = destination.Position
+			}
+			t.prepareConvoy(p, f, job, target)
 			saveLogisticsWork(f, job)
 		}
 	}

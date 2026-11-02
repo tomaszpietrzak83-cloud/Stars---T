@@ -142,7 +142,9 @@ func TestManufacturingDeliveryUsesArrivalAndStockWindowIsBounded(t *testing.T) {
 	require.Less(t, base.Finish[0], 100)
 	load := Mineral{10, 10, 10}
 	require.True(t, manufacturingDeliveryUseful(&u.Game.Rules, p, planet, load, 1))
-	require.False(t, manufacturingDeliveryUseful(&u.Game.Rules, p, planet, load, base.Finish[0]+5), "a shipment arriving after completion must not be assigned")
+	require.True(t, manufacturingDeliveryUseful(&u.Game.Rules, p, planet, load, base.Finish[0]+5), "the new shipyard stock floor remains useful for later orders")
+	planet.Cargo = Cargo{Ironium: 300, Boranium: 300, Germanium: 300, Colonists: 2500}
+	require.False(t, manufacturingDeliveryUseful(&u.Game.Rules, p, planet, load, base.Finish[0]+5), "a full stock and completed queue must not request late redundant delivery")
 }
 
 func TestSevenYearStarbaseCanAddMineWithoutDelayingIt(t *testing.T) {

@@ -9,7 +9,7 @@ func invasionColony(player *Player, planet *Planet) bool {
 	return planet != nil && planet.Explored() && planet.Owned() && planet.PlayerNum != player.Num && !player.IsFriend(planet.PlayerNum) && !planet.Spec.HasStarbase && planet.Defenses == 0 && planet.Cargo.Colonists > 0 && prospectivePlanetQuality(player, planet) >= 50
 }
 func (t *turnGenerator) findAutomaticInvasion(player *Player, fleet *Fleet) *logisticsJob {
-	if player.Race.Spec.LivesOnStarbases {
+	if player.Race.Spec.LivesOnStarbases || !automaticPassengersAllowed(player, fleet) {
 		return nil
 	}
 	workers, active := 0, 0
@@ -36,9 +36,14 @@ func (t *turnGenerator) findAutomaticInvasion(player *Player, fleet *Fleet) *log
 			continue
 		}
 		priority := player.Automation.PriorityPlanets[target.Num]
-		// Bombers soften dense priority colonies before new transports depart.
-		if priority && priorityNeedsBombing(target) {
-			continue
+		staging := false
+		if priorityNeedsBombing(target) {
+			forecast := t.forecastLandingAfterBombing(player, target)
+			if forecast == nil {
+				continue
+			}
+			target = forecast
+			staging = true
 		}
 		if !invasionColony(player, target) || !priority && target.ReportAge > 2 || !priority && (claimed[target.Num] || active >= max(1, (workers+2)/3)) {
 			continue
@@ -56,7 +61,7 @@ func (t *turnGenerator) findAutomaticInvasion(player *Player, fleet *Fleet) *log
 			if troops <= 0 {
 				continue
 			}
-			job := &logisticsJob{Kind: "invade-load", TargetNum: source.Num, DeliveryNum: target.Num, Position: source.Position, Passengers: load}
+			job := &logisticsJob{BombingStage: staging, Kind: "invade-load", TargetNum: source.Num, DeliveryNum: target.Num, Position: source.Position, Passengers: load}
 			if !t.passengerTripSafe(player, fleet, job) {
 				continue
 			}
@@ -95,13 +100,22 @@ func (t *turnGenerator) findAutomaticInvasion(player *Player, fleet *Fleet) *log
 }
 
 func (t *turnGenerator) loadAutomaticInvaders(player *Player, fleet *Fleet, job *logisticsJob) {
+	if !automaticPassengersAllowed(player, fleet) {
+		delete(fleet.Tags, logisticsTag)
+		return
+	}
 	source := t.game.getPlanet(job.TargetNum)
 	if source == nil || !source.OwnedBy(player.Num) || !invasionColony(player, player.GetPlanetIntel(job.DeliveryNum)) || !t.passengerTripSafe(player, fleet, job) {
 		delete(fleet.Tags, logisticsTag)
 		return
 	}
 	target := player.GetPlanetIntel(job.DeliveryNum)
-	if player.Automation.PriorityPlanets[target.Num] && priorityNeedsBombing(target) {
+	if priorityNeedsBombing(target) && (!job.BombingStage || t.forecastLandingAfterBombing(player, target) == nil) {
+		if job.BombingStage {
+			delete(fleet.Tags, logisticsTag)
+			t.releaseEscorts(player, fleet)
+			return
+		}
 		job.Status = "Waiting empty for bombardment or fresh reconnaissance of the priority target"
 		holdAutomaticFleet(player, fleet, job.Status)
 		saveLogisticsWork(fleet, job)
@@ -122,7 +136,7 @@ func (t *turnGenerator) loadAutomaticInvaders(player *Player, fleet *Fleet, job 
 	fleet.Cargo.Colonists += load
 	job.Kind = "invade"
 	job.TargetNum = job.DeliveryNum
-	job.Position = player.GetPlanetIntel(job.DeliveryNum).Position
+	t.invasionDestination(player, fleet, job, player.GetPlanetIntel(job.DeliveryNum))
 	job.Status = "Transporting colonists to reclaim a valuable colony"
 	saveLogisticsWork(fleet, job)
 }
@@ -147,7 +161,7 @@ func (t *turnGenerator) resolveAutomaticInvasions() {
 		arrivals := map[int][]*Fleet{}
 		for _, fleet := range t.game.getFleets(player.Num) {
 			job := logisticsWork(fleet)
-			if job == nil || job.Kind != "invade" || fleet.Delete || fleet.InAutomaticSafety() || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "freighter" || fleet.Position != job.Position || t.armedEnemyAt(player, fleet.Position) {
+			if job == nil || job.Kind != "invade" || job.BombingStage || fleet.Delete || fleet.InAutomaticSafety() || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "freighter" || fleet.Position != job.Position || t.armedEnemyAt(player, fleet.Position) {
 				continue
 			}
 			planet := t.game.getPlanet(job.TargetNum)

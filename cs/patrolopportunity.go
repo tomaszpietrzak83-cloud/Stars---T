@@ -29,7 +29,17 @@ func patrolOpportunityScore(p *Player, f, enemy *Fleet) float64 {
 	if math.IsInf(inside, 1) {
 		inside = 0
 	}
-	return (1 + distance) * (1 + min(300, inside)/100)
+	score := (1 + distance) * (1 + min(300, inside)/100)
+	if patrolReportedTransport(p, enemy) {
+		if enemyApproachingColony(p, enemy) {
+			return score * .001
+		}
+		return score * .25
+	}
+	if patrolTargetPriority(p, enemy, false) == 3 {
+		return score * .5
+	}
+	return score
 }
 
 // Opportunistic hunters reconsider a long chase each year. Fresh one-turn
@@ -40,7 +50,7 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 		return
 	}
 	current := patrolEnemy(p, job)
-	if current == nil || enemyApproachingColony(p, current) && patrolReportedBomber(p, current) {
+	if current == nil || enemyApproachingColony(p, current) && patrolReportedBomber(p, current) && !nearbyLandingThreat(p, f) {
 		return
 	}
 	var best *Fleet

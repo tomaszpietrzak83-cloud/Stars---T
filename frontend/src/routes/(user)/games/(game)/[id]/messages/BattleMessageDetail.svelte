@@ -24,6 +24,8 @@
 		ours: number;
 		theirs: number;
 		ourDead: number;
+ ourDeadTonnage?:number;
+ theirDeadTonnage?:number;
 		theirDead: number;
 		oursLeft: number;
 		theirsLeft: number;
@@ -147,5 +149,5 @@
 {/if}
 
 {#if $universe.getBattle(message.battleNum)}
- <a class="btn btn-sm btn-primary ml-2" href={`/games/${$game.id}/battles/${message.battleNum}`} aria-label="Watch battle"><BattleLosses own={details?.ourDead ?? 0} enemy={details?.theirDead ?? 0} /></a>
+ <a class="btn btn-sm btn-primary ml-2" href={`/games/${$game.id}/battles/${message.battleNum}`} aria-label="Watch battle"><BattleLosses ownMass={details?.ourDeadTonnage} enemyMass={details?.theirDeadTonnage} own={details?.ourDead ?? 0} enemy={details?.theirDead ?? 0} /></a>
 {/if}

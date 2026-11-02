@@ -38,7 +38,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file craig_stars/v1/player.proto.
  */
 export const file_craig_stars_v1_player: GenFile = /*@__PURE__*/
-  fileDesc("ChtjcmFpZ19zdGFycy92MS9wbGF5ZXIucHJvdG8SDmNyYWlnX3N0YXJzLnYxIv0GCgZQbGF5ZXISNAoOZ2FtZV9kYl9vYmplY3QYASABKAsyHC5jcmFpZ19zdGFycy52MS5HYW1lREJPYmplY3QSMwoNcGxheWVyX29yZGVycxgCIAEoCzIcLmNyYWlnX3N0YXJzLnYxLlBsYXllck9yZGVycxIxCgxwbGF5ZXJfcGxhbnMYAyABKAsyGy5jcmFpZ19zdGFycy52MS5QbGF5ZXJQbGFucxIPCgd1c2VyX2lkGAQgASgDEgwKBG5hbWUYBSABKAkSCwoDbnVtGAYgASgFEg0KBXJlYWR5GAcgASgIEhUKDWFpX2NvbnRyb2xsZWQYCCABKAgSMwoNYWlfZGlmZmljdWx0eRgJIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkFpRGlmZmljdWx0eRINCgVndWVzdBgKIAEoCBIWCg5zdWJtaXR0ZWRfdHVybhgLIAEoCBINCgVjb2xvchgMIAEoCRIYChBkZWZhdWx0X2h1bGxfc2V0GA0gASgFEiIKBHJhY2UYDiABKAsyFC5jcmFpZ19zdGFycy52MS5SYWNlEi4KC3RlY2hfbGV2ZWxzGA8gASgLMhkuY3JhaWdfc3RhcnMudjEuVGVjaExldmVsEjQKEXRlY2hfbGV2ZWxzX3NwZW50GBAgASgLMhkuY3JhaWdfc3RhcnMudjEuVGVjaExldmVsEiAKGHJlc2VhcmNoX3NwZW50X2xhc3RfeWVhchgRIAEoBRI1CglyZWxhdGlvbnMYEiADKAsyIi5jcmFpZ19zdGFycy52MS5QbGF5ZXJSZWxhdGlvbnNoaXASLwoIbWVzc2FnZXMYEyADKAsyHS5jcmFpZ19zdGFycy52MS5QbGF5ZXJNZXNzYWdlEkEKDmFjcXVpcmVkX3RlY2hzGBQgAygLMikuY3JhaWdfc3RhcnMudjEuUGxheWVyLkFjcXVpcmVkVGVjaHNFbnRyeRIjChthY2hpZXZlZF92aWN0b3J5X2NvbmRpdGlvbnMYFSABKA0SDgoGdmljdG9yGBYgASgIEhAKCGFyY2hpdmVkGBcgASgIEioKBXN0YXRzGBggASgLMhsuY3JhaWdfc3RhcnMudjEuUGxheWVyU3RhdHMaNAoSQWNxdWlyZWRUZWNoc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCDoCOAEioAQKDlBsYXllclVuaXZlcnNlEjQKDmJhdHRsZV9yZWNvcmRzGAEgAygLMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlUmVjb3JkEjIKDXBsYXllcl9pbnRlbHMYAiADKAsyGy5jcmFpZ19zdGFycy52MS5QbGF5ZXJJbnRlbBIwCgxzY29yZV9pbnRlbHMYAyADKAsyGi5jcmFpZ19zdGFycy52MS5TY29yZUludGVsEisKB2Rlc2lnbnMYBCADKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduEicKB3BsYW5ldHMYBSADKAsyFi5jcmFpZ19zdGFycy52MS5QbGFuZXQSJQoGZmxlZXRzGAYgAygLMhUuY3JhaWdfc3RhcnMudjEuRmxlZXQSLQoKbWluZWZpZWxkcxgHIAMoCzIZLmNyYWlnX3N0YXJzLnYxLk1pbmVmaWVsZBI2Cg9taW5lcmFsX3BhY2tldHMYCCADKAsyHS5jcmFpZ19zdGFycy52MS5NaW5lcmFsUGFja2V0EjYKD215c3RlcnlfdHJhZGVycxgJIAMoCzIdLmNyYWlnX3N0YXJzLnYxLk15c3RlcnlUcmFkZXISKQoIc2FsdmFnZXMYCiADKAsyFy5jcmFpZ19zdGFycy52MS5TYWx2YWdlEisKCXdvcm1ob2xlcxgLIAMoCzIYLmNyYWlnX3N0YXJzLnYxLldvcm1ob2xlIp8BChNCeUhhbmRDYXJnb1RyYW5zZmVyEjoKEW1hcF9vYmplY3RfdGFyZ2V0GAEgASgLMh8uY3JhaWdfc3RhcnMudjEuTWFwT2JqZWN0VGFyZ2V0EhgKEHNvdXJjZV9mbGVldF9udW0YBiABKAUSJAoFY2FyZ28YByABKAsyFS5jcmFpZ19zdGFycy52MS5DYXJnbxIMCgRmdWVsGAggASgFIkgKDkNhcmdvVHJhbnNmZXJzEjYKCXRyYW5zZmVycxgBIAMoCzIjLmNyYWlnX3N0YXJzLnYxLkJ5SGFuZENhcmdvVHJhbnNmZXIiqQIKDFBsYXllclN0YXR1cxIKCgJpZBgBIAEoAxIuCgp1cGRhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIPCgd1c2VyX2lkGAMgASgDEgwKBG5hbWUYBCABKAkSCwoDbnVtGAUgASgFEg0KBXJlYWR5GAYgASgIEhUKDWFpX2NvbnRyb2xsZWQYByABKAgSMwoNYWlfZGlmZmljdWx0eRgIIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkFpRGlmZmljdWx0eRINCgVndWVzdBgJIAEoCBIWCg5zdWJtaXR0ZWRfdHVybhgKIAEoCBINCgVjb2xvchgLIAEoCRIOCgZ2aWN0b3IYDCABKAgSEAoIYXJjaGl2ZWQYDSABKAgizQQKBkludGVscxI0Cg5iYXR0bGVfcmVjb3JkcxgBIAMoCzIcLmNyYWlnX3N0YXJzLnYxLkJhdHRsZVJlY29yZBIyCg1wbGF5ZXJfaW50ZWxzGAIgAygLMhsuY3JhaWdfc3RhcnMudjEuUGxheWVySW50ZWwSMAoMc2NvcmVfaW50ZWxzGAMgAygLMhouY3JhaWdfc3RhcnMudjEuU2NvcmVJbnRlbBItCg1wbGFuZXRfaW50ZWxzGAQgAygLMhYuY3JhaWdfc3RhcnMudjEuUGxhbmV0EisKDGZsZWV0X2ludGVscxgFIAMoCzIVLmNyYWlnX3N0YXJzLnYxLkZsZWV0EjYKEnNoaXBfZGVzaWduX2ludGVscxgGIAMoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24SPAoVbWluZXJhbF9wYWNrZXRfaW50ZWxzGAcgAygLMh0uY3JhaWdfc3RhcnMudjEuTWluZXJhbFBhY2tldBIzChBtaW5lZmllbGRfaW50ZWxzGAggAygLMhkuY3JhaWdfc3RhcnMudjEuTWluZWZpZWxkEjEKD3dvcm1ob2xlX2ludGVscxgJIAMoCzIYLmNyYWlnX3N0YXJzLnYxLldvcm1ob2xlEjwKFW15c3RlcnlfdHJhZGVyX2ludGVscxgKIAMoCzIdLmNyYWlnX3N0YXJzLnYxLk15c3RlcnlUcmFkZXISLwoOc2FsdmFnZV9pbnRlbHMYCyADKAsyFy5jcmFpZ19zdGFycy52MS5TYWx2YWdlIrEBCgtQbGF5ZXJQbGFucxI4ChBwcm9kdWN0aW9uX3BsYW5zGAEgAygLMh4uY3JhaWdfc3RhcnMudjEuUHJvZHVjdGlvblBsYW4SMAoMYmF0dGxlX3BsYW5zGAIgAygLMhouY3JhaWdfc3RhcnMudjEuQmF0dGxlUGxhbhI2Cg90cmFuc3BvcnRfcGxhbnMYAyADKAsyHS5jcmFpZ19zdGFycy52MS5UcmFuc3BvcnRQbGFuIv0DCgxQbGF5ZXJPcmRlcnMSNwoKYXV0b21hdGlvbhgGIAEoCzIjLmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24STwoSZGVzaWduX21haW50ZW5hbmNlGAUgAygLMjMuY3JhaWdfc3RhcnMudjEuUGxheWVyT3JkZXJzLkRlc2lnbk1haW50ZW5hbmNlRW50cnkSLgoLcmVzZWFyY2hpbmcYASABKA4yGS5jcmFpZ19zdGFycy52MS5UZWNoRmllbGQSPgoTbmV4dF9yZXNlYXJjaF9maWVsZBgCIAEoDjIhLmNyYWlnX3N0YXJzLnYxLk5leHRSZXNlYXJjaEZpZWxkEhcKD3Jlc2VhcmNoX2Ftb3VudBgDIAEoBRJJCg9jYXJnb190cmFuc2ZlcnMYBCADKAsyMC5jcmFpZ19zdGFycy52MS5QbGF5ZXJPcmRlcnMuQ2FyZ29UcmFuc2ZlcnNFbnRyeRo4ChZEZXNpZ25NYWludGVuYW5jZUVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEaVQoTQ2FyZ29UcmFuc2ZlcnNFbnRyeRILCgNrZXkYASABKAkSLQoFdmFsdWUYAiABKAsyHi5jcmFpZ19zdGFycy52MS5DYXJnb1RyYW5zZmVyczoCOAEihAwKE0xvZ2lzdGljc0F1dG9tYXRpb24SUgoQcHJpb3JpdHlfdHJhZGVycxgaIAMoCzI4LmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24uUHJpb3JpdHlUcmFkZXJzRW50cnkSUgoQcHJpb3JpdHlfcGxhbmV0cxgZIAMoCzI4LmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24uUHJpb3JpdHlQbGFuZXRzRW50cnkSIQoZc2VydmVfdGVycmFmb3JtaW5nX3dvcmxkcxgXIAEoCBIgChhpbmZyYXN0cnVjdHVyZV90cmFuc3BvcnQYGCABKAgSIwobbWFudWFsX3Bhc3Nlbmdlcl90aHJlc2hvbGRzGBYgASgIEiMKG2Rpc2FibGVfcGFzc2VuZ2VyX3RyYW5zcG9ydBgVIAEoCBJQCg9kZXNpZ25fZmFtaWxpZXMYFCADKAsyNy5jcmFpZ19zdGFycy52MS5Mb2dpc3RpY3NBdXRvbWF0aW9uLkRlc2lnbkZhbWlsaWVzRW50cnkSNwoMcmVzZWFyY2hfdGF4GBIgASgLMiEuY3JhaWdfc3RhcnMudjEuUmVzZWFyY2hUYXhQb2xpY3kSHgoWc2NvdXRfbWF4X3JldHVybl90dXJucxgTIAEoBRIgChhyZXBhaXJfdGhyZXNob2xkX3BlcmNlbnQYDiABKAUSIAoYZGlzYWJsZV9hdXRvbWF0aWNfcmVwYWlyGA8gASgIEiQKHGRpc2FibGVfaW50ZXJjZXB0aW9uX2V2YXNpb24YECABKAgSGQoRYXV0b21hdGljX3BhY2tldHMYESABKAgSUgoQZmxlZXRfYXNzZW1ibGllcxgNIAMoCzI4LmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24uRmxlZXRBc3NlbWJsaWVzRW50cnkSGwoTcGFzc2VuZ2VyX3RyYW5zcG9ydBgFIAEoCBIhChlzb3VyY2VfcG9wdWxhdGlvbl9wZXJjZW50GAYgASgFEiYKHmRlc3RpbmF0aW9uX3BvcHVsYXRpb25fcGVyY2VudBgHIAEoBRIYChBlc2NvcnRfbWFyZ2luX2x5GAggASgFEh8KF2VzY29ydF9zdHJlbmd0aF9wZXJjZW50GAkgASgFEhcKD2Rpc2FibGVfc2FsdmFnZRgKIAEoCBIeChZkaXNhYmxlX21pbmVyYWxfc3VwcGx5GAsgASgIEh8KF3NpbmdsZV9zaGlweWFyZF9yZWJ1aWxkGAwgASgIEkgKC2ZsZWV0X3JvbGVzGAEgAygLMjMuY3JhaWdfc3RhcnMudjEuTG9naXN0aWNzQXV0b21hdGlvbi5GbGVldFJvbGVzRW50cnkSTgoOcmVidWlsZF9mbGVldHMYAiADKAsyNi5jcmFpZ19zdGFycy52MS5Mb2dpc3RpY3NBdXRvbWF0aW9uLlJlYnVpbGRGbGVldHNFbnRyeRIWCg5iYXR0bGVfc2FsdmFnZRgDIAEoCBIcChRvZmZsb2FkX2NvbWJhdF9jYXJnbxgEIAEoCBo2ChRQcmlvcml0eVRyYWRlcnNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBGjYKFFByaW9yaXR5UGxhbmV0c0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoCOAEaNQoTRGVzaWduRmFtaWxpZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgBGlUKFEZsZWV0QXNzZW1ibGllc0VudHJ5EgsKA2tleRgBIAEoBRIsCgV2YWx1ZRgCIAEoCzIdLmNyYWlnX3N0YXJzLnYxLkZsZWV0QXNzZW1ibHk6AjgBGjEKD0ZsZWV0Um9sZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAk6AjgBGjQKElJlYnVpbGRGbGVldHNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBIqYCChFSZXNlYXJjaFRheFBvbGljeRIPCgdlbmFibGVkGAEgASgIEhYKDmxlZnRvdmVyX3VudGlsGAIgASgFEhgKEG1lZGl1bV90aHJlc2hvbGQYAyABKAUSFwoPbGFyZ2VfdGhyZXNob2xkGAQgASgFEhUKDXNtYWxsX3BlcmNlbnQYBSABKAUSFgoObWVkaXVtX3BlcmNlbnQYBiABKAUSFQoNbGFyZ2VfcGVyY2VudBgHIAEoBRINCgViYXNpcxgIIAEoCRIeChZkaXNhYmxlX21hdHVyZV9lY29ub215GAkgASgIEiQKF21hdHVyZV9yZXNlYXJjaF9wZXJjZW50GAogASgFSACIAQFCGgoYX21hdHVyZV9yZXNlYXJjaF9wZXJjZW50IqsDCg1GbGVldEFzc2VtYmx5EgwKBG5hbWUYASABKAkSGAoQcmFsbHlfcGxhbmV0X251bRgCIAEoBRI7CgdkZXNpZ25zGAMgAygLMiouY3JhaWdfc3RhcnMudjEuRmxlZXRBc3NlbWJseS5EZXNpZ25zRW50cnkSRgoNc291cmNlX2ZsZWV0cxgEIAMoCzIvLmNyYWlnX3N0YXJzLnYxLkZsZWV0QXNzZW1ibHkuU291cmNlRmxlZXRzRW50cnkSFQoNYnVpbGRfbWlzc2luZxgFIAEoCBIQCghyZXZpc2lvbhgGIAEoBRIYChBsZWFkZXJfZmxlZXRfbnVtGAcgASgFEhoKEmNvbXBsZXRlZF9yZXZpc2lvbhgIIAEoBRIZChFub3RpZmllZF9yZXZpc2lvbhgJIAEoBRIOCgZzdGF0dXMYCiABKAkaLgoMRGVzaWduc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEaMwoRU291cmNlRmxlZXRzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ASJtCgtQbGF5ZXJTdGF0cxIUCgxmbGVldHNfYnVpbHQYASABKAUSFwoPc3RhcmJhc2VzX2J1aWx0GAIgASgFEhQKDHRva2Vuc19idWlsdBgDIAEoBRIZChFwbGFuZXRzX2NvbG9uaXplZBgEIAEoBSJZChJQbGF5ZXJSZWxhdGlvbnNoaXASMAoIcmVsYXRpb24YASABKA4yHi5jcmFpZ19zdGFycy52MS5QbGF5ZXJSZWxhdGlvbhIRCglzaGFyZV9tYXAYAiABKAgiowEKElBsYXllclJlc2VhcmNoU3BlYxIaChJyZXNvdXJjZXNfcGVyX3llYXIYASABKAUSIwobcmVzb3VyY2VzX3Blcl95ZWFyX3Jlc2VhcmNoGAIgASgFEi0KJXJlc291cmNlc19wZXJfeWVhcl9yZXNlYXJjaF9lc3RpbWF0ZWQYAyABKAUSHQoVY3VycmVudF9yZXNlYXJjaF9jb3N0GAQgASgFIowCCgpCYXR0bGVQbGFuEgsKA251bRgBIAEoBRIMCgRuYW1lGAIgASgJEjQKDnByaW1hcnlfdGFyZ2V0GAMgASgOMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlVGFyZ2V0EjYKEHNlY29uZGFyeV90YXJnZXQYBCABKA4yHC5jcmFpZ19zdGFycy52MS5CYXR0bGVUYXJnZXQSLAoGdGFjdGljGAUgASgOMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlVGFjdGljEjMKCmF0dGFja193aG8YBiABKA4yHy5jcmFpZ19zdGFycy52MS5CYXR0bGVBdHRhY2tXaG8SEgoKZHVtcF9jYXJnbxgHIAEoCCJhCg1UcmFuc3BvcnRQbGFuEgsKA251bRgBIAEoBRIMCgRuYW1lGAIgASgJEjUKBXRhc2tzGAMgASgLMiYuY3JhaWdfc3RhcnMudjEuV2F5cG9pbnRUcmFuc3BvcnRUYXNrcyKNAQoOUHJvZHVjdGlvblBsYW4SCwoDbnVtGAEgASgFEgwKBG5hbWUYAiABKAkSMQoFaXRlbXMYAyADKAsyIi5jcmFpZ19zdGFycy52MS5Qcm9kdWN0aW9uUGxhbkl0ZW0SLQolY29udHJpYnV0ZXNfb25seV9sZWZ0b3Zlcl90b19yZXNlYXJjaBgEIAEoCCJnChJQcm9kdWN0aW9uUGxhbkl0ZW0SKwoEdHlwZRgBIAEoDjIdLmNyYWlnX3N0YXJzLnYxLlF1ZXVlSXRlbVR5cGUSEgoKZGVzaWduX251bRgCIAEoBRIQCghxdWFudGl0eRgDIAEoBSqFAQoOUGxheWVyUmVsYXRpb24SHwobUExBWUVSX1JFTEFUSU9OX1VOU1BFQ0lGSUVEEAASGwoXUExBWUVSX1JFTEFUSU9OX05FVVRSQUwQARIaChZQTEFZRVJfUkVMQVRJT05fRlJJRU5EEAISGQoVUExBWUVSX1JFTEFUSU9OX0VORU1ZEANiBnByb3RvMw", [file_craig_stars_v1_battle, file_craig_stars_v1_common, file_craig_stars_v1_fleet, file_craig_stars_v1_intel, file_craig_stars_v1_message, file_craig_stars_v1_minefield, file_craig_stars_v1_mineralpacket, file_craig_stars_v1_mysterytrader, file_craig_stars_v1_planet, file_craig_stars_v1_race, file_craig_stars_v1_salvage, file_craig_stars_v1_shipdesign, file_craig_stars_v1_wormhole, file_google_protobuf_timestamp]);
+  fileDesc("ChtjcmFpZ19zdGFycy92MS9wbGF5ZXIucHJvdG8SDmNyYWlnX3N0YXJzLnYxIv0GCgZQbGF5ZXISNAoOZ2FtZV9kYl9vYmplY3QYASABKAsyHC5jcmFpZ19zdGFycy52MS5HYW1lREJPYmplY3QSMwoNcGxheWVyX29yZGVycxgCIAEoCzIcLmNyYWlnX3N0YXJzLnYxLlBsYXllck9yZGVycxIxCgxwbGF5ZXJfcGxhbnMYAyABKAsyGy5jcmFpZ19zdGFycy52MS5QbGF5ZXJQbGFucxIPCgd1c2VyX2lkGAQgASgDEgwKBG5hbWUYBSABKAkSCwoDbnVtGAYgASgFEg0KBXJlYWR5GAcgASgIEhUKDWFpX2NvbnRyb2xsZWQYCCABKAgSMwoNYWlfZGlmZmljdWx0eRgJIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkFpRGlmZmljdWx0eRINCgVndWVzdBgKIAEoCBIWCg5zdWJtaXR0ZWRfdHVybhgLIAEoCBINCgVjb2xvchgMIAEoCRIYChBkZWZhdWx0X2h1bGxfc2V0GA0gASgFEiIKBHJhY2UYDiABKAsyFC5jcmFpZ19zdGFycy52MS5SYWNlEi4KC3RlY2hfbGV2ZWxzGA8gASgLMhkuY3JhaWdfc3RhcnMudjEuVGVjaExldmVsEjQKEXRlY2hfbGV2ZWxzX3NwZW50GBAgASgLMhkuY3JhaWdfc3RhcnMudjEuVGVjaExldmVsEiAKGHJlc2VhcmNoX3NwZW50X2xhc3RfeWVhchgRIAEoBRI1CglyZWxhdGlvbnMYEiADKAsyIi5jcmFpZ19zdGFycy52MS5QbGF5ZXJSZWxhdGlvbnNoaXASLwoIbWVzc2FnZXMYEyADKAsyHS5jcmFpZ19zdGFycy52MS5QbGF5ZXJNZXNzYWdlEkEKDmFjcXVpcmVkX3RlY2hzGBQgAygLMikuY3JhaWdfc3RhcnMudjEuUGxheWVyLkFjcXVpcmVkVGVjaHNFbnRyeRIjChthY2hpZXZlZF92aWN0b3J5X2NvbmRpdGlvbnMYFSABKA0SDgoGdmljdG9yGBYgASgIEhAKCGFyY2hpdmVkGBcgASgIEioKBXN0YXRzGBggASgLMhsuY3JhaWdfc3RhcnMudjEuUGxheWVyU3RhdHMaNAoSQWNxdWlyZWRUZWNoc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCDoCOAEioAQKDlBsYXllclVuaXZlcnNlEjQKDmJhdHRsZV9yZWNvcmRzGAEgAygLMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlUmVjb3JkEjIKDXBsYXllcl9pbnRlbHMYAiADKAsyGy5jcmFpZ19zdGFycy52MS5QbGF5ZXJJbnRlbBIwCgxzY29yZV9pbnRlbHMYAyADKAsyGi5jcmFpZ19zdGFycy52MS5TY29yZUludGVsEisKB2Rlc2lnbnMYBCADKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduEicKB3BsYW5ldHMYBSADKAsyFi5jcmFpZ19zdGFycy52MS5QbGFuZXQSJQoGZmxlZXRzGAYgAygLMhUuY3JhaWdfc3RhcnMudjEuRmxlZXQSLQoKbWluZWZpZWxkcxgHIAMoCzIZLmNyYWlnX3N0YXJzLnYxLk1pbmVmaWVsZBI2Cg9taW5lcmFsX3BhY2tldHMYCCADKAsyHS5jcmFpZ19zdGFycy52MS5NaW5lcmFsUGFja2V0EjYKD215c3RlcnlfdHJhZGVycxgJIAMoCzIdLmNyYWlnX3N0YXJzLnYxLk15c3RlcnlUcmFkZXISKQoIc2FsdmFnZXMYCiADKAsyFy5jcmFpZ19zdGFycy52MS5TYWx2YWdlEisKCXdvcm1ob2xlcxgLIAMoCzIYLmNyYWlnX3N0YXJzLnYxLldvcm1ob2xlIp8BChNCeUhhbmRDYXJnb1RyYW5zZmVyEjoKEW1hcF9vYmplY3RfdGFyZ2V0GAEgASgLMh8uY3JhaWdfc3RhcnMudjEuTWFwT2JqZWN0VGFyZ2V0EhgKEHNvdXJjZV9mbGVldF9udW0YBiABKAUSJAoFY2FyZ28YByABKAsyFS5jcmFpZ19zdGFycy52MS5DYXJnbxIMCgRmdWVsGAggASgFIkgKDkNhcmdvVHJhbnNmZXJzEjYKCXRyYW5zZmVycxgBIAMoCzIjLmNyYWlnX3N0YXJzLnYxLkJ5SGFuZENhcmdvVHJhbnNmZXIiqQIKDFBsYXllclN0YXR1cxIKCgJpZBgBIAEoAxIuCgp1cGRhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIPCgd1c2VyX2lkGAMgASgDEgwKBG5hbWUYBCABKAkSCwoDbnVtGAUgASgFEg0KBXJlYWR5GAYgASgIEhUKDWFpX2NvbnRyb2xsZWQYByABKAgSMwoNYWlfZGlmZmljdWx0eRgIIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkFpRGlmZmljdWx0eRINCgVndWVzdBgJIAEoCBIWCg5zdWJtaXR0ZWRfdHVybhgKIAEoCBINCgVjb2xvchgLIAEoCRIOCgZ2aWN0b3IYDCABKAgSEAoIYXJjaGl2ZWQYDSABKAgizQQKBkludGVscxI0Cg5iYXR0bGVfcmVjb3JkcxgBIAMoCzIcLmNyYWlnX3N0YXJzLnYxLkJhdHRsZVJlY29yZBIyCg1wbGF5ZXJfaW50ZWxzGAIgAygLMhsuY3JhaWdfc3RhcnMudjEuUGxheWVySW50ZWwSMAoMc2NvcmVfaW50ZWxzGAMgAygLMhouY3JhaWdfc3RhcnMudjEuU2NvcmVJbnRlbBItCg1wbGFuZXRfaW50ZWxzGAQgAygLMhYuY3JhaWdfc3RhcnMudjEuUGxhbmV0EisKDGZsZWV0X2ludGVscxgFIAMoCzIVLmNyYWlnX3N0YXJzLnYxLkZsZWV0EjYKEnNoaXBfZGVzaWduX2ludGVscxgGIAMoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24SPAoVbWluZXJhbF9wYWNrZXRfaW50ZWxzGAcgAygLMh0uY3JhaWdfc3RhcnMudjEuTWluZXJhbFBhY2tldBIzChBtaW5lZmllbGRfaW50ZWxzGAggAygLMhkuY3JhaWdfc3RhcnMudjEuTWluZWZpZWxkEjEKD3dvcm1ob2xlX2ludGVscxgJIAMoCzIYLmNyYWlnX3N0YXJzLnYxLldvcm1ob2xlEjwKFW15c3RlcnlfdHJhZGVyX2ludGVscxgKIAMoCzIdLmNyYWlnX3N0YXJzLnYxLk15c3RlcnlUcmFkZXISLwoOc2FsdmFnZV9pbnRlbHMYCyADKAsyFy5jcmFpZ19zdGFycy52MS5TYWx2YWdlIrEBCgtQbGF5ZXJQbGFucxI4ChBwcm9kdWN0aW9uX3BsYW5zGAEgAygLMh4uY3JhaWdfc3RhcnMudjEuUHJvZHVjdGlvblBsYW4SMAoMYmF0dGxlX3BsYW5zGAIgAygLMhouY3JhaWdfc3RhcnMudjEuQmF0dGxlUGxhbhI2Cg90cmFuc3BvcnRfcGxhbnMYAyADKAsyHS5jcmFpZ19zdGFycy52MS5UcmFuc3BvcnRQbGFuIv0DCgxQbGF5ZXJPcmRlcnMSNwoKYXV0b21hdGlvbhgGIAEoCzIjLmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24STwoSZGVzaWduX21haW50ZW5hbmNlGAUgAygLMjMuY3JhaWdfc3RhcnMudjEuUGxheWVyT3JkZXJzLkRlc2lnbk1haW50ZW5hbmNlRW50cnkSLgoLcmVzZWFyY2hpbmcYASABKA4yGS5jcmFpZ19zdGFycy52MS5UZWNoRmllbGQSPgoTbmV4dF9yZXNlYXJjaF9maWVsZBgCIAEoDjIhLmNyYWlnX3N0YXJzLnYxLk5leHRSZXNlYXJjaEZpZWxkEhcKD3Jlc2VhcmNoX2Ftb3VudBgDIAEoBRJJCg9jYXJnb190cmFuc2ZlcnMYBCADKAsyMC5jcmFpZ19zdGFycy52MS5QbGF5ZXJPcmRlcnMuQ2FyZ29UcmFuc2ZlcnNFbnRyeRo4ChZEZXNpZ25NYWludGVuYW5jZUVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEaVQoTQ2FyZ29UcmFuc2ZlcnNFbnRyeRILCgNrZXkYASABKAkSLQoFdmFsdWUYAiABKAsyHi5jcmFpZ19zdGFycy52MS5DYXJnb1RyYW5zZmVyczoCOAEihAwKE0xvZ2lzdGljc0F1dG9tYXRpb24SUgoQcHJpb3JpdHlfdHJhZGVycxgaIAMoCzI4LmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24uUHJpb3JpdHlUcmFkZXJzRW50cnkSUgoQcHJpb3JpdHlfcGxhbmV0cxgZIAMoCzI4LmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24uUHJpb3JpdHlQbGFuZXRzRW50cnkSIQoZc2VydmVfdGVycmFmb3JtaW5nX3dvcmxkcxgXIAEoCBIgChhpbmZyYXN0cnVjdHVyZV90cmFuc3BvcnQYGCABKAgSIwobbWFudWFsX3Bhc3Nlbmdlcl90aHJlc2hvbGRzGBYgASgIEiMKG2Rpc2FibGVfcGFzc2VuZ2VyX3RyYW5zcG9ydBgVIAEoCBJQCg9kZXNpZ25fZmFtaWxpZXMYFCADKAsyNy5jcmFpZ19zdGFycy52MS5Mb2dpc3RpY3NBdXRvbWF0aW9uLkRlc2lnbkZhbWlsaWVzRW50cnkSNwoMcmVzZWFyY2hfdGF4GBIgASgLMiEuY3JhaWdfc3RhcnMudjEuUmVzZWFyY2hUYXhQb2xpY3kSHgoWc2NvdXRfbWF4X3JldHVybl90dXJucxgTIAEoBRIgChhyZXBhaXJfdGhyZXNob2xkX3BlcmNlbnQYDiABKAUSIAoYZGlzYWJsZV9hdXRvbWF0aWNfcmVwYWlyGA8gASgIEiQKHGRpc2FibGVfaW50ZXJjZXB0aW9uX2V2YXNpb24YECABKAgSGQoRYXV0b21hdGljX3BhY2tldHMYESABKAgSUgoQZmxlZXRfYXNzZW1ibGllcxgNIAMoCzI4LmNyYWlnX3N0YXJzLnYxLkxvZ2lzdGljc0F1dG9tYXRpb24uRmxlZXRBc3NlbWJsaWVzRW50cnkSGwoTcGFzc2VuZ2VyX3RyYW5zcG9ydBgFIAEoCBIhChlzb3VyY2VfcG9wdWxhdGlvbl9wZXJjZW50GAYgASgFEiYKHmRlc3RpbmF0aW9uX3BvcHVsYXRpb25fcGVyY2VudBgHIAEoBRIYChBlc2NvcnRfbWFyZ2luX2x5GAggASgFEh8KF2VzY29ydF9zdHJlbmd0aF9wZXJjZW50GAkgASgFEhcKD2Rpc2FibGVfc2FsdmFnZRgKIAEoCBIeChZkaXNhYmxlX21pbmVyYWxfc3VwcGx5GAsgASgIEh8KF3NpbmdsZV9zaGlweWFyZF9yZWJ1aWxkGAwgASgIEkgKC2ZsZWV0X3JvbGVzGAEgAygLMjMuY3JhaWdfc3RhcnMudjEuTG9naXN0aWNzQXV0b21hdGlvbi5GbGVldFJvbGVzRW50cnkSTgoOcmVidWlsZF9mbGVldHMYAiADKAsyNi5jcmFpZ19zdGFycy52MS5Mb2dpc3RpY3NBdXRvbWF0aW9uLlJlYnVpbGRGbGVldHNFbnRyeRIWCg5iYXR0bGVfc2FsdmFnZRgDIAEoCBIcChRvZmZsb2FkX2NvbWJhdF9jYXJnbxgEIAEoCBo2ChRQcmlvcml0eVRyYWRlcnNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBGjYKFFByaW9yaXR5UGxhbmV0c0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoCDoCOAEaNQoTRGVzaWduRmFtaWxpZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgBGlUKFEZsZWV0QXNzZW1ibGllc0VudHJ5EgsKA2tleRgBIAEoBRIsCgV2YWx1ZRgCIAEoCzIdLmNyYWlnX3N0YXJzLnYxLkZsZWV0QXNzZW1ibHk6AjgBGjEKD0ZsZWV0Um9sZXNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAk6AjgBGjQKElJlYnVpbGRGbGVldHNFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAg6AjgBIqYCChFSZXNlYXJjaFRheFBvbGljeRIPCgdlbmFibGVkGAEgASgIEhYKDmxlZnRvdmVyX3VudGlsGAIgASgFEhgKEG1lZGl1bV90aHJlc2hvbGQYAyABKAUSFwoPbGFyZ2VfdGhyZXNob2xkGAQgASgFEhUKDXNtYWxsX3BlcmNlbnQYBSABKAUSFgoObWVkaXVtX3BlcmNlbnQYBiABKAUSFQoNbGFyZ2VfcGVyY2VudBgHIAEoBRINCgViYXNpcxgIIAEoCRIeChZkaXNhYmxlX21hdHVyZV9lY29ub215GAkgASgIEiQKF21hdHVyZV9yZXNlYXJjaF9wZXJjZW50GAogASgFSACIAQFCGgoYX21hdHVyZV9yZXNlYXJjaF9wZXJjZW50IqsDCg1GbGVldEFzc2VtYmx5EgwKBG5hbWUYASABKAkSGAoQcmFsbHlfcGxhbmV0X251bRgCIAEoBRI7CgdkZXNpZ25zGAMgAygLMiouY3JhaWdfc3RhcnMudjEuRmxlZXRBc3NlbWJseS5EZXNpZ25zRW50cnkSRgoNc291cmNlX2ZsZWV0cxgEIAMoCzIvLmNyYWlnX3N0YXJzLnYxLkZsZWV0QXNzZW1ibHkuU291cmNlRmxlZXRzRW50cnkSFQoNYnVpbGRfbWlzc2luZxgFIAEoCBIQCghyZXZpc2lvbhgGIAEoBRIYChBsZWFkZXJfZmxlZXRfbnVtGAcgASgFEhoKEmNvbXBsZXRlZF9yZXZpc2lvbhgIIAEoBRIZChFub3RpZmllZF9yZXZpc2lvbhgJIAEoBRIOCgZzdGF0dXMYCiABKAkaLgoMRGVzaWduc0VudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEaMwoRU291cmNlRmxlZXRzRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgIOgI4ASKjAQoLUGxheWVyU3RhdHMSNAoKYWNjb3VudGluZxgFIAEoCzIgLmNyYWlnX3N0YXJzLnYxLlBsYXllckFjY291bnRpbmcSFAoMZmxlZXRzX2J1aWx0GAEgASgFEhcKD3N0YXJiYXNlc19idWlsdBgCIAEoBRIUCgx0b2tlbnNfYnVpbHQYAyABKAUSGQoRcGxhbmV0c19jb2xvbml6ZWQYBCABKAUiWQoSUGxheWVyUmVsYXRpb25zaGlwEjAKCHJlbGF0aW9uGAEgASgOMh4uY3JhaWdfc3RhcnMudjEuUGxheWVyUmVsYXRpb24SEQoJc2hhcmVfbWFwGAIgASgIIqMBChJQbGF5ZXJSZXNlYXJjaFNwZWMSGgoScmVzb3VyY2VzX3Blcl95ZWFyGAEgASgFEiMKG3Jlc291cmNlc19wZXJfeWVhcl9yZXNlYXJjaBgCIAEoBRItCiVyZXNvdXJjZXNfcGVyX3llYXJfcmVzZWFyY2hfZXN0aW1hdGVkGAMgASgFEh0KFWN1cnJlbnRfcmVzZWFyY2hfY29zdBgEIAEoBSKMAgoKQmF0dGxlUGxhbhILCgNudW0YASABKAUSDAoEbmFtZRgCIAEoCRI0Cg5wcmltYXJ5X3RhcmdldBgDIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkJhdHRsZVRhcmdldBI2ChBzZWNvbmRhcnlfdGFyZ2V0GAQgASgOMhwuY3JhaWdfc3RhcnMudjEuQmF0dGxlVGFyZ2V0EiwKBnRhY3RpYxgFIAEoDjIcLmNyYWlnX3N0YXJzLnYxLkJhdHRsZVRhY3RpYxIzCgphdHRhY2tfd2hvGAYgASgOMh8uY3JhaWdfc3RhcnMudjEuQmF0dGxlQXR0YWNrV2hvEhIKCmR1bXBfY2FyZ28YByABKAgiYQoNVHJhbnNwb3J0UGxhbhILCgNudW0YASABKAUSDAoEbmFtZRgCIAEoCRI1CgV0YXNrcxgDIAEoCzImLmNyYWlnX3N0YXJzLnYxLldheXBvaW50VHJhbnNwb3J0VGFza3MijQEKDlByb2R1Y3Rpb25QbGFuEgsKA251bRgBIAEoBRIMCgRuYW1lGAIgASgJEjEKBWl0ZW1zGAMgAygLMiIuY3JhaWdfc3RhcnMudjEuUHJvZHVjdGlvblBsYW5JdGVtEi0KJWNvbnRyaWJ1dGVzX29ubHlfbGVmdG92ZXJfdG9fcmVzZWFyY2gYBCABKAgiZwoSUHJvZHVjdGlvblBsYW5JdGVtEisKBHR5cGUYASABKA4yHS5jcmFpZ19zdGFycy52MS5RdWV1ZUl0ZW1UeXBlEhIKCmRlc2lnbl9udW0YAiABKAUSEAoIcXVhbnRpdHkYAyABKAUijQEKEFBsYXllckFjY291bnRpbmcSEgoKc2luY2VfeWVhchgBIAEoBRI0Cghjb3VudGVycxgCIAEoCzIiLmNyYWlnX3N0YXJzLnYxLlN0YXRpc3RpY3NDb3VudGVycxIvCgdoaXN0b3J5GAMgAygLMh4uY3JhaWdfc3RhcnMudjEuU3RhdGlzdGljc1llYXIiVAoOU3RhdGlzdGljc1llYXISDAoEeWVhchgBIAEoBRI0Cghjb3VudGVycxgCIAEoCzIiLmNyYWlnX3N0YXJzLnYxLlN0YXRpc3RpY3NDb3VudGVycyL2BAoSU3RhdGlzdGljc0NvdW50ZXJzEhcKD3NoaXBzX2Rlc3Ryb3llZBgBIAEoAxIZChFkZXN0cm95ZWRfdG9ubmFnZRgCIAEoAxISCgpzaGlwc19sb3N0GAMgASgDEhQKDGxvc3RfdG9ubmFnZRgEIAEoAxITCgtzaGlwc19idWlsdBgFIAEoAxIVCg1idWlsdF90b25uYWdlGAYgASgDEhYKDnNoaXBzX3NjcmFwcGVkGAcgASgDEhgKEHNjcmFwcGVkX3Rvbm5hZ2UYCCABKAMSFgoOYmF0dGxlc19mb3VnaHQYCSABKAMSEwoLYmF0dGxlc193b24YCiABKAMSGgoScmVzb3VyY2VzX3Byb2R1Y2VkGAsgASgDEiIKGnByb2R1Y3Rpb25fcmVzb3VyY2VzX3NwZW50GAwgASgDEiAKGHJlc2VhcmNoX3Jlc291cmNlc19zcGVudBgNIAEoAxIkChxhbGxvY2F0aW9uX3JlZnVuZHNfcmVzb3VyY2VzGA4gASgDEhUKDWlyb25pdW1fc3BlbnQYDyABKAMSFgoOYm9yYW5pdW1fc3BlbnQYECABKAMSFwoPZ2VybWFuaXVtX3NwZW50GBEgASgDEhUKDWlyb25pdW1fbWluZWQYEiABKAMSFgoOYm9yYW5pdW1fbWluZWQYEyABKAMSFwoPZ2VybWFuaXVtX21pbmVkGBQgASgDEhcKD2ZhY3Rvcmllc19idWlsdBgVIAEoAxITCgttaW5lc19idWlsdBgWIAEoAxIWCg5kZWZlbnNlc19idWlsdBgXIAEoAxIZChFtaW5lcmFsc19zYWx2YWdlZBgYIAEoAyqFAQoOUGxheWVyUmVsYXRpb24SHwobUExBWUVSX1JFTEFUSU9OX1VOU1BFQ0lGSUVEEAASGwoXUExBWUVSX1JFTEFUSU9OX05FVVRSQUwQARIaChZQTEFZRVJfUkVMQVRJT05fRlJJRU5EEAISGQoVUExBWUVSX1JFTEFUSU9OX0VORU1ZEANiBnByb3RvMw", [file_craig_stars_v1_battle, file_craig_stars_v1_common, file_craig_stars_v1_fleet, file_craig_stars_v1_intel, file_craig_stars_v1_message, file_craig_stars_v1_minefield, file_craig_stars_v1_mineralpacket, file_craig_stars_v1_mysterytrader, file_craig_stars_v1_planet, file_craig_stars_v1_race, file_craig_stars_v1_salvage, file_craig_stars_v1_shipdesign, file_craig_stars_v1_wormhole, file_google_protobuf_timestamp]);
 
 /**
  * A Player contains all intel, messages, tech levels, and research orders for a single empire in the game.
@@ -1440,6 +1440,11 @@ export const FleetAssemblySchema: GenMessage<FleetAssembly, {jsonType: FleetAsse
  */
 export type PlayerStats = Message<"craig_stars.v1.PlayerStats"> & {
   /**
+   * @generated from field: craig_stars.v1.PlayerAccounting accounting = 5;
+   */
+  accounting?: PlayerAccounting | undefined;
+
+  /**
    * @generated from field: int32 fleets_built = 1;
    */
   fleetsBuilt: number;
@@ -1464,6 +1469,11 @@ export type PlayerStats = Message<"craig_stars.v1.PlayerStats"> & {
  * @generated from message craig_stars.v1.PlayerStats
  */
 export type PlayerStatsJson = {
+  /**
+   * @generated from field: craig_stars.v1.PlayerAccounting accounting = 5;
+   */
+  accounting?: PlayerAccountingJson;
+
   /**
    * @generated from field: int32 fleets_built = 1;
    */
@@ -1823,6 +1833,347 @@ export type ProductionPlanItemJson = {
  */
 export const ProductionPlanItemSchema: GenMessage<ProductionPlanItem, {jsonType: ProductionPlanItemJson}> = /*@__PURE__*/
   messageDesc(file_craig_stars_v1_player, 17);
+
+/**
+ * @generated from message craig_stars.v1.PlayerAccounting
+ */
+export type PlayerAccounting = Message<"craig_stars.v1.PlayerAccounting"> & {
+  /**
+   * @generated from field: int32 since_year = 1;
+   */
+  sinceYear: number;
+
+  /**
+   * @generated from field: craig_stars.v1.StatisticsCounters counters = 2;
+   */
+  counters?: StatisticsCounters | undefined;
+
+  /**
+   * @generated from field: repeated craig_stars.v1.StatisticsYear history = 3;
+   */
+  history: StatisticsYear[];
+};
+
+/**
+ * @generated from message craig_stars.v1.PlayerAccounting
+ */
+export type PlayerAccountingJson = {
+  /**
+   * @generated from field: int32 since_year = 1;
+   */
+  sinceYear?: number;
+
+  /**
+   * @generated from field: craig_stars.v1.StatisticsCounters counters = 2;
+   */
+  counters?: StatisticsCountersJson;
+
+  /**
+   * @generated from field: repeated craig_stars.v1.StatisticsYear history = 3;
+   */
+  history?: StatisticsYearJson[];
+};
+
+/**
+ * Describes the message craig_stars.v1.PlayerAccounting.
+ * Use `create(PlayerAccountingSchema)` to create a new message.
+ */
+export const PlayerAccountingSchema: GenMessage<PlayerAccounting, {jsonType: PlayerAccountingJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_player, 18);
+
+/**
+ * @generated from message craig_stars.v1.StatisticsYear
+ */
+export type StatisticsYear = Message<"craig_stars.v1.StatisticsYear"> & {
+  /**
+   * @generated from field: int32 year = 1;
+   */
+  year: number;
+
+  /**
+   * @generated from field: craig_stars.v1.StatisticsCounters counters = 2;
+   */
+  counters?: StatisticsCounters | undefined;
+};
+
+/**
+ * @generated from message craig_stars.v1.StatisticsYear
+ */
+export type StatisticsYearJson = {
+  /**
+   * @generated from field: int32 year = 1;
+   */
+  year?: number;
+
+  /**
+   * @generated from field: craig_stars.v1.StatisticsCounters counters = 2;
+   */
+  counters?: StatisticsCountersJson;
+};
+
+/**
+ * Describes the message craig_stars.v1.StatisticsYear.
+ * Use `create(StatisticsYearSchema)` to create a new message.
+ */
+export const StatisticsYearSchema: GenMessage<StatisticsYear, {jsonType: StatisticsYearJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_player, 19);
+
+/**
+ * @generated from message craig_stars.v1.StatisticsCounters
+ */
+export type StatisticsCounters = Message<"craig_stars.v1.StatisticsCounters"> & {
+  /**
+   * @generated from field: int64 ships_destroyed = 1;
+   */
+  shipsDestroyed: bigint;
+
+  /**
+   * @generated from field: int64 destroyed_tonnage = 2;
+   */
+  destroyedTonnage: bigint;
+
+  /**
+   * @generated from field: int64 ships_lost = 3;
+   */
+  shipsLost: bigint;
+
+  /**
+   * @generated from field: int64 lost_tonnage = 4;
+   */
+  lostTonnage: bigint;
+
+  /**
+   * @generated from field: int64 ships_built = 5;
+   */
+  shipsBuilt: bigint;
+
+  /**
+   * @generated from field: int64 built_tonnage = 6;
+   */
+  builtTonnage: bigint;
+
+  /**
+   * @generated from field: int64 ships_scrapped = 7;
+   */
+  shipsScrapped: bigint;
+
+  /**
+   * @generated from field: int64 scrapped_tonnage = 8;
+   */
+  scrappedTonnage: bigint;
+
+  /**
+   * @generated from field: int64 battles_fought = 9;
+   */
+  battlesFought: bigint;
+
+  /**
+   * @generated from field: int64 battles_won = 10;
+   */
+  battlesWon: bigint;
+
+  /**
+   * @generated from field: int64 resources_produced = 11;
+   */
+  resourcesProduced: bigint;
+
+  /**
+   * @generated from field: int64 production_resources_spent = 12;
+   */
+  productionResourcesSpent: bigint;
+
+  /**
+   * @generated from field: int64 research_resources_spent = 13;
+   */
+  researchResourcesSpent: bigint;
+
+  /**
+   * @generated from field: int64 allocation_refunds_resources = 14;
+   */
+  allocationRefundsResources: bigint;
+
+  /**
+   * @generated from field: int64 ironium_spent = 15;
+   */
+  ironiumSpent: bigint;
+
+  /**
+   * @generated from field: int64 boranium_spent = 16;
+   */
+  boraniumSpent: bigint;
+
+  /**
+   * @generated from field: int64 germanium_spent = 17;
+   */
+  germaniumSpent: bigint;
+
+  /**
+   * @generated from field: int64 ironium_mined = 18;
+   */
+  ironiumMined: bigint;
+
+  /**
+   * @generated from field: int64 boranium_mined = 19;
+   */
+  boraniumMined: bigint;
+
+  /**
+   * @generated from field: int64 germanium_mined = 20;
+   */
+  germaniumMined: bigint;
+
+  /**
+   * @generated from field: int64 factories_built = 21;
+   */
+  factoriesBuilt: bigint;
+
+  /**
+   * @generated from field: int64 mines_built = 22;
+   */
+  minesBuilt: bigint;
+
+  /**
+   * @generated from field: int64 defenses_built = 23;
+   */
+  defensesBuilt: bigint;
+
+  /**
+   * @generated from field: int64 minerals_salvaged = 24;
+   */
+  mineralsSalvaged: bigint;
+};
+
+/**
+ * @generated from message craig_stars.v1.StatisticsCounters
+ */
+export type StatisticsCountersJson = {
+  /**
+   * @generated from field: int64 ships_destroyed = 1;
+   */
+  shipsDestroyed?: string;
+
+  /**
+   * @generated from field: int64 destroyed_tonnage = 2;
+   */
+  destroyedTonnage?: string;
+
+  /**
+   * @generated from field: int64 ships_lost = 3;
+   */
+  shipsLost?: string;
+
+  /**
+   * @generated from field: int64 lost_tonnage = 4;
+   */
+  lostTonnage?: string;
+
+  /**
+   * @generated from field: int64 ships_built = 5;
+   */
+  shipsBuilt?: string;
+
+  /**
+   * @generated from field: int64 built_tonnage = 6;
+   */
+  builtTonnage?: string;
+
+  /**
+   * @generated from field: int64 ships_scrapped = 7;
+   */
+  shipsScrapped?: string;
+
+  /**
+   * @generated from field: int64 scrapped_tonnage = 8;
+   */
+  scrappedTonnage?: string;
+
+  /**
+   * @generated from field: int64 battles_fought = 9;
+   */
+  battlesFought?: string;
+
+  /**
+   * @generated from field: int64 battles_won = 10;
+   */
+  battlesWon?: string;
+
+  /**
+   * @generated from field: int64 resources_produced = 11;
+   */
+  resourcesProduced?: string;
+
+  /**
+   * @generated from field: int64 production_resources_spent = 12;
+   */
+  productionResourcesSpent?: string;
+
+  /**
+   * @generated from field: int64 research_resources_spent = 13;
+   */
+  researchResourcesSpent?: string;
+
+  /**
+   * @generated from field: int64 allocation_refunds_resources = 14;
+   */
+  allocationRefundsResources?: string;
+
+  /**
+   * @generated from field: int64 ironium_spent = 15;
+   */
+  ironiumSpent?: string;
+
+  /**
+   * @generated from field: int64 boranium_spent = 16;
+   */
+  boraniumSpent?: string;
+
+  /**
+   * @generated from field: int64 germanium_spent = 17;
+   */
+  germaniumSpent?: string;
+
+  /**
+   * @generated from field: int64 ironium_mined = 18;
+   */
+  ironiumMined?: string;
+
+  /**
+   * @generated from field: int64 boranium_mined = 19;
+   */
+  boraniumMined?: string;
+
+  /**
+   * @generated from field: int64 germanium_mined = 20;
+   */
+  germaniumMined?: string;
+
+  /**
+   * @generated from field: int64 factories_built = 21;
+   */
+  factoriesBuilt?: string;
+
+  /**
+   * @generated from field: int64 mines_built = 22;
+   */
+  minesBuilt?: string;
+
+  /**
+   * @generated from field: int64 defenses_built = 23;
+   */
+  defensesBuilt?: string;
+
+  /**
+   * @generated from field: int64 minerals_salvaged = 24;
+   */
+  mineralsSalvaged?: string;
+};
+
+/**
+ * Describes the message craig_stars.v1.StatisticsCounters.
+ * Use `create(StatisticsCountersSchema)` to create a new message.
+ */
+export const StatisticsCountersSchema: GenMessage<StatisticsCounters, {jsonType: StatisticsCountersJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_player, 20);
 
 /**
  * @generated from enum craig_stars.v1.PlayerRelation

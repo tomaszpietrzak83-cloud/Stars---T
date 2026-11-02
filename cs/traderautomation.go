@@ -213,8 +213,17 @@ func (t *turnGenerator) reserveTraderConvoy(p *Player, mt *MysteryTrader) []*Fle
 			available = append(available, f)
 		}
 	}
+	// A ready large carrier avoids sacrificing many smaller transports. If its
+	// automatic replacement is due next turn, let that existing order finish.
+	if !slices.ContainsFunc(available, func(f *Fleet) bool { return traderLargeFreighter(p, f) }) && t.queuedTraderLargeFreighterCapacity(p) >= mt.RequestedBoon {
+		return nil
+	}
 	sort.SliceStable(available, func(i, j int) bool {
 		a, b := available[i], available[j]
+		largeA, largeB := traderLargeFreighter(p, a), traderLargeFreighter(p, b)
+		if largeA != largeB {
+			return largeA
+		}
 		if a.Spec.CargoCapacity != b.Spec.CargoCapacity {
 			return a.Spec.CargoCapacity > b.Spec.CargoCapacity
 		}

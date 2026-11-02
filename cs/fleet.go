@@ -1521,6 +1521,10 @@ func (fleet *Fleet) targetLocation(mapObjectGetter mapObjectGetter, wp *Waypoint
 // colonize a planet
 // TODO: return an error and stop colonization
 func (fleet *Fleet) colonizePlanet(rules *Rules, player *Player, planet *Planet) {
+	if player.Stats == nil {
+		player.Stats = &PlayerStats{}
+	}
+	player.Stats.PlanetsColonized++
 	planet.PlayerNum = player.Num
 	planet.ProductionQueue = []ProductionQueueItem{}
 	planet.Cargo = planet.Cargo.Add(fleet.Cargo)

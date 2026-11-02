@@ -381,6 +381,15 @@ func (t *turnGenerator) planFuelNetworks() {
 				chosen = nil
 			}
 
+			if chosen != nil && combatAutonomy(player, customer) {
+				mobile := false
+				for _, leg := range chosen.Legs {
+					mobile = mobile || len(leg.Donations) > 0
+				}
+				if !mobile {
+					chosen = nil
+				}
+			}
 			if chosen != nil {
 				t.commitFuelNetwork(player, group, *request, chosen)
 			}

@@ -185,8 +185,8 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			policy := automaticRoutePolicy{AllowThreat: allowThreat, OneWay: colonizationOneWay(player, fleet, goal)}
 			if fleet.GetTag(frontierPatrolTag) != "" || fleet.GetTag(escortStagingTag) != "" {
 				policy.EconomicalPatrol = true
-				policy.MaxWarp = 4
-				policy.MinWarp = 4
+				policy.MaxWarp = 6
+				policy.MinWarp = 1
 				policy.MaxTurns = 20
 			}
 			// Include cargo that a waypoint-zero loading order may add before movement.
@@ -294,7 +294,7 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 	}
 	needsFuel := false
 	for _, member := range members {
-		needsFuel = needsFuel || member.Fuel < member.Spec.FuelCapacity || member.Position != job.Position
+		needsFuel = needsFuel || member.Fuel < member.Spec.FuelCapacity
 	}
 	if !needsFuel {
 		return false
@@ -303,6 +303,21 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 		if member.Position != members[0].Position {
 			return false
 		}
+	}
+	if meeting := t.movingFuelMeeting(player, tanker, members, job.DeliveryFuel, job.AllowThreat || job.Urgent); meeting != nil {
+		for _, member := range members {
+			if !isAutomaticFleet(player, member) || member.GetTag(tankerAwaitTag) != strconv.Itoa(tanker.Num) {
+				return false
+			}
+		}
+		job.Position = meeting.point
+		applyExpeditionRoute(player, tanker, meeting.donor)
+		for _, member := range members {
+			applyExpeditionRoute(player, member, meeting.receiver)
+			member.SetTag(fuelStatusTag, "Moving economically toward a mutual fuel meeting")
+		}
+		job.Status = fmt.Sprintf("Both fleets approaching the fuel meeting at %s using economical engine speeds", job.Position.String())
+		return true
 	}
 	receiverRoute := planAutomaticRoute(&t.game.Rules, player, members, job.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: job.AllowThreat || job.Urgent, RefuelRendezvous: true, EmergencyReturn: job.Urgent, MaxTurns: 10000})
 	if receiverRoute == nil {
@@ -424,6 +439,9 @@ func (t *turnGenerator) planAutomaticTankers() {
 					continue
 				}
 				request := readAutomaticFuelRequest(customer)
+				if request == nil || customer.Delete {
+					continue
+				} // Earlier donors may have resolved this request.
 				if player.Automation.FleetRoles[tanker.Num] != "tanker" && (!request.Urgent || tanker.Position.DistanceTo(customer.Position) > max(100, 4*tanker.StrategicSpeed(automaticMaxWarp(player, tanker)))) {
 					continue
 				}

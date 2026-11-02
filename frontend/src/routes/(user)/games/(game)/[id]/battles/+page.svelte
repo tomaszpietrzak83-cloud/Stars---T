@@ -1,4 +1,5 @@
 <script lang="ts">
+ import BattleLosses from '#lib/components/game/battle/BattleLosses.svelte';
 	import { goto } from '$app/navigation';
 	import Breadcrumb from '#lib/components/game/Breadcrumb.svelte';
 	import SortableTableHeader from '#lib/components/table/SortableTableHeader.svelte';
@@ -21,6 +22,11 @@
 			.filter((i) => i.location.toLowerCase().indexOf(search.toLowerCase()) != -1)
 	);
 
+let totals=$derived.by(()=>({
+ own:filteredBattles.reduce((n,b)=>n+b.ourDead,0),enemy:filteredBattles.reduce((n,b)=>n+b.theirDead,0),
+ ownMass:filteredBattles.some(b=>b.ourDeadTonnage===undefined)?undefined:filteredBattles.reduce((n,b)=>n+(b.ourDeadTonnage??0),0),
+ enemyMass:filteredBattles.some(b=>b.theirDeadTonnage===undefined)?undefined:filteredBattles.reduce((n,b)=>n+(b.theirDeadTonnage??0),0)
+ }));
 	const columns: TableColumn<BattleRecordDetails>[] = [
 		{
 			key: 'location',
@@ -121,9 +127,9 @@
 						>
 					</div>
 				{:else if column.key == 'ourDead'}
-                    <span class="text-error font-semibold">{cell ?? 0}</span>
+                    <span class="text-error font-semibold">{cell ?? 0} ({row.ourDeadTonnage===undefined?'—':row.ourDeadTonnage.toLocaleString('en-US')} kT)</span>
                 {:else if column.key == 'theirDead'}
-                    <span class="text-success font-semibold">{cell ?? 0}</span>
+                    <span class="text-success font-semibold">{cell ?? 0} ({row.theirDeadTonnage===undefined?'—':row.theirDeadTonnage.toLocaleString('en-US')} kT)</span>
                 {:else if column.key == 'present'}
 					{#if row.present}
 						<Icon src={Check} size="24" class="stroke-success" />
@@ -135,3 +141,9 @@
 		{/snippet}
 	</Table>
 </div>
+
+<section class="mt-4 rounded border border-base-content/30 bg-base-200 p-4" aria-label="Battle report totals">
+ <h2 class="font-bold text-lg">Battle summary</h2>
+ <p>{filteredBattles.length} battles in this report.</p>
+ <BattleLosses own={totals.own} enemy={totals.enemy} ownMass={totals.ownMass} enemyMass={totals.enemyMass}/>
+</section>

@@ -57,12 +57,12 @@ func TestPatrolCanDeliverFuelWithoutLosingItsOwnReturnReserve(t *testing.T) {
 			saveAutomaticFuelRequest(customer, automaticFuelRequest{Destination: customer.Position, Members: []int{customer.Num}, Urgent: true})
 			u.Run((*turnGenerator).planAutomaticTankers)
 			require.NotNil(t, readTankerJob(donor))
-			for range 8 {
+			for range 24 {
 				u.Run((*turnGenerator).planAutomaticTankers, (*turnGenerator).fleetMove)
 				fuel := customer.Fuel + donor.Fuel
 				u.Run((*turnGenerator).resolveAutomaticTankers)
 				require.Equal(t, fuel, customer.Fuel+donor.Fuel)
-				if customer.Fuel > 0 {
+				if customer.GetTag(tankerAwaitTag) == "" {
 					break
 				}
 			}

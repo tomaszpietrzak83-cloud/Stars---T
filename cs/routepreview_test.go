@@ -39,7 +39,7 @@ func TestEscortsKeepStagingRouteAndCanStillAcceptConvoy(t *testing.T) {
 	p.PlanetIntels = append(p.PlanetIntels, &Planet{MapObject: MapObject{Num: 2, Position: Vector{100, 0}, ReportAge: ReportAgeUnexplored}})
 	u.Run((*turnGenerator).planEscortStaging, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture)
 	require.Greater(t, len(e.Waypoints), 1)
-	require.LessOrEqual(t, e.Waypoints[1].WarpSpeed, 4)
+	require.LessOrEqual(t, e.Waypoints[1].WarpSpeed, 6)
 	goal := e.Waypoints[1].Position
 	u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).planEscortStaging)
 	require.Equal(t, goal, e.Waypoints[1].Position)

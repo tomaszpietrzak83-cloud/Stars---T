@@ -78,6 +78,6 @@
 	{/snippet}
 </Breadcrumb>
 {#if hull && design}
-	{#if upgradeFrom}<div class="alert alert-info my-3 block">Creating a new version of this design family on the same hull. All previous family versions will point to this successor. Existing ships are replaced by scrapping and rebuilding when you order a fleet or family rebuild; scouts finish their current expedition first.</div>{/if}
+	{#if upgradeFrom}<div class="alert alert-info my-3 block">Creating a new version of this design family on the same hull. All previous family versions will point to this successor. {#if design.spec?.starbase}Rebuild family queues the latest station at each eligible planet. The existing base remains operational until construction finishes.{:else}Existing ships are replaced by scrapping and rebuilding when you order a fleet or family rebuild; scouts finish their current expedition first.{/if}</div>{/if}
  <ShipDesigner bind:design {hull} onSave={save} {error} />
 {/if}

@@ -2,6 +2,7 @@ package cs
 
 import (
 	"strconv"
+	"strings"
 )
 
 func (t *turnGenerator) currentLogisticsWork(p *Player, f *Fleet) *logisticsJob {
@@ -33,6 +34,15 @@ func (t *turnGenerator) currentLogisticsWork(p *Player, f *Fleet) *logisticsJob 
 	case "planet", "passengers", "invade-load":
 		source, dest := t.game.getPlanet(job.TargetNum), t.game.getPlanet(job.DeliveryNum)
 		valid = source != nil && dest != nil && job.TargetNum != job.DeliveryNum
+		if valid && job.Kind == "planet" && f.CargoMass() == 0 {
+			spare := source.Cargo.ToMineral().ToCost().Subtract(t.productionMinerals(p, source, false).ToCost()).MinZero().ToMineral()
+			useful := min(spare.Ironium, job.Load.Ironium) + min(spare.Boranium, job.Load.Boranium) + min(spare.Germanium, job.Load.Germanium)
+			valid = useful > 0
+			if valid && strings.HasPrefix(job.Status, "Waiting empty at source for a full") {
+				probe, _ := t.previewShipyardPickup(p, f, source, dest, job.Load)
+				valid = probe.CargoMass() == f.Spec.CargoCapacity
+			}
+		}
 		if job.Kind == "passengers" {
 			valid = valid && source.OwnedBy(p.Num) && suitableColony(p, dest)
 			if valid {

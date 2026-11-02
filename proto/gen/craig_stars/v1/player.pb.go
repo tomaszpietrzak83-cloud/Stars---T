@@ -1430,6 +1430,7 @@ func (x *FleetAssembly) GetStatus() string {
 
 type PlayerStats struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
+	Accounting       *PlayerAccounting      `protobuf:"bytes,5,opt,name=accounting,proto3" json:"accounting,omitempty"`
 	FleetsBuilt      int32                  `protobuf:"varint,1,opt,name=fleets_built,json=fleetsBuilt,proto3" json:"fleets_built,omitempty"`
 	StarbasesBuilt   int32                  `protobuf:"varint,2,opt,name=starbases_built,json=starbasesBuilt,proto3" json:"starbases_built,omitempty"`
 	TokensBuilt      int32                  `protobuf:"varint,3,opt,name=tokens_built,json=tokensBuilt,proto3" json:"tokens_built,omitempty"`
@@ -1466,6 +1467,13 @@ func (x *PlayerStats) ProtoReflect() protoreflect.Message {
 // Deprecated: Use PlayerStats.ProtoReflect.Descriptor instead.
 func (*PlayerStats) Descriptor() ([]byte, []int) {
 	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PlayerStats) GetAccounting() *PlayerAccounting {
+	if x != nil {
+		return x.Accounting
+	}
+	return nil
 }
 
 func (x *PlayerStats) GetFleetsBuilt() int32 {
@@ -1896,6 +1904,346 @@ func (x *ProductionPlanItem) GetQuantity() int32 {
 	return 0
 }
 
+type PlayerAccounting struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SinceYear     int32                  `protobuf:"varint,1,opt,name=since_year,json=sinceYear,proto3" json:"since_year,omitempty"`
+	Counters      *StatisticsCounters    `protobuf:"bytes,2,opt,name=counters,proto3" json:"counters,omitempty"`
+	History       []*StatisticsYear      `protobuf:"bytes,3,rep,name=history,proto3" json:"history,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerAccounting) Reset() {
+	*x = PlayerAccounting{}
+	mi := &file_craig_stars_v1_player_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerAccounting) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerAccounting) ProtoMessage() {}
+
+func (x *PlayerAccounting) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_player_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerAccounting.ProtoReflect.Descriptor instead.
+func (*PlayerAccounting) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *PlayerAccounting) GetSinceYear() int32 {
+	if x != nil {
+		return x.SinceYear
+	}
+	return 0
+}
+
+func (x *PlayerAccounting) GetCounters() *StatisticsCounters {
+	if x != nil {
+		return x.Counters
+	}
+	return nil
+}
+
+func (x *PlayerAccounting) GetHistory() []*StatisticsYear {
+	if x != nil {
+		return x.History
+	}
+	return nil
+}
+
+type StatisticsYear struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Year          int32                  `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
+	Counters      *StatisticsCounters    `protobuf:"bytes,2,opt,name=counters,proto3" json:"counters,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StatisticsYear) Reset() {
+	*x = StatisticsYear{}
+	mi := &file_craig_stars_v1_player_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StatisticsYear) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StatisticsYear) ProtoMessage() {}
+
+func (x *StatisticsYear) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_player_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StatisticsYear.ProtoReflect.Descriptor instead.
+func (*StatisticsYear) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *StatisticsYear) GetYear() int32 {
+	if x != nil {
+		return x.Year
+	}
+	return 0
+}
+
+func (x *StatisticsYear) GetCounters() *StatisticsCounters {
+	if x != nil {
+		return x.Counters
+	}
+	return nil
+}
+
+type StatisticsCounters struct {
+	state                      protoimpl.MessageState `protogen:"open.v1"`
+	ShipsDestroyed             int64                  `protobuf:"varint,1,opt,name=ships_destroyed,json=shipsDestroyed,proto3" json:"ships_destroyed,omitempty"`
+	DestroyedTonnage           int64                  `protobuf:"varint,2,opt,name=destroyed_tonnage,json=destroyedTonnage,proto3" json:"destroyed_tonnage,omitempty"`
+	ShipsLost                  int64                  `protobuf:"varint,3,opt,name=ships_lost,json=shipsLost,proto3" json:"ships_lost,omitempty"`
+	LostTonnage                int64                  `protobuf:"varint,4,opt,name=lost_tonnage,json=lostTonnage,proto3" json:"lost_tonnage,omitempty"`
+	ShipsBuilt                 int64                  `protobuf:"varint,5,opt,name=ships_built,json=shipsBuilt,proto3" json:"ships_built,omitempty"`
+	BuiltTonnage               int64                  `protobuf:"varint,6,opt,name=built_tonnage,json=builtTonnage,proto3" json:"built_tonnage,omitempty"`
+	ShipsScrapped              int64                  `protobuf:"varint,7,opt,name=ships_scrapped,json=shipsScrapped,proto3" json:"ships_scrapped,omitempty"`
+	ScrappedTonnage            int64                  `protobuf:"varint,8,opt,name=scrapped_tonnage,json=scrappedTonnage,proto3" json:"scrapped_tonnage,omitempty"`
+	BattlesFought              int64                  `protobuf:"varint,9,opt,name=battles_fought,json=battlesFought,proto3" json:"battles_fought,omitempty"`
+	BattlesWon                 int64                  `protobuf:"varint,10,opt,name=battles_won,json=battlesWon,proto3" json:"battles_won,omitempty"`
+	ResourcesProduced          int64                  `protobuf:"varint,11,opt,name=resources_produced,json=resourcesProduced,proto3" json:"resources_produced,omitempty"`
+	ProductionResourcesSpent   int64                  `protobuf:"varint,12,opt,name=production_resources_spent,json=productionResourcesSpent,proto3" json:"production_resources_spent,omitempty"`
+	ResearchResourcesSpent     int64                  `protobuf:"varint,13,opt,name=research_resources_spent,json=researchResourcesSpent,proto3" json:"research_resources_spent,omitempty"`
+	AllocationRefundsResources int64                  `protobuf:"varint,14,opt,name=allocation_refunds_resources,json=allocationRefundsResources,proto3" json:"allocation_refunds_resources,omitempty"`
+	IroniumSpent               int64                  `protobuf:"varint,15,opt,name=ironium_spent,json=ironiumSpent,proto3" json:"ironium_spent,omitempty"`
+	BoraniumSpent              int64                  `protobuf:"varint,16,opt,name=boranium_spent,json=boraniumSpent,proto3" json:"boranium_spent,omitempty"`
+	GermaniumSpent             int64                  `protobuf:"varint,17,opt,name=germanium_spent,json=germaniumSpent,proto3" json:"germanium_spent,omitempty"`
+	IroniumMined               int64                  `protobuf:"varint,18,opt,name=ironium_mined,json=ironiumMined,proto3" json:"ironium_mined,omitempty"`
+	BoraniumMined              int64                  `protobuf:"varint,19,opt,name=boranium_mined,json=boraniumMined,proto3" json:"boranium_mined,omitempty"`
+	GermaniumMined             int64                  `protobuf:"varint,20,opt,name=germanium_mined,json=germaniumMined,proto3" json:"germanium_mined,omitempty"`
+	FactoriesBuilt             int64                  `protobuf:"varint,21,opt,name=factories_built,json=factoriesBuilt,proto3" json:"factories_built,omitempty"`
+	MinesBuilt                 int64                  `protobuf:"varint,22,opt,name=mines_built,json=minesBuilt,proto3" json:"mines_built,omitempty"`
+	DefensesBuilt              int64                  `protobuf:"varint,23,opt,name=defenses_built,json=defensesBuilt,proto3" json:"defenses_built,omitempty"`
+	MineralsSalvaged           int64                  `protobuf:"varint,24,opt,name=minerals_salvaged,json=mineralsSalvaged,proto3" json:"minerals_salvaged,omitempty"`
+	unknownFields              protoimpl.UnknownFields
+	sizeCache                  protoimpl.SizeCache
+}
+
+func (x *StatisticsCounters) Reset() {
+	*x = StatisticsCounters{}
+	mi := &file_craig_stars_v1_player_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StatisticsCounters) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StatisticsCounters) ProtoMessage() {}
+
+func (x *StatisticsCounters) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_player_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StatisticsCounters.ProtoReflect.Descriptor instead.
+func (*StatisticsCounters) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *StatisticsCounters) GetShipsDestroyed() int64 {
+	if x != nil {
+		return x.ShipsDestroyed
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetDestroyedTonnage() int64 {
+	if x != nil {
+		return x.DestroyedTonnage
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetShipsLost() int64 {
+	if x != nil {
+		return x.ShipsLost
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetLostTonnage() int64 {
+	if x != nil {
+		return x.LostTonnage
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetShipsBuilt() int64 {
+	if x != nil {
+		return x.ShipsBuilt
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetBuiltTonnage() int64 {
+	if x != nil {
+		return x.BuiltTonnage
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetShipsScrapped() int64 {
+	if x != nil {
+		return x.ShipsScrapped
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetScrappedTonnage() int64 {
+	if x != nil {
+		return x.ScrappedTonnage
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetBattlesFought() int64 {
+	if x != nil {
+		return x.BattlesFought
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetBattlesWon() int64 {
+	if x != nil {
+		return x.BattlesWon
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetResourcesProduced() int64 {
+	if x != nil {
+		return x.ResourcesProduced
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetProductionResourcesSpent() int64 {
+	if x != nil {
+		return x.ProductionResourcesSpent
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetResearchResourcesSpent() int64 {
+	if x != nil {
+		return x.ResearchResourcesSpent
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetAllocationRefundsResources() int64 {
+	if x != nil {
+		return x.AllocationRefundsResources
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetIroniumSpent() int64 {
+	if x != nil {
+		return x.IroniumSpent
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetBoraniumSpent() int64 {
+	if x != nil {
+		return x.BoraniumSpent
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetGermaniumSpent() int64 {
+	if x != nil {
+		return x.GermaniumSpent
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetIroniumMined() int64 {
+	if x != nil {
+		return x.IroniumMined
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetBoraniumMined() int64 {
+	if x != nil {
+		return x.BoraniumMined
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetGermaniumMined() int64 {
+	if x != nil {
+		return x.GermaniumMined
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetFactoriesBuilt() int64 {
+	if x != nil {
+		return x.FactoriesBuilt
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetMinesBuilt() int64 {
+	if x != nil {
+		return x.MinesBuilt
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetDefensesBuilt() int64 {
+	if x != nil {
+		return x.DefensesBuilt
+	}
+	return 0
+}
+
+func (x *StatisticsCounters) GetMineralsSalvaged() int64 {
+	if x != nil {
+		return x.MineralsSalvaged
+	}
+	return 0
+}
+
 var File_craig_stars_v1_player_proto protoreflect.FileDescriptor
 
 const file_craig_stars_v1_player_proto_rawDesc = "" +
@@ -2078,8 +2426,11 @@ const file_craig_stars_v1_player_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1a?\n" +
 	"\x11SourceFleetsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x05R\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xa9\x01\n" +
-	"\vPlayerStats\x12!\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xeb\x01\n" +
+	"\vPlayerStats\x12@\n" +
+	"\n" +
+	"accounting\x18\x05 \x01(\v2 .craig_stars.v1.PlayerAccountingR\n" +
+	"accounting\x12!\n" +
 	"\ffleets_built\x18\x01 \x01(\x05R\vfleetsBuilt\x12'\n" +
 	"\x0fstarbases_built\x18\x02 \x01(\x05R\x0estarbasesBuilt\x12!\n" +
 	"\ftokens_built\x18\x03 \x01(\x05R\vtokensBuilt\x12+\n" +
@@ -2116,7 +2467,45 @@ const file_craig_stars_v1_player_proto_rawDesc = "" +
 	"\x04type\x18\x01 \x01(\x0e2\x1d.craig_stars.v1.QueueItemTypeR\x04type\x12\x1d\n" +
 	"\n" +
 	"design_num\x18\x02 \x01(\x05R\tdesignNum\x12\x1a\n" +
-	"\bquantity\x18\x03 \x01(\x05R\bquantity*\x85\x01\n" +
+	"\bquantity\x18\x03 \x01(\x05R\bquantity\"\xab\x01\n" +
+	"\x10PlayerAccounting\x12\x1d\n" +
+	"\n" +
+	"since_year\x18\x01 \x01(\x05R\tsinceYear\x12>\n" +
+	"\bcounters\x18\x02 \x01(\v2\".craig_stars.v1.StatisticsCountersR\bcounters\x128\n" +
+	"\ahistory\x18\x03 \x03(\v2\x1e.craig_stars.v1.StatisticsYearR\ahistory\"d\n" +
+	"\x0eStatisticsYear\x12\x12\n" +
+	"\x04year\x18\x01 \x01(\x05R\x04year\x12>\n" +
+	"\bcounters\x18\x02 \x01(\v2\".craig_stars.v1.StatisticsCountersR\bcounters\"\xfd\a\n" +
+	"\x12StatisticsCounters\x12'\n" +
+	"\x0fships_destroyed\x18\x01 \x01(\x03R\x0eshipsDestroyed\x12+\n" +
+	"\x11destroyed_tonnage\x18\x02 \x01(\x03R\x10destroyedTonnage\x12\x1d\n" +
+	"\n" +
+	"ships_lost\x18\x03 \x01(\x03R\tshipsLost\x12!\n" +
+	"\flost_tonnage\x18\x04 \x01(\x03R\vlostTonnage\x12\x1f\n" +
+	"\vships_built\x18\x05 \x01(\x03R\n" +
+	"shipsBuilt\x12#\n" +
+	"\rbuilt_tonnage\x18\x06 \x01(\x03R\fbuiltTonnage\x12%\n" +
+	"\x0eships_scrapped\x18\a \x01(\x03R\rshipsScrapped\x12)\n" +
+	"\x10scrapped_tonnage\x18\b \x01(\x03R\x0fscrappedTonnage\x12%\n" +
+	"\x0ebattles_fought\x18\t \x01(\x03R\rbattlesFought\x12\x1f\n" +
+	"\vbattles_won\x18\n" +
+	" \x01(\x03R\n" +
+	"battlesWon\x12-\n" +
+	"\x12resources_produced\x18\v \x01(\x03R\x11resourcesProduced\x12<\n" +
+	"\x1aproduction_resources_spent\x18\f \x01(\x03R\x18productionResourcesSpent\x128\n" +
+	"\x18research_resources_spent\x18\r \x01(\x03R\x16researchResourcesSpent\x12@\n" +
+	"\x1callocation_refunds_resources\x18\x0e \x01(\x03R\x1aallocationRefundsResources\x12#\n" +
+	"\rironium_spent\x18\x0f \x01(\x03R\fironiumSpent\x12%\n" +
+	"\x0eboranium_spent\x18\x10 \x01(\x03R\rboraniumSpent\x12'\n" +
+	"\x0fgermanium_spent\x18\x11 \x01(\x03R\x0egermaniumSpent\x12#\n" +
+	"\rironium_mined\x18\x12 \x01(\x03R\fironiumMined\x12%\n" +
+	"\x0eboranium_mined\x18\x13 \x01(\x03R\rboraniumMined\x12'\n" +
+	"\x0fgermanium_mined\x18\x14 \x01(\x03R\x0egermaniumMined\x12'\n" +
+	"\x0ffactories_built\x18\x15 \x01(\x03R\x0efactoriesBuilt\x12\x1f\n" +
+	"\vmines_built\x18\x16 \x01(\x03R\n" +
+	"minesBuilt\x12%\n" +
+	"\x0edefenses_built\x18\x17 \x01(\x03R\rdefensesBuilt\x12+\n" +
+	"\x11minerals_salvaged\x18\x18 \x01(\x03R\x10mineralsSalvaged*\x85\x01\n" +
 	"\x0ePlayerRelation\x12\x1f\n" +
 	"\x1bPLAYER_RELATION_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17PLAYER_RELATION_NEUTRAL\x10\x01\x12\x1a\n" +
@@ -2137,7 +2526,7 @@ func file_craig_stars_v1_player_proto_rawDescGZIP() []byte {
 }
 
 var file_craig_stars_v1_player_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_craig_stars_v1_player_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_craig_stars_v1_player_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_craig_stars_v1_player_proto_goTypes = []any{
 	(PlayerRelation)(0),            // 0: craig_stars.v1.PlayerRelation
 	(*Player)(nil),                 // 1: craig_stars.v1.Player
@@ -2158,115 +2547,122 @@ var file_craig_stars_v1_player_proto_goTypes = []any{
 	(*TransportPlan)(nil),          // 16: craig_stars.v1.TransportPlan
 	(*ProductionPlan)(nil),         // 17: craig_stars.v1.ProductionPlan
 	(*ProductionPlanItem)(nil),     // 18: craig_stars.v1.ProductionPlanItem
-	nil,                            // 19: craig_stars.v1.Player.AcquiredTechsEntry
-	nil,                            // 20: craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
-	nil,                            // 21: craig_stars.v1.PlayerOrders.CargoTransfersEntry
-	nil,                            // 22: craig_stars.v1.LogisticsAutomation.PriorityTradersEntry
-	nil,                            // 23: craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntry
-	nil,                            // 24: craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
-	nil,                            // 25: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
-	nil,                            // 26: craig_stars.v1.LogisticsAutomation.FleetRolesEntry
-	nil,                            // 27: craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
-	nil,                            // 28: craig_stars.v1.FleetAssembly.DesignsEntry
-	nil,                            // 29: craig_stars.v1.FleetAssembly.SourceFleetsEntry
-	(*GameDBObject)(nil),           // 30: craig_stars.v1.GameDBObject
-	(AiDifficulty)(0),              // 31: craig_stars.v1.AiDifficulty
-	(*Race)(nil),                   // 32: craig_stars.v1.Race
-	(*TechLevel)(nil),              // 33: craig_stars.v1.TechLevel
-	(*PlayerMessage)(nil),          // 34: craig_stars.v1.PlayerMessage
-	(*BattleRecord)(nil),           // 35: craig_stars.v1.BattleRecord
-	(*PlayerIntel)(nil),            // 36: craig_stars.v1.PlayerIntel
-	(*ScoreIntel)(nil),             // 37: craig_stars.v1.ScoreIntel
-	(*ShipDesign)(nil),             // 38: craig_stars.v1.ShipDesign
-	(*Planet)(nil),                 // 39: craig_stars.v1.Planet
-	(*Fleet)(nil),                  // 40: craig_stars.v1.Fleet
-	(*Minefield)(nil),              // 41: craig_stars.v1.Minefield
-	(*MineralPacket)(nil),          // 42: craig_stars.v1.MineralPacket
-	(*MysteryTrader)(nil),          // 43: craig_stars.v1.MysteryTrader
-	(*Salvage)(nil),                // 44: craig_stars.v1.Salvage
-	(*Wormhole)(nil),               // 45: craig_stars.v1.Wormhole
-	(*MapObjectTarget)(nil),        // 46: craig_stars.v1.MapObjectTarget
-	(*Cargo)(nil),                  // 47: craig_stars.v1.Cargo
-	(*timestamppb.Timestamp)(nil),  // 48: google.protobuf.Timestamp
-	(TechField)(0),                 // 49: craig_stars.v1.TechField
-	(NextResearchField)(0),         // 50: craig_stars.v1.NextResearchField
-	(BattleTarget)(0),              // 51: craig_stars.v1.BattleTarget
-	(BattleTactic)(0),              // 52: craig_stars.v1.BattleTactic
-	(BattleAttackWho)(0),           // 53: craig_stars.v1.BattleAttackWho
-	(*WaypointTransportTasks)(nil), // 54: craig_stars.v1.WaypointTransportTasks
-	(QueueItemType)(0),             // 55: craig_stars.v1.QueueItemType
+	(*PlayerAccounting)(nil),       // 19: craig_stars.v1.PlayerAccounting
+	(*StatisticsYear)(nil),         // 20: craig_stars.v1.StatisticsYear
+	(*StatisticsCounters)(nil),     // 21: craig_stars.v1.StatisticsCounters
+	nil,                            // 22: craig_stars.v1.Player.AcquiredTechsEntry
+	nil,                            // 23: craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
+	nil,                            // 24: craig_stars.v1.PlayerOrders.CargoTransfersEntry
+	nil,                            // 25: craig_stars.v1.LogisticsAutomation.PriorityTradersEntry
+	nil,                            // 26: craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntry
+	nil,                            // 27: craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
+	nil,                            // 28: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
+	nil,                            // 29: craig_stars.v1.LogisticsAutomation.FleetRolesEntry
+	nil,                            // 30: craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
+	nil,                            // 31: craig_stars.v1.FleetAssembly.DesignsEntry
+	nil,                            // 32: craig_stars.v1.FleetAssembly.SourceFleetsEntry
+	(*GameDBObject)(nil),           // 33: craig_stars.v1.GameDBObject
+	(AiDifficulty)(0),              // 34: craig_stars.v1.AiDifficulty
+	(*Race)(nil),                   // 35: craig_stars.v1.Race
+	(*TechLevel)(nil),              // 36: craig_stars.v1.TechLevel
+	(*PlayerMessage)(nil),          // 37: craig_stars.v1.PlayerMessage
+	(*BattleRecord)(nil),           // 38: craig_stars.v1.BattleRecord
+	(*PlayerIntel)(nil),            // 39: craig_stars.v1.PlayerIntel
+	(*ScoreIntel)(nil),             // 40: craig_stars.v1.ScoreIntel
+	(*ShipDesign)(nil),             // 41: craig_stars.v1.ShipDesign
+	(*Planet)(nil),                 // 42: craig_stars.v1.Planet
+	(*Fleet)(nil),                  // 43: craig_stars.v1.Fleet
+	(*Minefield)(nil),              // 44: craig_stars.v1.Minefield
+	(*MineralPacket)(nil),          // 45: craig_stars.v1.MineralPacket
+	(*MysteryTrader)(nil),          // 46: craig_stars.v1.MysteryTrader
+	(*Salvage)(nil),                // 47: craig_stars.v1.Salvage
+	(*Wormhole)(nil),               // 48: craig_stars.v1.Wormhole
+	(*MapObjectTarget)(nil),        // 49: craig_stars.v1.MapObjectTarget
+	(*Cargo)(nil),                  // 50: craig_stars.v1.Cargo
+	(*timestamppb.Timestamp)(nil),  // 51: google.protobuf.Timestamp
+	(TechField)(0),                 // 52: craig_stars.v1.TechField
+	(NextResearchField)(0),         // 53: craig_stars.v1.NextResearchField
+	(BattleTarget)(0),              // 54: craig_stars.v1.BattleTarget
+	(BattleTactic)(0),              // 55: craig_stars.v1.BattleTactic
+	(BattleAttackWho)(0),           // 56: craig_stars.v1.BattleAttackWho
+	(*WaypointTransportTasks)(nil), // 57: craig_stars.v1.WaypointTransportTasks
+	(QueueItemType)(0),             // 58: craig_stars.v1.QueueItemType
 }
 var file_craig_stars_v1_player_proto_depIdxs = []int32{
-	30, // 0: craig_stars.v1.Player.game_db_object:type_name -> craig_stars.v1.GameDBObject
+	33, // 0: craig_stars.v1.Player.game_db_object:type_name -> craig_stars.v1.GameDBObject
 	8,  // 1: craig_stars.v1.Player.player_orders:type_name -> craig_stars.v1.PlayerOrders
 	7,  // 2: craig_stars.v1.Player.player_plans:type_name -> craig_stars.v1.PlayerPlans
-	31, // 3: craig_stars.v1.Player.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
-	32, // 4: craig_stars.v1.Player.race:type_name -> craig_stars.v1.Race
-	33, // 5: craig_stars.v1.Player.tech_levels:type_name -> craig_stars.v1.TechLevel
-	33, // 6: craig_stars.v1.Player.tech_levels_spent:type_name -> craig_stars.v1.TechLevel
+	34, // 3: craig_stars.v1.Player.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
+	35, // 4: craig_stars.v1.Player.race:type_name -> craig_stars.v1.Race
+	36, // 5: craig_stars.v1.Player.tech_levels:type_name -> craig_stars.v1.TechLevel
+	36, // 6: craig_stars.v1.Player.tech_levels_spent:type_name -> craig_stars.v1.TechLevel
 	13, // 7: craig_stars.v1.Player.relations:type_name -> craig_stars.v1.PlayerRelationship
-	34, // 8: craig_stars.v1.Player.messages:type_name -> craig_stars.v1.PlayerMessage
-	19, // 9: craig_stars.v1.Player.acquired_techs:type_name -> craig_stars.v1.Player.AcquiredTechsEntry
+	37, // 8: craig_stars.v1.Player.messages:type_name -> craig_stars.v1.PlayerMessage
+	22, // 9: craig_stars.v1.Player.acquired_techs:type_name -> craig_stars.v1.Player.AcquiredTechsEntry
 	12, // 10: craig_stars.v1.Player.stats:type_name -> craig_stars.v1.PlayerStats
-	35, // 11: craig_stars.v1.PlayerUniverse.battle_records:type_name -> craig_stars.v1.BattleRecord
-	36, // 12: craig_stars.v1.PlayerUniverse.player_intels:type_name -> craig_stars.v1.PlayerIntel
-	37, // 13: craig_stars.v1.PlayerUniverse.score_intels:type_name -> craig_stars.v1.ScoreIntel
-	38, // 14: craig_stars.v1.PlayerUniverse.designs:type_name -> craig_stars.v1.ShipDesign
-	39, // 15: craig_stars.v1.PlayerUniverse.planets:type_name -> craig_stars.v1.Planet
-	40, // 16: craig_stars.v1.PlayerUniverse.fleets:type_name -> craig_stars.v1.Fleet
-	41, // 17: craig_stars.v1.PlayerUniverse.minefields:type_name -> craig_stars.v1.Minefield
-	42, // 18: craig_stars.v1.PlayerUniverse.mineral_packets:type_name -> craig_stars.v1.MineralPacket
-	43, // 19: craig_stars.v1.PlayerUniverse.mystery_traders:type_name -> craig_stars.v1.MysteryTrader
-	44, // 20: craig_stars.v1.PlayerUniverse.salvages:type_name -> craig_stars.v1.Salvage
-	45, // 21: craig_stars.v1.PlayerUniverse.wormholes:type_name -> craig_stars.v1.Wormhole
-	46, // 22: craig_stars.v1.ByHandCargoTransfer.map_object_target:type_name -> craig_stars.v1.MapObjectTarget
-	47, // 23: craig_stars.v1.ByHandCargoTransfer.cargo:type_name -> craig_stars.v1.Cargo
+	38, // 11: craig_stars.v1.PlayerUniverse.battle_records:type_name -> craig_stars.v1.BattleRecord
+	39, // 12: craig_stars.v1.PlayerUniverse.player_intels:type_name -> craig_stars.v1.PlayerIntel
+	40, // 13: craig_stars.v1.PlayerUniverse.score_intels:type_name -> craig_stars.v1.ScoreIntel
+	41, // 14: craig_stars.v1.PlayerUniverse.designs:type_name -> craig_stars.v1.ShipDesign
+	42, // 15: craig_stars.v1.PlayerUniverse.planets:type_name -> craig_stars.v1.Planet
+	43, // 16: craig_stars.v1.PlayerUniverse.fleets:type_name -> craig_stars.v1.Fleet
+	44, // 17: craig_stars.v1.PlayerUniverse.minefields:type_name -> craig_stars.v1.Minefield
+	45, // 18: craig_stars.v1.PlayerUniverse.mineral_packets:type_name -> craig_stars.v1.MineralPacket
+	46, // 19: craig_stars.v1.PlayerUniverse.mystery_traders:type_name -> craig_stars.v1.MysteryTrader
+	47, // 20: craig_stars.v1.PlayerUniverse.salvages:type_name -> craig_stars.v1.Salvage
+	48, // 21: craig_stars.v1.PlayerUniverse.wormholes:type_name -> craig_stars.v1.Wormhole
+	49, // 22: craig_stars.v1.ByHandCargoTransfer.map_object_target:type_name -> craig_stars.v1.MapObjectTarget
+	50, // 23: craig_stars.v1.ByHandCargoTransfer.cargo:type_name -> craig_stars.v1.Cargo
 	3,  // 24: craig_stars.v1.CargoTransfers.transfers:type_name -> craig_stars.v1.ByHandCargoTransfer
-	48, // 25: craig_stars.v1.PlayerStatus.updated_at:type_name -> google.protobuf.Timestamp
-	31, // 26: craig_stars.v1.PlayerStatus.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
-	35, // 27: craig_stars.v1.Intels.battle_records:type_name -> craig_stars.v1.BattleRecord
-	36, // 28: craig_stars.v1.Intels.player_intels:type_name -> craig_stars.v1.PlayerIntel
-	37, // 29: craig_stars.v1.Intels.score_intels:type_name -> craig_stars.v1.ScoreIntel
-	39, // 30: craig_stars.v1.Intels.planet_intels:type_name -> craig_stars.v1.Planet
-	40, // 31: craig_stars.v1.Intels.fleet_intels:type_name -> craig_stars.v1.Fleet
-	38, // 32: craig_stars.v1.Intels.ship_design_intels:type_name -> craig_stars.v1.ShipDesign
-	42, // 33: craig_stars.v1.Intels.mineral_packet_intels:type_name -> craig_stars.v1.MineralPacket
-	41, // 34: craig_stars.v1.Intels.minefield_intels:type_name -> craig_stars.v1.Minefield
-	45, // 35: craig_stars.v1.Intels.wormhole_intels:type_name -> craig_stars.v1.Wormhole
-	43, // 36: craig_stars.v1.Intels.mystery_trader_intels:type_name -> craig_stars.v1.MysteryTrader
-	44, // 37: craig_stars.v1.Intels.salvage_intels:type_name -> craig_stars.v1.Salvage
+	51, // 25: craig_stars.v1.PlayerStatus.updated_at:type_name -> google.protobuf.Timestamp
+	34, // 26: craig_stars.v1.PlayerStatus.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
+	38, // 27: craig_stars.v1.Intels.battle_records:type_name -> craig_stars.v1.BattleRecord
+	39, // 28: craig_stars.v1.Intels.player_intels:type_name -> craig_stars.v1.PlayerIntel
+	40, // 29: craig_stars.v1.Intels.score_intels:type_name -> craig_stars.v1.ScoreIntel
+	42, // 30: craig_stars.v1.Intels.planet_intels:type_name -> craig_stars.v1.Planet
+	43, // 31: craig_stars.v1.Intels.fleet_intels:type_name -> craig_stars.v1.Fleet
+	41, // 32: craig_stars.v1.Intels.ship_design_intels:type_name -> craig_stars.v1.ShipDesign
+	45, // 33: craig_stars.v1.Intels.mineral_packet_intels:type_name -> craig_stars.v1.MineralPacket
+	44, // 34: craig_stars.v1.Intels.minefield_intels:type_name -> craig_stars.v1.Minefield
+	48, // 35: craig_stars.v1.Intels.wormhole_intels:type_name -> craig_stars.v1.Wormhole
+	46, // 36: craig_stars.v1.Intels.mystery_trader_intels:type_name -> craig_stars.v1.MysteryTrader
+	47, // 37: craig_stars.v1.Intels.salvage_intels:type_name -> craig_stars.v1.Salvage
 	17, // 38: craig_stars.v1.PlayerPlans.production_plans:type_name -> craig_stars.v1.ProductionPlan
 	15, // 39: craig_stars.v1.PlayerPlans.battle_plans:type_name -> craig_stars.v1.BattlePlan
 	16, // 40: craig_stars.v1.PlayerPlans.transport_plans:type_name -> craig_stars.v1.TransportPlan
 	9,  // 41: craig_stars.v1.PlayerOrders.automation:type_name -> craig_stars.v1.LogisticsAutomation
-	20, // 42: craig_stars.v1.PlayerOrders.design_maintenance:type_name -> craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
-	49, // 43: craig_stars.v1.PlayerOrders.researching:type_name -> craig_stars.v1.TechField
-	50, // 44: craig_stars.v1.PlayerOrders.next_research_field:type_name -> craig_stars.v1.NextResearchField
-	21, // 45: craig_stars.v1.PlayerOrders.cargo_transfers:type_name -> craig_stars.v1.PlayerOrders.CargoTransfersEntry
-	22, // 46: craig_stars.v1.LogisticsAutomation.priority_traders:type_name -> craig_stars.v1.LogisticsAutomation.PriorityTradersEntry
-	23, // 47: craig_stars.v1.LogisticsAutomation.priority_planets:type_name -> craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntry
-	24, // 48: craig_stars.v1.LogisticsAutomation.design_families:type_name -> craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
+	23, // 42: craig_stars.v1.PlayerOrders.design_maintenance:type_name -> craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
+	52, // 43: craig_stars.v1.PlayerOrders.researching:type_name -> craig_stars.v1.TechField
+	53, // 44: craig_stars.v1.PlayerOrders.next_research_field:type_name -> craig_stars.v1.NextResearchField
+	24, // 45: craig_stars.v1.PlayerOrders.cargo_transfers:type_name -> craig_stars.v1.PlayerOrders.CargoTransfersEntry
+	25, // 46: craig_stars.v1.LogisticsAutomation.priority_traders:type_name -> craig_stars.v1.LogisticsAutomation.PriorityTradersEntry
+	26, // 47: craig_stars.v1.LogisticsAutomation.priority_planets:type_name -> craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntry
+	27, // 48: craig_stars.v1.LogisticsAutomation.design_families:type_name -> craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
 	10, // 49: craig_stars.v1.LogisticsAutomation.research_tax:type_name -> craig_stars.v1.ResearchTaxPolicy
-	25, // 50: craig_stars.v1.LogisticsAutomation.fleet_assemblies:type_name -> craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
-	26, // 51: craig_stars.v1.LogisticsAutomation.fleet_roles:type_name -> craig_stars.v1.LogisticsAutomation.FleetRolesEntry
-	27, // 52: craig_stars.v1.LogisticsAutomation.rebuild_fleets:type_name -> craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
-	28, // 53: craig_stars.v1.FleetAssembly.designs:type_name -> craig_stars.v1.FleetAssembly.DesignsEntry
-	29, // 54: craig_stars.v1.FleetAssembly.source_fleets:type_name -> craig_stars.v1.FleetAssembly.SourceFleetsEntry
-	0,  // 55: craig_stars.v1.PlayerRelationship.relation:type_name -> craig_stars.v1.PlayerRelation
-	51, // 56: craig_stars.v1.BattlePlan.primary_target:type_name -> craig_stars.v1.BattleTarget
-	51, // 57: craig_stars.v1.BattlePlan.secondary_target:type_name -> craig_stars.v1.BattleTarget
-	52, // 58: craig_stars.v1.BattlePlan.tactic:type_name -> craig_stars.v1.BattleTactic
-	53, // 59: craig_stars.v1.BattlePlan.attack_who:type_name -> craig_stars.v1.BattleAttackWho
-	54, // 60: craig_stars.v1.TransportPlan.tasks:type_name -> craig_stars.v1.WaypointTransportTasks
-	18, // 61: craig_stars.v1.ProductionPlan.items:type_name -> craig_stars.v1.ProductionPlanItem
-	55, // 62: craig_stars.v1.ProductionPlanItem.type:type_name -> craig_stars.v1.QueueItemType
-	4,  // 63: craig_stars.v1.PlayerOrders.CargoTransfersEntry.value:type_name -> craig_stars.v1.CargoTransfers
-	11, // 64: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry.value:type_name -> craig_stars.v1.FleetAssembly
-	65, // [65:65] is the sub-list for method output_type
-	65, // [65:65] is the sub-list for method input_type
-	65, // [65:65] is the sub-list for extension type_name
-	65, // [65:65] is the sub-list for extension extendee
-	0,  // [0:65] is the sub-list for field type_name
+	28, // 50: craig_stars.v1.LogisticsAutomation.fleet_assemblies:type_name -> craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
+	29, // 51: craig_stars.v1.LogisticsAutomation.fleet_roles:type_name -> craig_stars.v1.LogisticsAutomation.FleetRolesEntry
+	30, // 52: craig_stars.v1.LogisticsAutomation.rebuild_fleets:type_name -> craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
+	31, // 53: craig_stars.v1.FleetAssembly.designs:type_name -> craig_stars.v1.FleetAssembly.DesignsEntry
+	32, // 54: craig_stars.v1.FleetAssembly.source_fleets:type_name -> craig_stars.v1.FleetAssembly.SourceFleetsEntry
+	19, // 55: craig_stars.v1.PlayerStats.accounting:type_name -> craig_stars.v1.PlayerAccounting
+	0,  // 56: craig_stars.v1.PlayerRelationship.relation:type_name -> craig_stars.v1.PlayerRelation
+	54, // 57: craig_stars.v1.BattlePlan.primary_target:type_name -> craig_stars.v1.BattleTarget
+	54, // 58: craig_stars.v1.BattlePlan.secondary_target:type_name -> craig_stars.v1.BattleTarget
+	55, // 59: craig_stars.v1.BattlePlan.tactic:type_name -> craig_stars.v1.BattleTactic
+	56, // 60: craig_stars.v1.BattlePlan.attack_who:type_name -> craig_stars.v1.BattleAttackWho
+	57, // 61: craig_stars.v1.TransportPlan.tasks:type_name -> craig_stars.v1.WaypointTransportTasks
+	18, // 62: craig_stars.v1.ProductionPlan.items:type_name -> craig_stars.v1.ProductionPlanItem
+	58, // 63: craig_stars.v1.ProductionPlanItem.type:type_name -> craig_stars.v1.QueueItemType
+	21, // 64: craig_stars.v1.PlayerAccounting.counters:type_name -> craig_stars.v1.StatisticsCounters
+	20, // 65: craig_stars.v1.PlayerAccounting.history:type_name -> craig_stars.v1.StatisticsYear
+	21, // 66: craig_stars.v1.StatisticsYear.counters:type_name -> craig_stars.v1.StatisticsCounters
+	4,  // 67: craig_stars.v1.PlayerOrders.CargoTransfersEntry.value:type_name -> craig_stars.v1.CargoTransfers
+	11, // 68: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry.value:type_name -> craig_stars.v1.FleetAssembly
+	69, // [69:69] is the sub-list for method output_type
+	69, // [69:69] is the sub-list for method input_type
+	69, // [69:69] is the sub-list for extension type_name
+	69, // [69:69] is the sub-list for extension extendee
+	0,  // [0:69] is the sub-list for field type_name
 }
 
 func init() { file_craig_stars_v1_player_proto_init() }
@@ -2294,7 +2690,7 @@ func file_craig_stars_v1_player_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_craig_stars_v1_player_proto_rawDesc), len(file_craig_stars_v1_player_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   29,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

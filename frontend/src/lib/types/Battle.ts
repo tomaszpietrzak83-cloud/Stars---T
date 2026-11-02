@@ -33,6 +33,8 @@ export type BattleRecordDetails = {
 	theirs: number;
 	ourDead: number;
 	theirDead: number;
+ ourDeadTonnage?: number;
+ theirDeadTonnage?: number;
 	oursLeft: number;
 	theirsLeft: number;
 };
@@ -233,6 +235,8 @@ export function getBattleRecordDetails(
 		theirs,
 		ourDead,
 		theirDead,
+ ourDeadTonnage: destroyedBattleTonnage(battle,allies,true),
+ theirDeadTonnage: destroyedBattleTonnage(battle,allies,false),
 		oursLeft,
 		theirsLeft
 	};
@@ -323,4 +327,18 @@ export function getScannerTarget(
 			return mapObjectsAtPosition[0];
 		}
 	}
+}
+
+// Per-ship mass is captured in the battle record, so later design deletion or
+// upgrades cannot rewrite old results. It includes cargo carried into battle.
+export function destroyedBattleTonnage(record:BattleRecord,allies:Set<number>,ours:boolean):number|undefined {
+ let mass=0,count=0;
+ for(const lost of record.destroyedTokens){
+  if(allies.has(lost.playerNum)!==ours)continue;
+  const token=record.tokens.find(t=>t.num===lost.num && t.playerNum===lost.playerNum);
+  if(!token)return undefined;
+  mass+=Math.max(0,token.mass)*lost.quantity;count+=lost.quantity;
+ }
+ const expected=ours?getOurDead(record,allies):getTheirDead(record,allies);
+ return count===expected?mass:undefined;
 }

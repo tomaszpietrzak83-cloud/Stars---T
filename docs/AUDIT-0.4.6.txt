@@ -1,0 +1,122 @@
+TOMEK-STARS 0.4.6 — AUTOMATION, STATIONS AND STATISTICS
+
+Gameplay changes
+- Direct, zero-donation fuel-network cruises no longer reserve combat/bomber
+  missions or contact-recon scouts permanently. Actual tanker commitments stay.
+- Patrols reconsider local interceptions yearly. Economical repositioning and
+  shared moving rallies reserve a real return. Low tank percentage alone does
+  not veto a funded nearby kill; unfunded patrols still return for fuel.
+- Surplus bomber cover is detached and its original roles restored. Bombers
+  stay pooled, avoiding the previous cycle of one escort per individual bomber.
+  Unknown orbital weapons / insufficient stealth-warning coverage can retain
+  minimal cover. This does not assert an unseen enemy is harmless.
+- Priority colony reconnaissance precedes spare incoming-fleet reconnaissance;
+  an active bombing target ranks first among eligible stale priority colonies.
+  Copied 2477 proof: one scout is routed to Covenant Reach, whose report was
+  42 years old; old population estimates are not accepted as current facts.
+- Tanker and customer can both approach a common, funded meeting point. Prefer
+  both free engine speeds within a bounded 20-turn horizon; otherwise use a
+  funded economical meeting. A full customer is released. Revalidate requests
+  resolved by an earlier donor, preventing a nil-request crash.
+- Radiating automatic freighters reject new passengers and invasions, unload
+  legacy passengers at a friendly colony, and keep mineral/infrastructure/
+  salvage work. Separate radiating escorts do not irradiate a passenger carrier.
+- Predict a forthcoming bombardment using published defenses and own arriving
+  bombs, without RNG calls or hidden enemy populations. Full transports may
+  stage outside the hostile orbit. They cannot invade on a forecast: a real
+  refreshed report unlocks the landing. Nearby loaded landings let bombers
+  move onward once softening is no longer needed. Stale dense reports need
+  reconnaissance first; orbital bases and remaining defenses block this plan.
+- Trade convoys prefer pure Large Freighter hulls. Before sacrificing smaller
+  carriers, inspect actual next-year production of automatic freighter
+  replacements. Manual/composition orders are not reassigned; no ships are
+  ordered implicitly. Queue forecasts preserve state and game RNG.
+- Spare sweep-capable patrols clear local hostile minefields affecting colonies
+  or active routes, entering at safe warp from the rim with funded return.
+  Native sweep capacity is used, including Gatling weapons; our/friendly and
+  detonating fields are excluded. Local interception retains precedence.
+
+Starbases
+- Upgrade creates a same-hull design family; Rebuild family queues its latest
+  version on eligible owned planets. Existing unrelated base orders are kept,
+  duplicate rebuilds are disabled, old projects disappear from build choices.
+- An ongoing family station order follows the newest successor and preserves
+  allocated resources while mineral-blocked. Existing station remains active
+  until native replacement completes. Fleet-number and planet-number spaces
+  are not conflated through the mobile-fleet rebuild flags.
+- Native StarbaseUpgradeCost already reuses shared components and applies
+  conversion discounts, including 50% credit for a changed old hull. There is
+  no second scrap credit for the same parts. Existing native pricing is kept.
+
+Statistics and battle reports
+- Statistics tab persists event-based counters and up to 200 yearly rows:
+  actual kill/loss counts and dry tonnage, construction/scrapping/installations,
+  production allocations/refunds/research, mining and recovered debris.
+- Existing saves clearly state when detailed accounting starts. Historical
+  production counters remain; old expenditure/kills are not fabricated.
+- Battle report columns and message links show destroyed count plus kT for
+  each side, retaining red/green colors. Battle tonnage uses per-ship mass
+  captured in the record (including its cargo); incomplete old reports show
+  unavailable instead of fabricated zero. Partial destroyed stacks are counted.
+
+Performance
+Astra's isolated 0.4.5 audit: median native generation 60.909853 -> 45.248634 s
+(25.71% reduction), three runs per variant with matching normalized complete
+state. See docs/ASTRA-PERFORMANCE-REPORT.txt for proof and limitations.
+Integrated the small sort-local approaching-colony cache and incremental
+single-tail fleet-owner index. Existing newer patrol logic is retained.
+Independent comparator oracle and owner-index regressions pass. These historical
+0.4.5 timings are not presented as benchmarks of the newer gameplay changes.
+
+Additional economy and defense requirements (2026-11-02)
+- Defending against landings: reported freighter/colonizer hulls heading toward
+  owned colonies receive first interception priority. Other local transports
+  rank ahead of scouts; immediate bomber defense and force assessment remain.
+  Existing pursuits reconsider nearby landing threats from public reports.
+- Each functioning shipyard keeps a 300-kT floor of each mineral, or its larger
+  near-term manufacturing demand. Real blocked orders precede passenger work;
+  idle stock replenishment follows passenger service.
+- A current 62-kT shortage does not cap a shipment: full 210-kT useful mineral
+  loads can build the yard's future stock. Dedicated supply fills the mineral
+  buffer before incidental cargo. Other incoming loads are accounted for.
+- Quantity reservations replace exclusive source/yard locks; several full
+  freighters can serve a large deficiency. Empty stale underfilled pickups are
+  re-planned, without disabling the role. Pickup and loaded delivery are both
+  budgeted with actual fuel and a return, preserving the full-hold requirement.
+- Mineral source candidates are owned worlds and actual unowned mining sites;
+  avoid repeatedly scanning every unowned planet for every yard and freighter.
+- Read-only compact copy of current personal year 2483: MF32 waits at Petra
+  despite 4836 kT ironium; old job requests 62 of 210 kT. The copied-state test
+  proves a complete 210-kT pickup while preserving source stock/accounting.
+
+Second Astra optimization, integrated from audited patch
+Prepared Exec statements live only for one UpdateFullGame transaction; SQL
+writes remain serial and ordered. Bounded report prefetch and gzip reuse retain
+native codec and values. Audited isolated 0.4.5 median generation 43.6381 ->
+40.0844 s; save phase 19.1228 -> 15.2488 s. Full normalized state matches.
+These are isolated reference timings, not claims about the newer automation.
+TSAN cannot start on this Windows host (allocation error 87), so race testing
+is explicitly not claimed. See Astra's report, section 9 and bottom summary.
+
+Verification and deployment evidence are appended after completion below.
+
+Final verification and deployment (2026-11-02)
+- Full native Go suite passed (including CS, AI, database, converters and server).
+  Subsequent core/database/converter regressions passed after final fixes.
+- Optional copied-2477 navigation audit passed. Copied-2483 economy tests prove
+  actual MF32 210-kT ironium pickup and delivery orders despite pending rebuild;
+  additional tests cover shared quantity reservations and passenger precedence.
+- Final copied-2483 full-turn test passed: native GenerateTurn 63.1866919 s,
+  complete test 86.75 s; 25 automatic scouts and 17 colonizers moving/routed.
+  This is one current-game sample, not a paired performance comparison.
+- Svelte check: zero errors/warnings; 12 frontend tests passed. Native, WASM
+  and static frontend rebuilt. Isolated compiled API/browser smoke passed,
+  including persisted base family rebuild, old station retained, no duplicates,
+  statistics, maps, research, cameras, automation and fleet-composition UI.
+- Program-only deployment: personal game 10 remained WaitingForPlayers at
+  year 2484; no personal turns generated and no database edits. A compact
+  checked backup was made before replacement. Binary SHA256:
+  057dbd4656c544f7859e581667e531b9d693507456bde5ad8ef6be688860285d.
+- Logs, input copies, deployment manifest and private prompt archives remain
+  outside the published program repository.
+- Post-deployment read-only browser smoke passed: new 0.4.6 autologin, rebuilding sort, scanner, statistics and battle summary; mutating API calls blocked.

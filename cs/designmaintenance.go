@@ -31,14 +31,17 @@ type fleetMaintenance struct {
 func (p *Player) ValidateDesignMaintenance(policies DesignMaintenance) error {
 	for source, target := range policies {
 		old := p.GetDesign(source)
-		if old == nil || old.PlayerNum != p.Num || old.Spec.Starbase || old.OriginalPlayerNum != None {
-			return fmt.Errorf("maintenance requires an owned, non-transferred ship design")
+		if old == nil || old.PlayerNum != p.Num || old.OriginalPlayerNum != None {
+			return fmt.Errorf("maintenance requires an owned, non-transferred design")
 		}
 		if target == RetireDesign {
+			if old.Spec.Starbase {
+				return fmt.Errorf("starbases require a successor design instead of automatic scrapping")
+			}
 			continue
 		}
 		next := p.GetDesign(target)
-		if next == nil || source == target || next.PlayerNum != p.Num || next.Spec.Starbase || next.OriginalPlayerNum != None || old.Hull != next.Hull {
+		if next == nil || source == target || next.PlayerNum != p.Num || next.Spec.Starbase != old.Spec.Starbase || next.OriginalPlayerNum != None || old.Hull != next.Hull {
 			return fmt.Errorf("replacement must be a different owned design on the same hull")
 		}
 		if _, chained := policies[target]; chained {
@@ -360,4 +363,28 @@ func inheritReplacementRole(player *Player, fleet *Fleet, work *fleetMaintenance
 		player.Automation.FleetRoles = map[int]string{}
 	}
 	player.Automation.FleetRoles[fleet.Num] = work.OriginalRole
+}
+
+// Keeping an already queued retired model must not block unrelated edits.
+// It will be canceled/refunded (ships) or advanced to the successor (bases)
+// during production. New or duplicated retired orders remain forbidden.
+func validateRetiredQueueEdits(p *Player, existing, incoming []ProductionQueueItem) error {
+	used := map[int]bool{}
+	for _, item := range incoming {
+		if (item.Type != QueueItemTypeShipToken && item.Type != QueueItemTypeStarbase) || p.DesignMaintenance[item.DesignNum] == 0 {
+			continue
+		}
+		found := false
+		for i, old := range existing {
+			if !used[i] && old.Type == item.Type && old.DesignNum == item.DesignNum && item.Quantity <= old.Quantity && item.Allocated == old.Allocated {
+				used[i] = true
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("cannot add production of a retired or replaced design")
+		}
+	}
+	return nil
 }

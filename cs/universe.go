@@ -464,6 +464,15 @@ func (u *Universe) addFleet(fleet *Fleet) error {
 			return fmt.Errorf("unable to find design %d for fleet %s", token.DesignNum, fleet.Name)
 		}
 	}
+	// Production appends one fleet at a time. Extend a current owner index
+	// instead of scanning the entire universe again for the next ship.
+	// Bulk appends and slice replacement still use getFleets' rebuild path.
+	if u.fleetOwnerIndex != nil && u.fleetIndexSize == len(u.Fleets)-1 && u.Fleets[len(u.Fleets)-1] == fleet {
+		if !fleet.Delete {
+			u.fleetOwnerIndex[fleet.PlayerNum] = append(u.fleetOwnerIndex[fleet.PlayerNum], fleet)
+		}
+		u.fleetIndexSize = len(u.Fleets)
+	}
 	return nil
 }
 

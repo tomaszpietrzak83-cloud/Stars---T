@@ -134,7 +134,7 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 		pos.Y += int(math.Round(24 * math.Sin(angle)))
 		target = MapObjectTarget{}
 	}
-	route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, pos, target, automaticRoutePolicy{EconomicalPatrol: true, MaxWarp: min(4, automaticMaxWarp(p, f)), MinWarp: 4, MaxTurns: 20, AllowThreat: combatAutonomy(p, f)})
+	route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, pos, target, automaticRoutePolicy{EconomicalPatrol: true, MaxWarp: min(6, automaticMaxWarp(p, f)), MinWarp: 1, MaxTurns: 20, AllowThreat: combatAutonomy(p, f)})
 	if route == nil || route.WaitForFuel {
 		delete(f.Tags, frontierPatrolTag)
 		return false

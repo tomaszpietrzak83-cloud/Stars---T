@@ -493,3 +493,40 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
     Evidence: 101.494 GB -> approximately 6.356 GB; 37 redundant audit database files removed, Go cache cleared, old UI/build artifacts removed, eight large logs/diagnostics losslessly compressed. One compact current backup and one exact compact benchmark input retained. Active database 2,691,682,304 -> 330,797,056 bytes, verified all-table/schema/value digests and SQLite quick_check before installation. Read-only live smoke passed; year 2477 unchanged, no personal turn or queue recalculation. Private manifests retained under ../audit-results. Details: docs/STORAGE-AUDIT-2026-11-01.txt.
 [x] 219. Explain database/development-folder growth and distinguish GitHub size from the local workspace.
     Evidence: SQLite free-page count, per-table/per-report allocation, full workspace scans, Git tracked-tree/ZIP measurements and public GitHub API metadata. Database was approximately 87% reusable free space; complete storage report documents retained actual reports and source/compiled artwork duplication.
+
+[x] 220. Radiating automatic freighters carry no colonists or invasions; mineral/infrastructure/debris work remains available, and existing passengers are safely unloaded first.
+[x] 221. Add a statistics page: lifetime and turn history of destroyed/lost/built ship counts and tonnage, production/research spending, mining and installations; explicitly mark tracking start for old saves.
+[x] 222. Fuel rendezvous use movement by both participants, preferring free/economical speeds when useful and never keeping a reachable client stationary unnecessarily.
+[x] 223. Reproduce year-2477 patrol cases (42,25,70,83,87,110,213 and nearby targets) on a copy; prioritize actual local interception over receding pursuits or frontier relocation and ensure status matches orders.
+[x] 224. Patrol regrouping uses mutually reachable rendezvous and motion by multiple groups (181/53,92/173/176/174), rather than a stationary leader waiting indefinitely.
+[x] 225. Covenant Reach: release unnecessary bomber protection when no credible nearby armed threats require it; local patrol interception is the primary duty, with funded economical cruise around warp 6 when engines permit.
+
+[x] 226. Trader offerings prefer Large Freighters; if none are available, inspect actual production queues for Large Freighters completing next turn before choosing other carriers. Do not insert production orders implicitly.
+
+[x] 227. Coordinate bombing and invasion: when the remaining reported colony can be captured by available landings, send bombers onward; stage transports nearby ahead of the forecast bombing result for a next-turn landing, retaining visibility, combat and fuel checks. User example: approximately 140k defenders before bombing, 120k eliminated.
+    Request 227 clarification: the observed bomber is B-17 fleet #57 at Covenant Reach.
+
+[x] 228. Starbase design Upgrade and Rebuild family: same-hull successor, latest version in existing construction orders, retain operational old bases until completed; protect manual unrelated base orders.
+
+[x] 229. Verify refund on starbase replacement: native StarbaseUpgradeCost already reuses shared components and credits 50% of a changed hull, with category conversion credits; retain this existing discount rather than adding a second scrap refund.
+    Request 227 correction (later user message): Covenant Reach had MORE than 140k initially; the earlier 140k figure is withdrawn. No scout was sent there. Investigate actual scout assignments and missing reconnaissance before estimating defenders.
+
+[x] 230. Covenant Reach recon correction: old population estimate is unreliable; scouts must refresh a colony under active bomber attack before spare fleet-contact reconnaissance. Release obsolete direct recon fuel locks while protecting actual donor reservations.
+
+[x] Astra performance audit completed on isolated 0.4.5 sources: median native GenerateTurn 60.909853s -> 45.248634s (25.71% reduction), 3+3 runs, matching normalized complete state, full native suite/build/isolated HTTP smoke passed. Race remains unavailable (TSAN allocation error 87). Performance patch integrated; full native suite and newer-gameplay copied-save regressions pass. Evidence: docs/ASTRA-PERFORMANCE-REPORT.txt and ../audit-results/astra-performance.patch.
+
+[x] 231. Capable patrols (including Gatling-equipped ships) opportunistically sweep reported hostile fields affecting colonies or active routes, at a safe minefield warp with return fuel; interception remains first.
+
+[x] 232. Battle reports and message links display destroyed tonnage alongside ship counts for both sides; use recorded battle mass, retain colors, and show unavailable for incomplete historical records.
+
+[x] 233. Add battle summaries at the bottom of the filtered battle report and individual replay, including own/enemy lost counts and tonnage, plus survivors for a single battle.
+
+[x] Astra storage/report performance follow-up (2026-11-02): isolated audit complete; alternating 3+3 median 43.638129s -> 40.084392s (8.14% reduction), save median 19.122820s -> 15.248835s. Complete normalized post-turn comparison: zero differences. Full native tests, native/WASM/frontend builds and isolated HTTP smoke pass; race runtime still fails allocation error 87. Integrated by primary chat; native database tests and copied-save generation pass. Evidence: docs/ASTRA-PERFORMANCE-REPORT.txt (summary at bottom), ../audit-results/astra-storage.patch and astra-storage-manifest.json. No personal save changes. Shutdown only after both chats finish and primary explicitly confirms its commits.
+
+[x] 234. Fix mineral logistics blocking ship rebuilds: full useful yard-buffer shipments, quantity-based source/yard reservations, stale pickup recovery and funded pickup/delivery legs; reproduce MF32 at Petra in copied 2483.
+[x] 235. Prioritize interception of hostile transports approaching owned colonies, then other local transports and scouts; retain strength assessment and fleet gathering against larger threats.
+
+[x] 236. Maintain at least 300 kT of each mineral at functioning shipyards, even without current ship orders, using real exportable surpluses and full funded shipments. Higher committed manufacturing demand takes precedence.
+    Request 234 clarification: carry all 210 kT even when the present shortfall is 62; future production will use the surplus.
+
+0.4.6 verification for entries 220-236: docs/AUDIT-0.4.6.txt, native CS/database/converter regressions, optional copied 2477/2483 regressions, 12 frontend tests and isolated compiled API/UI smoke. Request 227 uses the later population correction, not the withdrawn 140k estimate.

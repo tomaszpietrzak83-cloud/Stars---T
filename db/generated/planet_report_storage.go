@@ -8,9 +8,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sync"
 )
 
 var planetReportMagic = []byte{'T', 'S', 'J', 1, 0}
+
+// A writer owns sizeable compression tables. Reuse those tables, never the
+// returned report bytes, across independent report-encoding workers.
+var planetReportWriters = sync.Pool{New: func() any {
+	z, _ := gzip.NewWriterLevel(io.Discard, gzip.BestSpeed)
+	return z
+}}
 
 func valuePlanetReports(item any) (driver.Value, error) {
 	raw, err := json.Marshal(item)
@@ -22,7 +30,12 @@ func valuePlanetReports(item any) (driver.Value, error) {
 	}
 	var out bytes.Buffer
 	out.Write(planetReportMagic)
-	z, _ := gzip.NewWriterLevel(&out, gzip.BestSpeed)
+	z := planetReportWriters.Get().(*gzip.Writer)
+	z.Reset(&out)
+	defer func() {
+		z.Reset(io.Discard)
+		planetReportWriters.Put(z)
+	}()
 	if _, err = z.Write(raw); err != nil {
 		return nil, err
 	}
