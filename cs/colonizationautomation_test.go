@@ -20,6 +20,44 @@ func colonizerUniverse(t *testing.T) *testUniverse {
 	p.Automation.FleetRoles = map[int]string{u.Fleet("Colony Ship").Num: "colonizer:auto"}
 	return u
 }
+
+func TestClaimAdjusterColonizersRankByMaximumAvailableTerraforming(t *testing.T) {
+	for _, mode := range []string{"auto", "best"} {
+		t.Run(mode, func(t *testing.T) {
+			u := colonizerUniverse(t)
+			p, f := u.Player(1), u.Fleet("Colony Ship")
+			p.Race = *NewRace().WithPRT(CA).WithSpec(&u.Game.Rules)
+			p.WithTechLevels(TechLevel{10, 10, 10, 10, 10, 10})
+			u.Recompute()
+			p.Automation.ServeTerraformingWorlds = false
+			p.Automation.FleetRoles[f.Num] = "colonizer:" + mode
+			a, b := u.Planet("Near"), u.Planet("Far")
+			a.Position, b.Position = Vector{40, 0}, Vector{0, 40}
+			ability := NewTerraformer().GetTerraformAbility(p).Grav
+			require.Positive(t, ability)
+			// Reports may show a previous owner's environmental adjustments.
+			// CA occupation uses the base environment, not that current scan.
+			a.Hab, a.BaseHab = Hab{70, 50, 50}, Hab{50, 50, 50}
+			b.Hab, b.BaseHab = Hab{50, 50, 50}, Hab{50 + ability + 10, 50, 50}
+			require.Less(t, p.Race.GetPlanetHabitability(a.Hab), p.Race.GetPlanetHabitability(b.Hab))
+			qualityA, qualityB := colonyPlanetQuality(p, a), colonyPlanetQuality(p, b)
+			require.Equal(t, 100, qualityA)
+			require.Positive(t, qualityB)
+			require.Greater(t, qualityA, qualityB)
+			u.Run((*turnGenerator).planColonizationAutomation)
+			job := readColonizationJob(f)
+			require.Equal(t, a.Num, job.TargetNum)
+			require.Equal(t, qualityA, job.Quality)
+			require.Equal(t, Hab{70, 50, 50}, a.Hab, "planning must not alter the planet")
+			// Compare the forecast with the native occupation effect on this
+			// isolated test universe, without advancing a turn or a saved game.
+			a.PlayerNum, b.PlayerNum = p.Num, p.Num
+			u.Run((*turnGenerator).instaform)
+			require.Equal(t, qualityA, p.Race.GetPlanetHabitability(a.Hab))
+			require.Equal(t, qualityB, p.Race.GetPlanetHabitability(b.Hab))
+		})
+	}
+}
 func TestAutomaticColonizationNearestFarthestBestModes(t *testing.T) {
 	for _, test := range []struct{ mode, want string }{{"nearest", "Near"}, {"farthest", "Far"}, {"best", "Far"}} {
 		t.Run(test.mode, func(t *testing.T) {
