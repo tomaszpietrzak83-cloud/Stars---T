@@ -1,5 +1,5 @@
 TOMEK-STARS — REQUEST CHECKLIST
-Updated: 2026-11-01
+Updated: 2026-11-02
 
 Legend: [x] implemented and tested (evidence below); [~] partial / current audit; [ ] still missing.
 Historical questions, corrections and withdrawn alternatives are recorded separately below.
