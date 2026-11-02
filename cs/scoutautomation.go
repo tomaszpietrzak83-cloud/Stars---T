@@ -97,6 +97,12 @@ func (t *turnGenerator) planScoutAutomation() {
 			if !scoutHasRetirement(player, fleet) && t.planScoutRecon(player, fleet) {
 				continue
 			}
+			if t.planScannerExploration(player, fleet, claimed, quota) {
+				continue
+			}
+			if unknown == 0 && !scoutHasRetirement(player, fleet) && t.planColonyRecon(player, fleet, false) {
+				continue
+			}
 			if unknown == 0 && !scoutHasRetirement(player, fleet) && !fleet.InAutomaticSafety() && !scoutReconActive(player, fleet) && t.patrolFrontier(player, fleet) {
 				if mission := readScoutMission(fleet); mission != nil && atOwnFuelDock(player, fleet) {
 					mission.Complete = true

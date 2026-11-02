@@ -23,17 +23,14 @@
 
 	let { settings = $bindable() }: Props = $props();
 
-	// Local runes state for reactive bindings
-	let victoryConditions: VictoryConditions = $state(
-		settings.victoryConditions ?? create(VictoryConditionsSchema)
-	);
-
-	$effect(() => {
-		settings.victoryConditions = victoryConditions;
-	});
+	// Follow the parent's restored/reset object instead of writing an old local
+	// copy over preferences loaded after this component mounts.
+	let victoryConditions: VictoryConditions | undefined = $derived(settings.victoryConditions);
+	$effect(() => { if (!settings.victoryConditions) settings.victoryConditions = create(VictoryConditionsSchema); });
 </script>
 
 <div>
+	{#if victoryConditions}
 	<label class="cs-form-label justify-start">
 		<VictoryConditionCheckbox
 			bind:conditions={victoryConditions.conditions}
@@ -160,4 +157,5 @@
 			years must pass before a winner is declared.
 		</span>
 	</label>
+	{/if}
 </div>

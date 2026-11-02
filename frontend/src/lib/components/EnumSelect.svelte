@@ -15,6 +15,7 @@
 		name: string;
 		title?: string | undefined;
 		tooltip?: string | undefined;
+		description?: string;
 		enumType: T;
 		titleClass?: string;
 		typeTitle?: (type: TT) => string;
@@ -26,6 +27,7 @@
 		name,
 		value = $bindable(),
 		tooltip,
+		description,
 		enumType,
 		titleClass = 'cs-label-text w-32 text-right',
 		typeFilter = (_: TT) => true,
@@ -55,4 +57,5 @@
 			</div>
 		{/if}
 	</label>
+	{#if description}<p class="text-xs opacity-75 ml-2 mb-2">{description}</p>{/if}
 </div>

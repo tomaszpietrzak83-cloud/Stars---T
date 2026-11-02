@@ -94,7 +94,7 @@ func scoutReconActive(p *Player, f *Fleet) bool {
 
 // Only reported headings are used, never the enemy's private waypoints.
 func enemyApproachingColony(p *Player, enemy *Fleet) bool {
-	if enemy == nil || enemy.Delete || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) || enemy.ReportAge != 0 || enemy.Heading.LengthSquared() == 0 {
+	if enemy == nil || enemy.Delete || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) || enemy.ReportAge < 0 || enemy.ReportAge > 2 || enemy.Heading.LengthSquared() == 0 {
 		return false
 	}
 	heading := enemy.Heading.Normalized()
@@ -160,7 +160,7 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 	var best *expeditionRoute
 	score := math.Inf(1)
 	for _, enemy := range p.FleetIntels {
-		if !enemyApproachingColony(p, enemy) || !reconCombatFormation(p, enemy) || !unknownFleetEquipment(p, enemy) {
+		if !enemyApproachingColony(p, enemy) || !reconCombatFormation(p, enemy) || !unknownFleetEquipment(p, enemy) && enemy.ReportAge == 0 {
 			continue
 		}
 		claimed := false
@@ -175,7 +175,14 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 			continue
 		}
 		target := enemy.MapObject.ToTarget()
-		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, enemy.Position, target, automaticRoutePolicy{AllowThreat: true, MaxTurns: 8, MinWarp: automaticCruiseWarp(p, f)})
+		position := enemy.Position
+		// Equipment still requires contact unless this race can discover designs
+		// on a remote scan. A scanner alone does not grant hidden components.
+		if p.Race.Spec.DiscoverDesignOnScan || !unknownFleetEquipment(p, enemy) {
+			position = scoutFleetReconPoint(p, f, enemy)
+			target = MapObjectTarget{}
+		}
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, position, target, automaticRoutePolicy{AllowThreat: true, MaxTurns: 8, MinWarp: automaticCruiseWarp(p, f)})
 		if route == nil || route.WaitForFuel {
 			continue
 		}
@@ -195,7 +202,7 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 	raw, _ := json.Marshal(job)
 	f.SetTag(scoutReconTag, string(raw))
 	applyExpeditionRoute(p, f, best)
-	if len(f.Waypoints) > 1 {
+	if !p.Race.Spec.DiscoverDesignOnScan && unknownFleetEquipment(p, chosen) && len(f.Waypoints) > 1 {
 		f.Waypoints[len(f.Waypoints)-1].MapObjectTarget = chosen.ToTarget()
 	}
 	f.SetTag(scoutTag, job.Status)

@@ -14,6 +14,7 @@
 	};
 
 	let { player = $bindable() }: Props = $props();
+	let availableRaces = $derived(player.race && !hostRaces.some(race => race.id === player.race?.id) ? [...hostRaces, player.race] : hostRaces);
 	$effect(() => { if (!player.race && hostRaces.length) player.race = hostRaces[0]; });
 
 	onMount(async () => {
@@ -26,7 +27,7 @@
 	});
 
 	function raceChanged(id: bigint) {
-		const newRace = hostRaces.find((r) => r.id === id);
+		const newRace = availableRaces.find((r) => r.id === id);
 		if (newRace) {
 			player.race = newRace;
 		}
@@ -35,7 +36,7 @@
 
 {#if hostRaces}
 	<Select
-		values={hostRaces.map((r) => {
+		values={availableRaces.map((r) => {
 			return { value: r.id, title: r.pluralName };
 		})}
 		name="Host"

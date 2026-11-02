@@ -48,7 +48,7 @@
 </script>
 
 {#if starbase?.spec}
-	<CommandTile title={starbase.baseName}>
+	<CommandTile title={starbase.baseName} sectionKey="planet-starbase">
 		<div
 			role="button"
 			tabindex={0}

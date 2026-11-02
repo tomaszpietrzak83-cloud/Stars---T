@@ -40,7 +40,7 @@
 	}
 </script>
 
-<CommandTile title={hideTitle ? '' : fleet.mapObject.name}>
+<CommandTile title={hideTitle ? '' : fleet.mapObject.name} sectionKey="fleet-overview">
 	{#snippet actions()}
 		{#if !hideTitle && (note || !$readOnly)}
 			<button

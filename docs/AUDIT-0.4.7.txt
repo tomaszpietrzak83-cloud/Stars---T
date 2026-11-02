@@ -1,0 +1,62 @@
+0.4.7 local implementation and verification (2026-11-02)
+
+Requests 240-244
+- Visible short explanations accompany new-game map settings and flags.
+- Edge placement minimizes distance to the 5% inset perimeter, normalized
+  independently for rectangular width/height. Both initial selection and the
+  final assignment of the human capital use the same metric. Center is retained.
+- Penetrating scouts greedily choose shared scan stops, weighing covered worlds
+  against travel years/fuel. Candidate areas include nearest approaches,
+  midpoints and intersecting scanner circles. This is a bounded heuristic,
+  not a claim of a globally optimal itinerary. Counts refer to stop positions;
+  scanners do not continuously discover planets along movement segments.
+  Complete displayed expeditions include a fuel-funded return. Targets are
+  reserved between scouts; ordinary scanners retain orbital exploration.
+- Marked enemy colonies receive refresh scans first. Other stale enemy colonies
+  can be refreshed after discovery work is exhausted. Nearby colonies share a
+  scan position when useful. Incoming fleets use public reported motion and
+  cloak-adjusted normal/penetrating ranges, with shared areas for nearby reports.
+  Unknown equipment still requires contact unless racial discovery-on-scan
+  permits remote identification. No hidden orders or physical enemy data are
+  used by route selection. Actual native scanning grants observations.
+- Command sections collapse independently, persist in browser localStorage,
+  and retain headers/actions. Dynamic overview/base/location titles use stable
+  section keys. Initially expanded; unavailable storage does not break controls.
+- VictoryConditions now follows the parent settings object. The former local
+  initial copy overwrote restored preferences and failed to follow resets.
+  Saved host/AI race snapshots remain selectable even if absent from the current
+  race library. Preferences remain local to the browser and website origin.
+
+Verification
+- Full native cs suite passes; additional regression tests cover four map edges
+  on square and rectangular maps, multi-world scan coverage without orbit,
+  native planet scanning at the planned point, real return fuel, ordinary-scan
+  fallback, fleet motion/orbit visibility, shared incoming-fleet coverage, and
+  clustered priority-colony refresh without prematurely granting intel.
+- Native server, db and db/generated suites pass.
+- Eight browser component tests pass in installed Chrome, including reopen,
+  submit/reset of victory thresholds and criteria, map options, saved race
+  snapshots, collapse persistence and independent section preferences.
+- Svelte checks: zero errors/warnings. Native, WASM and production UI builds pass.
+- Compiled UI smoke on ports 18773/18087 uses only tmp/smoke-v047/data/smoke.db
+  and the previously working native server. It verifies real browser reload,
+  hints, victory values/checkbox, game creation, WASM-loaded map and planet panel
+  collapse/expand. No turn generated; no personal database opened or changed.
+
+Completed native verification and installation
+The first standalone launch was blocked by Windows Smart App Control. The user
+subsequently reported resolving that setting. The agent did not change Windows
+security settings. The new native 0.4.7 executable then started successfully on
+isolated port 18087. The complete production UI smoke was repeated against that
+new executable on port 18773, using the isolated smoke database. It passed:
+settings and victory criteria survived reload, creating a fresh game succeeded,
+the WASM-backed map loaded, and the planet section collapsed/expanded. No turn
+was generated and no personal game was opened during testing.
+
+The verified executable replaced windows/stars-local.exe; the previous binary
+was retained locally under tmp/. Both native and WASM hashes were updated in
+windows/SHA256SUMS.txt. Only processes belonging to this working copy were
+restarted. The launcher selected the immutable rebuilt UI and the 0.4.7 server;
+the local-ready endpoint returned HTTP 200 and the server reported database
+schema 30 already current, with no migration required. Personal saves were not
+replaced or advanced.

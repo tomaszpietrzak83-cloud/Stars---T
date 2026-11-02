@@ -1,8 +1,8 @@
 <!-- Local edition: upstream attribution and licence are preserved. -->
+
 # tomek-stars
 
 A local edition built on **craig-stars**, created by **Craig (sirgwain)**: https://github.com/sirgwain/craig-stars.
-
 
 ## Play on another Windows computer
 
@@ -11,6 +11,12 @@ Download this repository with **Code → Download ZIP**, extract it completely, 
 Open the game at `http://localhost:5173`. The launcher signs into the local game automatically and restarts only processes belonging to this copy. A first start creates a fresh local database. Personal games are stored in `data/data.db`; **this folder is intentionally excluded from Git**. To move an existing game, stop both copies and separately copy the entire `data` folder. Keep a backup before replacing it. Updates replace program files, not `data`.
 
 The source is Go and Svelte/TypeScript. Developers need the Go version from `go.mod`, Node.js 22.17 or newer, and a CGO-capable C compiler. Run `npm ci` in `frontend`; build `wasm/main.go` using `GOOS=js GOARCH=wasm CGO_ENABLED=0` into `frontend/src/lib/wasm/cs.wasm`; run `npm run build` in `frontend`; build the native server with CGO into `windows/stars-local.exe`. The committed edition can be played without rebuilding.
+
+## Version 0.4.7
+
+New-game options include brief explanations. Edge starts prefer a planet around 5% of the map width or height from the nearest border. Saved setup restores victory thresholds, selected criteria and race choices; Reset to defaults updates the whole form.
+
+Planet and fleet side-panel sections can be collapsed independently and remember their state. Scouts with penetrating scanners plan shared observation stops to cover several planets without entering orbit, while reserving fuel for the return. Enemy-colony refresh and incoming-fleet reconnaissance use actual scanner range and reported motion; equipment discovery still follows the race's normal rules. Verification: [docs/AUDIT-0.4.7.txt](docs/AUDIT-0.4.7.txt).
 
 ## Version 0.4.5
 

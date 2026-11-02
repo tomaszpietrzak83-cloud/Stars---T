@@ -13,7 +13,7 @@
 		planet.mapObject.num ? `planet-${(planet.mapObject.num - 1) % 26}` : '';
 </script>
 
-<CommandTile title={hideTitle ? '' : planet.mapObject.name}>
+<CommandTile title={hideTitle ? '' : planet.mapObject.name} sectionKey="planet-overview">
 	<div class="grid grid-cols-2">
 		<div class="avatar">
 			<div class="border-2 border-neutral mr-2 p-2 bg-black">

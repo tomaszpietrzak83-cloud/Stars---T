@@ -34,7 +34,7 @@
 </script>
 
 {#if fleet}
-	<CommandTile title={planet ? `Orbiting ${planet.mapObject?.name}` : 'In Deep Space'}>
+	<CommandTile title={planet ? `Orbiting ${planet.mapObject?.name}` : 'In Deep Space'} sectionKey="fleet-location">
 		<div class="flex justify-between my-1">
 			<button
 				onclick={gotoTarget}

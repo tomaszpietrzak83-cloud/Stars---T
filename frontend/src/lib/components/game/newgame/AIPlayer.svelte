@@ -12,10 +12,11 @@
 	};
 
 	let { player = $bindable() }: Props = $props();
+	let availableRaces = $derived(player.race && !races.some(race => race.id === player.race?.id) ? [...races, player.race] : races);
 </script>
 
 <div class="w-3/4 ml-auto grow">
-	<label class="flex gap-2 my-2">Race <select class="select select-sm grow" aria-label="AI race" value={player.race?.id?.toString()??''} onchange={(event)=>{player.race=races.find(race=>race.id.toString()===event.currentTarget.value);}}><option value="">Random race</option>{#each races as race (race.id)}<option value={race.id.toString()}>{race.pluralName}</option>{/each}</select></label>
+	<label class="flex gap-2 my-2">Race <select class="select select-sm grow" aria-label="AI race" value={player.race?.id?.toString()??''} onchange={(event)=>{player.race=availableRaces.find(race=>race.id.toString()===event.currentTarget.value);}}><option value="">Random race</option>{#each availableRaces as race (race.id)}<option value={race.id.toString()}>{race.pluralName}</option>{/each}</select></label>
  <label class="flex gap-2 my-2">Difficulty <select class="select select-sm grow" aria-label="Difficulty" bind:value={player.aiDifficulty}>{#each difficultyLevels as level (level.value)}<option value={level.value}>{level.label}</option>{/each}</select></label>
 </div>
 

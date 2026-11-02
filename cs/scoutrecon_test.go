@@ -10,6 +10,7 @@ import (
 func TestScoutPrioritizesOnlyUnknownIncomingEnemyFleetAndReportsBeforeBattle(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignLongRangeScout, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Scout", Design: DesignLongRangeScout.Name, At: "Home"}}}, {Designs: Designs(DesignDestroyerDelta), Fleets: []ScenarioFleet{{Name: "Raider", Design: DesignDestroyerDelta.Name, Position: Vector{20, 0}}}}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}, {Name: "Unexplored", Position: Vector{50, 0}}}})
 	p, f, enemy := u.Player(1), u.Fleet("Scout"), u.Fleet("Raider")
+	p.Race.Spec.DiscoverDesignOnScan = false // Equipment for this race requires contact.
 	p.Automation.FleetRoles = map[int]string{f.Num: "scout"}
 	p.PlanetIntels = []*Planet{u.Planet("Home"), u.Planet("Unexplored")}
 	intel := *enemy

@@ -6,12 +6,14 @@
 		checked: boolean | undefined;
 		title?: string | undefined;
 		titleClass?: string;
+		description?: string;
 	};
 
 	let {
 		name,
 		checked = $bindable(),
 		titleClass = 'cs-label-text w-32 text-right',
+		description,
 		...rest
 	}: Props = $props();
 
@@ -25,4 +27,5 @@
 			<input class="checkbox ml-2" type="checkbox" {name} bind:checked />
 		</label>
 	</div>
+	{#if description}<p class="text-xs opacity-75 ml-2 mb-2">{description}</p>{/if}
 </div>

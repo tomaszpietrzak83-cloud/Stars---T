@@ -530,3 +530,10 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
     Request 234 clarification: carry all 210 kT even when the present shortfall is 62; future production will use the surplus.
 
 0.4.6 verification for entries 220-236: docs/AUDIT-0.4.6.txt, native CS/database/converter regressions, optional copied 2477/2483 regressions, 12 frontend tests and isolated compiled API/UI smoke. Request 227 uses the later population correction, not the withdrawn 140k estimate.
+
+[x] 240. Add concise explanations beside new-game settings, including Galaxy Clumping.
+[x] 241. Edge means a capital near a 5% inset from the closest map border, not the outermost star; respect rectangular map proportions and preserve normal opponent placement.
+[x] 242. Penetrating-scan scouts choose shared observation stops covering many unknown planets without entering orbit, retaining real scan rules, fuel-funded return and distinct scout assignments. Refresh enemy colonies and incoming fleet reports with actual scanner range; equipment still requires contact unless the race discovers designs remotely.
+[x] 243. Allow planet/fleet side-panel sections (including illustration, starbase and fleets in orbit) to collapse and remember each section's state.
+[x] 244. Preserve all new-game preferences, including victory checkboxes and numeric thresholds, on reopen and submission; Reset to defaults must reset the visible victory form too.
+    Verification: docs/AUDIT-0.4.7.txt. Full native cs/server/db suites and eight browser regressions pass. New-game settings, map/WASM and collapsible planet panel passed an isolated compiled-UI smoke against the newly built 0.4.7 server after the user resolved the Windows execution block. Native/WASM/UI builds and updated hashes installed; launcher restarted only this copy and local-ready returned HTTP 200. No personal save replaced or turn generated.

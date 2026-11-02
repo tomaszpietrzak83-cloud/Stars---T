@@ -1,5 +1,5 @@
-import { create } from '@bufbuild/protobuf';
-import { RaceSchema,Size,Density,AiDifficulty } from '#lib/types/cs-proto.js';
+import { create, fromJsonString, toJsonString } from '@bufbuild/protobuf';
+import { RaceSchema,Size,Density,AiDifficulty,GameSettingsSchema,NewGamePlayerType } from '#lib/types/cs-proto.js';
 import { expect,it,vi,beforeEach } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
@@ -60,4 +60,42 @@ it('supports exact AI counts, persists settings and resets to defaults',async()=
  await expect.element(page.getByRole('slider',{name:'AI opponents'})).toHaveValue('144');
  await page.getByRole('slider',{name:'AI opponents'}).fill('0');
  await expect.element(page.getByRole('slider',{name:'AI opponents'})).toHaveValue('0');
+});
+
+it('restores victory criteria and values with map options, submits them and resets them together', async () => {
+	const first = render(NewGame);
+	const ownPlanets = page.getByRole('spinbutton').nth(0);
+	const years = page.getByRole('spinbutton').last();
+	await ownPlanets.fill('80');
+	await years.fill('120');
+	await page.getByRole('checkbox').last().click();
+	await page.getByRole('combobox', { name: 'Density', exact: true }).selectOptions(String(Density.PACKED));
+	await expect.poll(() => fromJsonString(GameSettingsSchema, localStorage.getItem('tomek-stars.new-game.v1')!).victoryConditions?.yearsPassed).toBe(120);
+	const saved = fromJsonString(GameSettingsSchema, localStorage.getItem('tomek-stars.new-game.v1')!);
+	await first.unmount();
+	render(NewGame);
+	await expect.element(page.getByRole('spinbutton').nth(0)).toHaveValue(80);
+	await expect.element(page.getByRole('spinbutton').last()).toHaveValue(120);
+	await expect.element(page.getByRole('checkbox').last()).toBeChecked();
+	await expect.element(page.getByRole('combobox', { name: 'Density', exact: true })).toHaveValue(String(Density.PACKED));
+	await page.getByRole('button', { name: 'Create Game', exact: true }).click();
+	const submitted = vi.mocked(gameClient.createGame).mock.calls[0][0].settings!;
+	expect(submitted.victoryConditions).toEqual(saved.victoryConditions);
+	await page.getByRole('button', { name: 'Reset to defaults' }).click();
+	await expect.element(page.getByRole('spinbutton').nth(0)).toHaveValue(60);
+	await expect.element(page.getByRole('spinbutton').last()).toHaveValue(50);
+	await expect.element(page.getByRole('checkbox').last()).not.toBeChecked();
+});
+
+it('displays restored host and AI races even when they are absent from the current library', async () => {
+	const race = create(RaceSchema, { id: 42n, name: 'Saved race', pluralName: 'Saved people' });
+	const saved = create(GameSettingsSchema, { players: [
+		{ type: NewGamePlayerType.HOST, race },
+		{ type: NewGamePlayerType.AI, race, aiDifficulty: AiDifficulty.HARD }
+	] });
+	localStorage.setItem('tomek-stars.new-game.v1', toJsonString(GameSettingsSchema, saved));
+	render(NewGame);
+	await expect.element(page.getByRole('combobox', { name: 'Host', exact: true })).toHaveValue('42');
+	await expect.element(page.getByRole('combobox', { name: 'AI race', exact: true })).toHaveValue('42');
+	await expect.element(page.getByRole('combobox', { name: 'Difficulty', exact: true })).toHaveValue(String(AiDifficulty.HARD));
 });

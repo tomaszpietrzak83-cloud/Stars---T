@@ -425,6 +425,9 @@ func (ug *universeGenerator) getPlayerPlanets() ([]int, error) {
 
 	width := int(ug.area.X)
 	height := int(ug.area.Y)
+	insetScore := func(x, y int) int {
+		return Abs(min(x*height, (width-x)*height, y*width, (height-y)*width) - width*height/20)
+	}
 	if width <= 0 || height <= 0 {
 		return nil, fmt.Errorf("getPlayerPlanets: invalid area (%v x %v)", width, height)
 	}
@@ -537,7 +540,8 @@ retryFullPlacement:
 		if ug.HostStartPosition == "edge" || ug.HostStartPosition == "center" {
 			score := func(p pxy) int {
 				if ug.HostStartPosition == "edge" {
-					return min(p.x, width-p.x, p.y, height-p.y)
+					// Prefer the 5% inset perimeter, rather than the outermost star.
+					return insetScore(p.x, p.y)
 				}
 				return distSquared(p.x, p.y, width/2, height/2)
 			}
@@ -667,8 +671,8 @@ retryFullPlacement:
 			if ug.HostStartPosition == "edge" {
 				pos := ug.Universe.Planets[out[i]].Position
 				old := ug.Universe.Planets[out[chosen]].Position
-				distance = float64(min(pos.X, ug.area.X-pos.X, pos.Y, ug.area.Y-pos.Y))
-				current = float64(min(old.X, ug.area.X-old.X, old.Y, ug.area.Y-old.Y))
+				distance = float64(insetScore(pos.X, pos.Y))
+				current = float64(insetScore(old.X, old.Y))
 			}
 			if distance < current {
 				chosen = i

@@ -20,6 +20,7 @@ func TestTwentyFourScoutsReserveDistinctOutwardTargets(t *testing.T) {
 	p.Automation.FleetRoles = map[int]string{}
 	for i := range 24 {
 		fleet := testLongRangeScout(p)
+		fleet.Spec.ScanRangePen = NoScanner // Orbit-only scouts still reserve distinct worlds.
 		fleet.Num = i + 1
 		u.Game.Fleets = append(u.Game.Fleets, fleet)
 		p.Automation.FleetRoles[fleet.Num] = "scout"
