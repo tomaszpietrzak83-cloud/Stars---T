@@ -248,3 +248,31 @@ func TestRebuildFinishesCurrentNavigationBeforeWithdrawing(t *testing.T) {
 	require.True(t, f.InDesignMaintenance())
 	require.Equal(t, u.Planet("Yard").Position, f.Waypoints[len(f.Waypoints)-1].Position)
 }
+
+func TestRebuildCompletesTransportDeliveryAndReturnFirst(t *testing.T) {
+	scenario := maintenanceScenario()
+	scenario.Players[0].Designs = Designs(DesignTeamster, DesignTeamster, DesignSpaceStation)
+	scenario.Players[0].Designs[0].Name = "Old Transport"
+	scenario.Players[0].Designs[1].Name = "New Transport"
+	scenario.Players[0].Fleets = []ScenarioFleet{{Name: "Fleet", Design: "Old Transport", At: "Yard", Cargo: Cargo{Colonists: 10}}}
+	scenario.Planets = append(scenario.Planets, ScenarioPlanet{Name: "Destination", Owner: 1, Position: Vector{20, 0}, Cargo: Cargo{Colonists: 1}})
+	u := newTestUniverse(t, scenario)
+	requestRebuild(u)
+	p, f := u.Player(1), u.Fleet("Fleet")
+	p.Automation.FleetRoles = map[int]string{f.Num: "freighter"}
+	home, dest := u.Planet("Yard"), u.Planet("Destination")
+	f.Waypoints = append(f.Waypoints, Waypoint{Position: dest.Position, MapObjectTarget: dest.ToTarget(), WarpSpeed: 7}, Waypoint{Position: home.Position, MapObjectTarget: home.ToTarget(), WarpSpeed: 7})
+	saveLogisticsWork(f, &logisticsJob{Kind: "settle", TargetNum: dest.Num, DeliveryNum: dest.Num, Position: dest.Position, Passengers: 10})
+	require.NoError(t, u.turn.generateTurn())
+	require.False(t, f.Delete, "deliver the original passengers before scrapping")
+	require.False(t, f.InDesignMaintenance())
+	require.Equal(t, dest.Position, f.Position)
+	require.GreaterOrEqual(t, dest.Cargo.Colonists, 11)
+	require.Zero(t, f.Cargo.Colonists)
+	require.NoError(t, u.turn.generateTurn())
+	require.False(t, f.Delete, "finish the funded return before rebuilding")
+	require.Equal(t, home.Position, f.Position)
+	require.NoError(t, u.turn.generateTurn())
+	require.True(t, f.Delete, "the completed transport may now be scrapped")
+	require.Equal(t, 1, replacementCount(u))
+}

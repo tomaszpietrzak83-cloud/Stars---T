@@ -304,7 +304,9 @@ func (t *turnGenerator) maintainShipsAtPlanet(player *Player, planet *Planet, av
 			scrap.Spec.Cost = MultiplyCost(token.design.Spec.Cost, token.Quantity)
 			recovered := scrap.getScrapAmount(&t.game.Rules, player, planet, false)
 			*available = available.Add(recovered)
-			messager.fleetScrapped(player, &scrap, recovered, planet)
+			report := t.maintenanceReport(player)
+			report.scrapped[token.DesignNum] += token.Quantity
+			report.recovered = report.recovered.Add(recovered)
 			if target != nil {
 				item := NewProductionQueueItemShip(token.Quantity, target).WithTag(replacementOrderTag, encodeMaintenance(work))
 				item.design = target

@@ -1,0 +1,57 @@
+0.4.8 verification, 2026-11-02
+
+Requests 246-249
+
+Transport rebuild investigation
+A consistent SQLite online backup was made from the live database with the
+source opened read-only. Only the copied database and its JSON export were
+used by the optional regression. The captured game was in GeneratingTurn state
+at year 2434; the test does not advance its year or save simulated results.
+The saved archives show transport #20 returning during 2430-2433, arriving at
+the shipyard in 2434, becoming the successor design in 2435, and carrying a new
+delivery in 2436. This case did not demonstrate a stuck rebuild or inadequate
+production capacity. No change to the delivery-before-maintenance rule was
+needed. The existing valid assignment is allowed to finish, including its
+funded return, before a rebuild starts on a subsequent turn.
+
+TestRebuildWaitingTransportsOnCopiedSnapshot verifies seven arrived empty
+freighters enter scrap stage at their existing yard, are physically scrapped,
+and have replacement construction recorded by ordinary production. It also
+checks one consolidated maintenance message. The snapshot stays local under
+audit-results/rebuild-wait/ and is not included in the repository.
+TestRebuildCompletesTransportDeliveryAndReturnFirst generates three turns only
+inside an isolated synthetic universe: original passengers are delivered,
+the transport returns, and only then the old ship is scrapped and replaced.
+Existing navigation, yard distribution and multi-year production checks remain.
+
+Resource header
+Beside Submit Turn, the header sums gross annual resources from owned planets.
+Research is blue and links to the research screen. Its total uses the same
+formula as native ComputePlayerResearchSpec: reserved research plus estimated
+production leftovers. These are annual forecasts, not historical spending.
+Foreign planet reports are excluded. Counts update with the universe data.
+
+Maintenance messages
+One summary per player and generated turn replaces automatic maintenance's
+individual scrap/build/progress/completion messages. It includes actual old
+ships scrapped by design, recovered minerals/resources, actual successor ships
+built by design and completed fleet rebuilds. Partial construction is not
+reported as finished, and next-year reports do not repeat previous events.
+The original 70% regrouping threshold is retained; groups completed in the same
+turn do not also appear in the partial-progress count. Manual scrapping and
+ordinary production messages retain their existing behavior.
+
+Verification
+- Full native cs suite passes, including the copied-snapshot regression.
+- Ten browser tests pass: resource totals/color, saved new-game preferences
+  and victory criteria, and collapsible command sections.
+- Svelte diagnostics: zero errors/warnings.
+- Native server/db/db-generated suites pass.
+- Native/WASM/production UI builds pass. Production UI smoke on isolated ports
+  18088/18774 verified the WASM map, exact header totals against native planet
+  specs, blue research text and no mobile horizontal overflow at 390px.
+  No turns generated during this smoke and no personal save modified.
+- Installed the verified native executable, rebuilt UI/WASM and matching hashes.
+  Checked all games were waiting for orders before restarting only this copy.
+  Startup reports version 0.4.8, schema 30 current/no migration, local-ready 200.
+  The previous executable is retained under tmp/; saves were not replaced.

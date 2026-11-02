@@ -9,8 +9,9 @@
 	import { ArrowUpTray, Bars3 } from '@steeze-ui/heroicons';
 	import { Icon } from '@steeze-ui/svelte-icon';
 	import { onMount } from 'svelte';
+	import EmpireResources from '#lib/components/game/EmpireResources.svelte';
 
-	const { game, player, readOnly, choosingPlayer } = getGameContext();
+	const { game, player, universe, readOnly, choosingPlayer } = getGameContext();
 
 	type Props = {
 		onSubmitTurn?: () => void;
@@ -69,6 +70,7 @@
 			</div>
 		{/if}
 		{#if page.url.pathname === `/games/${$game.id}` && canEdit && $game.state === GameState.WAITING_FOR_PLAYERS}
+			<EmpireResources planets={$universe.planets} playerNum={$player.num} researchHref={`/games/${$game.id}/research`} />
 			<button type="button" onclick={onSubmitTurn} class="btn btn-primary" title="submit turn">
 				<span class="hidden md:inline-block mr-1">Submit Turn</span>
 				<Icon src={ArrowUpTray} size="16" />

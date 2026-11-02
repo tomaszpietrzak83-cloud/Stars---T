@@ -1,7 +1,6 @@
 package cs
 
 import (
-	"fmt"
 	"math"
 	"slices"
 )
@@ -157,7 +156,7 @@ func (t *turnGenerator) rallyReplacementFleet(player *Player, fleet *Fleet, work
 	}
 	progressKey := "rebuild-70:" + work.Group
 	if work.Expected > 0 && readyCount*100 >= work.Expected*70 && rally.GetTag(progressKey) == "" {
-		player.Messages = append(player.Messages, PlayerMessage{Type: PlayerMessageInfo, Text: fmt.Sprintf("%s: at least 70%% of the fleet has regrouped after rebuilding.", work.BaseName)})
+		t.maintenanceReport(player).progress[work.Group] = true
 		rally.SetTag(progressKey, "sent")
 	}
 	if t.pendingReplacements(player, work) {
@@ -201,11 +200,7 @@ func (t *turnGenerator) rallyReplacementFleet(player *Player, fleet *Fleet, work
 	}
 	delete(leader.Tags, replacementGroupTag)
 	delete(leader.Tags, maintenanceTag)
-	text := fmt.Sprintf("%s: rebuilding and regrouping complete.", work.BaseName)
-	if readyCount >= work.Expected {
-		text = fmt.Sprintf("%s: 100%% of the rebuilt fleet has regrouped.", work.BaseName)
-	}
-	player.Messages = append(player.Messages, PlayerMessage{Type: PlayerMessageInfo, Text: text})
+	t.maintenanceReport(player).completed[work.Group] = true
 	delete(rally.Tags, progressKey)
 	if work.OriginalRole != "" {
 		if player.Automation.FleetRoles == nil {

@@ -540,3 +540,12 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 
 [x] 245. Claim Adjuster colonizers evaluate the planet after maximum terraforming available at the player's current technology.
     Existing implementation confirmed: colonyPlanetQuality -> prospectivePlanetQuality uses base environment plus GetTerraformAmount for CA, matching native instaform. TestClaimAdjusterColonizersRankByMaximumAvailableTerraforming verifies both auto/best choose the higher post-terraform world despite its worse current report, with ServeTerraformingWorlds disabled, and compares both predictions against native instaform without advancing a turn. Colonization, red-to-green and opt-in regressions pass. No gameplay change or rebuild required; personal save untouched.
+
+[x] 246. Investigate transports apparently waiting at a planet instead of scrapping and rebuilding.
+    Consistent copied 2434 snapshot and saved archives confirm #20 arrived in 2434, rebuilt in 2435 and resumed delivery in 2436. TestRebuildWaitingTransportsOnCopiedSnapshot verifies seven arrived freighters physically scrap and build successors at the existing yard. No gameplay fix was needed for these cases; no personal turn advanced.
+[x] 247. Beside Submit Turn, display total annual empire resources and the amount going to research, with research blue.
+    Owned-planet totals follow native ComputePlayerResearchSpec, including estimated production leftovers for research; linked to Research. Browser tests exclude foreign reports, verify amounts and blue styling, and cover an empty empire.
+[x] 248. Replace individual automatic scrap/upgrade notifications with one summary of all upgrades that turn.
+    Physical scrap/replacement-build/progress/completion events aggregate per player and year; counts by design and recovered minerals/resources retained. Tests cover multiple fleets, multi-year construction, no repeated previous-year counts and unchanged manual-scrap messages.
+[x] 249. Rebuild must follow completion of the current task; do not interrupt deliveries.
+    Existing rule retained. TestRebuildCompletesTransportDeliveryAndReturnFirst verifies real delivery, actual return, and only then scrapping/replacement over three turns in an isolated synthetic universe. See docs/AUDIT-0.4.8.txt.

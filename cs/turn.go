@@ -14,13 +14,14 @@ import (
 
 // Generate a turn after all players submit their orders.
 type turnGenerator struct {
-	statisticsBefore map[int]StatisticsCounters
-	ordersOnly       bool
-	ordersPlayerNum  int
-	game             *FullGame
-	log              *slog.Logger
-	scorePopulations map[*Planet]planetScorePopulation
-	colonistDrops    invader // colonists dropped on planets this phase, resolved together
+	maintenanceReports map[int]*maintenanceReport
+	statisticsBefore   map[int]StatisticsCounters
+	ordersOnly         bool
+	ordersPlayerNum    int
+	game               *FullGame
+	log                *slog.Logger
+	scorePopulations   map[*Planet]planetScorePopulation
+	colonistDrops      invader // colonists dropped on planets this phase, resolved together
 }
 
 type planetScorePopulation struct {
@@ -46,6 +47,7 @@ func newTurnGenerator(game *FullGame) turnGenerator {
 // TODO: add more error handling. A failed turn generation is easier to fix than
 // a corrupt game
 func (t *turnGenerator) generateTurn() error {
+	t.maintenanceReports = nil
 	t.log.Debug("begin generating turn")
 	t.game.Year++
 	t.beginStatistics()
@@ -223,6 +225,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.checkDeath()
 	t.pruneAutomationAssignments()
 	t.finishStatistics()
+	t.reportShipMaintenance()
 
 	// merges and splits during the turn record by hand transfers. Next turn's by hand transfers start fresh
 	for _, player := range t.game.Players {
@@ -2018,11 +2021,11 @@ func (t *turnGenerator) planetProduction() error {
 				}
 			}
 			if work := decodeMaintenance(token.tags[replacementOrderTag]); work != nil {
-				fleet, err := t.addReplacementShips(player, planet, token.ShipToken, work)
+				_, err := t.addReplacementShips(player, planet, token.ShipToken, work)
 				if err != nil {
 					return err
 				}
-				messager.fleetBuilt(player, planet, fleet, token.Quantity, nil, "Replacement after scrapping")
+				t.maintenanceReport(player).built[token.DesignNum] += token.Quantity
 				continue
 			}
 
