@@ -446,3 +446,15 @@ it('retains the commanded fleet and zoom target after loading the next turn',asy
  expect(get(context.selectedMapObject)?.mapObject?.num).toBe(1);
  expect(get(context.zoomTarget)).toBe(target);
 });
+
+it('keeps the chosen map zoom when a report selects a new object', async()=>{
+ const {context,u}=await setup();
+ const {rememberScannerViewport,recalledScannerViewport}=await import('./scannerViewport.js');
+ const key=`1:1`;
+ rememberScannerViewport(key,{x:10,y:20,scale:18});
+ context.zoomToMapObject(u.fleets[0]);
+ expect(recalledScannerViewport(key)).toEqual({x:u.fleets[0].mapObject!.position!.x,y:u.fleets[0].mapObject!.position!.y,scale:18});
+ context.zoomToMapObject(u.fleets[1]);
+ expect(recalledScannerViewport(key)?.scale).toBe(18);
+ expect(get(context.zoomTarget)).toBe(u.fleets[1]);
+});

@@ -11,7 +11,8 @@ func TestSalvage_decay(t *testing.T) {
 		want  Cargo
 	}{
 		{"no op, no cargo", Cargo{}, Cargo{}},
-		{"decay each 10%", Cargo{Ironium: 100, Boranium: 100, Germanium: 100}, Cargo{Ironium: 90, Boranium: 90, Germanium: 90}},
+		{"decay each 8%", Cargo{Ironium: 100, Boranium: 100, Germanium: 100}, Cargo{Ironium: 92, Boranium: 92, Germanium: 92}},
+		{"minimum eight per mineral", Cargo{Ironium: 20, Boranium: 10, Germanium: 9}, Cargo{Ironium: 12, Boranium: 2, Germanium: 1}},
 		{"decay to 0", Cargo{Ironium: 2, Boranium: 2, Germanium: 2}, Cargo{}},
 	}
 	for _, tt := range tests {

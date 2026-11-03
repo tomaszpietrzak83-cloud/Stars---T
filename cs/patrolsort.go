@@ -58,6 +58,9 @@ func patrolReportedTransport(p *Player, f *Fleet) bool {
 	return f.Spec.HullType == TechHullTypeFreighter || f.Spec.HullType == TechHullTypeColonizer || f.Spec.HullType == TechHullTypeMultiPurposeFreighter
 }
 func patrolTargetPriority(p *Player, f *Fleet, approaching bool) int {
+	if priorityFleet(p, f) {
+		return -1
+	}
 	if patrolReportedTransport(p, f) {
 		if approaching {
 			return 0

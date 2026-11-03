@@ -30,6 +30,9 @@ func patrolOpportunityScore(p *Player, f, enemy *Fleet) float64 {
 		inside = 0
 	}
 	score := (1 + distance) * (1 + min(300, inside)/100)
+	if priorityFleet(p, enemy) {
+		return score * 1e-9
+	}
 	if patrolReportedTransport(p, enemy) {
 		if enemyApproachingColony(p, enemy) {
 			return score * .001
@@ -50,7 +53,7 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 		return
 	}
 	current := patrolEnemy(p, job)
-	if current == nil || enemyApproachingColony(p, current) && patrolReportedBomber(p, current) && !nearbyLandingThreat(p, f) {
+	if current == nil {
 		return
 	}
 	var best *Fleet
@@ -66,11 +69,15 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 		if candidate == nil || candidate == current || candidate.Delete || candidate.Starbase || candidate.ReportAge != 0 || candidate.PlayerNum == p.Num || p.IsFriend(candidate.PlayerNum) {
 			continue
 		}
-		if !gateReach && f.Position.DistanceTo(patrolInterceptPosition(candidate)) > localReach {
+		priority := priorityFleet(p, candidate)
+		if !priority && enemyApproachingColony(p, current) && patrolReportedBomber(p, current) && !nearbyLandingThreat(p, f) {
+			continue
+		}
+		if !priority && !gateReach && f.Position.DistanceTo(patrolInterceptPosition(candidate)) > localReach {
 			continue
 		}
 		score := patrolOpportunityScore(p, f, candidate)
-		if declinedPatrolTarget(f, candidate, t.game.Year) || score >= bestScore*0.9 {
+		if !priority && declinedPatrolTarget(f, candidate, t.game.Year) || score >= bestScore*0.9 {
 			continue
 		}
 		scores[candidate] = score
@@ -106,7 +113,11 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 		if assigned {
 			continue
 		}
-		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, patrolInterceptPosition(candidate), MapObjectTarget{}, automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: 2, MinWarp: automaticCruiseWarp(p, f)})
+		maxTurns := 2
+		if priorityFleet(p, candidate) {
+			maxTurns = 20
+		}
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, patrolInterceptPosition(candidate), MapObjectTarget{}, automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: maxTurns, MinWarp: automaticCruiseWarp(p, f)})
 		if route == nil || route.WaitForFuel {
 			continue
 		}
@@ -129,7 +140,7 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 			memberJob.RecruitPower = 0
 			memberJob.RequiredShips = min(availableShips, patrolDesiredShips(p, best))
 			memberJob.GatheringSince = t.game.Year
-			memberJob.Status = "Switching from distant pursuit to nearby interception: " + best.Name
+			memberJob.Status = "Switching patrol target: " + best.Name
 			savePatrolJob(member, memberJob)
 		}
 	}

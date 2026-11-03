@@ -126,6 +126,8 @@ message PlayerOrders {
 }
 
 message LogisticsAutomation {
+  // Fleet numbers are local to each player: keys are "playerNum:fleetNum".
+  map<string, bool> priority_fleets = 27;
   map<int32, bool> priority_traders = 26;
   map<int32, bool> priority_planets = 25;
   bool serve_terraforming_worlds = 23;

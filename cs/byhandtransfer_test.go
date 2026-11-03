@@ -563,7 +563,7 @@ func Test_turn_fleetByHandUnloads(t *testing.T) {
 
 		assert.Equal(t, 1, len(game.Salvages))
 		assert.Equal(t, Vector{10, 10}, game.Salvages[0].Position)
-		assert.Equal(t, Cargo{Ironium: 40}, game.Salvages[0].Cargo)
+		assert.Equal(t, Cargo{Ironium: 42}, game.Salvages[0].Cargo)
 		assert.Equal(t, Cargo{}, game.Fleets[0].Cargo)
 	})
 
@@ -649,7 +649,7 @@ func Test_turn_fleetByHandLoads(t *testing.T) {
 		// should end up with a salvage from the jettison, but fleet2 also gets some cargo it grabbed
 		assert.Equal(t, 1, len(game.Salvages))
 		assert.Equal(t, Vector{10, 10}, game.Salvages[0].Position)
-		assert.Equal(t, Cargo{Ironium: 30}, game.Salvages[0].Cargo)
+		assert.Equal(t, Cargo{Ironium: 32}, game.Salvages[0].Cargo)
 		assert.Equal(t, Cargo{}, game.Fleets[0].Cargo)
 		assert.Equal(t, Cargo{Ironium: 10}, game.Fleets[1].Cargo)
 	})
@@ -710,8 +710,8 @@ func Test_turn_fleetByHandLoads(t *testing.T) {
 
 		u.GenerateTurn()
 
-		// mineral packet should have 40 left (after decay), fleet should have 50
-		assert.Equal(t, Cargo{Ironium: 40}, game.Salvages[0].Cargo)
+		// salvage should have 42 left (after the minimum 8 kT decay), fleet should have 50
+		assert.Equal(t, Cargo{Ironium: 42}, game.Salvages[0].Cargo)
 		assert.Equal(t, Cargo{Ironium: 50}, game.Fleets[0].Cargo)
 	})
 

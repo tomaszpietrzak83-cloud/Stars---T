@@ -24,7 +24,8 @@ func newSalvage(position Vector, num int, playerNum int, cargo Cargo) *Salvage {
 
 // decay this salvage
 // https://wiki.starsautohost.org/wiki/Guts_of_scrapping
-// In deep space, each type of mineral decays 10%, or 10kT per year, whichever is higher. Salvage deposited on planets does not decay.
+// Our edition uses 8% or 8kT per mineral/year (original Stars!: 10% or 10kT).
+// Salvage deposited on planets does not decay.
 func (salvage *Salvage) decay(rules *Rules) {
 	salvage.Cargo = Cargo{
 		Ironium: max(0, min(

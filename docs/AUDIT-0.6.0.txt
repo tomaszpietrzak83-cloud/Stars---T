@@ -1,0 +1,74 @@
+Version 0.6.0 — debris coordination, destruction priorities and report zoom
+Date: 2026-11-03
+
+Evidence and behaviour
+- A consistent online backup of the user's 2444 database was inspected read-only.
+  Known debris #3 contained 5 kT ironium and 1 kT germanium. Several transports
+  had speculative battle reservations; these excluded them from actual debris
+  selection and did not track a moving hunter's updated interception point.
+- Actual known debris can now preempt an empty speculative collector. Existing
+  logistics pickups, loaded deliveries, safety, repair, assembly and rebuild
+  work remain protected. The copied-2444 regression assigns Small Freighter #8
+  to known debris #3, without changing the year or saving the scratch state.
+- A speculative collection stores hunter and enemy identities, updates the
+  predicted battle point, and releases cancelled, obsolete or unreachable work.
+  Both the superior patrol and collector must have a funded route reaching the
+  battle this movement phase. No battle is delayed waiting for a distant cargo
+  ship. Real enemy orders, cargo and hidden positions are not consulted.
+- A collector physically present discovers debris without scanner equipment.
+  It can load at waypoint zero of the following turn, before annual decay.
+  No instant BattleSalvage setting is required for this normal collection.
+- Deep-space decay is now 8% or at least 8 kT per mineral/year, versus 10%/10 kT.
+  Deposits on planets remain ordinary planetary minerals and do not decay.
+  Small unattended debris can still disappear; timely collection matters.
+- Fleet crosshairs store playerNum:fleetNum identities, so equal fleet numbers
+  belonging to different races are independent. Patrols prioritize these orders
+  and can pursue beyond their ordinary 150 ly opportunity radius with sufficient
+  strength, fuel and a funded return. Existing nearby groups can retarget.
+  Combat ships are kept available for fresh explicit priority contacts instead
+  of being borrowed for small debris pickups. Strength/safety checks still apply.
+- A received native battle report, including an allied shared report, clears
+  a priority only when its actual target fleet has been destroyed. Loss of scan
+  contact or a surviving enemy does not complete the order. Planet orders clear
+  when the marked planet becomes owned by the ordering player.
+- Report navigation updates the stored map center while retaining its scale.
+  Homeworld/default navigation can still preserve the entire saved viewport.
+
+Verification
+- Full native cs, server, db, db/generated and protocol converter suites passed.
+  Final cs/converter/db suites were rerun after the additional regressions;
+  the final patrol staging adjustment was followed by another full cs pass.
+- Native synthetic battle regression: collector and hunter physically arrive
+  together; native combat destroys the marked scout and clears its priority;
+  the collector loads the actual resulting minerals before the next decay.
+  Fuel guards and automatic safety/departure checks are included.
+- Tests cover changed/cancelled battle locations, a collector too far away,
+  real debris versus speculative work, protected deliveries, unknown distant
+  debris, scannerless physical contact, new decay and manual cargo transfers.
+- Patrol tests cover explicit selection beyond the local radius, retargeting,
+  retained orders on lost contact, strength/stale-report limits and independent
+  identities. Database and VT protobuf round trips retain fleet priority maps.
+- 47 focused browser tests in eight files passed, including fleet/planet/trader
+  crosshairs, scanner remount/zoom, automation, new-game options, resource totals
+  and collapsible tiles. 17 map/context service tests passed.
+- An exploratory full browser run found two pre-existing unrelated test-fixture
+  failures: MessageDetail's Stores mock omits showTooltip; a transport-dialog
+  assertion expects the English 2,500 separator while this locale renders 2500.
+  Attempts to repair those fixtures were reverted; no unrelated production
+  changes were made. The focused tests above are the release UI checks.
+- Svelte diagnostics: zero errors and zero warnings. Native, WASM and compiled
+  frontend builds passed. Generated conversion also explicitly handles the
+  server-owned design-history fields when converting embedded spec values.
+- Final compiled native/UI smoke used isolated ports 18090/18776 and a fresh
+  test database. It created a game, rendered the WASM map, saved two same-numbered
+  foreign fleet priorities via the native API, verified database persistence,
+  and clicked an actual planet-report link. Scale was preserved exactly:
+  3.693433240034749 -> 3.693433240034749. No test turn was generated.
+- Personal games were never advanced, replaced or saved by tests. Backup/export
+  files, screenshots, browser logs and runtime tools remain untracked.
+
+Installation
+The live database was waiting for orders in 2447 before the controlled restart.
+Only this copy's verified port owners were stopped. The previous executable
+was retained under tmp; native/WASM hashes were refreshed. Startup reports
+0.6.0, schema 30 current/no migration; local-ready returns HTTP 200.

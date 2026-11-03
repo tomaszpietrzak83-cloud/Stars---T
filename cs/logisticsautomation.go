@@ -11,6 +11,7 @@ import (
 )
 
 type LogisticsAutomation struct {
+	PriorityFleets               map[string]bool       `json:"priorityFleets,omitempty"`
 	PriorityTraders              map[int]bool          `json:"priorityTraders,omitempty"`
 	PriorityPlanets              map[int]bool          `json:"priorityPlanets,omitempty"`
 	ServeTerraformingWorlds      bool                  `json:"serveTerraformingWorlds,omitempty"`

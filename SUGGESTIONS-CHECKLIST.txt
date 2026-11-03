@@ -552,3 +552,9 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 
 [x] 250. Reduce the cost of rare rapid consecutive ship upgrades: if directly successive same-family designs were created at most four game years apart, scrap the previous version for 90% of its own resources/minerals and construct the successor at full normal price.
     Final clarification supersedes the initial 10%-of-new-price proposal. Native credit is applied once, with no stacked racial recycling bonus; yard distribution and incoming mineral reservations use it. Server-owned creation-year/predecessor metadata persists in existing spec JSON; legacy unknown dates use normal recovery. Tests cover inclusive 4-year eligibility, exclusions, full construction cost, planning, persistence and API edits; task/return precedence retained. Evidence: docs/AUDIT-0.5.0.txt.
+
+[x] 251. Diagnose transport debris collection; real known debris takes precedence over speculative battle reservations, with funded routes and deliveries preserved.
+[x] 252. Add one-shot fleet destruction priorities for automatic patrols; expire fleet priorities after confirmed destruction and planet priorities after conquest.
+[x] 253. Slightly reduce debris decay; coordinate a collector to arrive with the patrol, refresh its destination and collect at the start of the following turn.
+[x] 254. Report links center the galaxy on the target while retaining the player's chosen zoom, including map remounts.
+    Verification for 251-254: docs/AUDIT-0.6.0.txt. Native battle and copied-2444 collection regressions, database/protocol persistence, 47 focused browser tests and 17 map/context tests pass. Final compiled native/UI smoke preserves report-link zoom exactly; rebuilt Windows/WASM/UI installed with current hashes, schema 30/no migration and local-ready HTTP 200. No personal turn generated.

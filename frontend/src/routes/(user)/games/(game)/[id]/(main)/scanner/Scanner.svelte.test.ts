@@ -11,11 +11,12 @@ import { PlayerSettings } from '#lib/types/PlayerSettings.js';
 import { Universe } from '#lib/services/Universe.js';
 import { onScannerContextPopup } from '#lib/components/game/tooltips/ScannerContextPopup.js';
 import Scanner from './Scanner.svelte';
+import {rememberScannerViewport,forgetScannerViewport} from '#lib/services/scannerViewport.js';
 
 const state = vi.hoisted(() => ({
 	context: undefined as unknown,
 	canvasProps: undefined as
-		{ transform?: { apply: (p: [number, number]) => [number, number] } } | undefined
+		{ transform?: { k: number; apply: (p: [number, number]) => [number, number] } } | undefined
 }));
 vi.mock('#lib/services/GameContext.js', () => ({ getGameContext: () => state.context }));
 // Exercise scanner gestures and hit testing without involving canvas rendering.
@@ -35,7 +36,7 @@ afterEach(() => {
 });
 
 // A scanner commanding a fleet at (10, 10) whose selected waypoint is in deep space at (20, 20).
-async function scannerWithSelectedWaypoint(addWaypoint = false) {
+async function scannerWithSelectedWaypoint(addWaypoint = false, gameId?: string) {
 	const fleet = new CommandedFleet(
 		create(FleetSchema, {
 			mapObject: { type: MapObjectType.FLEET, playerNum: 1, num: 1, position: { x: 10, y: 10 } },
@@ -48,7 +49,7 @@ async function scannerWithSelectedWaypoint(addWaypoint = false) {
 	player.num = 1;
 	const zoomTarget = writable({ mapObject: fleet.mapObject });
 	state.context = {
-		game: writable({ area: { x: 100, y: 100 } }),
+		game: writable({ id: gameId, area: { x: 100, y: 100 } }),
 		player: writable(player),
 		universe: writable(universe),
 		settings: writable(Object.assign(new PlayerSettings(), { addWaypoint })),
@@ -62,7 +63,7 @@ async function scannerWithSelectedWaypoint(addWaypoint = false) {
 	const onSelectMapObject = vi.fn();
 	const onUpdateWaypointDest = vi.fn();
 	const onAddWaypoint = vi.fn(async () => true);
-	const { container } = render(Scanner, {
+	const { container, unmount } = render(Scanner, {
 		onAddWaypoint,
 		onUpdateWaypointDest,
 		onSelectWaypoint: vi.fn(),
@@ -96,7 +97,7 @@ async function scannerWithSelectedWaypoint(addWaypoint = false) {
 		Object.defineProperties(event, { layerX: { value: layerX }, layerY: { value: layerY } });
 		overlay.dispatchEvent(event);
 	}
-	return { pointer, onSelectMapObject, onUpdateWaypointDest, onAddWaypoint, scanner, root };
+	return { pointer, onSelectMapObject, onUpdateWaypointDest, onAddWaypoint, scanner, root, unmount, zoomTarget };
 }
 
 // The map is scaled to the scanner's shorter side, so turning a phone would otherwise leave the
@@ -369,4 +370,20 @@ it('measures with the tape from a mapobject to the pointer', async () => {
 	await tick();
 	expect(status()).toBeUndefined();
 	expect(onSelectMapObject).not.toHaveBeenCalled();
+});
+
+it('retains zoom while centering a report target and remounting the map', async()=>{
+ const key='report-view:1';
+ rememberScannerViewport(key,{x:50,y:50,scale:18});
+ const view=await scannerWithSelectedWaypoint(false,'report-view');
+ expect(state.canvasProps!.transform!.k).toBeCloseTo(18);
+ view.zoomTarget.set({mapObject:create(FleetSchema,{mapObject:{position:{x:80,y:90}}}).mapObject!});
+ await tick();
+ expect(state.canvasProps!.transform!.k).toBeCloseTo(18);
+ const center=state.canvasProps!.transform!.apply([160,180]);
+ expect(center[0]).toBeCloseTo(100);expect(center[1]).toBeCloseTo(100);
+ await view.unmount();
+ const reopened=await scannerWithSelectedWaypoint(false,'report-view');
+ expect(state.canvasProps!.transform!.k).toBeCloseTo(18);
+ await reopened.unmount();forgetScannerViewport(key);
 });

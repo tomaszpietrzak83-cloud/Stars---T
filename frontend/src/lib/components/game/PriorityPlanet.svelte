@@ -17,7 +17,7 @@
   finally { busy=false; }
  }
 </script>
-<button class="btn btn-sm my-1 {selected?'btn-primary':'btn-outline'}" aria-label="Priority planet" aria-pressed={selected} disabled={busy} onclick={toggle} title="Prioritize colonization, attack and reinforced landings">
+<button class="btn btn-sm my-1 {selected?'btn-primary':'btn-outline'}" aria-label="Priority planet" aria-pressed={selected} disabled={busy} onclick={toggle} title="Prioritize colonization, attack and reinforced landings. The order clears when this planet becomes yours.">
  <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v6m0 10v6M1 12h6m10 0h6"/></svg>
  {selected?'Priority target':'Set priority'}
 </button>

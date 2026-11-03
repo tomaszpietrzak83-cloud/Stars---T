@@ -359,8 +359,8 @@ func NewRulesWithSeed(seed int64) Rules {
 		PopulationScannerError:             0.2,  // opponents' scanners have ±20% error on pop readings
 		SmartDefenseCoverageFactor:         0.5,  // smart bombs penetrate 50% enemy defenses
 		InvasionDefenseCoverageFactor:      0.75, // invasions penetrate 25% enemy defenses
-		SalvageDecayRate:                   0.1,
-		SalvageDecayMin:                    10,
+		SalvageDecayRate:                   0.08,
+		SalvageDecayMin:                    8,
 		MinefieldCloak:                     75,
 		StargateMaxRangeFactor:             5,  // ships can only gate up to 5x gate safe range
 		StargateMaxHullMassFactor:          5,  // ships can only gate up to 5x gate safe mass
@@ -751,9 +751,9 @@ func (rules *Rules) GetArea(size Size) (Vector, error) {
 	case SizeColossal:
 		return Vector{4000, 4000}, nil
 	case SizeTitanic:
-		return Vector{5000,5000},nil
+		return Vector{5000, 5000}, nil
 	case SizeGalactic:
-		return Vector{6000,6000},nil
+		return Vector{6000, 6000}, nil
 	}
 
 	return Vector{}, fmt.Errorf("unable to GetArea for Size: %v", size)

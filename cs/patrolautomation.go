@@ -382,7 +382,7 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 		savePatrolJob(leader, job)
 		return
 	}
-	if colony := patrolDefendedColony(player, enemy); colony != nil && leader.Position.DistanceTo(enemy.Position) > 150 {
+	if colony := patrolDefendedColony(player, enemy); colony != nil && !priorityFleet(player, enemy) && leader.Position.DistanceTo(enemy.Position) > 150 {
 		job.Status = "Mobilizing one defensive fleet at " + colony.Name + " against incoming " + enemy.Name
 		savePatrolJob(leader, job)
 		if leader.Position != colony.Position {
@@ -489,7 +489,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 			enemies := sortedPatrolTargets(player, fleet)
 			assigned := false
 			for _, enemy := range enemies {
-				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || player.IsFriend(enemy.PlayerNum) || (fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
+				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || (!priorityFleet(player, enemy) && fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
 					continue
 				}
 				claimed := false
@@ -507,7 +507,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 				if assigned {
 					break
 				}
-				if declinedPatrolTarget(fleet, enemy, t.game.Year) || claimed {
+				if !priorityFleet(player, enemy) && declinedPatrolTarget(fleet, enemy, t.game.Year) || claimed {
 					continue
 				}
 				delete(fleet.Tags, frontierPatrolTag)

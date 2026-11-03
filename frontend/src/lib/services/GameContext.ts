@@ -75,7 +75,7 @@ import {
 import { setReadOnly } from './asPlayerInterceptor';
 import { addError } from './Errors';
 import { FullGame } from './FullGame';
-import { forgetScannerViewport } from './scannerViewport.js';
+import { recalledScannerViewport, rememberScannerViewport } from './scannerViewport.js';
  import { rollover } from './Math';
  import { automationRoles } from '#lib/types/automationRoles.js';
 import { Universe } from './Universe';
@@ -755,7 +755,14 @@ export async function createGameContext(
 	}
 
 	function zoomToMapObject(mo: MapObjectLike, preserveViewport=false) {
-  if(!preserveViewport) forgetScannerViewport(`${gameId}:${get(player).num}`);
+		if (!preserveViewport) {
+			const key = `${gameId}:${get(player).num}`;
+			const view = recalledScannerViewport(key);
+			const position = mo.mapObject?.position;
+			if (view && position) {
+				rememberScannerViewport(key, { ...view, x: position.x, y: position.y });
+			}
+		}
 		zoomTarget.update(() => mo);
 		mostRecentMapObject.update(() => mo);
 	}

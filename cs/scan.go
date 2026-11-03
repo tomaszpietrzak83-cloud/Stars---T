@@ -373,8 +373,23 @@ func (scan *playerScanner) scanMinefields(scanners []scanner) {
 
 // scan all fleets and discover their designs if we should
 func (scan *playerScanner) scanSalvages(scanners []scanner) {
+	// Physical contact reveals debris even to a freighter without a scanner.
+	// This is essential for collectors already waiting at a battle location.
+	present := map[Vector]bool{}
+	for _, fleet := range scan.universe.Fleets {
+		if !fleet.Delete && fleet.PlayerNum == scan.player.Num {
+			present[fleet.Position] = true
+		}
+	}
 	for _, salvage := range scan.universe.Salvages {
 		if salvage.Delete {
+			continue
+		}
+		if present[salvage.Position] {
+			scan.discoverer.discoverSalvage(salvage)
+			if salvage.PlayerNum != Unowned {
+				scan.discoveredPlayers[salvage.PlayerNum] = true
+			}
 			continue
 		}
 		for _, scanner := range scanners {

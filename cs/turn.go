@@ -70,6 +70,7 @@ func (t *turnGenerator) generateTurn() error {
 	defer t.disablePlanningThreatIndex()
 	t.packetInit()
 	t.planetInit()
+	t.completePlanetPriorities()
 
 	for _, base := range t.game.Starbases {
 		base.noHeal = false
@@ -224,6 +225,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.calculateScores()
 	t.checkDeath()
 	t.pruneAutomationAssignments()
+	t.completePlanetPriorities()
 	t.finishStatistics()
 	t.reportShipMaintenance()
 
@@ -1668,6 +1670,9 @@ func (t *turnGenerator) fleetReproduce() {
 // decay each salvage and remove it from the universe if it's empty
 func (t *turnGenerator) decaySalvage() {
 	for _, salvage := range t.game.Salvages {
+		if salvage.Delete {
+			continue
+		}
 		beforeCargo := salvage.Cargo
 		salvage.decay(&t.game.Rules)
 
@@ -2857,6 +2862,7 @@ func (t *turnGenerator) fleetBattle() {
 			for _, player := range playersAtPosition {
 				// player knows about the battle
 				player.BattleRecords = append(player.BattleRecords, *record)
+				completeFleetPriorities(player, record)
 				messager.battle(player, planet, record)
 
 				// share battle records with allies
@@ -2877,6 +2883,7 @@ func (t *turnGenerator) fleetBattle() {
 
 					// share the battle recording with this player
 					otherPlayer.BattleRecords = append(otherPlayer.BattleRecords, *record)
+					completeFleetPriorities(otherPlayer, record)
 					messager.battleAlly(otherPlayer, planet, record)
 				}
 			}

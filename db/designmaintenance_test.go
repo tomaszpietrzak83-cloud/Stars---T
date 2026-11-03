@@ -14,6 +14,7 @@ func TestDesignMaintenancePersistence(t *testing.T) {
 	require.NoError(t, c.SavePlayer(t.Context(), p))
 	p.Automation = cs.LogisticsAutomation{FleetRoles: map[int]string{1: "freighter", 2: "escort"}, BattleSalvage: true, OffloadCombatCargo: true}
 	p.Automation.FleetAssemblies = map[int]cs.FleetAssembly{1: {Name: "Task Force", RallyPlanetNum: 7, Designs: map[int]int{1: 10}, SourceFleets: map[int]bool{3: true}, BuildMissing: true, Revision: 2, LeaderFleetNum: 3, NotifiedRevision: 2, Status: "Assembling"}}
+	p.Automation.PriorityFleets = map[string]bool{"2:17": true, "3:17": true}
 	require.NoError(t, c.UpdatePlayerOrders(t.Context(), p))
 	loaded, err := c.GetPlayerForGame(t.Context(), game.ID, 1)
 	require.NoError(t, err)

@@ -2146,97 +2146,101 @@ func (c *ProtoConverter) ConvertShipDesignP(source *v1.ShipDesign) *cs.ShipDesig
 func (c *ProtoConverter) ConvertShipDesignSpec(source *v1.ShipDesignSpec) *cs.ShipDesignSpec {
 	var pCsShipDesignSpec *cs.ShipDesignSpec
 	if source != nil {
-		var csShipDesignSpec cs.ShipDesignSpec
-		csShipDesignSpec.DefaultBattlePlan = Int32ToInt((*source).DefaultBattlePlan)
-		csShipDesignSpec.AdditionalMassDrivers = Int32ToInt((*source).AdditionalMassDrivers)
-		csShipDesignSpec.Armor = Int32ToInt((*source).Armor)
-		csShipDesignSpec.BasePacketSpeed = Int32ToInt((*source).BasePacketSpeed)
-		csShipDesignSpec.BeamBonus = (*source).BeamBonus
-		csShipDesignSpec.BeamDefense = (*source).BeamDefense
-		csShipDesignSpec.Bomber = (*source).Bomber
-		if (*source).Bombs != nil {
-			csShipDesignSpec.Bombs = make([]cs.Bomb, len((*source).Bombs))
-			for i := 0; i < len((*source).Bombs); i++ {
-				csShipDesignSpec.Bombs[i] = c.pCraig_starsv1BombToCsBomb((*source).Bombs[i])
-			}
-		}
-		csShipDesignSpec.CanJump = (*source).CanJump
-		csShipDesignSpec.CanLayMines = (*source).CanLayMines
-		csShipDesignSpec.CanStealFleetCargo = (*source).CanStealFleetCargo
-		csShipDesignSpec.CanStealPlanetCargo = (*source).CanStealPlanetCargo
-		csShipDesignSpec.CargoCapacity = Int32ToInt((*source).CargoCapacity)
-		csShipDesignSpec.MineralCargoBonus = Int32ToInt((*source).MineralCargoBonus)
-		csShipDesignSpec.CloakPercent = Int32ToInt((*source).CloakPercent)
-		csShipDesignSpec.CloakPercentFullCargo = Int32ToInt((*source).CloakPercentFullCargo)
-		csShipDesignSpec.CloakUnits = Int32ToInt((*source).CloakUnits)
-		csShipDesignSpec.Colonizer = (*source).Colonizer
-		csShipDesignSpec.Cost = c.ConvertCost((*source).Cost)
-		csShipDesignSpec.Engine = c.pCraig_starsv1EngineToCsEngine((*source).Engine)
-		csShipDesignSpec.EstimatedRange = Int32ToInt((*source).EstimatedRange)
-		csShipDesignSpec.EstimatedRangeFull = Int32ToInt((*source).EstimatedRangeFull)
-		csShipDesignSpec.FuelCapacity = Int32ToInt((*source).FuelCapacity)
-		csShipDesignSpec.FuelGeneration = Int32ToInt((*source).FuelGeneration)
-		csShipDesignSpec.HasWeapons = (*source).HasWeapons
-		csShipDesignSpec.HullType = TechHullTypeToCSTechHullType((*source).HullType)
-		csShipDesignSpec.ShipClass = ShipClassToCSShipClass((*source).ShipClass)
-		csShipDesignSpec.ImmuneToOwnDetonation = (*source).ImmuneToOwnDetonation
-		csShipDesignSpec.Initiative = Int32ToInt((*source).Initiative)
-		csShipDesignSpec.InnateScanRangePenFactor = (*source).InnateScanRangePenFactor
-		csShipDesignSpec.Mass = Int32ToInt((*source).Mass)
-		csShipDesignSpec.MassDriver = (*source).MassDriver
-		csShipDesignSpec.MaxHullMass = Int32ToInt((*source).MaxHullMass)
-		csShipDesignSpec.MaxPopulation = Int32ToInt((*source).MaxPopulation)
-		csShipDesignSpec.MaxRange = Int32ToInt((*source).MaxRange)
-		csShipDesignSpec.MineLayingRateByMineType = IntMapToMinefieldTypeMap((*source).MineLayingRateByMineType)
-		csShipDesignSpec.MineSweep = Int32ToInt((*source).MineSweep)
-		csShipDesignSpec.MiningRate = Int32ToInt((*source).MiningRate)
-		csShipDesignSpec.Movement = Int32ToInt((*source).Movement)
-		csShipDesignSpec.MovementBonus = (*source).MovementBonus
-		csShipDesignSpec.MovementFull = Int32ToInt((*source).MovementFull)
-		csShipDesignSpec.NumBuilt = Int32ToInt((*source).NumBuilt)
-		csShipDesignSpec.NumEngines = Int32ToInt((*source).NumEngines)
-		csShipDesignSpec.NumInstances = Int32ToInt((*source).NumInstances)
-		csShipDesignSpec.OrbitalConstructionModule = (*source).OrbitalConstructionModule
-		csShipDesignSpec.PowerRating = Int32ToInt((*source).PowerRating)
-		csShipDesignSpec.Radiating = (*source).Radiating
-		csShipDesignSpec.ReduceCloaking = (*source).ReduceCloaking
-		csShipDesignSpec.ReduceMovement = Int32ToInt((*source).ReduceMovement)
-		csShipDesignSpec.RepairBonus = (*source).RepairBonus
-		if (*source).RetroBombs != nil {
-			csShipDesignSpec.RetroBombs = make([]cs.Bomb, len((*source).RetroBombs))
-			for j := 0; j < len((*source).RetroBombs); j++ {
-				csShipDesignSpec.RetroBombs[j] = c.pCraig_starsv1BombToCsBomb((*source).RetroBombs[j])
-			}
-		}
-		csShipDesignSpec.SafeHullMass = Int32ToInt((*source).SafeHullMass)
-		csShipDesignSpec.SafePacketSpeed = Int32ToInt((*source).SafePacketSpeed)
-		csShipDesignSpec.SafeRange = Int32ToInt((*source).SafeRange)
-		csShipDesignSpec.Scanner = (*source).Scanner
-		csShipDesignSpec.ScanRange = Int32ToInt((*source).ScanRange)
-		csShipDesignSpec.ScanRangePen = Int32ToInt((*source).ScanRangePen)
-		csShipDesignSpec.Shields = Int32ToInt((*source).Shields)
-		if (*source).SmartBombs != nil {
-			csShipDesignSpec.SmartBombs = make([]cs.Bomb, len((*source).SmartBombs))
-			for k := 0; k < len((*source).SmartBombs); k++ {
-				csShipDesignSpec.SmartBombs[k] = c.pCraig_starsv1BombToCsBomb((*source).SmartBombs[k])
-			}
-		}
-		csShipDesignSpec.SpaceDock = Int32ToInt((*source).SpaceDock)
-		csShipDesignSpec.Starbase = (*source).Starbase
-		csShipDesignSpec.Stargate = (*source).Stargate
-		csShipDesignSpec.TechLevel = c.ConvertTechLevel((*source).TechLevel)
-		csShipDesignSpec.TerraformRate = Int32ToInt((*source).TerraformRate)
-		csShipDesignSpec.TorpedoBonus = (*source).TorpedoBonus
-		csShipDesignSpec.TorpedoJamming = (*source).TorpedoJamming
-		if (*source).WeaponSlots != nil {
-			csShipDesignSpec.WeaponSlots = make([]cs.ShipDesignSlot, len((*source).WeaponSlots))
-			for l := 0; l < len((*source).WeaponSlots); l++ {
-				csShipDesignSpec.WeaponSlots[l] = c.pCraig_starsv1ShipDesignSlotToCsShipDesignSlot((*source).WeaponSlots[l])
-			}
-		}
+		csShipDesignSpec := c.ConvertShipDesignSpecValue((*source))
 		pCsShipDesignSpec = &csShipDesignSpec
 	}
 	return pCsShipDesignSpec
+}
+func (c *ProtoConverter) ConvertShipDesignSpecValue(source v1.ShipDesignSpec) cs.ShipDesignSpec {
+	var csShipDesignSpec cs.ShipDesignSpec
+	csShipDesignSpec.DefaultBattlePlan = Int32ToInt(source.DefaultBattlePlan)
+	csShipDesignSpec.AdditionalMassDrivers = Int32ToInt(source.AdditionalMassDrivers)
+	csShipDesignSpec.Armor = Int32ToInt(source.Armor)
+	csShipDesignSpec.BasePacketSpeed = Int32ToInt(source.BasePacketSpeed)
+	csShipDesignSpec.BeamBonus = source.BeamBonus
+	csShipDesignSpec.BeamDefense = source.BeamDefense
+	csShipDesignSpec.Bomber = source.Bomber
+	if source.Bombs != nil {
+		csShipDesignSpec.Bombs = make([]cs.Bomb, len(source.Bombs))
+		for i := 0; i < len(source.Bombs); i++ {
+			csShipDesignSpec.Bombs[i] = c.pCraig_starsv1BombToCsBomb(source.Bombs[i])
+		}
+	}
+	csShipDesignSpec.CanJump = source.CanJump
+	csShipDesignSpec.CanLayMines = source.CanLayMines
+	csShipDesignSpec.CanStealFleetCargo = source.CanStealFleetCargo
+	csShipDesignSpec.CanStealPlanetCargo = source.CanStealPlanetCargo
+	csShipDesignSpec.CargoCapacity = Int32ToInt(source.CargoCapacity)
+	csShipDesignSpec.MineralCargoBonus = Int32ToInt(source.MineralCargoBonus)
+	csShipDesignSpec.CloakPercent = Int32ToInt(source.CloakPercent)
+	csShipDesignSpec.CloakPercentFullCargo = Int32ToInt(source.CloakPercentFullCargo)
+	csShipDesignSpec.CloakUnits = Int32ToInt(source.CloakUnits)
+	csShipDesignSpec.Colonizer = source.Colonizer
+	csShipDesignSpec.Cost = c.ConvertCost(source.Cost)
+	csShipDesignSpec.Engine = c.pCraig_starsv1EngineToCsEngine(source.Engine)
+	csShipDesignSpec.EstimatedRange = Int32ToInt(source.EstimatedRange)
+	csShipDesignSpec.EstimatedRangeFull = Int32ToInt(source.EstimatedRangeFull)
+	csShipDesignSpec.FuelCapacity = Int32ToInt(source.FuelCapacity)
+	csShipDesignSpec.FuelGeneration = Int32ToInt(source.FuelGeneration)
+	csShipDesignSpec.HasWeapons = source.HasWeapons
+	csShipDesignSpec.HullType = TechHullTypeToCSTechHullType(source.HullType)
+	csShipDesignSpec.ShipClass = ShipClassToCSShipClass(source.ShipClass)
+	csShipDesignSpec.ImmuneToOwnDetonation = source.ImmuneToOwnDetonation
+	csShipDesignSpec.Initiative = Int32ToInt(source.Initiative)
+	csShipDesignSpec.InnateScanRangePenFactor = source.InnateScanRangePenFactor
+	csShipDesignSpec.Mass = Int32ToInt(source.Mass)
+	csShipDesignSpec.MassDriver = source.MassDriver
+	csShipDesignSpec.MaxHullMass = Int32ToInt(source.MaxHullMass)
+	csShipDesignSpec.MaxPopulation = Int32ToInt(source.MaxPopulation)
+	csShipDesignSpec.MaxRange = Int32ToInt(source.MaxRange)
+	csShipDesignSpec.MineLayingRateByMineType = IntMapToMinefieldTypeMap(source.MineLayingRateByMineType)
+	csShipDesignSpec.MineSweep = Int32ToInt(source.MineSweep)
+	csShipDesignSpec.MiningRate = Int32ToInt(source.MiningRate)
+	csShipDesignSpec.Movement = Int32ToInt(source.Movement)
+	csShipDesignSpec.MovementBonus = source.MovementBonus
+	csShipDesignSpec.MovementFull = Int32ToInt(source.MovementFull)
+	csShipDesignSpec.NumBuilt = Int32ToInt(source.NumBuilt)
+	csShipDesignSpec.NumEngines = Int32ToInt(source.NumEngines)
+	csShipDesignSpec.NumInstances = Int32ToInt(source.NumInstances)
+	csShipDesignSpec.OrbitalConstructionModule = source.OrbitalConstructionModule
+	csShipDesignSpec.PowerRating = Int32ToInt(source.PowerRating)
+	csShipDesignSpec.Radiating = source.Radiating
+	csShipDesignSpec.ReduceCloaking = source.ReduceCloaking
+	csShipDesignSpec.ReduceMovement = Int32ToInt(source.ReduceMovement)
+	csShipDesignSpec.RepairBonus = source.RepairBonus
+	if source.RetroBombs != nil {
+		csShipDesignSpec.RetroBombs = make([]cs.Bomb, len(source.RetroBombs))
+		for j := 0; j < len(source.RetroBombs); j++ {
+			csShipDesignSpec.RetroBombs[j] = c.pCraig_starsv1BombToCsBomb(source.RetroBombs[j])
+		}
+	}
+	csShipDesignSpec.SafeHullMass = Int32ToInt(source.SafeHullMass)
+	csShipDesignSpec.SafePacketSpeed = Int32ToInt(source.SafePacketSpeed)
+	csShipDesignSpec.SafeRange = Int32ToInt(source.SafeRange)
+	csShipDesignSpec.Scanner = source.Scanner
+	csShipDesignSpec.ScanRange = Int32ToInt(source.ScanRange)
+	csShipDesignSpec.ScanRangePen = Int32ToInt(source.ScanRangePen)
+	csShipDesignSpec.Shields = Int32ToInt(source.Shields)
+	if source.SmartBombs != nil {
+		csShipDesignSpec.SmartBombs = make([]cs.Bomb, len(source.SmartBombs))
+		for k := 0; k < len(source.SmartBombs); k++ {
+			csShipDesignSpec.SmartBombs[k] = c.pCraig_starsv1BombToCsBomb(source.SmartBombs[k])
+		}
+	}
+	csShipDesignSpec.SpaceDock = Int32ToInt(source.SpaceDock)
+	csShipDesignSpec.Starbase = source.Starbase
+	csShipDesignSpec.Stargate = source.Stargate
+	csShipDesignSpec.TechLevel = c.ConvertTechLevel(source.TechLevel)
+	csShipDesignSpec.TerraformRate = Int32ToInt(source.TerraformRate)
+	csShipDesignSpec.TorpedoBonus = source.TorpedoBonus
+	csShipDesignSpec.TorpedoJamming = source.TorpedoJamming
+	if source.WeaponSlots != nil {
+		csShipDesignSpec.WeaponSlots = make([]cs.ShipDesignSlot, len(source.WeaponSlots))
+		for l := 0; l < len(source.WeaponSlots); l++ {
+			csShipDesignSpec.WeaponSlots[l] = c.pCraig_starsv1ShipDesignSlotToCsShipDesignSlot(source.WeaponSlots[l])
+		}
+	}
+	return csShipDesignSpec
 }
 func (c *ProtoConverter) ConvertShipDesigns(source []*v1.ShipDesign) []*cs.ShipDesign {
 	var pCsShipDesignList []*cs.ShipDesign
@@ -2756,6 +2760,7 @@ func (c *ProtoConverter) csLRTToUint32(source cs.LRT) uint32 {
 }
 func (c *ProtoConverter) csLogisticsAutomationToPCraig_starsv1LogisticsAutomation(source cs.LogisticsAutomation) *v1.LogisticsAutomation {
 	var craig_starsv1LogisticsAutomation v1.LogisticsAutomation
+	craig_starsv1LogisticsAutomation.PriorityFleets = source.PriorityFleets
 	if source.PriorityTraders != nil {
 		craig_starsv1LogisticsAutomation.PriorityTraders = make(map[int32]bool, len(source.PriorityTraders))
 		for key, value := range source.PriorityTraders {
@@ -3711,6 +3716,7 @@ func (c *ProtoConverter) pCraig_starsv1JammerCapToCsJammerCap(source *v1.JammerC
 func (c *ProtoConverter) pCraig_starsv1LogisticsAutomationToCsLogisticsAutomation(source *v1.LogisticsAutomation) cs.LogisticsAutomation {
 	var csLogisticsAutomation cs.LogisticsAutomation
 	if source != nil {
+		csLogisticsAutomation.PriorityFleets = (*source).PriorityFleets
 		if (*source).PriorityTraders != nil {
 			csLogisticsAutomation.PriorityTraders = make(map[int]bool, len((*source).PriorityTraders))
 			for key, value := range (*source).PriorityTraders {
@@ -4238,93 +4244,7 @@ func (c *ProtoConverter) pCraig_starsv1ShipDesignSlotToCsShipDesignSlot(source *
 func (c *ProtoConverter) pCraig_starsv1ShipDesignSpecToCsShipDesignSpec(source *v1.ShipDesignSpec) cs.ShipDesignSpec {
 	var csShipDesignSpec cs.ShipDesignSpec
 	if source != nil {
-		csShipDesignSpec.DefaultBattlePlan = Int32ToInt((*source).DefaultBattlePlan)
-		csShipDesignSpec.AdditionalMassDrivers = Int32ToInt((*source).AdditionalMassDrivers)
-		csShipDesignSpec.Armor = Int32ToInt((*source).Armor)
-		csShipDesignSpec.BasePacketSpeed = Int32ToInt((*source).BasePacketSpeed)
-		csShipDesignSpec.BeamBonus = (*source).BeamBonus
-		csShipDesignSpec.BeamDefense = (*source).BeamDefense
-		csShipDesignSpec.Bomber = (*source).Bomber
-		if (*source).Bombs != nil {
-			csShipDesignSpec.Bombs = make([]cs.Bomb, len((*source).Bombs))
-			for i := 0; i < len((*source).Bombs); i++ {
-				csShipDesignSpec.Bombs[i] = c.pCraig_starsv1BombToCsBomb((*source).Bombs[i])
-			}
-		}
-		csShipDesignSpec.CanJump = (*source).CanJump
-		csShipDesignSpec.CanLayMines = (*source).CanLayMines
-		csShipDesignSpec.CanStealFleetCargo = (*source).CanStealFleetCargo
-		csShipDesignSpec.CanStealPlanetCargo = (*source).CanStealPlanetCargo
-		csShipDesignSpec.CargoCapacity = Int32ToInt((*source).CargoCapacity)
-		csShipDesignSpec.MineralCargoBonus = Int32ToInt((*source).MineralCargoBonus)
-		csShipDesignSpec.CloakPercent = Int32ToInt((*source).CloakPercent)
-		csShipDesignSpec.CloakPercentFullCargo = Int32ToInt((*source).CloakPercentFullCargo)
-		csShipDesignSpec.CloakUnits = Int32ToInt((*source).CloakUnits)
-		csShipDesignSpec.Colonizer = (*source).Colonizer
-		csShipDesignSpec.Cost = c.ConvertCost((*source).Cost)
-		csShipDesignSpec.Engine = c.pCraig_starsv1EngineToCsEngine((*source).Engine)
-		csShipDesignSpec.EstimatedRange = Int32ToInt((*source).EstimatedRange)
-		csShipDesignSpec.EstimatedRangeFull = Int32ToInt((*source).EstimatedRangeFull)
-		csShipDesignSpec.FuelCapacity = Int32ToInt((*source).FuelCapacity)
-		csShipDesignSpec.FuelGeneration = Int32ToInt((*source).FuelGeneration)
-		csShipDesignSpec.HasWeapons = (*source).HasWeapons
-		csShipDesignSpec.HullType = TechHullTypeToCSTechHullType((*source).HullType)
-		csShipDesignSpec.ShipClass = ShipClassToCSShipClass((*source).ShipClass)
-		csShipDesignSpec.ImmuneToOwnDetonation = (*source).ImmuneToOwnDetonation
-		csShipDesignSpec.Initiative = Int32ToInt((*source).Initiative)
-		csShipDesignSpec.InnateScanRangePenFactor = (*source).InnateScanRangePenFactor
-		csShipDesignSpec.Mass = Int32ToInt((*source).Mass)
-		csShipDesignSpec.MassDriver = (*source).MassDriver
-		csShipDesignSpec.MaxHullMass = Int32ToInt((*source).MaxHullMass)
-		csShipDesignSpec.MaxPopulation = Int32ToInt((*source).MaxPopulation)
-		csShipDesignSpec.MaxRange = Int32ToInt((*source).MaxRange)
-		csShipDesignSpec.MineLayingRateByMineType = IntMapToMinefieldTypeMap((*source).MineLayingRateByMineType)
-		csShipDesignSpec.MineSweep = Int32ToInt((*source).MineSweep)
-		csShipDesignSpec.MiningRate = Int32ToInt((*source).MiningRate)
-		csShipDesignSpec.Movement = Int32ToInt((*source).Movement)
-		csShipDesignSpec.MovementBonus = (*source).MovementBonus
-		csShipDesignSpec.MovementFull = Int32ToInt((*source).MovementFull)
-		csShipDesignSpec.NumBuilt = Int32ToInt((*source).NumBuilt)
-		csShipDesignSpec.NumEngines = Int32ToInt((*source).NumEngines)
-		csShipDesignSpec.NumInstances = Int32ToInt((*source).NumInstances)
-		csShipDesignSpec.OrbitalConstructionModule = (*source).OrbitalConstructionModule
-		csShipDesignSpec.PowerRating = Int32ToInt((*source).PowerRating)
-		csShipDesignSpec.Radiating = (*source).Radiating
-		csShipDesignSpec.ReduceCloaking = (*source).ReduceCloaking
-		csShipDesignSpec.ReduceMovement = Int32ToInt((*source).ReduceMovement)
-		csShipDesignSpec.RepairBonus = (*source).RepairBonus
-		if (*source).RetroBombs != nil {
-			csShipDesignSpec.RetroBombs = make([]cs.Bomb, len((*source).RetroBombs))
-			for j := 0; j < len((*source).RetroBombs); j++ {
-				csShipDesignSpec.RetroBombs[j] = c.pCraig_starsv1BombToCsBomb((*source).RetroBombs[j])
-			}
-		}
-		csShipDesignSpec.SafeHullMass = Int32ToInt((*source).SafeHullMass)
-		csShipDesignSpec.SafePacketSpeed = Int32ToInt((*source).SafePacketSpeed)
-		csShipDesignSpec.SafeRange = Int32ToInt((*source).SafeRange)
-		csShipDesignSpec.Scanner = (*source).Scanner
-		csShipDesignSpec.ScanRange = Int32ToInt((*source).ScanRange)
-		csShipDesignSpec.ScanRangePen = Int32ToInt((*source).ScanRangePen)
-		csShipDesignSpec.Shields = Int32ToInt((*source).Shields)
-		if (*source).SmartBombs != nil {
-			csShipDesignSpec.SmartBombs = make([]cs.Bomb, len((*source).SmartBombs))
-			for k := 0; k < len((*source).SmartBombs); k++ {
-				csShipDesignSpec.SmartBombs[k] = c.pCraig_starsv1BombToCsBomb((*source).SmartBombs[k])
-			}
-		}
-		csShipDesignSpec.SpaceDock = Int32ToInt((*source).SpaceDock)
-		csShipDesignSpec.Starbase = (*source).Starbase
-		csShipDesignSpec.Stargate = (*source).Stargate
-		csShipDesignSpec.TechLevel = c.ConvertTechLevel((*source).TechLevel)
-		csShipDesignSpec.TerraformRate = Int32ToInt((*source).TerraformRate)
-		csShipDesignSpec.TorpedoBonus = (*source).TorpedoBonus
-		csShipDesignSpec.TorpedoJamming = (*source).TorpedoJamming
-		if (*source).WeaponSlots != nil {
-			csShipDesignSpec.WeaponSlots = make([]cs.ShipDesignSlot, len((*source).WeaponSlots))
-			for l := 0; l < len((*source).WeaponSlots); l++ {
-				csShipDesignSpec.WeaponSlots[l] = c.pCraig_starsv1ShipDesignSlotToCsShipDesignSlot((*source).WeaponSlots[l])
-			}
-		}
+		csShipDesignSpec = c.ConvertShipDesignSpecValue((*source))
 	}
 	return csShipDesignSpec
 }

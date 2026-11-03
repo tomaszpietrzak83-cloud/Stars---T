@@ -1,4 +1,5 @@
 <script lang="ts">
+ import PriorityFleet from "#lib/components/game/PriorityFleet.svelte";
 	import CargoBar from '#lib/components/game/CargoBar.svelte';
 	import FuelBar from '#lib/components/game/FuelBar.svelte';
 	import { onShipDesignTooltip } from '#lib/components/game/tooltips/ShipDesignTooltip.js';
@@ -88,6 +89,9 @@
 		<div class="text-center">{$universe.getPlayerPluralName(fleet.mapObject?.playerNum)}</div>
 	</div>
 	<div class="flex flex-col grow">
+ {#if !ownedBy(fleet, $player.num) && !$player.isFriend(fleet.mapObject?.playerNum) && !fleet.spec?.shipDesignSpec?.starbase}
+ <PriorityFleet num={fleet.mapObject?.num ?? 0} playerNum={fleet.mapObject?.playerNum ?? 0} />
+ {/if}
 		<div class="flex flex-row">
 			<div class="w-32 text-tile-item-title">Ship Count:</div>
 			<div>
