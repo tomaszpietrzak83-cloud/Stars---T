@@ -410,6 +410,7 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 		t.returnPatrolToFuel(player, leader)
 		return
 	}
+	t.releaseExcessPatrolShips(player, leader, enemy, &job)
 	// Recompute a bounded interception from fresh reports each turn. A fixed waypoint
 	// prevents native pursuit from silently extending the fuel budget mid-movement.
 	position := patrolInterceptPosition(enemy)

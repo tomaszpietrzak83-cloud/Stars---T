@@ -10,7 +10,7 @@ import (
 func TestPatrolWaitsForScoutEquipmentBeforeAttack(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{
 		{Designs: Designs(DesignDestroyerDelta, DesignLongRangeScout, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Patrol", Design: DesignDestroyerDelta.Name, At: "Home"}, {Name: "Recon", Design: DesignLongRangeScout.Name, At: "Home"}}},
-		{Designs: Designs(DesignLongRangeScout), Fleets: []ScenarioFleet{{Name: "Unknown", Design: DesignLongRangeScout.Name, Position: Vector{20, 0}}}},
+		{Designs: Designs(DesignLongRangeScout), Fleets: []ScenarioFleet{{Name: "Unknown", Design: DesignLongRangeScout.Name, Quantity: 8, Position: Vector{20, 0}}}},
 	}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}}})
 	p, f, s, e := u.Player(1), u.Fleet("Patrol"), u.Fleet("Recon"), u.Fleet("Unknown")
 	p.Race.Spec.DiscoverDesignOnScan = false
@@ -41,6 +41,7 @@ func TestUnknownConvergingFleetBlocksKnownTargetAttack(t *testing.T) {
 	p.Automation.FleetRoles[f.Num] = "patrol"
 	target := patrolTestEnemy(0, p)
 	unknown := patrolTestEnemy(0)
+	unknown.Tokens = []ShipToken{{DesignNum: 9999, Quantity: 8}}
 	unknown.Num = 92
 	unknown.Position = Vector{70, 0}
 	unknown.WarpSpeed = 6

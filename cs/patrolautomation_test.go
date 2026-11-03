@@ -136,7 +136,7 @@ func TestPatrolLightScoutReportsDoNotOutrankDestroyers(t *testing.T) {
 	addExpeditionTestDock(p, Vector{})
 	require.Equal(t, 2, patrolReportedPower(p, enemy))
 	u.Run((*turnGenerator).planPatrolAutomation)
-	require.Zero(t, readPatrolJob(f).Leader, "a hull-only scout report still needs equipment reconnaissance")
+	require.Equal(t, enemy.Num, readPatrolJob(f).Target, "a small hull-only scout report may still be intercepted")
 	p.ShipDesignIntels[0].Slots = []ShipDesignSlot{{Quantity: 1}}
 	p.ShipDesignIntels[0].Spec.PowerRating = 2
 	u.Run((*turnGenerator).planPatrolAutomation)

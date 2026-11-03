@@ -129,20 +129,24 @@ func unknownFleetEquipment(p *Player, enemy *Fleet) bool {
 	return false
 }
 
-// An unidentified nearby or visibly converging contact can join the encounter.
+// Small unknown contacts remain opportunities; a large uncertain encounter
+// requires reconnaissance. Count converging reports together, not separately.
 func patrolNeedsRecon(p *Player, target *Fleet) bool {
-	if unknownFleetEquipment(p, target) {
+	if target == nil || reportedFleetShips(target) <= 0 {
 		return true
 	}
+	unknown := unknownFleetEquipment(p, target)
+	count := reportedFleetShips(target)
 	for _, enemy := range p.FleetIntels {
-		if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) {
+		if enemy == nil || enemy == target || enemy.Num == target.Num && enemy.PlayerNum == target.PlayerNum || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) {
 			continue
 		}
-		if (enemy.Position.DistanceTo(target.Position) <= 30 || patrolInterceptPosition(enemy).DistanceTo(patrolInterceptPosition(target)) <= 30) && unknownFleetEquipment(p, enemy) {
-			return true
+		if enemy.Position.DistanceTo(target.Position) <= 30 || patrolInterceptPosition(enemy).DistanceTo(patrolInterceptPosition(target)) <= 30 {
+			count += reportedFleetShips(enemy)
+			unknown = unknown || unknownFleetEquipment(p, enemy)
 		}
 	}
-	return false
+	return unknown && count >= 8
 }
 func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 	if !t.ordersOnly && f.Spec.TotalShips > 1 && f.Cargo.Colonists == 0 {

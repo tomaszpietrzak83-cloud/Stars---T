@@ -1,0 +1,58 @@
+Version 0.6.4 - proportional patrols and free cruise versus pursuit
+
+User clarification supersedes 0.6.3's blanket unknown-equipment block:
+small unknown groups may be attacked; large groups need equipment scouting.
+Radiating scoop warp 6 is free routine movement, not a maximum pursuit speed.
+Investigate fifteen destroyers assigned against three weak ships.
+
+Changes:
+- An uncertain encounter of eight or more reported ships requires a scout.
+  Fewer remain eligible, with the existing strength, fresh-intel, fuel, return
+  and mine safety checks. Nearby and visibly converging reported contacts count
+  together. Missing target ship counts remain a scouting requirement. The rule
+  applies to saved jobs, target selection, retargeting and final departure.
+- Against a small unarmed encounter, a previously merged patrol can release
+  excess ships. A deterministic subset must meet assessed power and desired
+  weapon count, have a funded attack/return, and leave the surplus enough fuel
+  to return. Native splitting conserves ships, designs and fuel. The new patrol
+  receives no inherited attack job and can be assigned other duties.
+- Do not reduce groups against armed encounters or visible large reinforcement
+  groups using this weak-target shortcut. Cargo, damage, borrowed escort support,
+  maintenance and reserved fuel missions remain protected.
+- Fuel revalidation recognizes an approved patrol attack as a fast funded
+  mission. It can use safe engine speeds above warp 6. Routine containment and
+  free radiating-scoop patrol still use economical warp 6.
+
+Actual case found in read-only turn archives:
+- Year 2451 (also visible 2449/2450): Destroyer Mk 2 #66 contains fifteen own
+  design-15 destroyers, with RequiredShips=3, assigned to player 3 fleet #47.
+- Fuel Freighter v2 #47 is three Small Freighter hulls: one known fuel tanker
+  and two with unreported equipment. The reported hulls lack weapon slots.
+- Optional TestFifteenDestroyersOnCopied2451Orders loads a private JSON copy,
+  computes specs and plans in memory only. It retains three destroyers in #66
+  and releases twelve, with year 2451 unchanged. No personal turn or DB write.
+
+Verification:
+- Native cs/ai regression suites pass, excluding unrelated uncommitted patrol
+  audit/proposal tests. Focused API/database order regressions pass.
+- New tests: unknown groups 3/7 allowed and 8 blocked; two nearby groups of
+  four blocked; homogeneous and mixed fifteen-ship packs release twelve while
+  conserving all ships/fuel; radiating patrol retains economical warp 6 and
+  successfully plans funded pursuit above 6 through final departure checks.
+- Final focused copied-archive and allocation regressions pass after the
+  additional visible-reinforcement protection.
+- Native/WASM/frontend builds, isolated compiled smoke and installation results
+  follow below after completion.
+
+Limits: this does not claim guaranteed combat outcomes or replace the existing
+strength heuristic. Surplus release is conservative around armed targets and
+committed escort/repair/logistics duties. Personal save data is excluded from Git.
+
+Final verification/deployment: cs 2.770 s and ai 1.350 s pass with unrelated
+uncommitted audit/proposal suites excluded; focused server/database regressions
+pass. Final small-encounter/copied-archive/radiating-speed regressions also pass.
+Native/WASM/compiled frontend rebuilt. Compiled API/UI/map and embedded-WASM
+matching smoke passes on isolated ports 18094/18780, fresh DB and zero turns.
+Windows 0.6.4 installed; startup schema 30/no migration, hashes and local-ready
+HTTP 200 verified. Live year 2453 WaitingForPlayers remained unchanged across
+installation. Test servers stopped after checks; no personal save replaced.
