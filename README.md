@@ -12,6 +12,12 @@ Open the game at `http://localhost:5173`. The launcher signs into the local game
 
 The source is Go and Svelte/TypeScript. Developers need the Go version from `go.mod`, Node.js 22.17 or newer, and a CGO-capable C compiler. Run `npm ci` in `frontend`; build `wasm/main.go` using `GOOS=js GOARCH=wasm CGO_ENABLED=0` into `frontend/src/lib/wasm/cs.wasm`; run `npm run build` in `frontend`; build the native server with CGO into `windows/stars-local.exe`. The committed edition can be played without rebuilding.
 
+## Version 0.6.2
+
+Slow observed hostile formations now receive scanner watches, economical patrol containment and nearby debris collectors. Patrols prefer visible small support ships converging on the formation. Radiating scoop patrols gather at free warp 6; fuel, mine safety and committed transport tasks remain protected. Collectors join covered battles with disengagement orders and pick up real debris the next turn.
+
+Verification and limits: [docs/AUDIT-0.6.2.txt](docs/AUDIT-0.6.2.txt).
+
 ## Version 0.6.1
 
 Rapid consecutive starbase upgrades now receive the same four-year, 90%-of-old-value allowance as ships. Existing native component-reuse pricing remains available whenever cheaper; the discounts do not stack. The old base remains operational until construction completes.

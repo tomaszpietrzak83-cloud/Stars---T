@@ -8,6 +8,7 @@ import (
 // Manual control removes resumable automatic jobs, restores an illegally
 // borrowed manual mission, and preserves cargo, notes and committed building work.
 func (p *Player) TakeManualControl(f *Fleet) {
+	restoreCollectionBattlePlan(p, f, true)
 	var borrowed bomberBorrow
 	if json.Unmarshal([]byte(f.GetTag(bomberBorrowTag)), &borrowed) == nil && borrowed.Role == "" && p.Automation.FleetRoles[f.Num] == "escort" && len(borrowed.Orders.Waypoints) > 0 {
 		f.FleetOrders = borrowed.Orders

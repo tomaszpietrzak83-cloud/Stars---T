@@ -103,6 +103,9 @@ func patrolReportedPower(player *Player, enemy *Fleet) int {
 // Include nearby visible reinforcements, rather than treating each enemy as isolated.
 func patrolThreat(player *Player, target *Fleet) int {
 	power := 0
+	if prey := slowPreySupport(player, target); prey != nil && prey.Position.DistanceTo(target.Position) > 30 && patrolInterceptPosition(prey).DistanceTo(patrolInterceptPosition(target)) <= 40 {
+		power = min(1_000_000_000, power+patrolReportedPower(player, prey))
+	}
 	for _, enemy := range player.FleetIntels {
 		if enemy == nil || enemy.Delete || enemy.ReportAge != 0 || player.IsFriend(enemy.PlayerNum) || enemy.Position.DistanceTo(target.Position) > 30 {
 			continue
@@ -156,6 +159,9 @@ func patrolCanAttack(player *Player, fleet *Fleet) bool {
 	return job.Leader == fleet.Num && enemy != nil && patrolPower(fleet) >= patrolThreat(player, enemy)*3/2+1 && fleet.Spec.TotalShips >= job.RequiredShips
 }
 func patrolAvailable(player *Player, f *Fleet) bool {
+	return f.GetTag(containmentTag) == "" && patrolOperational(player, f)
+}
+func patrolOperational(player *Player, f *Fleet) bool {
 	return f.GetTag(patrolSalvageTag) == "" && f.GetTag(anticipatedSalvageTag) == "" && f.GetTag("maintenance-pending") == "" && !fuelNetworkManaged(f) && !f.Delete && !f.Starbase && (player.Automation.FleetRoles[f.Num] == "patrol" || player.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(escortTag) == "" && f.GetTag(bomberBorrowTag) == "") && f.Spec.HasWeapons && patrolPower(f) > 0 && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !player.FleetInActiveAssembly(f) && f.GetTag(tankerAwaitTag) == "" && readTankerJob(f) == nil && fleetDamagePercent(f) < player.Automation.repairThreshold()
 }
 func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
@@ -489,7 +495,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 			enemies := sortedPatrolTargets(player, fleet)
 			assigned := false
 			for _, enemy := range enemies {
-				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || (!priorityFleet(player, enemy) && fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
+				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || (!priorityFleet(player, enemy) && slowPreySupport(player, enemy) == nil && fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
 					continue
 				}
 				claimed := false

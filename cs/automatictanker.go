@@ -174,6 +174,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			}
 			goal := fleet.Waypoints[1]
 			allowThreat := combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
+			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
 			if job := logisticsWork(fleet); job != nil {
 				goal.Position = job.Position
 				allowThreat = knownRouteThreat(player, fleet.Position, job.Position) > 0 && len(group) > 1
@@ -183,6 +184,12 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				target = MapObjectTarget{}
 			}
 			policy := automaticRoutePolicy{AllowThreat: allowThreat, OneWay: colonizationOneWay(player, fleet, goal)}
+			if fleet.GetTag(containmentTag) != "" {
+				policy = economicalContainmentPolicy(player, fleet, fleet.Position.DistanceTo(goal.Position))
+			}
+			if collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0 {
+				policy = automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: 1}
+			}
 			if fleet.GetTag(frontierPatrolTag) != "" || fleet.GetTag(escortStagingTag) != "" {
 				policy.EconomicalPatrol = true
 				policy.MaxWarp = 6

@@ -422,6 +422,9 @@ func (t *turnGenerator) planLogisticsAutomation() {
 			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() {
 				continue
 			}
+			if fleet.GetTag(containmentTag) != "" {
+				continue
+			}
 			if fleet.GetTag(anticipatedSalvageTag) != "" || fleet.GetTag(traderConvoyTag) != "" {
 				continue
 			}

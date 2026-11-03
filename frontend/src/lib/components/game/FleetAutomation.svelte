@@ -48,7 +48,7 @@
 		const plan = automation.fleetAssemblies[Number(tags['fleet-assembly'])];
 		if (plan) return `${plan.name}: ${plan.status || 'Order pending'}`;
 		if (tags['scout-job'] && automation.fleetRoles[fleet.mapObject!.num] === 'scout') return tags['scout-job'];
-		for (const key of ['automatic-patrol', 'design-maintenance', 'logistics-job', 'mining-job', 'colonization-job', 'terraform-job', 'automatic-safety', 'bomber-orders']) {
+		for (const key of ['patrol-containment', 'automatic-patrol', 'design-maintenance', 'logistics-job', 'mining-job', 'colonization-job', 'terraform-job', 'automatic-safety', 'bomber-orders']) {
 			try { if (tags[key]) return (JSON.parse(tags[key]) as { status?: string }).status ?? 'Order pending'; } catch { /* unreadable old status */ }
 		}
 		return tags['escort-for'] ? `Escorting fleet #${tags['escort-for']}` : '';

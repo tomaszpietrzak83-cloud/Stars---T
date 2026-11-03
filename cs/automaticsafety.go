@@ -79,6 +79,7 @@ func (t *turnGenerator) planAutomaticSafety() {
 				}
 			}
 			defenders := 0
+			defenders += collectionArrivalCover(player, fleet, t.game.getFleets(player.Num))
 			for _, member := range convoyMembers(player, fleet, t.game.getFleets(player.Num)) {
 				if member.Spec.HasWeapons {
 					defenders += patrolPower(member)
@@ -86,8 +87,9 @@ func (t *turnGenerator) planAutomaticSafety() {
 			}
 			role := player.Automation.FleetRoles[fleet.Num]
 			canStand := role != "scout" && colonizationMode(role) == "" && defenders > threat*3/2
-			intercepted := !scoutReconActive(player, fleet) && !player.Automation.DisableInterceptionEvasion && threat > 0 && !canStand
-			needsRepair := !scoutReconActive(player, fleet) && !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()
+			contactRecon := scoutReconActive(player, fleet) && !readScoutRecon(fleet).Watching
+			intercepted := !contactRecon && !player.Automation.DisableInterceptionEvasion && threat > 0 && !canStand
+			needsRepair := !contactRecon && !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()
 			if active && ((job.Kind == "repair" && (damage == 0 || player.Automation.DisableAutomaticRepair)) || (job.Kind == "evade" && !intercepted)) {
 				delete(fleet.Tags, safetyTag)
 				delete(fleet.Tags, repairTankerTag)

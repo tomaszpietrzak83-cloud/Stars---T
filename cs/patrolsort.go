@@ -59,6 +59,9 @@ func patrolReportedTransport(p *Player, f *Fleet) bool {
 }
 func patrolTargetPriority(p *Player, f *Fleet, approaching bool) int {
 	if priorityFleet(p, f) {
+		return -2
+	}
+	if slowPreySupport(p, f) != nil {
 		return -1
 	}
 	if patrolReportedTransport(p, f) {

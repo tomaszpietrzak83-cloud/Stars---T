@@ -14,6 +14,12 @@ function makeContext() {
 }
 beforeEach(() => { context = makeContext(); });
 
+it('shows the containment assignment in the fleet list', async () => {
+	get(context.universe).fleets[0].mapObject!.tags['patrol-containment'] = JSON.stringify({status: 'Containing slow formation FF2; cutting off support'});
+	render(FleetAutomation);
+	await expect.element(page.getByText('Containing slow formation FF2; cutting off support')).toBeVisible();
+});
+
 it('assigns a tanker and shows it in the fuel network', async () => {
 	render(FleetAutomation);
 	await page.getByRole('combobox', { name: 'Role for Transport' }).selectOptions('tanker');

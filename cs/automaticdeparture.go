@@ -24,6 +24,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
 			if raw := fleet.GetTag(tankerAwaitTag); raw != "" {
 				num, _ := strconv.Atoi(raw)
 				if donor := t.game.getFleet(player.Num, num); donor != nil && !donor.Delete {
@@ -82,6 +83,10 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 			}
 		}
 		for _, fleet := range t.game.getFleets(player.Num) {
+			var collection anticipatedSalvage
+			if json.Unmarshal([]byte(fleet.GetTag(anticipatedSalvageTag)), &collection) == nil && blocked[collection.Hunter] {
+				blocked[fleet.Num] = true
+			}
 			if raw := fleet.GetTag(escortTag); raw != "" {
 				num, _ := strconv.Atoi(raw)
 				if blocked[num] {

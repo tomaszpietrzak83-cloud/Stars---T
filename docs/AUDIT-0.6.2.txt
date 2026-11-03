@@ -1,0 +1,60 @@
+Version 0.6.2 - slow hostile formation containment and battle collectors
+
+Request: recognize opportunities such as observed Fuel Freighter v2 #32 (46
+ships), warp 2; monitor with scouts, cut off incoming small support, gather
+patrols economically and stage collectors. Freighters remain actual battle
+participants and evade attackers.
+
+Implementation:
+- Up to two local slow formations receive up to two available scanner scouts
+  each. Reports, counts and observed headings are the only enemy inputs;
+  slow movement never proves empty fuel. Scanner watches retain normal cloak
+  and equipment-discovery rules. Priority colony recon and existing incoming
+  contact missions are preserved. Watches end when the opportunity expires.
+- Funded patrols screen the formation and gather at a rendezvous once known
+  strength is sufficient. Patrol allocation is shared between selected targets;
+  some remain available for support interception and colony defense. Existing
+  deliveries, maintenance, escorts, fuel missions and manual roles are protected.
+- Cheapest actual engine consumption per distance wins, with the fastest tied
+  setting, subject to a useful 20-turn approach. Radiating Hydro Ram Scoop uses
+  free warp 6. Fuel revalidation preserves this policy. Mine safety still applies.
+- Fresh small hostile contacts closing toward a slow formation are preferred
+  interception targets. A closing course is not a claim of hidden fuel cargo.
+  Reported large formations close to the predicted intercept add to its threat.
+- Empty freighters stage nearby; existing same-turn battle-collection planning
+  takes over the final approach. Covered arrival is recognized by fuel, safety
+  and departure checks. If the hunter's departure fails, the collector also holds.
+- Temporary Disengage battle plans preserve the previous plan and restore it
+  after collection or manual takeover. Unarmed native battle tokens already use
+  Disengage; collectors are not removed from combat or made invulnerable.
+- Fleet Automation displays containment status.
+
+Verification:
+- Full native cs suite passed (45.879 s); ai, db and converter suites passed.
+- Full server suite exceeded its timeout during its long generation tests;
+  not claimed passed. Focused design/history/order API regressions passed.
+- Seven focused tests cover observers, containment, actual support interception,
+  protected cargo/manual control, radiating warp and native armed combat with
+  a collector surviving and loading actual debris the following turn.
+- Isolated copy of current year-2450 save, no turn generated: 3:32 is the
+  reported 46-ship warp-2 formation. After planning plus final fuel, interception
+  safety and departure checks: scout #151 watches; patrols #16,67,107,114,119,
+  141,142,149 screen it; Medium Freighter #101 stages for collection. Actual
+  radiating patrol waypoints retain warp 6. Personal save was only read for a
+  consistent backup, then all planning operated in memory on that copy.
+- 17 browser tests passed; Svelte check: zero errors/warnings.
+- Native, WASM and compiled frontend rebuilt. Isolated compiled API/UI smoke
+  and installation results recorded below after completion.
+
+Limits: existing patrol combat-strength heuristic remains in use; the separate
+patrol algorithm proposal/audit is not integrated by this release. Screening is
+not a guarantee of victory or of preventing every possible hidden reinforcement.
+Scouts cannot expose equipment remotely unless their race normally allows it.
+
+Deployment: isolated compiled native/API/UI smoke passed (ports 18092/18778),
+including actual WASM map and matching embedded WASM bytes. Windows 0.6.2
+installed; schema 30/no migration and local-ready HTTP 200. The player had
+advanced to 2451 independently during development; read-only checks immediately
+before and after installation both show 2451 WaitingForPlayers. No personal
+turn generated or saved-game data replaced. SHA256SUMS.txt matches installed
+native executable and WASM. Source/Windows release published after verification.

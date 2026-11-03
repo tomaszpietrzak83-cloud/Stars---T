@@ -94,6 +94,12 @@ func (t *turnGenerator) planPatrolSalvage() {
 			score := math.Inf(1)
 			for _, f := range t.game.getFleets(p.Num) {
 				role := p.Automation.FleetRoles[f.Num]
+				if salvageNum == 0 && f.GetTag(containmentTag) != "" {
+					job := readContainment(f)
+					if job == nil || job.Kind != "collector" {
+						continue
+					}
+				}
 				if f.Delete || f.Starbase || f.InDesignMaintenance() || f.InAutomaticSafety() || f.GetTag("maintenance-pending") != "" || p.FleetInActiveAssembly(f) || fuelNetworkManaged(f) || readTankerJob(f) != nil || f.GetTag(tankerAwaitTag) != "" || salvageNum == 0 && f.GetTag(anticipatedSalvageTag) != "" || salvageNum != 0 && f.GetTag("empty-salvage") == strconv.Itoa(salvageNum) || f.CargoMass() > 0 || f.Spec.CargoCapacity <= 0 || logisticsWork(f) != nil {
 					continue
 				}
@@ -144,6 +150,8 @@ func (t *turnGenerator) planPatrolSalvage() {
 			// Actual debris takes precedence over speculative battle reservations.
 			// Existing cargo deliveries and pickups remain protected above.
 			delete(f.Tags, anticipatedSalvageTag)
+			delete(f.Tags, containmentTag)
+			setCollectionBattlePlan(p, f)
 			if p.Automation.FleetRoles[f.Num] == "patrol" {
 				f.SetTag(patrolSalvageTag, "1")
 			}
@@ -181,6 +189,8 @@ func (t *turnGenerator) planPatrolSalvage() {
 					pending.Hunter, pending.Enemy, pending.Target = hunter.Num, job.Enemy, job.Target
 					data, _ := json.Marshal(pending)
 					f.SetTag(anticipatedSalvageTag, string(data))
+					delete(f.Tags, containmentTag)
+					setCollectionBattlePlan(p, f)
 					applyExpeditionRoute(p, f, route)
 					reserved = true
 					break
@@ -201,6 +211,8 @@ func (t *turnGenerator) planPatrolSalvage() {
 			}
 			data, _ := json.Marshal(anticipatedSalvage{Position: position, Until: t.game.Year + 1, Hunter: hunter.Num, Enemy: job.Enemy, Target: job.Target})
 			f.SetTag(anticipatedSalvageTag, string(data))
+			delete(f.Tags, containmentTag)
+			setCollectionBattlePlan(p, f)
 			applyExpeditionRoute(p, f, route)
 			f.SetTag(fuelStatusTag, "Approaching a superior patrol interception to collect debris if the battle produces it")
 		}

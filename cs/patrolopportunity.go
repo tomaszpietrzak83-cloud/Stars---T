@@ -33,6 +33,9 @@ func patrolOpportunityScore(p *Player, f, enemy *Fleet) float64 {
 	if priorityFleet(p, enemy) {
 		return score * 1e-9
 	}
+	if slowPreySupport(p, enemy) != nil {
+		return score * 1e-7
+	}
 	if patrolReportedTransport(p, enemy) {
 		if enemyApproachingColony(p, enemy) {
 			return score * .001
@@ -69,7 +72,7 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 		if candidate == nil || candidate == current || candidate.Delete || candidate.Starbase || candidate.ReportAge != 0 || candidate.PlayerNum == p.Num || p.IsFriend(candidate.PlayerNum) {
 			continue
 		}
-		priority := priorityFleet(p, candidate)
+		priority := priorityFleet(p, candidate) || slowPreySupport(p, candidate) != nil
 		if !priority && enemyApproachingColony(p, current) && patrolReportedBomber(p, current) && !nearbyLandingThreat(p, f) {
 			continue
 		}
@@ -116,6 +119,8 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 		maxTurns := 2
 		if priorityFleet(p, candidate) {
 			maxTurns = 20
+		} else if slowPreySupport(p, candidate) != nil {
+			maxTurns = 4
 		}
 		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, patrolInterceptPosition(candidate), MapObjectTarget{}, automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: maxTurns, MinWarp: automaticCruiseWarp(p, f)})
 		if route == nil || route.WaitForFuel {

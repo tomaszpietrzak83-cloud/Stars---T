@@ -10,6 +10,7 @@ const scoutReconTag = "scout-recon"
 
 type scoutReconJob struct {
 	Enemy, Target int
+	Watching      bool   `json:"watching,omitempty"`
 	Status        string `json:"status"`
 }
 
@@ -234,7 +235,7 @@ func (t *turnGenerator) scanScoutReconContacts() {
 				p.discoverer.discoverDesign(token.design, p.Race.Spec.DiscoverDesignOnScan || f.Position.DistanceTo(enemy.Position) <= 1)
 			}
 			p.discoverer.discoverFleet(enemy, false)
-			if !unknownFleetEquipment(p, p.GetFleetIntel(enemy.PlayerNum, enemy.Num)) {
+			if !job.Watching && !unknownFleetEquipment(p, p.GetFleetIntel(enemy.PlayerNum, enemy.Num)) {
 				delete(f.Tags, scoutReconTag)
 			}
 		}

@@ -90,6 +90,9 @@ func (t *turnGenerator) planScoutAutomation() {
 			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "scout" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
+			if fleet.GetTag(preyWatchTag) != "" {
+				continue
+			}
 
 			if !scoutHasRetirement(player, fleet) && t.planPriorityColonyRecon(player, fleet) {
 				continue

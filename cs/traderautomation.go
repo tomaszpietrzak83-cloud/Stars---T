@@ -32,6 +32,9 @@ func saveTraderConvoy(f *Fleet, job traderConvoyJob) {
 	f.SetTag(traderConvoyTag, string(raw))
 }
 func traderCarrierAvailable(p *Player, f *Fleet) bool {
+	if f.GetTag(containmentTag) != "" {
+		return false
+	}
 	if f.Delete || f.Starbase || p.Automation.FleetRoles[f.Num] != "freighter" || f.InDesignMaintenance() || f.InAutomaticSafety() || p.FleetInActiveAssembly(f) || fuelNetworkManaged(f) || f.GetTag("maintenance-pending") != "" || f.GetTag(tankerAwaitTag) != "" || readTankerJob(f) != nil || f.GetTag(anticipatedSalvageTag) != "" || f.CargoMass() != 0 || f.Spec.CargoCapacity <= 0 {
 		return false
 	}

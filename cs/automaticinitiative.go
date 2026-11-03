@@ -26,6 +26,9 @@ func atOwnFuelDock(p *Player, f *Fleet) bool {
 func (t *turnGenerator) recoverIdleAutomaticFleets() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
+			if f.GetTag(containmentTag) != "" || f.GetTag(preyWatchTag) != "" {
+				continue
+			}
 			if !isAutomaticFleet(p, f) || f.Delete || f.Starbase || len(f.Waypoints) > 1 || atOwnFuelDock(p, f) || fuelNetworkManaged(f) || f.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
