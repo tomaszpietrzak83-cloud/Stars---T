@@ -7,14 +7,26 @@ import (
 	"testing"
 )
 
-func patrolTestEnemy(power int) *Fleet {
-	return &Fleet{MapObject: MapObject{Num: 91, PlayerNum: 2, Name: "Enemy scout", Position: Vector{30, 0}}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: power > 0, PowerRating: power}}}
+func patrolTestEnemy(power int, knownTo ...*Player) *Fleet {
+	f := &Fleet{MapObject: MapObject{Num: 91, PlayerNum: 2, Name: "Enemy scout", Position: Vector{30, 0}}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: power > 0, PowerRating: power}}}
+	if len(knownTo) > 0 {
+		p := knownTo[0]
+		num := 10000 + len(p.ShipDesignIntels)
+		d := &ShipDesign{PlayerNum: 2, Num: num, Hull: Scout.Name, Slots: []ShipDesignSlot{{HullSlotIndex: 1, HullComponent: RhinoScanner.Name, Quantity: 1}}, Spec: f.Spec.ShipDesignSpec}
+		if power > 0 {
+			d.Hull = Destroyer.Name
+		}
+		p.ShipDesignIntels = append(p.ShipDesignIntels, d)
+		p.shipIntelIndex = nil
+		f.Tokens = []ShipToken{{DesignNum: num, Quantity: 1}}
+	}
+	return f
 }
 func TestPatrolInterceptsWeakVisibleTargetWithReturnFuel(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Escort")
 	p.Automation.FleetRoles = map[int]string{f.Num: "patrol"}
-	p.FleetIntels = []*Fleet{patrolTestEnemy(0)}
+	p.FleetIntels = []*Fleet{patrolTestEnemy(0, p)}
 	addExpeditionTestDock(p, Vector{})
 	u.Run((*turnGenerator).planPatrolAutomation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).planAutomaticSafety, (*turnGenerator).enforceAutomaticDeparture)
 	require.True(t, patrolCanAttack(p, f))
@@ -28,7 +40,7 @@ func TestPatrolGroupsThenSplitsSurvivorsAfterContactLost(t *testing.T) {
 	p, leader, follower := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
 	follower.Position = leader.Position
 	p.Automation.FleetRoles = map[int]string{leader.Num: "patrol", follower.Num: "patrol"}
-	p.FleetIntels = []*Fleet{patrolTestEnemy(leader.Spec.PowerRating)}
+	p.FleetIntels = []*Fleet{patrolTestEnemy(leader.Spec.PowerRating, p)}
 	addExpeditionTestDock(p, Vector{})
 	ships := leader.Spec.TotalShips + follower.Spec.TotalShips
 	fuel := leader.Fuel + follower.Fuel
@@ -57,7 +69,7 @@ func TestPatrolRejectsOverwhelmingStaleAndUnknownArmedTargets(t *testing.T) {
 			u := logisticsUniverse(t)
 			p, f := u.Player(1), u.Fleet("Escort")
 			p.Automation.FleetRoles = map[int]string{f.Num: "patrol"}
-			enemy := patrolTestEnemy(f.Spec.PowerRating * 10)
+			enemy := patrolTestEnemy(f.Spec.PowerRating*10, p)
 			if kind == "stale" {
 				enemy.ReportAge = 1
 			}
@@ -76,7 +88,7 @@ func TestPatrolDoesNotSendDamagedShipsIntoCombat(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Escort")
 	p.Automation.FleetRoles = map[int]string{f.Num: "patrol"}
-	p.FleetIntels = []*Fleet{patrolTestEnemy(0)}
+	p.FleetIntels = []*Fleet{patrolTestEnemy(0, p)}
 	f.Tokens[0].QuantityDamaged = 1
 	f.Tokens[0].Damage = float64(f.Tokens[0].design.Spec.Armor) / 2
 	u.Run((*turnGenerator).planPatrolAutomation)
@@ -100,7 +112,7 @@ func TestPatrolDoesNotOverwriteMaintenanceRoute(t *testing.T) {
 func TestPatrolUsesReportedDesignsRatherThanPrivateEnemyPointers(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Escort")
-	enemy := patrolTestEnemy(0)
+	enemy := patrolTestEnemy(0, p)
 	enemy.Tokens = []ShipToken{{DesignNum: 10, Quantity: 1, design: f.Tokens[0].design}}
 	require.Positive(t, patrolReportedPower(p, enemy), "unidentified hulls retain a finite conservative estimate")
 	require.Less(t, patrolReportedPower(p, enemy), 1000000, "missing equipment is not an infinitely powerful enemy")
@@ -113,7 +125,7 @@ func TestPatrolLightScoutReportsDoNotOutrankDestroyers(t *testing.T) {
 	p, f := u.Player(1), u.Fleet("Escort")
 	f.Spec.PowerRating = 10
 	p.Automation.FleetRoles = map[int]string{f.Num: "patrol"}
-	enemy := patrolTestEnemy(0)
+	enemy := patrolTestEnemy(0, p)
 	enemy.Position = Vector{8, 0}
 	enemy.Tokens = []ShipToken{{DesignNum: 10, Quantity: 1}}
 	second := *enemy
@@ -123,6 +135,10 @@ func TestPatrolLightScoutReportsDoNotOutrankDestroyers(t *testing.T) {
 	p.ShipDesignIntels = []*ShipDesign{{PlayerNum: 2, Num: 10, Hull: Scout.Name, Spec: ShipDesignSpec{Mass: 17, ShipClass: ShipClassScout}}}
 	addExpeditionTestDock(p, Vector{})
 	require.Equal(t, 2, patrolReportedPower(p, enemy))
+	u.Run((*turnGenerator).planPatrolAutomation)
+	require.Zero(t, readPatrolJob(f).Leader, "a hull-only scout report still needs equipment reconnaissance")
+	p.ShipDesignIntels[0].Slots = []ShipDesignSlot{{Quantity: 1}}
+	p.ShipDesignIntels[0].Spec.PowerRating = 2
 	u.Run((*turnGenerator).planPatrolAutomation)
 	require.Equal(t, enemy.Num, readPatrolJob(f).Target)
 	require.True(t, patrolCanAttack(p, f))
@@ -134,7 +150,7 @@ func TestClosestPatrolGetsNearbyScoutInsteadOfDistantLowNumberFleet(t *testing.T
 	far.Position = Vector{}
 	near.Position = Vector{45, 0}
 	p.Automation.FleetRoles = map[int]string{far.Num: "patrol", near.Num: "patrol"}
-	enemy := patrolTestEnemy(0)
+	enemy := patrolTestEnemy(0, p)
 	enemy.Position = Vector{50, 0}
 	p.FleetIntels = []*Fleet{enemy}
 	addExpeditionTestDock(p, Vector{})
@@ -247,7 +263,7 @@ func TestPatrolMobilizesForDistantIncomingCombatFleet(t *testing.T) {
 	b.Position = a.Position
 	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
 	addExpeditionTestDock(p, Vector{})
-	enemy := patrolTestEnemy(10000)
+	enemy := patrolTestEnemy(10000, p)
 	enemy.Position = Vector{200, 0}
 	enemy.WarpSpeed = 5
 	enemy.Heading = VectorFloat64{-1, 0}
@@ -285,7 +301,7 @@ func TestStalledDistantPackDispersesAndDefersItsImpossibleTarget(t *testing.T) {
 	p, a, b := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
 	b.Position = Vector{15, 0}
 	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
-	e := patrolTestEnemy(100000)
+	e := patrolTestEnemy(100000, p)
 	e.Position = Vector{130, 0}
 	p.FleetIntels = []*Fleet{e}
 	savePatrolJob(a, patrolJob{Leader: a.Num, Enemy: e.PlayerNum, Target: e.Num, GatheringSince: u.Game.Year - 3})

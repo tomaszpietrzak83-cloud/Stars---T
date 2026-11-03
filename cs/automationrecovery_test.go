@@ -10,7 +10,7 @@ import (
 func TestThreatZoneAllowsWithdrawalWithoutAllowingApproach(t *testing.T) {
 	u := logisticsUniverse(t)
 	p := u.Player(1)
-	p.FleetIntels = []*Fleet{patrolTestEnemy(10)}
+	p.FleetIntels = []*Fleet{patrolTestEnemy(10, p)}
 	require.True(t, automaticLegSafe(&u.Game.Rules, p, Vector{}, Vector{-30, 0}, 5, false))
 	require.False(t, automaticLegSafe(&u.Game.Rules, p, Vector{}, Vector{30, 0}, 5, false))
 }
@@ -81,7 +81,7 @@ func TestPatrolRecruitsFreeEscortAgainstBomberAndRestoresItsRole(t *testing.T) {
 	p, leader, escort := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
 	escort.Position = leader.Position
 	p.Automation.FleetRoles = map[int]string{leader.Num: "patrol", escort.Num: "escort"}
-	enemy := patrolTestEnemy(leader.Spec.PowerRating)
+	enemy := patrolTestEnemy(leader.Spec.PowerRating, p)
 	enemy.Spec.Bomber = true
 	p.FleetIntels = []*Fleet{enemy}
 	addExpeditionTestDock(p, Vector{})
@@ -130,7 +130,7 @@ func TestEmergencyReturnCanChooseFundedRiskInsteadOfAnExcessivelyLongThreatDetou
 	p.Automation.FleetRoles = map[int]string{f.Num: "miner"}
 	p.PlanetIntels = nil
 	addExpeditionTestDock(p, Vector{200, 0})
-	p.FleetIntels = []*Fleet{patrolTestEnemy(10)}
+	p.FleetIntels = []*Fleet{patrolTestEnemy(10, p)}
 	p.FleetIntels[0].Position = Vector{90, 0}
 	f.Fuel = 2
 	for _, token := range f.Tokens {

@@ -16,6 +16,13 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			wp := fleet.Waypoints[1]
+			if player.Automation.FleetRoles[fleet.Num] == "patrol" {
+				job := readPatrolJob(fleet)
+				if enemy := patrolEnemy(player, job); job.Leader != 0 && enemy != nil && patrolNeedsRecon(player, enemy) && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() && !fundedEmergencyReturn(&t.game.Rules, player, fleet) && !knownWithdrawalRoute(player, fleet.Position, wp.Position) {
+					holdAutomaticFleet(player, fleet, "Waiting for scout equipment reconnaissance")
+					continue
+				}
+			}
 			if wp.TargetType == MapObjectTypeFleet && wp.TargetPlayerNum != player.Num && !player.IsFriend(wp.TargetPlayerNum) && !fleet.Spec.HasWeapons && !scoutReconEligible(player, fleet) {
 				delete(fleet.Tags, scoutReconTag)
 				if !t.routeEmergencyReturn(player, fleet) {

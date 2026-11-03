@@ -13,7 +13,7 @@ func TestPriorityFleetDirectsPatrolBeyondOrdinaryLocalRadius(t *testing.T) {
 	p.Automation.FleetRoles[f.Num] = "patrol"
 	addExpeditionTestDock(p, Vector{})
 	f.Spec.FuelCapacity, f.Fuel = 4000, 4000
-	near, target := patrolTestEnemy(0), patrolTestEnemy(0)
+	near, target := patrolTestEnemy(0, p), patrolTestEnemy(0, p)
 	near.Num, target.Num = 10, 11
 	near.Position, target.Position = Vector{10, 0}, Vector{160, 0}
 	p.FleetIntels = []*Fleet{near, target}
@@ -29,7 +29,7 @@ func TestPriorityFleetRetargetsExistingPatrolAndSurvivesLostContact(t *testing.T
 	p, f := u.Player(1), u.Fleet("Escort")
 	p.Automation.FleetRoles[f.Num] = "patrol"
 	addExpeditionTestDock(p, Vector{})
-	current, target := patrolTestEnemy(0), patrolTestEnemy(0)
+	current, target := patrolTestEnemy(0, p), patrolTestEnemy(0, p)
 	current.Num, target.Num = 10, 11
 	current.Position, target.Position = Vector{10, 0}, Vector{50, 0}
 	p.FleetIntels = []*Fleet{current, target}
@@ -51,7 +51,7 @@ func TestPriorityCannotOverridePatrolStrengthOrFreshReports(t *testing.T) {
 		u := logisticsUniverse(t)
 		p, f := u.Player(1), u.Fleet("Escort")
 		p.Automation.FleetRoles[f.Num] = "patrol"
-		e := patrolTestEnemy(f.Spec.PowerRating * 100)
+		e := patrolTestEnemy(f.Spec.PowerRating*100, p)
 		if stale {
 			e.ReportAge = 1
 			e.Spec.PowerRating = 0

@@ -37,7 +37,7 @@ func TestSurvivingPatrolTargetRecruitsSupportWithoutStoppingHunter(t *testing.T)
 	p, leader, support := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
 	p.Automation.FleetRoles[leader.Num] = "patrol"
 	p.Automation.FleetRoles[support.Num] = "patrol"
-	enemy := patrolTestEnemy(0)
+	enemy := patrolTestEnemy(0, p)
 	physical := *enemy
 	physical.Tokens = []ShipToken{{Quantity: 1}}
 	p.FleetIntels = []*Fleet{enemy}

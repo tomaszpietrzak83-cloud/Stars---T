@@ -163,7 +163,15 @@ func (t *turnGenerator) planSlowPreyObservers() {
 	for _, p := range t.automaticPlayers() {
 		used := map[int]bool{}
 		for _, enemy := range t.slowPreyTargets(p) {
-			for slot := 0; slot < 2; slot++ {
+			firstSlot := 0
+			for _, f := range t.game.getFleets(p.Num) {
+				if job := readScoutRecon(f); !f.Delete && scoutReconActive(p, f) && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && job.Target == enemy.Num {
+					firstSlot = 1
+					used[f.Num] = true
+					break
+				}
+			}
+			for slot := firstSlot; slot < 2; slot++ {
 				var chosen *Fleet
 				var best *expeditionRoute
 				bestScore := math.Inf(1)
@@ -171,7 +179,7 @@ func (t *turnGenerator) planSlowPreyObservers() {
 					if used[f.Num] || f.Delete || p.Automation.FleetRoles[f.Num] != "scout" || !scoutReconEligible(p, f) || f.InAutomaticSafety() || f.InDesignMaintenance() || scoutHasRetirement(p, f) || fuelNetworkManaged(f) || f.GetTag(tankerAwaitTag) != "" || p.FleetInActiveAssembly(f) || f.GetTag(priorityReconTag) != "" {
 						continue
 					}
-					if existing := readScoutRecon(f); existing != nil && !existing.Watching && enemyApproachingColony(p, p.GetFleetIntel(existing.Enemy, existing.Target)) {
+					if existing := readScoutRecon(f); existing != nil && !existing.Watching {
 						continue
 					}
 					if t.planPriorityColonyRecon(p, f) {
@@ -182,7 +190,13 @@ func (t *turnGenerator) planSlowPreyObservers() {
 						continue
 					}
 					position := preyRingPoint(f, enemy, min(100, rangeAvailable-8), float64(slot*2-1)*math.Pi/4)
-					route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, position, MapObjectTarget{}, automaticRoutePolicy{MaxTurns: 8, MinWarp: automaticCruiseWarp(p, f)})
+					target := MapObjectTarget{}
+					contact := slot == 0 && unknownFleetEquipment(p, enemy) && !p.Race.Spec.DiscoverDesignOnScan
+					if contact {
+						position = enemy.Position
+						target = enemy.ToTarget()
+					}
+					route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, position, target, automaticRoutePolicy{AllowThreat: contact, MaxTurns: 8, MinWarp: automaticCruiseWarp(p, f)})
 					if route == nil || route.WaitForFuel {
 						continue
 					}
@@ -199,11 +213,18 @@ func (t *turnGenerator) planSlowPreyObservers() {
 				}
 				used[chosen.Num] = true
 				job := scoutReconJob{Enemy: enemy.PlayerNum, Target: enemy.Num, Watching: true, Status: fmt.Sprintf("Watching slow formation %s from scanner range (%d/2)", enemy.Name, slot+1)}
+				if slot == 0 && unknownFleetEquipment(p, enemy) && !p.Race.Spec.DiscoverDesignOnScan {
+					job.Watching = false
+					job.Status = "Scout equipment reconnaissance before patrol attack on " + enemy.Name
+				}
 				data, _ := json.Marshal(job)
 				chosen.SetTag(scoutReconTag, string(data))
 				chosen.SetTag(preyWatchTag, "1")
 				chosen.SetTag(scoutTag, job.Status)
 				applyExpeditionRoute(p, chosen, best)
+				if !job.Watching && len(chosen.Waypoints) > 1 {
+					chosen.Waypoints[len(chosen.Waypoints)-1].MapObjectTarget = enemy.ToTarget()
+				}
 			}
 		}
 		for _, f := range t.game.getFleets(p.Num) {

@@ -15,7 +15,7 @@ func battlePickupUniverse(t *testing.T) (*testUniverse, *Player, *Fleet, *Fleet,
 	u.Fleet("Combat").Position = Vector{500, 0}
 	p.Automation.FleetRoles[hunter.Num] = "patrol"
 	addExpeditionTestDock(p, Vector{})
-	enemy := patrolTestEnemy(1)
+	enemy := patrolTestEnemy(1, p)
 	enemy.Position = Vector{25, 0}
 	p.FleetIntels = []*Fleet{enemy}
 	savePatrolJob(hunter, patrolJob{Leader: hunter.Num, Enemy: enemy.PlayerNum, Target: enemy.Num})

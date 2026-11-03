@@ -156,7 +156,7 @@ func patrolReportedCombatant(player *Player, enemy *Fleet) bool {
 func patrolCanAttack(player *Player, fleet *Fleet) bool {
 	job := readPatrolJob(fleet)
 	enemy := patrolEnemy(player, job)
-	return job.Leader == fleet.Num && enemy != nil && patrolPower(fleet) >= patrolThreat(player, enemy)*3/2+1 && fleet.Spec.TotalShips >= job.RequiredShips
+	return job.Leader == fleet.Num && enemy != nil && !patrolNeedsRecon(player, enemy) && patrolPower(fleet) >= patrolThreat(player, enemy)*3/2+1 && fleet.Spec.TotalShips >= job.RequiredShips
 }
 func patrolAvailable(player *Player, f *Fleet) bool {
 	return f.GetTag(containmentTag) == "" && patrolOperational(player, f)
@@ -309,6 +309,12 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 	enemy := patrolEnemy(player, job)
 	if enemy == nil || !patrolAvailable(player, leader) {
 		t.releasePatrol(player, leader)
+		return
+	}
+	if patrolNeedsRecon(player, enemy) {
+		job.Status = "Waiting for scout equipment reconnaissance of " + enemy.Name
+		holdAutomaticFleet(player, leader, job.Status)
+		savePatrolJob(leader, job)
 		return
 	}
 	// A pack can recruit fresh nearby support when the reported enemy grows.
@@ -496,6 +502,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 			assigned := false
 			for _, enemy := range enemies {
 				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || (!priorityFleet(player, enemy) && slowPreySupport(player, enemy) == nil && fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
+					continue
+				}
+				if patrolNeedsRecon(player, enemy) {
 					continue
 				}
 				claimed := false

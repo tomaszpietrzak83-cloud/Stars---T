@@ -13,10 +13,10 @@ func TestPatrolYearlyChoiceUsesHeadOnEndpoint(t *testing.T) {
 	p, f := u.Player(1), u.Fleet("Escort")
 	p.Automation.FleetRoles[f.Num] = "patrol"
 	addExpeditionTestDock(p, Vector{})
-	far := patrolTestEnemy(0)
+	far := patrolTestEnemy(0, p)
 	far.Num = 80
 	far.Position = Vector{100, 0}
-	passing := patrolTestEnemy(0)
+	passing := patrolTestEnemy(0, p)
 	passing.Num = 81
 	passing.Position = Vector{85, 0}
 	passing.WarpSpeed = 9
@@ -38,7 +38,7 @@ func TestPatrolSectorStaysAtBusyBirthBaseAndSurplusCoversOtherBase(t *testing.T)
 	p, a, b := u.Player(1), u.Fleet("Local"), u.Fleet("Spare")
 	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
 	p.PlanetIntels = []*Planet{u.Planet("Home"), u.Planet("Border")}
-	p.FleetIntels = []*Fleet{patrolTestEnemy(0)}
+	p.FleetIntels = []*Fleet{patrolTestEnemy(0, p)}
 	u.Run(func(tg *turnGenerator) { require.True(t, tg.patrolFrontier(p, a)) })
 	require.Equal(t, u.Planet("Home").Num, mustSector(a))
 	p.FleetIntels = nil
@@ -52,7 +52,7 @@ func TestMovingBomberGuardHasNarrowObservedCorridor(t *testing.T) {
 	u := logisticsUniverse(t)
 	p := u.Player(1)
 	p.PlanetIntels = []*Planet{u.Planet("Home")}
-	f := patrolTestEnemy(100)
+	f := patrolTestEnemy(100, p)
 	f.Position = Vector{60, 0}
 	f.Spec.Bomber = true
 	f.WarpSpeed = 6
@@ -204,7 +204,7 @@ func TestPatrolMergesEnoughLocalShipsForThreeUnarmedHulls(t *testing.T) {
 	p, a, b := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
 	b.Position = a.Position
 	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
-	enemy := patrolTestEnemy(0)
+	enemy := patrolTestEnemy(0, p)
 	enemy.Spec.TotalShips = 3
 	p.FleetIntels = []*Fleet{enemy}
 	addExpeditionTestDock(p, Vector{})
@@ -285,10 +285,10 @@ func TestHuntersAlreadyAssignedElsewhereMergeForNearbyThreeShipTarget(t *testing
 	p, a, b := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
 	b.Position = a.Position
 	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
-	far := patrolTestEnemy(0)
+	far := patrolTestEnemy(0, p)
 	far.Num = 80
 	far.Position = Vector{140, 0}
-	nearby := patrolTestEnemy(0)
+	nearby := patrolTestEnemy(0, p)
 	nearby.Num = 81
 	nearby.Position = Vector{10, 0}
 	nearby.Spec.TotalShips = 3

@@ -1,0 +1,57 @@
+Version 0.6.3 - scout reconnaissance before automatic patrol attacks
+
+User report: seven ships lost with no enemy destroyed.
+
+Read-only evidence: year-2451 battle #1 at planet 1949 (1739,223) records
+all seven own design-15 ships destroyed; enemy losses for players 12,31,32
+are zero. Player 12 contributed 26 ships, including six beam ships and eight
+torpedo ships. The consistent year-2450 copy retains own fleet #99's order
+against player 32 fleet #23, whose three reported designs lacked equipment
+reports. The report alone does not prove which intermediate retarget led to
+the eventual encounter; no personal game was replayed or edited.
+
+Changes:
+- Automatic patrol attack approval requires known equipment for every token
+  in the target. Unknown equipment is a scouting requirement, not a numerical
+  strength estimate authorizing combat. Explicit priorities do not bypass it.
+- Nearby or visibly converging unknown hostile contacts also block attack.
+  Distant receding contacts do not block separate known encounters.
+- Existing jobs wait for a scout. New target selection and opportunistic
+  retargeting exclude unscouted encounters. The final departure check also
+  catches saved automatic attack waypoints. Safety retreat, repair, maintenance
+  and funded emergency returns remain possible. Manual roles are unchanged.
+- Scouts investigate local unknown patrol targets and explicit priority targets
+  even without a course toward a colony. One scout takes real equipment contact
+  for an unknown slow formation; a second can watch from scanner range. Races
+  that normally discover equipment remotely retain that ability. The physical
+  scan runs before battle, so a sacrificed scout can transmit its discoveries.
+- Existing positive patrol fixtures now explicitly provide known equipment;
+  hull-only scouting fixture checks blocked-before-scan and allowed-after-scan.
+
+Verification:
+- Native regression proves a saved unknown-target order is held, a real scout
+  contacts the fleet, and only its equipment report allows attack afterward.
+- Separate regression covers an unknown converging reinforcement and shows a
+  distant receding contact does not block the known target.
+- Year-2450 copied snapshot: fleet #99's previous order is held pending scout
+  reconnaissance; containment of the requested 46-ship target still operates.
+  No year advanced and no copied state was written back to the personal DB.
+- Native cs/ai/db/converter regression results, compiled smoke and deployment
+  are recorded below after final completion. The unrelated uncommitted patrol
+  audit suite is excluded: its old test explicitly expects attack permission on
+  an equipment-unknown fixture. That draft is preserved without modification.
+
+Limit: this closes the unknown-equipment approval path. The existing numerical
+combat-strength heuristic for fully known encounters remains unchanged, so
+reconnaissance does not guarantee victory or reveal hidden fleets.
+
+Final results: cs 39.565 s, ai 1.962 s, db 2.528 s, converter 1.473 s, all
+pass with the unrelated uncommitted patrol audit excluded. Final observer-slot
+deduplication also passes focused scout/containment/collector regressions.
+Native/WASM/frontend rebuilt from final sources; compiled API/UI/WASM smoke
+passed on isolated ports 18093/18779 with a fresh database and zero turns.
+The player completed a turn independently while the update waited. Installation
+then preserved year 2452 WaitingForPlayers before and after replacement.
+Version 0.6.3 startup, schema 30/no migration, SHA-256 and local-ready HTTP 200
+verified. Existing 0.6.2 frontend checks (zero Svelte errors/warnings, 17 browser
+tests) remain applicable; 0.6.3 only changes native/WASM patrol logic and fixtures.

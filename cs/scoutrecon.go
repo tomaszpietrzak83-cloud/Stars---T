@@ -114,12 +114,31 @@ func enemyApproachingColony(p *Player, enemy *Fleet) bool {
 	return false
 }
 func unknownFleetEquipment(p *Player, enemy *Fleet) bool {
+	if enemy == nil {
+		return true
+	}
 	if len(enemy.Tokens) == 0 {
 		return true
 	}
 	for _, token := range enemy.Tokens {
 		design := p.GetShipDesignIntel(enemy.PlayerNum, token.DesignNum)
 		if design == nil || len(design.Slots) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// An unidentified nearby or visibly converging contact can join the encounter.
+func patrolNeedsRecon(p *Player, target *Fleet) bool {
+	if unknownFleetEquipment(p, target) {
+		return true
+	}
+	for _, enemy := range p.FleetIntels {
+		if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) {
+			continue
+		}
+		if (enemy.Position.DistanceTo(target.Position) <= 30 || patrolInterceptPosition(enemy).DistanceTo(patrolInterceptPosition(target)) <= 30) && unknownFleetEquipment(p, enemy) {
 			return true
 		}
 	}
@@ -161,13 +180,24 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 	var best *expeditionRoute
 	score := math.Inf(1)
 	for _, enemy := range p.FleetIntels {
-		if !enemyApproachingColony(p, enemy) || !reconCombatFormation(p, enemy) || !unknownFleetEquipment(p, enemy) && enemy.ReportAge == 0 {
+		incoming := enemyApproachingColony(p, enemy) && reconCombatFormation(p, enemy)
+		local := false
+		if enemy != nil && !enemy.Delete && !enemy.Starbase && enemy.PlayerNum != p.Num && !p.IsFriend(enemy.PlayerNum) && enemy.ReportAge == 0 && unknownFleetEquipment(p, enemy) {
+			local = priorityFleet(p, enemy)
+			for _, patrol := range t.game.getFleets(p.Num) {
+				if !patrol.Delete && p.Automation.FleetRoles[patrol.Num] == "patrol" && patrol.Position.DistanceTo(enemy.Position) <= 300 {
+					local = true
+					break
+				}
+			}
+		}
+		if (!incoming && !local) || !unknownFleetEquipment(p, enemy) && enemy.ReportAge == 0 {
 			continue
 		}
 		claimed := false
 		for _, other := range t.game.getFleets(p.Num) {
 			job := readScoutRecon(other)
-			if other != f && !other.Delete && job != nil && job.Enemy == enemy.PlayerNum && job.Target == enemy.Num {
+			if other != f && !other.Delete && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && job.Target == enemy.Num {
 				claimed = true
 				break
 			}
@@ -188,6 +218,9 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 			continue
 		}
 		value := float64(route.Turns)*1000 + f.Position.DistanceTo(enemy.Position)
+		if incoming || priorityFleet(p, enemy) {
+			value *= .01
+		}
 		if value < score {
 			chosen, best, score = enemy, route, value
 		}

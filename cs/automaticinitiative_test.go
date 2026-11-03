@@ -31,7 +31,7 @@ func TestRoutineRouteTradesOneExtraYearForSubstantialFuelSavings(t *testing.T) {
 func TestOrdinaryScoutDoesNotBlockRoutesOrAttractScoutRecon(t *testing.T) {
 	u := logisticsUniverse(t)
 	p := u.Player(1)
-	enemy := patrolTestEnemy(0)
+	enemy := patrolTestEnemy(0, p)
 	enemy.Tokens = []ShipToken{{DesignNum: 77, Quantity: 1}}
 	enemy.WarpSpeed = 5
 	enemy.Heading = VectorFloat64{-1, 0}
@@ -45,7 +45,7 @@ func TestOrdinaryScoutDoesNotBlockRoutesOrAttractScoutRecon(t *testing.T) {
 func TestUnknownEquipmentUsesWeaponAndGeneralCapacityTimesShipCount(t *testing.T) {
 	u := logisticsUniverse(t)
 	p := u.Player(1)
-	enemy := patrolTestEnemy(0)
+	enemy := patrolTestEnemy(0, p)
 	enemy.Tokens = []ShipToken{{DesignNum: 77, Quantity: 3}}
 	p.ShipDesignIntels = []*ShipDesign{{PlayerNum: 2, Num: 77, Hull: Destroyer.Name, Spec: ShipDesignSpec{Mass: 9999}}}
 	slots := 0
@@ -68,7 +68,7 @@ func TestRecoveryMovesPatrolEscortAndTransportDespiteEnemyProximity(t *testing.T
 			f.Position = Vector{100, 0}
 			f.OrbitingPlanetNum = 0
 			f.Fuel = f.Spec.FuelCapacity * 4 / 10
-			enemy := patrolTestEnemy(100)
+			enemy := patrolTestEnemy(100, p)
 			enemy.Position = Vector{50, 0}
 			p.FleetIntels = []*Fleet{enemy}
 			u.Run((*turnGenerator).recoverIdleAutomaticFleets, (*turnGenerator).enforceAutomaticDeparture)
@@ -86,7 +86,7 @@ func TestEmptyOffTerritoryFreighterWithdrawsInsteadOfWaitingForEscort(t *testing
 	p, f := u.Player(1), u.Fleet("Transport")
 	f.Position = Vector{40, 0}
 	f.OrbitingPlanetNum = 0
-	p.FleetIntels = []*Fleet{patrolTestEnemy(10000)}
+	p.FleetIntels = []*Fleet{patrolTestEnemy(10000, p)}
 	u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture)
 	require.Equal(t, "return", logisticsWork(f).Kind)
 	require.Greater(t, len(f.Waypoints), 1)
@@ -123,7 +123,7 @@ func TestPatrolAndFreeEscortsActuallyMergeSevenDestroyers(t *testing.T) {
 		}
 		p.Automation.FleetRoles[u.Fleet(fmt.Sprintf("Guard %d", i)).Num] = role
 	}
-	enemy := patrolTestEnemy(u.Fleet("Guard 0").Spec.PowerRating * 4)
+	enemy := patrolTestEnemy(u.Fleet("Guard 0").Spec.PowerRating*4, p)
 	p.FleetIntels = []*Fleet{enemy}
 	u.Run((*turnGenerator).planPatrolAutomation)
 	var leader *Fleet
@@ -180,7 +180,7 @@ func TestUrgentRendezvousKeepsTheSameThreatPolicyAtDeparture(t *testing.T) {
 	client.Waypoints = []Waypoint{{Position: client.Position}, {Position: donor.Position, WarpSpeed: 4}}
 	client.SetTag(tankerAwaitTag, fmt.Sprint(donor.Num))
 	writeTankerJob(donor, &automaticTankerJob{Urgent: true, TargetNum: client.Num, Members: []int{client.Num}, Position: donor.Position, DeliveryFuel: 20})
-	enemy := patrolTestEnemy(1000)
+	enemy := patrolTestEnemy(1000, p)
 	enemy.Position = Vector{40, 0}
 	p.FleetIntels = []*Fleet{enemy}
 	u.Run((*turnGenerator).enforceAutomaticDeparture)
@@ -221,7 +221,7 @@ func TestExistingPatrolPackCanRecruitANewFreeEscort(t *testing.T) {
 	p, leader, support := u.Player(1), u.Fleet("Escort"), u.Fleet("Combat")
 	support.Position = leader.Position
 	p.Automation.FleetRoles = map[int]string{leader.Num: "patrol", support.Num: "escort"}
-	enemy := patrolTestEnemy(patrolPower(leader))
+	enemy := patrolTestEnemy(patrolPower(leader), p)
 	p.FleetIntels = []*Fleet{enemy}
 	savePatrolJob(leader, patrolJob{Leader: leader.Num, Enemy: enemy.PlayerNum, Target: enemy.Num})
 	u.Run((*turnGenerator).planPatrolAutomation)

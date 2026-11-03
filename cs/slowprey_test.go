@@ -30,6 +30,13 @@ func TestSlowPreyOnCopiedSnapshot(t *testing.T) {
 	require.NotNil(t, prey)
 	require.True(t, slowPatrolPrey(p, prey))
 	require.Equal(t, 46, reportedFleetShips(prey))
+	if fleet := game.getFleet(1, 99); fleet != nil {
+		original := readPatrolJob(fleet)
+		require.True(t, patrolNeedsRecon(p, patrolEnemy(p, original)))
+		tg.advancePatrol(p, fleet)
+		require.Len(t, fleet.Waypoints, 1, "the seven-ship group's previous unknown-target order must not depart")
+		require.Contains(t, readPatrolJob(fleet).Status, "scout")
+	}
 	for _, e := range tg.slowPreyTargets(p) {
 		t.Logf("Selected %d:%d %s", e.PlayerNum, e.Num, e.Name)
 	}
@@ -46,7 +53,7 @@ func TestSlowPreyOnCopiedSnapshot(t *testing.T) {
 	tg.enforceAutomaticDeparture()
 	watchers, screens, collectors := 0, 0, 0
 	for _, f := range game.getFleets(1) {
-		if job := readScoutRecon(f); job != nil && job.Watching && job.Enemy == 3 && job.Target == 32 {
+		if job := readScoutRecon(f); job != nil && job.Enemy == 3 && job.Target == 32 {
 			watchers++
 			t.Logf("Observer %s", f.Name)
 		}
@@ -94,16 +101,22 @@ func slowPreyUniverse(t *testing.T) *testUniverse {
 }
 
 func TestSlowPreySurveillanceContainmentAndCollector(t *testing.T) {
+	contacts := 0
 	u := slowPreyUniverse(t)
 	p := u.Player(1)
 	u.Run((*turnGenerator).refreshSlowPreyOrders, (*turnGenerator).planSlowPreyObservers, (*turnGenerator).planScoutAutomation, (*turnGenerator).planSlowPreyContainment)
 	for _, n := range []string{"S1", "S2"} {
 		f := u.Fleet(n)
 		require.NotEmpty(t, f.GetTag(preyWatchTag))
-		require.True(t, readScoutRecon(f).Watching)
 		require.Len(t, f.Waypoints, 2)
-		require.Greater(t, f.Waypoints[1].Position.DistanceTo(p.FleetIntels[0].Position), 32.0)
+		if readScoutRecon(f).Watching {
+			require.Greater(t, f.Waypoints[1].Position.DistanceTo(p.FleetIntels[0].Position), 32.0)
+		} else {
+			contacts++
+			require.Equal(t, MapObjectTypeFleet, f.Waypoints[1].TargetType)
+		}
 	}
+	require.Equal(t, 1, contacts, "one scout must inspect unknown equipment before the patrol attacks")
 	count := 0
 	for _, n := range []string{"P1", "P2", "P3"} {
 		f := u.Fleet(n)
@@ -132,7 +145,7 @@ func TestSlowPreySurveillanceContainmentAndCollector(t *testing.T) {
 func TestSlowPreySupportUsesObservedClosingCourse(t *testing.T) {
 	u := slowPreyUniverse(t)
 	p := u.Player(1)
-	support := patrolTestEnemy(1)
+	support := patrolTestEnemy(1, p)
 	support.Num = 92
 	support.Position = Vector{80, 0}
 	support.WarpSpeed = 6
@@ -153,7 +166,7 @@ func TestSlowPreySupportUsesObservedClosingCourse(t *testing.T) {
 func TestSparePatrolInterceptsSlowPreySupport(t *testing.T) {
 	u := slowPreyUniverse(t)
 	p := u.Player(1)
-	support := patrolTestEnemy(1)
+	support := patrolTestEnemy(1, p)
 	support.Num = 92
 	support.Position = Vector{80, 0}
 	support.WarpSpeed = 4

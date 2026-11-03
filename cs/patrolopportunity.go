@@ -97,6 +97,9 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 		return candidates[i].Num < candidates[j].Num
 	})
 	for _, candidate := range candidates[:min(8, len(candidates))] {
+		if patrolNeedsRecon(p, candidate) {
+			continue
+		}
 		if patrolPower(f) < patrolThreat(p, candidate)*3/2+1 {
 			continue
 		}

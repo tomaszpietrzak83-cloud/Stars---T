@@ -73,10 +73,10 @@ func TestDirectCruiseNetworkCannotLockPatrolToOldTarget(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Escort")
 	p.Automation.FleetRoles[f.Num] = "patrol"
-	near := patrolTestEnemy(0)
+	near := patrolTestEnemy(0, p)
 	near.Num = 22
 	near.Position = Vector{10, 0}
-	far := patrolTestEnemy(0)
+	far := patrolTestEnemy(0, p)
 	far.Num = 23
 	far.Position = Vector{140, 0}
 	p.FleetIntels = []*Fleet{far, near}
