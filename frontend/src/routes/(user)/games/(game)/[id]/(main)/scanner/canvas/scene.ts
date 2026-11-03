@@ -14,7 +14,8 @@ import {
 	type Minefield,
 	type Planet,
 	type PlayerNote,
-	type Waypoint, WaypointSchema
+	type Waypoint,
+	WaypointSchema
 } from '#lib/types/cs-proto.js';
 import type { CommandedFleet } from '#lib/types/Fleet.js';
 import {
@@ -216,21 +217,39 @@ function wormholeExits(universe: Universe, waypoints: Waypoint[]): (Position | u
 
 // Draw the entire planned expedition without submitting speculative future
 // waypoints as native orders. The server revalidates fuel and threats each turn.
-export function scoutPetalWaypoints(universe:Universe,fleet:Fleet|CommandedFleet):Waypoint[]{
- const actual=fleet.fleetOrders?.waypoints??[];
- try{
-  const raw=fleet.mapObject?.tags['scout-mission'];if(!raw)return actual;
-  const mission=JSON.parse(raw) as {plan?:number[],leg?:number,refuelling?:boolean};
-  if(!Array.isArray(mission.plan)||mission.refuelling)return actual;
-  const route=[...actual];const current=route.at(-1)?.mapObjectTarget?.targetNum;
-  const pending=mission.plan.slice(Math.max(0,mission.leg??0));
-  if(pending[0]===current)pending.shift();
-  for(const num of pending){const p=universe.getPlanet(num);if(!p?.mapObject?.position)continue;
-   const previous=route.at(-1)?.position;if(previous?.x===p.mapObject.position.x&&previous?.y===p.mapObject.position.y)continue;
-   route.push(create(WaypointSchema,{position:p.mapObject.position,mapObjectTarget:{targetType:MapObjectType.PLANET,targetNum:num,targetName:p.mapObject.name,targetPosition:p.mapObject.position}}));
-  }
-  return route;
- }catch{return actual;}
+export function scoutPetalWaypoints(universe: Universe, fleet: Fleet | CommandedFleet): Waypoint[] {
+	const actual = fleet.fleetOrders?.waypoints ?? [];
+	try {
+		const raw = fleet.mapObject?.tags['scout-mission'];
+		if (!raw) return actual;
+		const mission = JSON.parse(raw) as { plan?: number[]; leg?: number; refuelling?: boolean };
+		if (!Array.isArray(mission.plan) || mission.refuelling) return actual;
+		const route = [...actual];
+		const current = route.at(-1)?.mapObjectTarget?.targetNum;
+		const pending = mission.plan.slice(Math.max(0, mission.leg ?? 0));
+		if (pending[0] === current) pending.shift();
+		for (const num of pending) {
+			const p = universe.getPlanet(num);
+			if (!p?.mapObject?.position) continue;
+			const previous = route.at(-1)?.position;
+			if (previous?.x === p.mapObject.position.x && previous?.y === p.mapObject.position.y)
+				continue;
+			route.push(
+				create(WaypointSchema, {
+					position: p.mapObject.position,
+					mapObjectTarget: {
+						targetType: MapObjectType.PLANET,
+						targetNum: num,
+						targetName: p.mapObject.name,
+						targetPosition: p.mapObject.position
+					}
+				})
+			);
+		}
+		return route;
+	} catch {
+		return actual;
+	}
 }
 export function buildWaypointPaths(
 	universe: Universe,
@@ -248,7 +267,7 @@ export function buildWaypointPaths(
 				(f.fleetOrders?.waypoints?.length ?? 0) > 1
 		)
 		.map((f) => {
-			const waypoints = scoutPetalWaypoints(universe,f);
+			const waypoints = scoutPetalWaypoints(universe, f);
 			return { waypoints, exits: wormholeExits(universe, waypoints), commanded: false };
 		});
 
@@ -263,7 +282,9 @@ export function buildWaypointPaths(
 				dragOrigin: true
 			});
 		}
-		const waypoints = dragOrigin?commandedFleet.fleetOrders.waypoints:scoutPetalWaypoints(universe,commandedFleet);
+		const waypoints = dragOrigin
+			? commandedFleet.fleetOrders.waypoints
+			: scoutPetalWaypoints(universe, commandedFleet);
 		paths.push({
 			waypoints,
 			exits: wormholeExits(universe, waypoints),
@@ -307,6 +328,8 @@ export type PlanetDraw = {
 	};
 	// the population view: a circle sized by the population (radius before zooming out, in pixels)
 	pop?: { radius: number; fill: string; ring: string };
+	// Annual production, with circle area proportional to the empire maximum.
+	resources?: { radius: number; fill: string };
 	// the mineral views: ironium, boranium and germanium bar heights, 0-20 pixels
 	minerals?: [number, number, number];
 	count?: { value: number; color: string };
@@ -332,6 +355,17 @@ export function buildPlanets(
 	commandedPlanet: CommandedPlanet | undefined,
 	colors: ScannerColors
 ): PlanetDraw[] {
+	const resourceValues = new Map<number, number>();
+	let maxResources = 0;
+	if (settings.planetViewState === PlanetViewState.Resources && player.num > 0) {
+		for (const intel of universe.planetIntels) {
+			const planet = universe.getPlanet(intel.mapObject?.num) ?? intel;
+			if (planet.mapObject?.playerNum !== player.num) continue;
+			const resources = Math.max(0, planet.spec?.resourcesPerYear ?? 0);
+			resourceValues.set(planet.mapObject?.num ?? 0, resources);
+			maxResources = Math.max(maxResources, resources);
+		}
+	}
 	return universe.planetIntels.map((planet) => {
 		const position = planet.mapObject?.position ?? emptyVector();
 		const orbiting = universe
@@ -375,6 +409,18 @@ export function buildPlanets(
 					setNormal(draw, planet, player, universe, settings, orbitingVisible, false, colors);
 				}
 				break;
+			case PlanetViewState.Resources: {
+				const resources = resourceValues.get(planet.mapObject?.num ?? 0) ?? 0;
+				if (resources > 0 && maxResources > 0) {
+					draw.resources = {
+						radius: 21 * Math.sqrt(resources / maxResources),
+						fill: colors.planet.resources
+					};
+				} else {
+					setNormal(draw, planet, player, universe, settings, orbitingVisible, commanded, colors);
+				}
+				break;
+			}
 			case PlanetViewState.MineralConcentration: {
 				setNormal(draw, planet, player, universe, settings, orbitingVisible, false, colors, false);
 				if (explored) {

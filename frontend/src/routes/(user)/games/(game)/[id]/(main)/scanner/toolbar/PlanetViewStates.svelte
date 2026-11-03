@@ -4,6 +4,7 @@
 	import PlanetViewStateMineralConc from './PlanetViewStateMineralConc.svelte';
 	import PlanetViewStatesNormal from './PlanetViewStateNormal.svelte';
 	import PlanetViewStatePopulation from './PlanetViewStatePopulation.svelte';
+	import PlanetViewStateResources from './PlanetViewStateResources.svelte';
 	import PlanetViewStateSurfaceMinerals from './PlanetViewStateSurfaceMinerals.svelte';
 
 	let props: HTMLAttributes<HTMLUListElement> = $props();
@@ -24,5 +25,8 @@
 	</li>
 	<li class="size-10">
 		<PlanetViewStatePopulation />
+	</li>
+	<li class="size-10">
+		<PlanetViewStateResources />
 	</li>
 </ul>

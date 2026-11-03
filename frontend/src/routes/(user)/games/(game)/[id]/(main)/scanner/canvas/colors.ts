@@ -59,7 +59,8 @@ export function readScannerColors(canvas: HTMLCanvasElement) {
 			popFriend: color('scanner-planet-pop-friend', '#ffff00'),
 			popFriendRing: color('scanner-planet-pop-friend-ring', '#7f7f00'),
 			popEnemy: color('scanner-planet-pop-enemy', '#ff0000'),
-			popEnemyRing: color('scanner-planet-pop-enemy-ring', '#ff0000')
+			popEnemyRing: color('scanner-planet-pop-enemy-ring', '#ff0000'),
+			resources: color('scanner-planet-resources', '#87cefa')
 		},
 		scanner: color('scanner-range', '#8b0000'),
 		scannerPen: color('scanner-range-pen', '#7f7f00'),

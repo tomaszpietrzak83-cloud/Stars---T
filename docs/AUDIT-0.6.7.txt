@@ -1,0 +1,46 @@
+Version 0.6.7 — annual resources on the galaxy map
+
+Request
+- Add R beside Population. The largest resource-producing planet in the empire
+  represents 100%; every other circle represents its fraction of that maximum.
+  Use light sky blue.
+
+Implementation
+- Added Resources as a separate saved planet view, preserving the numeric values
+  of every existing view and keyboard shortcut. R is immediately after Population
+  in the toolbar and the narrow-screen menu; its active icon also identifies the
+  collapsed menu. Responsive width accounting includes the sixth icon.
+- The scale uses current owned planet specs: total resourcesPerYear before the
+  production/research split, matching the empire annual-resource summary. A stale
+  intel value or an enemy/ally planet cannot change the empire maximum.
+- Filled circles use #87cefa. Circle AREA represents the fraction, so 500 versus
+  a maximum of 1000 has half the area. The maximum radius is 21 pixels in the
+  detailed map and 11 when zoomed out; uniform zoom scaling preserves the ratios.
+- Zero-production and non-owned planets retain normal map markers. Zero maximum
+  does not divide by zero. Existing names, fleet counts, selection and waypoint
+  clearance account for the resources circle's extent.
+
+Verification
+- 49 map scene/drawing tests pass, including 1000/500/250 production, foreign
+  production excluded, stale report values replaced by current specs, changing
+  the empire maximum and zero-production visibility.
+- 21 Chrome component tests pass. Real canvas pixel sampling verifies the exact
+  light-blue fill and proportional circle areas; toolbar tests verify R selection,
+  adjacency to Population and no overflow across phone/tablet/desktop widths,
+  with and without ally filters and a deletable waypoint.
+- Svelte/TypeScript check: zero errors and warnings. Native Windows executable,
+  WASM and compiled static UI rebuilt. Final isolated Chrome smoke on ports
+  18097/18783 verifies R, actual blue map pixels, saved selection after reload,
+  desktop and phone menu; fresh test database stays in year 2400. Embedded WASM
+  matches the source module byte for byte. Screenshots visually inspected.
+- No personal game is advanced, edited or replaced during testing. UI 0.6.7 was
+  switched to a complete immutable snapshot while the existing backend continued
+  the player's independently submitted turn. Native replacement waits for the
+  end of that turn; publication/install evidence follows below.
+
+Installation
+- The player's normal turn completed independently to year 2462. Only then was
+  the native backend replaced. Native 0.6.7 startup confirms schema 30 and no
+  migration; local-ready returns HTTP 200. The personal game remains
+  WaitingForPlayers/year 2462 before and after replacement. Both shipped hashes
+  are current. No personal game was submitted or advanced by these checks.

@@ -509,7 +509,7 @@ function drawYearTicks(
 function drawPlanets(ctx: CanvasRenderingContext2D, view: ScannerView, frame: ScannerFrame) {
 	const { colors } = frame;
 	for (const draw of frame.planets) {
-        const s = planetIconScale(draw,view.iconScale);
+		const s = planetIconScale(draw, view.iconScale);
 		const p = view.anchor(draw.planet.mapObject?.position);
 		if (!view.visible(p, 40 * s)) {
 			continue;
@@ -520,6 +520,12 @@ function drawPlanets(ctx: CanvasRenderingContext2D, view: ScannerView, frame: Sc
 		}
 		if (draw.pop) {
 			drawPopulation(ctx, view, p, draw.pop);
+		}
+		if (draw.resources) {
+			ctx.beginPath();
+			ctx.arc(p.x, p.y, resourceRadius(view, draw.resources), 0, Math.PI * 2);
+			ctx.fillStyle = draw.resources.fill;
+			ctx.fill();
 		}
 		if (draw.minerals) {
 			drawMineralGraph(ctx, view, p, draw.minerals, colors);
@@ -574,20 +580,41 @@ function drawNormalPlanet(
 }
 
 // Keep station silhouettes legible in a zoomed-out normal scanner view.
-export function planetIconScale(draw: PlanetDraw,scale: number): number {
- return draw.normal?.starbase ? Math.max(0.85,scale) : scale;
+export function planetIconScale(draw: PlanetDraw, scale: number): number {
+	return draw.normal?.starbase ? Math.max(0.85, scale) : scale;
 }
-function drawStarbaseMarker(ctx: CanvasRenderingContext2D,x:number,y:number,w:number,style:{fill:string;stroke:string}) {
- const cx=x+w/2,cy=y+w/2;
- ctx.save();
- ctx.beginPath();ctx.arc(cx,cy,w*.58,0,Math.PI*2);
- ctx.strokeStyle='#080b12';ctx.lineWidth=4;ctx.stroke();
- ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;ctx.stroke();
- ctx.fillStyle=style.fill;ctx.strokeStyle='#080b12';ctx.lineWidth=1.5;
- for(const [left,top,width,height] of [[x+w*.27,y+w*.2,w*.46,w*.6],[x-w*.13,y+w*.3,w*.25,w*.4],[x+w*.88,y+w*.3,w*.25,w*.4]]) {
-  ctx.beginPath();ctx.rect(left,top,width,height);ctx.fill();ctx.stroke();
- }
- ctx.restore();
+function drawStarbaseMarker(
+	ctx: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	w: number,
+	style: { fill: string; stroke: string }
+) {
+	const cx = x + w / 2,
+		cy = y + w / 2;
+	ctx.save();
+	ctx.beginPath();
+	ctx.arc(cx, cy, w * 0.58, 0, Math.PI * 2);
+	ctx.strokeStyle = '#080b12';
+	ctx.lineWidth = 4;
+	ctx.stroke();
+	ctx.strokeStyle = '#ffffff';
+	ctx.lineWidth = 1.5;
+	ctx.stroke();
+	ctx.fillStyle = style.fill;
+	ctx.strokeStyle = '#080b12';
+	ctx.lineWidth = 1.5;
+	for (const [left, top, width, height] of [
+		[x + w * 0.27, y + w * 0.2, w * 0.46, w * 0.6],
+		[x - w * 0.13, y + w * 0.3, w * 0.25, w * 0.4],
+		[x + w * 0.88, y + w * 0.3, w * 0.25, w * 0.4]
+	]) {
+		ctx.beginPath();
+		ctx.rect(left, top, width, height);
+		ctx.fill();
+		ctx.stroke();
+	}
+	ctx.restore();
 }
 
 function drawMarker(
@@ -647,6 +674,11 @@ function smallPopulation(view: ScannerView) {
 // so scale between the same smallest and largest sizes.
 function populationRadius(view: ScannerView, pop: NonNullable<PlanetDraw['pop']>) {
 	return smallPopulation(view) ? 1 + ((pop.radius - 2) * 10) / 19 : pop.radius;
+}
+
+function resourceRadius(view: ScannerView, resources: NonNullable<PlanetDraw['resources']>) {
+	// Uniform zoom scaling preserves ratios without the population view's minimum radius.
+	return resources.radius * (smallPopulation(view) ? 11 / 21 : 1);
 }
 
 function drawPopulation(
@@ -710,8 +742,8 @@ function drawMineralGraph(
  * counts, the selection arrow and waypoint paths can be placed around it.
  */
 function planetExtents(draw: PlanetDraw, view: ScannerView) {
-	let top = draw.top * planetIconScale(draw,view.iconScale);
-	let bottom = draw.bottom * planetIconScale(draw,view.iconScale);
+	let top = draw.top * planetIconScale(draw, view.iconScale);
+	let bottom = draw.bottom * planetIconScale(draw, view.iconScale);
 	if (draw.pop) {
 		const r = populationRadius(view, draw.pop) + 0.5;
 		top = Math.min(top, -r);
@@ -720,6 +752,11 @@ function planetExtents(draw: PlanetDraw, view: ScannerView) {
 	if (draw.minerals) {
 		const graph = mineralGraph(view);
 		top = Math.min(top, -(graph.bottom + graph.axis - 1));
+	}
+	if (draw.resources) {
+		const r = resourceRadius(view, draw.resources);
+		top = Math.min(top, -r);
+		bottom = Math.max(bottom, r);
 	}
 	return { top, bottom };
 }
@@ -879,9 +916,10 @@ function drawWarpLine(ctx: CanvasRenderingContext2D, view: ScannerView, frame: S
 		color = colors.mysteryTrader;
 	}
 
-	const yearDist = type === MapObjectType.FLEET
-		? getObservedSpeed(mo as Fleet)
-		: moving.warpSpeed * moving.warpSpeed;
+	const yearDist =
+		type === MapObjectType.FLEET
+			? getObservedSpeed(mo as Fleet)
+			: moving.warpSpeed * moving.warpSpeed;
 	const heading = moving.heading;
 	const origin = mo.mapObject.position;
 	const points = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5].map((year) =>

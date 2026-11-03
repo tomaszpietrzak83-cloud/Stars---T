@@ -6,6 +6,7 @@
 	import MineralConcentration from '#lib/components/icons/MineralConcentration.svelte';
 	import PlanetWithStarbase from '#lib/components/icons/PlanetWithStarbase.svelte';
 	import Population from '#lib/components/icons/Population.svelte';
+	import Resources from '#lib/components/icons/Resources.svelte';
 	import SurfaceMinerals from '#lib/components/icons/SurfaceMinerals.svelte';
 	import type { NextPrevMapObjectProps } from '#lib/services/Events.js';
 	import { getGameContext } from '#lib/services/GameContext.js';
@@ -51,7 +52,7 @@
 
 	// each planet view and filter button is this wide
 	const itemWidth = 40;
-	const viewCount = 5;
+	const viewCount = 6;
 	// toolbar padding and the dividers between groups
 	const paddingWidth = 34;
 	// add waypoint and messages, plus delete waypoint while a waypoint that can be deleted is selected
@@ -145,6 +146,8 @@
 								<Habitability class="size-6 " />
 							{:else if $settings.planetViewState == PlanetViewState.Population}
 								<Population class="size-6 " />
+							{:else if $settings.planetViewState == PlanetViewState.Resources}
+								<Resources class="size-6 text-[#87cefa]" />
 							{:else}
 								<PlanetWithStarbase class="size-6 " />
 							{/if}

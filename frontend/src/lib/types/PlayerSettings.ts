@@ -10,7 +10,9 @@ export enum PlanetViewState {
 	Population,
 
 	/// Show a bunch of gray dots. How boring
-	None
+	None,
+	// Append to preserve previously saved view values and existing shortcuts.
+	Resources
 }
 
 export class PlayerSettings implements FilterOptions {

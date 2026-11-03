@@ -20,7 +20,7 @@ import {
 	buildNotes,
 	buildPlanets,
 	buildWaypointPaths,
- scoutPetalWaypoints,
+	scoutPetalWaypoints,
 	noteMapText,
 	packetColor
 } from './scene';
@@ -182,6 +182,55 @@ describe('population view', () => {
 			{ '--scanner-name': '#abcdef' }
 		);
 		expect(draw.nameColor).toBe('#abcdef');
+	});
+});
+
+describe('resource view', () => {
+	it('scales circle areas to current own production, excluding other empires and stale reports', () => {
+		const universe = new Universe();
+		const planet = (num: number, owner: number, resources: number) =>
+			create(PlanetSchema, {
+				mapObject: { num, playerNum: owner, reportAge: 0 },
+				spec: { resourcesPerYear: resources, resourcesPerYearAvailable: 1 }
+			});
+		universe.planetIntels = [
+			planet(1, 1, 4000),
+			planet(2, 1, 4000),
+			planet(3, 1, 4000),
+			planet(4, 2, 100000),
+			planet(5, 0, 0)
+		];
+		universe.allPlanets = [
+			planet(1, 1, 1000),
+			planet(2, 1, 500),
+			planet(3, 1, 250),
+			universe.planetIntels[3],
+			universe.planetIntels[4]
+		];
+		const settings = new PlayerSettings();
+		settings.planetViewState = PlanetViewState.Resources;
+		const player = { num: 1, isFriend: () => false } as unknown as CommandedPlayer;
+		const build = () => buildPlanets(universe, player, settings, undefined, undefined, palette({}));
+		const draws = build();
+		const maxRadius = draws[0].resources!.radius;
+		expect(draws[0].resources?.fill).toBe('#87cefa');
+		expect((draws[1].resources!.radius / maxRadius) ** 2).toBeCloseTo(0.5);
+		expect((draws[2].resources!.radius / maxRadius) ** 2).toBeCloseTo(0.25);
+		expect(draws[3].resources).toBeUndefined();
+		expect(draws[4].resources).toBeUndefined();
+		universe.allPlanets[1].spec!.resourcesPerYear = 2000;
+		const updated = build();
+		expect(updated[1].resources!.radius).toBe(maxRadius);
+		expect((updated[0].resources!.radius / maxRadius) ** 2).toBeCloseTo(0.5);
+	});
+
+	it('keeps zero-production planets visible without invalid circle sizes', () => {
+		const { draw } = buildOne(
+			{ mapObject: { num: 1, playerNum: 1 }, spec: { resourcesPerYear: 0 } },
+			PlanetViewState.Resources
+		);
+		expect(draw.resources).toBeUndefined();
+		expect(draw.normal).toBeDefined();
 	});
 });
 
@@ -525,10 +574,34 @@ describe('notes', () => {
 	});
 });
 
-it('shows every remaining scout petal stop including the return dock without mutating orders',()=>{
- const fleet=create(FleetSchema,{mapObject:{num:1,playerNum:1,tags:{'scout-mission':JSON.stringify({plan:[2,3,4,1],leg:0})}},fleetOrders:{waypoints:[{position:{x:0,y:0}},{position:{x:20,y:0},mapObjectTarget:{targetType:MapObjectType.PLANET,targetNum:2}}]}});
- const universe={getPlanet:(num:number)=>create(PlanetSchema,{mapObject:{num,name:`Planet ${num}`,position:{x:num===1?0:num*10,y:num===4?10:0}}})} as unknown as Universe;
- const route=scoutPetalWaypoints(universe,fleet);
- expect(route.map(w=>w.mapObjectTarget?.targetNum??0)).toEqual([0,2,3,4,1]);
- expect(fleet.fleetOrders?.waypoints).toHaveLength(2);
+it('shows every remaining scout petal stop including the return dock without mutating orders', () => {
+	const fleet = create(FleetSchema, {
+		mapObject: {
+			num: 1,
+			playerNum: 1,
+			tags: { 'scout-mission': JSON.stringify({ plan: [2, 3, 4, 1], leg: 0 }) }
+		},
+		fleetOrders: {
+			waypoints: [
+				{ position: { x: 0, y: 0 } },
+				{
+					position: { x: 20, y: 0 },
+					mapObjectTarget: { targetType: MapObjectType.PLANET, targetNum: 2 }
+				}
+			]
+		}
+	});
+	const universe = {
+		getPlanet: (num: number) =>
+			create(PlanetSchema, {
+				mapObject: {
+					num,
+					name: `Planet ${num}`,
+					position: { x: num === 1 ? 0 : num * 10, y: num === 4 ? 10 : 0 }
+				}
+			})
+	} as unknown as Universe;
+	const route = scoutPetalWaypoints(universe, fleet);
+	expect(route.map((w) => w.mapObjectTarget?.targetNum ?? 0)).toEqual([0, 2, 3, 4, 1]);
+	expect(fleet.fleetOrders?.waypoints).toHaveLength(2);
 });

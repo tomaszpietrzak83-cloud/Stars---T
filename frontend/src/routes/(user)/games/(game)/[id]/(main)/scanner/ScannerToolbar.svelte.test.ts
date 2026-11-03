@@ -1,9 +1,9 @@
 import '../../../../../../../css/app.css';
 import { Universe } from '#lib/services/Universe.js';
 import { CommandedPlayer } from '#lib/types/Player.js';
-import { PlayerSettings } from '#lib/types/PlayerSettings.js';
+import { PlanetViewState, PlayerSettings } from '#lib/types/PlayerSettings.js';
 import { tick } from 'svelte';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
@@ -63,6 +63,19 @@ async function layout(width: number, shareMap: boolean, selectedWaypointIndex = 
 	const labelInToolbar = !!navbar.querySelector('[data-type="add-label"]:not(details a)');
 	const labelInMenu = !!navbar.querySelector('details [data-type="add-label"]');
 	const deleteButton = navbar.querySelector<HTMLElement>('#delete-waypoint');
+	const resourceButton = navbar.querySelector<HTMLAnchorElement>('a[href="#resources-view"]');
+	const populationButton = navbar.querySelector<HTMLAnchorElement>('a[href="#population-view"]');
+	expect(resourceButton).not.toBeNull();
+	expect(populationButton!.parentElement!.nextElementSibling!.querySelector('a')).toBe(
+		resourceButton
+	);
+	resourceButton!.click();
+	await tick();
+	expect(
+		get((state.context as { settings: ReturnType<typeof writable<PlayerSettings>> }).settings)
+			.planetViewState
+	).toBe(PlanetViewState.Resources);
+	expect(resourceButton!.getAttribute('aria-current')).toBe('true');
 	deleteButton?.click();
 	const result = {
 		stage,
@@ -87,12 +100,14 @@ describe('ScannerToolbar', () => {
 		{ width: 820, shareMap: false, stage: 'views' },
 		{ width: 834, shareMap: false, stage: 'views' },
 		{ width: 834, shareMap: true, stage: 'views' },
-		// landscape iPads fit the whole toolbar
+		// Six views fit with ordinary filters; ally filters need a little more width.
 		{ width: 1024, shareMap: false, stage: 'full' },
-		{ width: 1024, shareMap: true, stage: 'full' },
+		{ width: 1024, shareMap: true, stage: 'views' },
+		{ width: 1120, shareMap: true, stage: 'full' },
 		// the toolbar over the scanner, next to a two column command pane
 		{ width: 780, shareMap: false, stage: 'views' },
-		{ width: 520, shareMap: false, stage: 'views' },
+		{ width: 520, shareMap: false, stage: 'menu' },
+		{ width: 580, shareMap: false, stage: 'views' },
 		{ width: 400, shareMap: false, stage: 'menu' }
 	])('$width wide, shareMap=$shareMap shows $stage', async ({ width, shareMap, stage }) => {
 		const result = await layout(width, shareMap);
@@ -114,7 +129,7 @@ describe('ScannerToolbar', () => {
 
 	it.each([false, true])('never overflows, shareMap=%s', async (shareMap) => {
 		const stages: Stage[] = [];
-		for (let width = 340; width <= 1040; width += 6) {
+		for (let width = 340; width <= 1160; width += 6) {
 			const result = await layout(width, shareMap);
 			expect(result.overflow, `overflowed at ${width} (${result.stage})`).toBeLessThanOrEqual(0);
 			stages.push(result.stage);
