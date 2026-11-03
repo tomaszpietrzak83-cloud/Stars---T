@@ -9,7 +9,7 @@
 	href="#resources-view"
 	aria-label="Planet resources"
 	aria-current={$settings.planetViewState === PlanetViewState.Resources ? 'true' : undefined}
-	title="Resources: blue circle = annual production (largest planet = 100%); station above, surface mineral stocks I/B/G on the right"
+	title="Resources: blue circle = annual production (largest planet = 100%); base above the planet"
 	class:btn-primary={$settings.planetViewState === PlanetViewState.Resources}
 	class:btn-ghost={$settings.planetViewState !== PlanetViewState.Resources}
 	class="btn btn-xs size-full p-0"

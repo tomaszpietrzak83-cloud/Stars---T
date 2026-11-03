@@ -97,7 +97,7 @@ it('renders sky-blue resource discs with proportional areas on the real map canv
 		return count;
 	};
 	expect(pixelsOf(68, 54, 24, 21, [253, 253, 0])).toBeGreaterThan(10);
-	expect(pixelsOf(104, 76, 27, 44, [91, 140, 255])).toBeGreaterThan(50);
-	expect(pixelsOf(104, 76, 27, 44, [84, 207, 120])).toBeGreaterThan(25);
-	expect(pixelsOf(104, 76, 27, 44, [255, 216, 94])).toBeGreaterThan(0);
+	expect(pixelsOf(104, 76, 27, 44, [91, 140, 255])).toBe(0);
+	expect(pixelsOf(104, 76, 27, 44, [84, 207, 120])).toBe(0);
+	expect(pixelsOf(104, 76, 27, 44, [255, 216, 94])).toBe(0);
 });

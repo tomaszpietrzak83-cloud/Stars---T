@@ -1,0 +1,29 @@
+Version 0.6.9 — simplified R view
+
+Clarification: R needs only the sky-blue production circle and the base marker.
+
+- Removed the mineral-stock bars, their colored labels, backing and overflow
+  signs, and the on-map legend. Other mineral map modes remain available.
+- Kept the exact empire-relative annual-production AREA scale, sky-blue color,
+  and separate base badge above the circle. Zero-production bases stay visible.
+- Removed unused stock-rendering data/styles and reduced route/label clearance
+  to match the simpler drawing. Existing R selection and persistence remain.
+
+Verification: 53 scene/drawing/Chrome tests pass, including 100/50/25 production
+areas, visible base pixels, absent stock pixels, zero-production bases and
+separated base geometry at four map scales. Svelte/TypeScript check and final
+compiled application checks are recorded below.
+
+Frontend-only change: native 0.6.7 and its WASM are unchanged. Tests use an
+isolated copy of that backend and a synthetic game. No personal turn is submitted
+or advanced, no personal save replaced, and no backend restart is required.
+
+Final verification/deployment
+- Svelte/TypeScript: zero errors and warnings. Static UI built successfully.
+- Isolated compiled smoke on 18099/18785 passes: production-circle and base
+  pixels present, no stock-bar colors, no legend, saved R selection and phone
+  access. Synthetic database remains year 2400; embedded WASM matches byte for
+  byte. Desktop screenshot inspected.
+- Complete immutable UI snapshot 5e42442cf1d746a7 is live; backend process 12088
+  continues unchanged while the player's independently submitted turn runs.
+  Local-ready HTTP 200 and unchanged native/WASM hashes verified.

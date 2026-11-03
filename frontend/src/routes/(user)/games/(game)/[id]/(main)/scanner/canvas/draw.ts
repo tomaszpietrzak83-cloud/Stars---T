@@ -427,14 +427,8 @@ export function waypointClearance(frame: ScannerFrame, view: ScannerView, wp: Wa
 	if (target?.targetType === MapObjectType.PLANET) {
 		const planet = frame.planetsByNum.get(target.targetNum);
 		if (planet) {
-			if (planet.economy) {
-				const layout = resourceEconomyLayout(planet, view);
-				return Math.max(
-					min,
-					-planetExtents(planet, view).top,
-					planetExtents(planet, view).bottom,
-					layout.stockX + 24
-				);
+			if (planet.resourceStation) {
+				return Math.max(min, -planetExtents(planet, view).top, planetExtents(planet, view).bottom);
 			}
 			return Math.max(planetExtents(planet, view).bottom, min);
 		}
@@ -522,7 +516,7 @@ function drawPlanets(ctx: CanvasRenderingContext2D, view: ScannerView, frame: Sc
 		const p = view.anchor(draw.planet.mapObject?.position);
 		const margin = Math.max(
 			40 * s,
-			draw.economy ? resourceEconomyLayout(draw, view).stockX + 24 : 0,
+			draw.resourceStation ? -resourceStationLayout(draw, view).stationY + 2 : 0,
 			draw.resources ? resourceRadius(view, draw.resources) : 0
 		);
 		if (!view.visible(p, margin)) {
@@ -547,8 +541,15 @@ function drawPlanets(ctx: CanvasRenderingContext2D, view: ScannerView, frame: Sc
 		if (draw.normal) {
 			drawNormalPlanet(ctx, p, s, draw.normal, colors);
 		}
-		if (draw.economy) {
-			drawResourceEconomy(ctx, view, p, draw, colors);
+		if (draw.resourceStation) {
+			const layout = resourceStationLayout(draw, view);
+			drawStarbaseMarker(
+				ctx,
+				p.x + layout.stationX,
+				p.y + layout.stationY,
+				12,
+				draw.resourceStation
+			);
 		}
 		if (draw.count) {
 			// fleet counts go above the planet, like Stars!
@@ -699,61 +700,18 @@ function resourceRadius(view: ScannerView, resources: NonNullable<PlanetDraw['re
 }
 
 // Pixel geometry is shared by rendering and label/selection/path clearance.
-export function resourceEconomyLayout(draw: PlanetDraw, view: ScannerView) {
+export function resourceStationLayout(draw: PlanetDraw, view: ScannerView) {
 	const normal = draw.normal;
 	const bodyRadius = Math.max(
 		3,
 		draw.resources ? resourceRadius(view, draw.resources) : 0,
 		(normal?.ring?.radius ?? normal?.radius ?? 0) * planetIconScale(draw, view.iconScale)
 	);
-	const overflow = draw.economy?.stocks?.some((amount) => amount > draw.economy!.stockScale);
 	return {
 		bodyRadius,
 		stationX: -6,
-		stationY: -bodyRadius - 20,
-		stockX: bodyRadius + 6,
-		stockTop: overflow ? -24 : -17,
-		stockBottom: 18
+		stationY: -bodyRadius - 20
 	};
-}
-
-function drawResourceEconomy(
-	ctx: CanvasRenderingContext2D,
-	view: ScannerView,
-	p: ScreenPoint,
-	draw: PlanetDraw,
-	colors: ScannerColors
-) {
-	const economy = draw.economy!;
-	const layout = resourceEconomyLayout(draw, view);
-	ctx.save();
-	if (economy.station) {
-		drawStarbaseMarker(ctx, p.x + layout.stationX, p.y + layout.stationY, 12, economy.station);
-	}
-	if (economy.stocks) {
-		const left = p.x + layout.stockX;
-		ctx.fillStyle = 'rgba(8,11,18,0.9)';
-		ctx.fillRect(left - 3, p.y + layout.stockTop, 27, layout.stockBottom - layout.stockTop + 2);
-		const stockColors = [colors.resourceIronium, colors.resourceBoranium, colors.resourceGermanium];
-		const labels = ['I', 'B', 'G'];
-		ctx.font = 'bold 8px monospace';
-		ctx.textAlign = 'center';
-		ctx.textBaseline = 'alphabetic';
-		economy.stocks.forEach((amount, i) => {
-			const x = left + i * 8;
-			ctx.fillStyle = '#313844';
-			ctx.fillRect(x, p.y - 13, 5, 20);
-			if (amount > 0) {
-				const height = Math.min(20, Math.max(1, Math.round((20 * amount) / economy.stockScale)));
-				ctx.fillStyle = stockColors[i];
-				ctx.fillRect(x, p.y + 7 - height, 5, height);
-			}
-			ctx.fillStyle = stockColors[i];
-			ctx.fillText(labels[i], x + 2.5, p.y + 16);
-			if (amount > economy.stockScale) ctx.fillText('+', x + 2.5, p.y - 16);
-		});
-	}
-	ctx.restore();
 }
 
 function drawPopulation(
@@ -833,13 +791,8 @@ function planetExtents(draw: PlanetDraw, view: ScannerView) {
 		top = Math.min(top, -r);
 		bottom = Math.max(bottom, r);
 	}
-	if (draw.economy) {
-		const layout = resourceEconomyLayout(draw, view);
-		if (draw.economy.station) top = Math.min(top, layout.stationY - 2);
-		if (draw.economy.stocks) {
-			top = Math.min(top, layout.stockTop);
-			bottom = Math.max(bottom, layout.stockBottom + 2);
-		}
+	if (draw.resourceStation) {
+		top = Math.min(top, resourceStationLayout(draw, view).stationY - 2);
 	}
 	return { top, bottom };
 }

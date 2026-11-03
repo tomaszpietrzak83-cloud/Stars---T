@@ -233,7 +233,7 @@ describe('resource view', () => {
 		expect(draw.normal).toBeDefined();
 	});
 
-	it('combines live station and surface stocks without changing the production disc', () => {
+	it('shows the station without mineral graphs or changing the production disc', () => {
 		const { draw, colors } = buildOne(
 			{
 				mapObject: { num: 1, playerNum: 1 },
@@ -246,24 +246,21 @@ describe('resource view', () => {
 			PlanetViewState.Resources
 		);
 		expect(draw.resources?.radius).toBe(21);
-		expect(draw.economy).toEqual({
-			station: colors.starbase,
-			stocks: [6000, 2500, 1],
-			stockScale: 5000
-		});
+		expect(draw.resourceStation).toEqual(colors.starbase);
+		expect(draw.minerals).toBeUndefined();
 		expect(draw.normal).toBeUndefined();
 	});
 
-	it('shows a zero-production colony station and empty inventory, and keeps unknown enemy stocks hidden', () => {
+	it('keeps zero-production bases visible and adds no inventory graph', () => {
 		const own = buildOne(
 			{ mapObject: { num: 1, playerNum: 1 }, spec: { planetStarbaseSpec: { hasStarbase: true } } },
 			PlanetViewState.Resources
 		);
-		expect(own.draw.economy?.station).toEqual(own.colors.starbaseFort);
-		expect(own.draw.economy?.stocks).toEqual([0, 0, 0]);
+		expect(own.draw.resourceStation).toEqual(own.colors.starbaseFort);
+		expect(own.draw.minerals).toBeUndefined();
 		expect(own.draw.normal?.starbase).toBeUndefined();
 		const enemy = buildOne({ mapObject: { num: 1, playerNum: 2 } }, PlanetViewState.Resources);
-		expect(enemy.draw.economy).toBeUndefined();
+		expect(enemy.draw.resourceStation).toBeUndefined();
 	});
 });
 

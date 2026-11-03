@@ -1,7 +1,7 @@
 import { MapObjectType, WaypointSchema } from '#lib/types/cs-proto.js';
 import { create } from '@bufbuild/protobuf';
 import { expect, it } from 'vitest';
-import { planetIconScale, waypointClearance, resourceEconomyLayout } from './draw';
+import { planetIconScale, waypointClearance, resourceStationLayout } from './draw';
 import { ScannerView } from './view';
 import type { PlanetDraw } from './scene';
 
@@ -32,22 +32,16 @@ it('keeps station markers visible when normal planet dots shrink', () => {
 	expect(planetIconScale({} as Parameters<typeof planetIconScale>[0], 0.1)).toBe(0.1);
 });
 
-it('places stations and mineral stocks outside the R disc at detailed and distant zoom', () => {
+it('keeps the base above the R disc at detailed and distant zoom', () => {
 	const draw = {
 		resources: { radius: 21, fill: '#87cefa' },
-		economy: {
-			station: { fill: 'yellow', stroke: 'black' },
-			stocks: [6000, 2500, 1],
-			stockScale: 5000
-		},
+		resourceStation: { fill: 'yellow', stroke: 'black' },
 		top: 0,
 		bottom: 0
 	} as PlanetDraw;
 	for (const pixels of [0.25, 1, 2, 8]) {
 		const view = new ScannerView(pixels, pixels, 1, 0, 0, 400, 200, 1, 1);
-		const layout = resourceEconomyLayout(draw, view);
+		const layout = resourceStationLayout(draw, view);
 		expect(layout.stationY + 14).toBeLessThan(-layout.bodyRadius);
-		expect(layout.stockX - 3).toBeGreaterThan(layout.bodyRadius);
-		expect(layout.stockTop).toBeLessThan(-20);
 	}
 });
