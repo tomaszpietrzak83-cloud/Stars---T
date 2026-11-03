@@ -26,6 +26,17 @@ it('renders sky-blue resource discs with proportional areas on the real map canv
 		})
 	);
 	universe.planetIntels = universe.planets;
+	universe.planets[0].spec!.planetStarbaseSpec = {
+		$typeName: 'craig_stars.v1.PlanetStarbaseSpec',
+		hasStarbase: true,
+		dockCapacity: 100
+	} as never;
+	universe.planets[0].cargo = {
+		$typeName: 'craig_stars.v1.Cargo',
+		ironium: 6000,
+		boranium: 2500,
+		germanium: 1
+	} as never;
 	universe.resetAllPlanets();
 	universe.resetMapObjectsByPosition();
 	const player = new CommandedPlayer();
@@ -69,4 +80,24 @@ it('renders sky-blue resource discs with proportional areas on the real map canv
 	const counts = bluePixels();
 	expect(counts[1] / counts[0]).toBeCloseTo(0.5, 1);
 	expect(counts[2] / counts[0]).toBeCloseTo(0.25, 1);
+	const pixelsOf = (x: number, y: number, width: number, height: number, rgb: number[]) => {
+		const dpr = window.devicePixelRatio;
+		const pixels = canvas
+			.getContext('2d')!
+			.getImageData(x * dpr, y * dpr, width * dpr, height * dpr).data;
+		let count = 0;
+		for (let i = 0; i < pixels.length; i += 4)
+			if (
+				pixels[i] === rgb[0] &&
+				pixels[i + 1] === rgb[1] &&
+				pixels[i + 2] === rgb[2] &&
+				pixels[i + 3] === 255
+			)
+				count++;
+		return count;
+	};
+	expect(pixelsOf(68, 54, 24, 21, [253, 253, 0])).toBeGreaterThan(10);
+	expect(pixelsOf(104, 76, 27, 44, [91, 140, 255])).toBeGreaterThan(50);
+	expect(pixelsOf(104, 76, 27, 44, [84, 207, 120])).toBeGreaterThan(25);
+	expect(pixelsOf(104, 76, 27, 44, [255, 216, 94])).toBeGreaterThan(0);
 });

@@ -5,6 +5,7 @@
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { clamp } from '#lib/services/Math.js';
 	import { None } from '#lib/types/Consts.js';
+	import { PlanetViewState } from '#lib/types/PlayerSettings.js';
 	import {
 		MapObjectType,
 		VectorSchema,
@@ -30,6 +31,7 @@
 	import MapObjectQuadTreeFinder, { type FinderEvent } from './MapObjectQuadTreeFinder.svelte';
 	import { getVisibleMinefields } from './canvas/scene';
 	import ScannerCanvas from './ScannerCanvas.svelte';
+	import ResourceLegend from './ResourceLegend.svelte';
 
 	const {
 		game,
@@ -905,6 +907,9 @@
 				searchRadius={20}
 				{transform}
 			/>
+		{/if}
+		{#if $settings.planetViewState === PlanetViewState.Resources && !tape}
+			<ResourceLegend />
 		{/if}
 		{#if tape && tapeLine}
 			<svg class="absolute inset-0 size-full z-20 pointer-events-none" data-type="tape">

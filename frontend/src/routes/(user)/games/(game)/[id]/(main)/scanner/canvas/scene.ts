@@ -330,6 +330,12 @@ export type PlanetDraw = {
 	pop?: { radius: number; fill: string; ring: string };
 	// Annual production, with circle area proportional to the empire maximum.
 	resources?: { radius: number; fill: string };
+	// R view: separate station badge and surface stocks, outside the production disc.
+	economy?: {
+		station?: { fill: string; stroke: string };
+		stocks?: [number, number, number];
+		stockScale: number;
+	};
 	// the mineral views: ironium, boranium and germanium bar heights, 0-20 pixels
 	minerals?: [number, number, number];
 	count?: { value: number; color: string };
@@ -410,6 +416,8 @@ export function buildPlanets(
 				}
 				break;
 			case PlanetViewState.Resources: {
+				const current = universe.getPlanet(planet.mapObject?.num) ?? planet;
+				const ours = current.mapObject?.playerNum === player.num && player.num > 0;
 				const resources = resourceValues.get(planet.mapObject?.num ?? 0) ?? 0;
 				if (resources > 0 && maxResources > 0) {
 					draw.resources = {
@@ -417,7 +425,31 @@ export function buildPlanets(
 						fill: colors.planet.resources
 					};
 				} else {
-					setNormal(draw, planet, player, universe, settings, orbitingVisible, commanded, colors);
+					setNormal(
+						draw,
+						current,
+						player,
+						universe,
+						settings,
+						orbitingVisible,
+						commanded,
+						colors,
+						!ours
+					);
+				}
+				const cargo = current.cargo;
+				const base = current.spec?.planetStarbaseSpec;
+				if (ours || cargo?.ironium || cargo?.boranium || cargo?.germanium) {
+					draw.economy = {
+						station:
+							ours && base?.hasStarbase
+								? base.dockCapacity
+									? colors.starbase
+									: colors.starbaseFort
+								: undefined,
+						stocks: [cargo?.ironium ?? 0, cargo?.boranium ?? 0, cargo?.germanium ?? 0],
+						stockScale: Math.max(1, settings.mineralScale)
+					};
 				}
 				break;
 			}

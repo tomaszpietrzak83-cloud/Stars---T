@@ -1,0 +1,51 @@
+Version 0.6.8 — combined resources, station and mineral-stock map
+
+Request
+- In R view, also show whether a planet has a station and its minerals, with
+  a readable combined presentation.
+
+Presentation
+- Keep the sky-blue annual-production circle and its empire-relative AREA scale
+  from 0.6.7. A station has its own outlined silhouette above the circle; actual
+  stations and forts retain their distinct existing colors. Zero-production
+  colonies still show their planet, station and inventory.
+- Three separate vertical bars on a dark backing sit to the right of the planet.
+  Bright blue I = Ironium, green B = Boranium, yellow G = Germanium. These are
+  surface stocks in kT, not mineral concentrations or annual production.
+- All stock bars use the same mineralScale already available in the planet's
+  mineral graph. A positive stock has a minimum one-pixel mark; an empty stock
+  has only its dark track. A plus marks a stock above the shared scale.
+- An on-map legend explains annual production, station position, I/B/G and the
+  full-bar kT scale. It responds when the mineral scale changes, wraps on phones,
+  and yields to the distance-measurement strip while measuring.
+- Owned planets use their current station/cargo specs. Known foreign surface
+  stocks may be shown; absent enemy-stock knowledge does not create invented
+  bars. Other planets retain normal known station markers.
+- Station and inventory stay outside the production disc. Labels, fleet counts,
+  selection arrows, waypoint clearance and edge culling include the overlay.
+
+Verification
+- 52 scene/drawing tests pass: production ratios, own current data, station/fort,
+  zero production, empty stocks, hidden unknown enemy stocks, and non-overlapping
+  station/inventory geometry at four map scales.
+- Chrome real-canvas test passes: blue-circle areas remain 100/50/25 percent;
+  station and each of the three stock colors have visible pixels outside the
+  discs. Svelte/TypeScript check has zero errors and warnings.
+- This is a frontend-only update. The final bundle keeps the unchanged native
+  0.6.7 executable and matching WASM; there are no Go/WASM source changes.
+  Compiled UI, isolated smoke and publication evidence follow below.
+
+No personal game is submitted, advanced, edited or replaced by tests.
+
+Final compiled check and deployment
+- Static UI rebuilt with the unchanged, previously shipped WASM. Final Chrome
+  smoke on 18098/18784 uses an isolated COPY of the shipped native 0.6.7 binary:
+  all station/mineral colors, legend, saved R selection and phone layout pass;
+  the synthetic game stays year 2400. Desktop and phone screenshots
+  were inspected. Embedded WASM bytes match the source module.
+- This frontend-only change leaves backend source, native executable, WASM and
+  their hashes identical to 0.6.7, so it needs no backend replacement/restart.
+- Complete immutable UI snapshot 352e4f1fdd6b4d1e is active. Native process 12088
+  continues uninterrupted; game 3 remains in its independently started turn
+  generation from year 2462. No backend replacement is pending for this feature.
+  HTTP local-ready 200 and unchanged native/WASM hashes are verified.
