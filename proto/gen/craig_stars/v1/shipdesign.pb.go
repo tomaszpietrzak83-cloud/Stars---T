@@ -7,12 +7,11 @@
 package craig_starsv1
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -396,73 +395,76 @@ func (x *ShipDesignSlot) GetQuantity() int32 {
 }
 
 type ShipDesignSpec struct {
-	state                     protoimpl.MessageState `protogen:"open.v1"`
-	AdditionalMassDrivers     int32                  `protobuf:"varint,1,opt,name=additional_mass_drivers,json=additionalMassDrivers,proto3" json:"additional_mass_drivers,omitempty"`
-	Armor                     int32                  `protobuf:"varint,2,opt,name=armor,proto3" json:"armor,omitempty"`
-	BasePacketSpeed           int32                  `protobuf:"varint,3,opt,name=base_packet_speed,json=basePacketSpeed,proto3" json:"base_packet_speed,omitempty"`
-	BeamBonus                 float64                `protobuf:"fixed64,4,opt,name=beam_bonus,json=beamBonus,proto3" json:"beam_bonus,omitempty"`
-	BeamDefense               float64                `protobuf:"fixed64,5,opt,name=beam_defense,json=beamDefense,proto3" json:"beam_defense,omitempty"`
-	Bomber                    bool                   `protobuf:"varint,6,opt,name=bomber,proto3" json:"bomber,omitempty"`
-	Bombs                     []*Bomb                `protobuf:"bytes,7,rep,name=bombs,proto3" json:"bombs,omitempty"`
-	CanJump                   bool                   `protobuf:"varint,8,opt,name=can_jump,json=canJump,proto3" json:"can_jump,omitempty"`
-	CanLayMines               bool                   `protobuf:"varint,9,opt,name=can_lay_mines,json=canLayMines,proto3" json:"can_lay_mines,omitempty"`
-	CanStealFleetCargo        bool                   `protobuf:"varint,10,opt,name=can_steal_fleet_cargo,json=canStealFleetCargo,proto3" json:"can_steal_fleet_cargo,omitempty"`
-	CanStealPlanetCargo       bool                   `protobuf:"varint,11,opt,name=can_steal_planet_cargo,json=canStealPlanetCargo,proto3" json:"can_steal_planet_cargo,omitempty"`
-	CargoCapacity             int32                  `protobuf:"varint,12,opt,name=cargo_capacity,json=cargoCapacity,proto3" json:"cargo_capacity,omitempty"`
-	CloakPercent              int32                  `protobuf:"varint,13,opt,name=cloak_percent,json=cloakPercent,proto3" json:"cloak_percent,omitempty"`
-	CloakPercentFullCargo     int32                  `protobuf:"varint,14,opt,name=cloak_percent_full_cargo,json=cloakPercentFullCargo,proto3" json:"cloak_percent_full_cargo,omitempty"`
-	CloakUnits                int32                  `protobuf:"varint,15,opt,name=cloak_units,json=cloakUnits,proto3" json:"cloak_units,omitempty"`
-	Colonizer                 bool                   `protobuf:"varint,16,opt,name=colonizer,proto3" json:"colonizer,omitempty"`
-	Cost                      *Cost                  `protobuf:"bytes,17,opt,name=cost,proto3" json:"cost,omitempty"`
-	Engine                    *Engine                `protobuf:"bytes,18,opt,name=engine,proto3" json:"engine,omitempty"`
-	EstimatedRange            int32                  `protobuf:"varint,19,opt,name=estimated_range,json=estimatedRange,proto3" json:"estimated_range,omitempty"`
-	EstimatedRangeFull        int32                  `protobuf:"varint,20,opt,name=estimated_range_full,json=estimatedRangeFull,proto3" json:"estimated_range_full,omitempty"`
-	FuelCapacity              int32                  `protobuf:"varint,21,opt,name=fuel_capacity,json=fuelCapacity,proto3" json:"fuel_capacity,omitempty"`
-	FuelGeneration            int32                  `protobuf:"varint,22,opt,name=fuel_generation,json=fuelGeneration,proto3" json:"fuel_generation,omitempty"`
-	HasWeapons                bool                   `protobuf:"varint,23,opt,name=has_weapons,json=hasWeapons,proto3" json:"has_weapons,omitempty"`
-	HullType                  TechHullType           `protobuf:"varint,24,opt,name=hull_type,json=hullType,proto3,enum=craig_stars.v1.TechHullType" json:"hull_type,omitempty"`
-	ImmuneToOwnDetonation     bool                   `protobuf:"varint,25,opt,name=immune_to_own_detonation,json=immuneToOwnDetonation,proto3" json:"immune_to_own_detonation,omitempty"`
-	Initiative                int32                  `protobuf:"varint,26,opt,name=initiative,proto3" json:"initiative,omitempty"`
-	InnateScanRangePenFactor  float64                `protobuf:"fixed64,27,opt,name=innate_scan_range_pen_factor,json=innateScanRangePenFactor,proto3" json:"innate_scan_range_pen_factor,omitempty"`
-	Mass                      int32                  `protobuf:"varint,28,opt,name=mass,proto3" json:"mass,omitempty"`
-	MassDriver                string                 `protobuf:"bytes,29,opt,name=mass_driver,json=massDriver,proto3" json:"mass_driver,omitempty"`
-	MaxHullMass               int32                  `protobuf:"varint,30,opt,name=max_hull_mass,json=maxHullMass,proto3" json:"max_hull_mass,omitempty"`
-	MaxPopulation             int32                  `protobuf:"varint,31,opt,name=max_population,json=maxPopulation,proto3" json:"max_population,omitempty"`
-	MaxRange                  int32                  `protobuf:"varint,32,opt,name=max_range,json=maxRange,proto3" json:"max_range,omitempty"`
-	MineLayingRateByMineType  map[int32]int32        `protobuf:"bytes,33,rep,name=mine_laying_rate_by_mine_type,json=mineLayingRateByMineType,proto3" json:"mine_laying_rate_by_mine_type,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-	MineSweep                 int32                  `protobuf:"varint,34,opt,name=mine_sweep,json=mineSweep,proto3" json:"mine_sweep,omitempty"`
-	MiningRate                int32                  `protobuf:"varint,35,opt,name=mining_rate,json=miningRate,proto3" json:"mining_rate,omitempty"`
-	Movement                  int32                  `protobuf:"varint,36,opt,name=movement,proto3" json:"movement,omitempty"`
-	MovementBonus             float64                `protobuf:"fixed64,37,opt,name=movement_bonus,json=movementBonus,proto3" json:"movement_bonus,omitempty"`
-	MovementFull              int32                  `protobuf:"varint,38,opt,name=movement_full,json=movementFull,proto3" json:"movement_full,omitempty"`
-	NumBuilt                  int32                  `protobuf:"varint,39,opt,name=num_built,json=numBuilt,proto3" json:"num_built,omitempty"`
-	NumEngines                int32                  `protobuf:"varint,40,opt,name=num_engines,json=numEngines,proto3" json:"num_engines,omitempty"`
-	NumInstances              int32                  `protobuf:"varint,41,opt,name=num_instances,json=numInstances,proto3" json:"num_instances,omitempty"`
-	OrbitalConstructionModule bool                   `protobuf:"varint,42,opt,name=orbital_construction_module,json=orbitalConstructionModule,proto3" json:"orbital_construction_module,omitempty"`
-	PowerRating               int32                  `protobuf:"varint,43,opt,name=power_rating,json=powerRating,proto3" json:"power_rating,omitempty"`
-	Radiating                 bool                   `protobuf:"varint,44,opt,name=radiating,proto3" json:"radiating,omitempty"`
-	ReduceCloaking            float64                `protobuf:"fixed64,45,opt,name=reduce_cloaking,json=reduceCloaking,proto3" json:"reduce_cloaking,omitempty"`
-	ReduceMovement            int32                  `protobuf:"varint,46,opt,name=reduce_movement,json=reduceMovement,proto3" json:"reduce_movement,omitempty"`
-	RepairBonus               float64                `protobuf:"fixed64,47,opt,name=repair_bonus,json=repairBonus,proto3" json:"repair_bonus,omitempty"`
-	RetroBombs                []*Bomb                `protobuf:"bytes,48,rep,name=retro_bombs,json=retroBombs,proto3" json:"retro_bombs,omitempty"`
-	SafeHullMass              int32                  `protobuf:"varint,49,opt,name=safe_hull_mass,json=safeHullMass,proto3" json:"safe_hull_mass,omitempty"`
-	SafePacketSpeed           int32                  `protobuf:"varint,50,opt,name=safe_packet_speed,json=safePacketSpeed,proto3" json:"safe_packet_speed,omitempty"`
-	SafeRange                 int32                  `protobuf:"varint,51,opt,name=safe_range,json=safeRange,proto3" json:"safe_range,omitempty"`
-	Scanner                   bool                   `protobuf:"varint,52,opt,name=scanner,proto3" json:"scanner,omitempty"`
-	ScanRange                 int32                  `protobuf:"varint,53,opt,name=scan_range,json=scanRange,proto3" json:"scan_range,omitempty"`
-	ScanRangePen              int32                  `protobuf:"varint,54,opt,name=scan_range_pen,json=scanRangePen,proto3" json:"scan_range_pen,omitempty"`
-	Shields                   int32                  `protobuf:"varint,55,opt,name=shields,proto3" json:"shields,omitempty"`
-	SmartBombs                []*Bomb                `protobuf:"bytes,56,rep,name=smart_bombs,json=smartBombs,proto3" json:"smart_bombs,omitempty"`
-	SpaceDock                 int32                  `protobuf:"varint,57,opt,name=space_dock,json=spaceDock,proto3" json:"space_dock,omitempty"`
-	Starbase                  bool                   `protobuf:"varint,58,opt,name=starbase,proto3" json:"starbase,omitempty"`
-	Stargate                  string                 `protobuf:"bytes,59,opt,name=stargate,proto3" json:"stargate,omitempty"`
-	TechLevel                 *TechLevel             `protobuf:"bytes,60,opt,name=tech_level,json=techLevel,proto3" json:"tech_level,omitempty"`
-	TerraformRate             int32                  `protobuf:"varint,61,opt,name=terraform_rate,json=terraformRate,proto3" json:"terraform_rate,omitempty"`
-	TorpedoBonus              float64                `protobuf:"fixed64,62,opt,name=torpedo_bonus,json=torpedoBonus,proto3" json:"torpedo_bonus,omitempty"`
-	TorpedoJamming            float64                `protobuf:"fixed64,63,opt,name=torpedo_jamming,json=torpedoJamming,proto3" json:"torpedo_jamming,omitempty"`
-	WeaponSlots               []*ShipDesignSlot      `protobuf:"bytes,64,rep,name=weapon_slots,json=weaponSlots,proto3" json:"weapon_slots,omitempty"`
-	ShipClass                 ShipClass              `protobuf:"varint,65,opt,name=ship_class,json=shipClass,proto3,enum=craig_stars.v1.ShipClass" json:"ship_class,omitempty"`
-	MineralCargoBonus         int32                  `protobuf:"varint,66,opt,name=mineral_cargo_bonus,json=mineralCargoBonus,proto3" json:"mineral_cargo_bonus,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Server-owned game-year history, exposed for display and local cost forecasts.
+	VersionCreatedYear        int32             `protobuf:"varint,68,opt,name=version_created_year,json=versionCreatedYear,proto3" json:"version_created_year,omitempty"`
+	PreviousVersionNum        int32             `protobuf:"varint,69,opt,name=previous_version_num,json=previousVersionNum,proto3" json:"previous_version_num,omitempty"`
+	AdditionalMassDrivers     int32             `protobuf:"varint,1,opt,name=additional_mass_drivers,json=additionalMassDrivers,proto3" json:"additional_mass_drivers,omitempty"`
+	Armor                     int32             `protobuf:"varint,2,opt,name=armor,proto3" json:"armor,omitempty"`
+	BasePacketSpeed           int32             `protobuf:"varint,3,opt,name=base_packet_speed,json=basePacketSpeed,proto3" json:"base_packet_speed,omitempty"`
+	BeamBonus                 float64           `protobuf:"fixed64,4,opt,name=beam_bonus,json=beamBonus,proto3" json:"beam_bonus,omitempty"`
+	BeamDefense               float64           `protobuf:"fixed64,5,opt,name=beam_defense,json=beamDefense,proto3" json:"beam_defense,omitempty"`
+	Bomber                    bool              `protobuf:"varint,6,opt,name=bomber,proto3" json:"bomber,omitempty"`
+	Bombs                     []*Bomb           `protobuf:"bytes,7,rep,name=bombs,proto3" json:"bombs,omitempty"`
+	CanJump                   bool              `protobuf:"varint,8,opt,name=can_jump,json=canJump,proto3" json:"can_jump,omitempty"`
+	CanLayMines               bool              `protobuf:"varint,9,opt,name=can_lay_mines,json=canLayMines,proto3" json:"can_lay_mines,omitempty"`
+	CanStealFleetCargo        bool              `protobuf:"varint,10,opt,name=can_steal_fleet_cargo,json=canStealFleetCargo,proto3" json:"can_steal_fleet_cargo,omitempty"`
+	CanStealPlanetCargo       bool              `protobuf:"varint,11,opt,name=can_steal_planet_cargo,json=canStealPlanetCargo,proto3" json:"can_steal_planet_cargo,omitempty"`
+	CargoCapacity             int32             `protobuf:"varint,12,opt,name=cargo_capacity,json=cargoCapacity,proto3" json:"cargo_capacity,omitempty"`
+	CloakPercent              int32             `protobuf:"varint,13,opt,name=cloak_percent,json=cloakPercent,proto3" json:"cloak_percent,omitempty"`
+	CloakPercentFullCargo     int32             `protobuf:"varint,14,opt,name=cloak_percent_full_cargo,json=cloakPercentFullCargo,proto3" json:"cloak_percent_full_cargo,omitempty"`
+	CloakUnits                int32             `protobuf:"varint,15,opt,name=cloak_units,json=cloakUnits,proto3" json:"cloak_units,omitempty"`
+	Colonizer                 bool              `protobuf:"varint,16,opt,name=colonizer,proto3" json:"colonizer,omitempty"`
+	Cost                      *Cost             `protobuf:"bytes,17,opt,name=cost,proto3" json:"cost,omitempty"`
+	Engine                    *Engine           `protobuf:"bytes,18,opt,name=engine,proto3" json:"engine,omitempty"`
+	EstimatedRange            int32             `protobuf:"varint,19,opt,name=estimated_range,json=estimatedRange,proto3" json:"estimated_range,omitempty"`
+	EstimatedRangeFull        int32             `protobuf:"varint,20,opt,name=estimated_range_full,json=estimatedRangeFull,proto3" json:"estimated_range_full,omitempty"`
+	FuelCapacity              int32             `protobuf:"varint,21,opt,name=fuel_capacity,json=fuelCapacity,proto3" json:"fuel_capacity,omitempty"`
+	FuelGeneration            int32             `protobuf:"varint,22,opt,name=fuel_generation,json=fuelGeneration,proto3" json:"fuel_generation,omitempty"`
+	HasWeapons                bool              `protobuf:"varint,23,opt,name=has_weapons,json=hasWeapons,proto3" json:"has_weapons,omitempty"`
+	HullType                  TechHullType      `protobuf:"varint,24,opt,name=hull_type,json=hullType,proto3,enum=craig_stars.v1.TechHullType" json:"hull_type,omitempty"`
+	ImmuneToOwnDetonation     bool              `protobuf:"varint,25,opt,name=immune_to_own_detonation,json=immuneToOwnDetonation,proto3" json:"immune_to_own_detonation,omitempty"`
+	Initiative                int32             `protobuf:"varint,26,opt,name=initiative,proto3" json:"initiative,omitempty"`
+	InnateScanRangePenFactor  float64           `protobuf:"fixed64,27,opt,name=innate_scan_range_pen_factor,json=innateScanRangePenFactor,proto3" json:"innate_scan_range_pen_factor,omitempty"`
+	Mass                      int32             `protobuf:"varint,28,opt,name=mass,proto3" json:"mass,omitempty"`
+	MassDriver                string            `protobuf:"bytes,29,opt,name=mass_driver,json=massDriver,proto3" json:"mass_driver,omitempty"`
+	MaxHullMass               int32             `protobuf:"varint,30,opt,name=max_hull_mass,json=maxHullMass,proto3" json:"max_hull_mass,omitempty"`
+	MaxPopulation             int32             `protobuf:"varint,31,opt,name=max_population,json=maxPopulation,proto3" json:"max_population,omitempty"`
+	MaxRange                  int32             `protobuf:"varint,32,opt,name=max_range,json=maxRange,proto3" json:"max_range,omitempty"`
+	MineLayingRateByMineType  map[int32]int32   `protobuf:"bytes,33,rep,name=mine_laying_rate_by_mine_type,json=mineLayingRateByMineType,proto3" json:"mine_laying_rate_by_mine_type,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	MineSweep                 int32             `protobuf:"varint,34,opt,name=mine_sweep,json=mineSweep,proto3" json:"mine_sweep,omitempty"`
+	MiningRate                int32             `protobuf:"varint,35,opt,name=mining_rate,json=miningRate,proto3" json:"mining_rate,omitempty"`
+	Movement                  int32             `protobuf:"varint,36,opt,name=movement,proto3" json:"movement,omitempty"`
+	MovementBonus             float64           `protobuf:"fixed64,37,opt,name=movement_bonus,json=movementBonus,proto3" json:"movement_bonus,omitempty"`
+	MovementFull              int32             `protobuf:"varint,38,opt,name=movement_full,json=movementFull,proto3" json:"movement_full,omitempty"`
+	NumBuilt                  int32             `protobuf:"varint,39,opt,name=num_built,json=numBuilt,proto3" json:"num_built,omitempty"`
+	NumEngines                int32             `protobuf:"varint,40,opt,name=num_engines,json=numEngines,proto3" json:"num_engines,omitempty"`
+	NumInstances              int32             `protobuf:"varint,41,opt,name=num_instances,json=numInstances,proto3" json:"num_instances,omitempty"`
+	OrbitalConstructionModule bool              `protobuf:"varint,42,opt,name=orbital_construction_module,json=orbitalConstructionModule,proto3" json:"orbital_construction_module,omitempty"`
+	PowerRating               int32             `protobuf:"varint,43,opt,name=power_rating,json=powerRating,proto3" json:"power_rating,omitempty"`
+	Radiating                 bool              `protobuf:"varint,44,opt,name=radiating,proto3" json:"radiating,omitempty"`
+	ReduceCloaking            float64           `protobuf:"fixed64,45,opt,name=reduce_cloaking,json=reduceCloaking,proto3" json:"reduce_cloaking,omitempty"`
+	ReduceMovement            int32             `protobuf:"varint,46,opt,name=reduce_movement,json=reduceMovement,proto3" json:"reduce_movement,omitempty"`
+	RepairBonus               float64           `protobuf:"fixed64,47,opt,name=repair_bonus,json=repairBonus,proto3" json:"repair_bonus,omitempty"`
+	RetroBombs                []*Bomb           `protobuf:"bytes,48,rep,name=retro_bombs,json=retroBombs,proto3" json:"retro_bombs,omitempty"`
+	SafeHullMass              int32             `protobuf:"varint,49,opt,name=safe_hull_mass,json=safeHullMass,proto3" json:"safe_hull_mass,omitempty"`
+	SafePacketSpeed           int32             `protobuf:"varint,50,opt,name=safe_packet_speed,json=safePacketSpeed,proto3" json:"safe_packet_speed,omitempty"`
+	SafeRange                 int32             `protobuf:"varint,51,opt,name=safe_range,json=safeRange,proto3" json:"safe_range,omitempty"`
+	Scanner                   bool              `protobuf:"varint,52,opt,name=scanner,proto3" json:"scanner,omitempty"`
+	ScanRange                 int32             `protobuf:"varint,53,opt,name=scan_range,json=scanRange,proto3" json:"scan_range,omitempty"`
+	ScanRangePen              int32             `protobuf:"varint,54,opt,name=scan_range_pen,json=scanRangePen,proto3" json:"scan_range_pen,omitempty"`
+	Shields                   int32             `protobuf:"varint,55,opt,name=shields,proto3" json:"shields,omitempty"`
+	SmartBombs                []*Bomb           `protobuf:"bytes,56,rep,name=smart_bombs,json=smartBombs,proto3" json:"smart_bombs,omitempty"`
+	SpaceDock                 int32             `protobuf:"varint,57,opt,name=space_dock,json=spaceDock,proto3" json:"space_dock,omitempty"`
+	Starbase                  bool              `protobuf:"varint,58,opt,name=starbase,proto3" json:"starbase,omitempty"`
+	Stargate                  string            `protobuf:"bytes,59,opt,name=stargate,proto3" json:"stargate,omitempty"`
+	TechLevel                 *TechLevel        `protobuf:"bytes,60,opt,name=tech_level,json=techLevel,proto3" json:"tech_level,omitempty"`
+	TerraformRate             int32             `protobuf:"varint,61,opt,name=terraform_rate,json=terraformRate,proto3" json:"terraform_rate,omitempty"`
+	TorpedoBonus              float64           `protobuf:"fixed64,62,opt,name=torpedo_bonus,json=torpedoBonus,proto3" json:"torpedo_bonus,omitempty"`
+	TorpedoJamming            float64           `protobuf:"fixed64,63,opt,name=torpedo_jamming,json=torpedoJamming,proto3" json:"torpedo_jamming,omitempty"`
+	WeaponSlots               []*ShipDesignSlot `protobuf:"bytes,64,rep,name=weapon_slots,json=weaponSlots,proto3" json:"weapon_slots,omitempty"`
+	ShipClass                 ShipClass         `protobuf:"varint,65,opt,name=ship_class,json=shipClass,proto3,enum=craig_stars.v1.ShipClass" json:"ship_class,omitempty"`
+	MineralCargoBonus         int32             `protobuf:"varint,66,opt,name=mineral_cargo_bonus,json=mineralCargoBonus,proto3" json:"mineral_cargo_bonus,omitempty"`
 	// 0: automatic equipment-based strategy; otherwise battle plan number + 1.
 	DefaultBattlePlan int32 `protobuf:"varint,67,opt,name=default_battle_plan,json=defaultBattlePlan,proto3" json:"default_battle_plan,omitempty"`
 	unknownFields     protoimpl.UnknownFields
@@ -497,6 +499,20 @@ func (x *ShipDesignSpec) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ShipDesignSpec.ProtoReflect.Descriptor instead.
 func (*ShipDesignSpec) Descriptor() ([]byte, []int) {
 	return file_craig_stars_v1_shipdesign_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ShipDesignSpec) GetVersionCreatedYear() int32 {
+	if x != nil {
+		return x.VersionCreatedYear
+	}
+	return 0
+}
+
+func (x *ShipDesignSpec) GetPreviousVersionNum() int32 {
+	if x != nil {
+		return x.PreviousVersionNum
+	}
+	return 0
 }
 
 func (x *ShipDesignSpec) GetAdditionalMassDrivers() int32 {
@@ -994,8 +1010,10 @@ const file_craig_stars_v1_shipdesign_proto_rawDesc = "" +
 	"\x0eShipDesignSlot\x12%\n" +
 	"\x0ehull_component\x18\x01 \x01(\tR\rhullComponent\x12&\n" +
 	"\x0fhull_slot_index\x18\x02 \x01(\x05R\rhullSlotIndex\x12\x1a\n" +
-	"\bquantity\x18\x03 \x01(\x05R\bquantity\"\x98\x16\n" +
-	"\x0eShipDesignSpec\x126\n" +
+	"\bquantity\x18\x03 \x01(\x05R\bquantity\"\xfc\x16\n" +
+	"\x0eShipDesignSpec\x120\n" +
+	"\x14version_created_year\x18D \x01(\x05R\x12versionCreatedYear\x120\n" +
+	"\x14previous_version_num\x18E \x01(\x05R\x12previousVersionNum\x126\n" +
 	"\x17additional_mass_drivers\x18\x01 \x01(\x05R\x15additionalMassDrivers\x12\x14\n" +
 	"\x05armor\x18\x02 \x01(\x05R\x05armor\x12*\n" +
 	"\x11base_packet_speed\x18\x03 \x01(\x05R\x0fbasePacketSpeed\x12\x1d\n" +

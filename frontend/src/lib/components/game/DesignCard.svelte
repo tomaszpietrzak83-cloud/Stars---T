@@ -65,6 +65,7 @@
 				</div>
 			</div>
 		</h2>
+		<p class="text-sm opacity-80" data-type="design-created-year">Created: {design.spec?.versionCreatedYear || 'unknown'}</p>
 		{#if design.description}
 			<p class="text-sm opacity-80 line-clamp-2 wrap-break-word" data-type="design-description">
 				{design.description}

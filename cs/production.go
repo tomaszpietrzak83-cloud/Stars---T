@@ -582,7 +582,7 @@ func (p *producer) getItemCost(rules *Rules, player *Player, planet *Planet, ite
 	var err error
 	var cost Cost
 	if item.Type == QueueItemTypeStarbase && planet.Spec.HasStarbase {
-		cost, err = costCalculator.StarbaseUpgradeCost(rules, player.TechLevels, player.Race.Spec, planet.Starbase.Tokens[0].design, item.design)
+		cost, err = costCalculator.StarbaseUpgradeCostForPlayer(rules, player, planet.Starbase.Tokens[0].design, item.design)
 		if err != nil {
 			return Cost{}, fmt.Errorf("failed to compute starbase upgrade cost: %w", err)
 		}

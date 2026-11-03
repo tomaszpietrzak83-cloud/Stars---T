@@ -160,7 +160,7 @@ func (s *wasmService) GetStarbaseUpgradeCost(ctx context.Context, req *craig_sta
 	costCalculatoor := cs.NewCostCalculator()
 	design := converter.C.ConvertShipDesignP(req.Design)
 	newDesign := converter.C.ConvertShipDesignP(req.NewDesign)
-	cost, err := costCalculatoor.StarbaseUpgradeCost(s.rules, s.player.TechLevels, s.player.Race.Spec, design, newDesign)
+	cost, err := costCalculatoor.StarbaseUpgradeCostForPlayer(s.rules, s.player, design, newDesign)
 	if err != nil {
 		return nil, fmt.Errorf("unable to calculate starbase upgrade cost: %v", err)
 	}

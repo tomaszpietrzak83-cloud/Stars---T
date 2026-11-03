@@ -23,6 +23,7 @@
 	</Breadcrumb>
 
 	<div class="grow h-full px-1 md:p-0">
+		<p class="text-sm opacity-80 my-2">Created: {design.spec?.versionCreatedYear || 'unknown'}</p>
 		<Design {design}>
 			{#snippet description()}
 				<DesignDescriptionEditor {design} />

@@ -127,6 +127,9 @@ message ShipDesignSlot {
 }
 
 message ShipDesignSpec {
+  // Server-owned game-year history, exposed for display and local cost forecasts.
+  int32 version_created_year = 68;
+  int32 previous_version_num = 69;
   int32 additional_mass_drivers = 1;
   int32 armor = 2;
   int32 base_packet_speed = 3;

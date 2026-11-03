@@ -9,6 +9,16 @@ import DesignCard from './DesignCard.svelte';
 // the card doesn't need a game, but the tooltips it can open import the context
 vi.mock('#lib/services/GameContext.js', () => ({ getGameContext: () => undefined }));
 
+it('shows the saved creation year for ships and bases and unknown for legacy designs', () => {
+	for (const starbase of [false,true]) {
+		const {container,unmount}=render(DesignCard,{design:create(ShipDesignSchema,{name:'Dated design',spec:{starbase,versionCreatedYear:2444}}),href:'/design',copyhref:'/copy'});
+		expect(container.querySelector('[data-type="design-created-year"]')?.textContent).toBe('Created: 2444');
+		unmount();
+	}
+	const {container}=render(DesignCard,{design:create(ShipDesignSchema,{name:'Legacy design'}),href:'/design',copyhref:'/copy'});
+	expect(container.querySelector('[data-type="design-created-year"]')?.textContent).toBe('Created: unknown');
+});
+
 // open the delete dialog for a design with these ships built and queued
 async function confirmDelete(numInstances: number, numQueued: number) {
 	const onDelete = vi.fn(async () => {});

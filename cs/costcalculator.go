@@ -12,6 +12,7 @@ import (
 // The CostCalculator interface is used to calculate costs of single items or starbase upgrades
 // This is used by planetary production and estimating production queue completion
 type CostCalculator interface {
+	StarbaseUpgradeCostForPlayer(rules *Rules, player *Player, design, newDesign *ShipDesign) (Cost, error)
 	StarbaseUpgradeCost(rules *Rules, techLevels TechLevel, raceSpec RaceSpec, design, newDesign *ShipDesign) (Cost, error)
 	CostOfOne(player *Player, item ProductionQueueItem) (Cost, error)
 	GetDesignCost(rules *Rules, techLevels TechLevel, raceSpec RaceSpec, design *ShipDesign) (Cost, error)
@@ -23,6 +24,31 @@ func NewCostCalculator() CostCalculator {
 }
 
 type costCalculate struct {
+}
+
+// Starbases already reuse matching components. Rapid upgrades may improve that
+// price, but never make an existing component-reuse discount less favorable.
+func (c *costCalculate) StarbaseUpgradeCostForPlayer(rules *Rules, player *Player, design, newDesign *ShipDesign) (Cost, error) {
+	normal, err := c.StarbaseUpgradeCost(rules, player.TechLevels, player.Race.Spec, design, newDesign)
+	if err != nil || !design.Spec.Starbase || !newDesign.Spec.Starbase {
+		return normal, err
+	}
+	// Check history before recalculating complete blueprint costs.
+	if _, ok := rapidDesignUpgradeRecovery(player, design, newDesign, Cost{}); !ok {
+		return normal, nil
+	}
+	oldCost, err := c.GetDesignCost(rules, player.TechLevels, player.Race.Spec, design)
+	if err != nil {
+		return Cost{}, err
+	}
+	newCost, err := c.GetDesignCost(rules, player.TechLevels, player.Race.Spec, newDesign)
+	if err != nil {
+		return Cost{}, err
+	}
+	credit, _ := rapidDesignUpgradeRecovery(player, design, newDesign, oldCost)
+	rapid := newCost.Subtract(credit).MinZero()
+	// Choose once for each resource; do not add the 90% credit to normal refunds.
+	return Cost{Ironium: min(normal.Ironium, rapid.Ironium), Boranium: min(normal.Boranium, rapid.Boranium), Germanium: min(normal.Germanium, rapid.Germanium), Resources: min(normal.Resources, rapid.Resources)}, nil
 }
 
 // Returns the cost efficiency ratio for 2 Cost structs as a float64

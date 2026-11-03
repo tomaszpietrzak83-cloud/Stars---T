@@ -1,0 +1,56 @@
+Version 0.6.1 — rapid starbase upgrades and design creation years
+Date: 2026-11-03
+
+Behaviour
+- Starbases previously used native component-reuse pricing only. Rapid mobile
+  ship recovery explicitly excluded them. They now share the direct-successor,
+  same-family/same-hull rule with an inclusive four-game-year creation gap.
+- The rapid alternative is the full normal successor blueprint cost minus 90%
+  of the old blueprint's current normal cost, rounded down per resource. Costs
+  are calculated with the player's actual miniaturization and racial modifiers.
+- For each mineral and resources, choose the lower of native component-reuse
+  pricing and the rapid alternative, clamped to zero. These refunds are not
+  added together, and surplus credit is not minted into stock. Existing native
+  reuse discounts can therefore never become more expensive under this rule.
+- Native production/forecasts, AI estimates and the WASM UI calculator use the
+  same player-aware method. The old base stays operational until the new base
+  is fully funded and completes normally. A first base is still full price.
+- Legacy designs with unknown creation years, skipped versions, unrelated
+  families, foreign/transferred designs and different hulls retain normal pricing.
+  The date gap concerns blueprint creation, not the later construction year.
+- Ship Designs cards and saved-design details display the creation game year
+  for both ships and bases. Missing legacy dates display "unknown" rather than
+  guessing a year from a real-world database timestamp.
+- Creation year and predecessor are exposed in ShipDesignSpec protobuf fields
+  68/69 for display and WASM forecasts. Native creation/edit endpoints still own
+  these values: copied or forged client history cannot alter them.
+
+Verification
+- Full native cs, ai, converter, server, db and db/generated suites passed.
+- New regressions cover the 90% alternative with an actual cost reduction,
+  preserved better native reuse, four/five-year boundary, unknown dates, skipped
+  versions and wrong predecessors. Normal mobile-ship exclusions remain tested.
+- A native production regression verifies that an unfunded upgrade retains the
+  original operational base, then completes once the discounted minerals are
+  available. Its queue item finishes without refund duplication.
+- The server-owned-history API regression also submits forged year/predecessor
+  values on edit and verifies that stored creation history/version is preserved.
+- Eight browser tests across DesignCard, DesignMaintenance and UpgradeAll pass.
+  The new card regression covers ship/base dates and unknown legacy history.
+  Svelte diagnostics: zero errors and zero warnings.
+- Native executable, WASM and compiled frontend builds pass. A direct rebuilt
+  WASM service call after protobuf transfer of family/history produces exactly
+  the native starbase-upgrade cost (identical response bytes).
+- Final native/UI smoke uses isolated ports 18091/18777 with a fresh database.
+  It renders the WASM map, checks starter dates in the API, creates two successive
+  starbase versions, checks returned year/predecessor history, and verifies the
+  actual Ship Designs menu and detail year labels. Embedded compiled-UI WASM
+  bytes match the rebuilt source module. Screenshots inspected; no turn generated.
+- Tests never advanced or replaced personal saves. Temporary databases, binary
+  fixtures, smoke scripts and screenshots remain untracked.
+
+Installation
+The live database was waiting for orders in year 2450 before the controlled
+restart. Only verified listeners belonging to this working copy were stopped.
+The previous executable is backed up under tmp; release hashes are current.
+Startup reports 0.6.1, schema 30 current/no migration, local-ready HTTP 200.

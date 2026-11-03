@@ -558,3 +558,8 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 [x] 253. Slightly reduce debris decay; coordinate a collector to arrive with the patrol, refresh its destination and collect at the start of the following turn.
 [x] 254. Report links center the galaxy on the target while retaining the player's chosen zoom, including map remounts.
     Verification for 251-254: docs/AUDIT-0.6.0.txt. Native battle and copied-2444 collection regressions, database/protocol persistence, 47 focused browser tests and 17 map/context tests pass. Final compiled native/UI smoke preserves report-link zoom exactly; rebuilt Windows/WASM/UI installed with current hashes, schema 30/no migration and local-ready HTTP 200. No personal turn generated.
+
+[x] 255. Extend the rapid consecutive-version discount to starbase upgrades (at most four creation years apart), preserving more favorable native component reuse and operational bases during construction.
+[x] 256. Display each ship/base design's creation game year in Ship Designs; show unknown for legacy dates rather than inventing history.
+
+    Verification for 255-256: docs/AUDIT-0.6.1.txt. Full native cs/ai/converter/server/db suites, eight design browser tests and zero-error Svelte checks pass. Rebuilt WASM returns exactly the native rapid-base price. Compiled UI/native smoke verifies ship/base menu and detail years, API history and matching embedded WASM; Windows 0.6.1 installed with hashes, schema 30/no migration and local-ready HTTP 200. No personal turn generated.

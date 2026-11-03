@@ -4,7 +4,15 @@ package cs
 // interval is between project creation years, not the later scrap/arrival year.
 // Zero dates in older saves are unknown; do not manufacture historical dates.
 func rapidUpgradeRecovery(p *Player, old, next *ShipDesign, oldCost Cost) (Cost, bool) {
-	if old == nil || next == nil || old.Num == next.Num || old.PlayerNum != p.Num || next.PlayerNum != p.Num || old.OriginalPlayerNum != 0 || next.OriginalPlayerNum != 0 || old.Spec.Starbase || next.Spec.Starbase || old.Hull != next.Hull {
+	if old == nil || next == nil || old.Spec.Starbase || next.Spec.Starbase {
+		return Cost{}, false
+	}
+	return rapidDesignUpgradeRecovery(p, old, next, oldCost)
+}
+
+// Shared eligibility for mobile ships and operational starbase replacement.
+func rapidDesignUpgradeRecovery(p *Player, old, next *ShipDesign, oldCost Cost) (Cost, bool) {
+	if old == nil || next == nil || old.Num == next.Num || old.PlayerNum != p.Num || next.PlayerNum != p.Num || old.OriginalPlayerNum != 0 || next.OriginalPlayerNum != 0 || old.Spec.Starbase != next.Spec.Starbase || old.Hull != next.Hull {
 		return Cost{}, false
 	}
 	family := p.Automation.DesignFamilies[old.Num]

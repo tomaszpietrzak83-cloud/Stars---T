@@ -54,6 +54,8 @@ func TestDesignHistoryIsServerOwnedAcrossCreateAndEdit(t *testing.T) {
 	draft = result.Msg.Design
 	draft.Name = "History Mk 2 edited"
 	draft.Version = 999
+	draft.Spec.VersionCreatedYear = 9999
+	draft.Spec.PreviousVersionNum = 999
 	_, err = service.UpdateShipDesign(ctx, connect.NewRequest(&v1.UpdateShipDesignRequest{GameId: full.ID, Design: draft}))
 	require.NoError(t, err)
 	stored, err = c.GetShipDesignByNum(ctx, full.ID, p.Num, int(draft.Num))
