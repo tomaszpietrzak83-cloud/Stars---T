@@ -15,6 +15,9 @@ const patrolSectorTag = "patrol-sector"
 // Stable fuel bases anchor patrol coverage. The first assignment favors the
 // ship's local base; uncovered sectors receive surplus ships, not every ship.
 func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
+	if p.Automation.FleetRoles[f.Num] == "patrol" && t.advancePatrolFront(p, f) {
+		return true
+	}
 	owned := t.game.getPlanets(p.Num)
 	bases := []*Planet{}
 	for _, planet := range owned {

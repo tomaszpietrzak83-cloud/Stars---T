@@ -317,6 +317,11 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 		savePatrolJob(leader, job)
 		return
 	}
+	if patrolShouldAdvanceInstead(player, leader, enemy) {
+		t.declinePatrolTarget(player, leader)
+		t.advancePatrolFront(player, leader)
+		return
+	}
 	// A pack can recruit fresh nearby support when the reported enemy grows.
 	current := patrolPower(leader)
 	currentShips := leader.Spec.TotalShips
@@ -506,6 +511,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 					continue
 				}
 				if patrolNeedsRecon(player, enemy) {
+					continue
+				}
+				if patrolShouldAdvanceInstead(player, fleet, enemy) {
 					continue
 				}
 				claimed := false

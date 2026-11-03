@@ -100,6 +100,9 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 		if patrolNeedsRecon(p, candidate) {
 			continue
 		}
+		if patrolShouldAdvanceInstead(p, f, candidate) {
+			continue
+		}
 		if patrolPower(f) < patrolThreat(p, candidate)*3/2+1 {
 			continue
 		}

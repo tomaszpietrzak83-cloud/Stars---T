@@ -199,6 +199,9 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			if enemy := patrolEnemy(player, readPatrolJob(fleet)); patrolCanAttack(player, fleet) && enemy != nil && (goal.Position == patrolInterceptPosition(enemy) || goal.TargetType == MapObjectTypeFleet && goal.TargetPlayerNum == enemy.PlayerNum && goal.TargetNum == enemy.Num) {
 				policy = automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: 20, MinWarp: automaticCruiseWarp(player, fleet)}
 			}
+			if fleet.GetTag(patrolFrontTag) != "" && readPatrolJob(fleet).Leader == 0 && !fleet.InAutomaticSafety() {
+				policy = economicalContainmentPolicy(player, fleet, fleet.Position.DistanceTo(goal.Position))
+			}
 			// Include cargo that a waypoint-zero loading order may add before movement.
 			budgets := make([]*Fleet, len(group))
 			for i, f := range group {

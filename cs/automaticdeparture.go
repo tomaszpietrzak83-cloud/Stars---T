@@ -32,6 +32,9 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 			}
 			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
 			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
+			if fleet.GetTag(patrolFrontTag) != "" && readPatrolJob(fleet).Leader == 0 && !fleet.InAutomaticSafety() && !fundedEmergencyReturn(&t.game.Rules, player, fleet) {
+				allowThreat = false
+			}
 			if raw := fleet.GetTag(tankerAwaitTag); raw != "" {
 				num, _ := strconv.Atoi(raw)
 				if donor := t.game.getFleet(player.Num, num); donor != nil && !donor.Delete {

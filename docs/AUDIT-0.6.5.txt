@@ -1,0 +1,61 @@
+Version 0.6.5 - progressive patrol movement toward active frontiers
+
+Request: D188/D193 appear idle at year 2453. Once nearby traffic is eliminated,
+hunters should move farther out toward visible large enemy fleets. Future local
+production can handle new local targets; do not permanently reserve every
+patrol around a quiet birth base.
+
+Read-only diagnosis:
+- D188 (1695,6) and D193 (1683,9), age 1, each have one destroyer and full
+  280 fuel. Their only waypoint is their present position. Both carry local
+  sector 1901 / Penzance [2] status. Existing frontier code makes 24-ly local
+  loops and keeps the local anchor when any nearby reported enemy exists.
+- Planning initially also recruited these ships into an existing distant
+  three-freighter chase. This prevents useful outward movement even when a
+  stronger front needs reinforcements.
+
+Implementation:
+- Free patrols consider reported combat formations and large fleets across
+  the known map. Assignments weigh threat relative to own strength, distance,
+  explicit priorities and healthy patrol strength already committed there.
+  A quiet base has no mandatory permanent patrol reservation.
+- Approach from actual friendly fuel territory, stage outside reported enemy
+  reach, and keep normal return-fuel and mine safety. Try funded shorter forward
+  legs if the full frontier destination is presently too far. Routine movement
+  uses the economical engine setting; confirmed attack/pursuit retains bursts.
+- After mobile threats clear, reported hostile colonies provide further forward
+  observation areas. Completed or vanished targets are reconsidered each pass.
+- Long non-priority unarmed chases no longer recruit quiet-sector hunters when
+  visible combat formations need support. Nearby interception and imminent
+  colony approaches still take precedence. Explicit priorities remain honored.
+- Frontier staging does not authorize an attack on unknown large formations.
+  Reconnaissance, strength grouping, repair, maintenance and manual roles remain
+  separate existing gates. Escort/scout local-sector behavior is preserved.
+
+Verification:
+- Synthetic tests: leave a quiet birth sector for a distant formation; advance
+  farther when the first front disappears; preserve a nearby kill before
+  relocation; do not grant attack permission merely through a frontier tag.
+- Consistent private copy of actual year 2453, full patrol planner plus fuel,
+  safety, idle recovery and final departure: D188 intercepts Scout #21 toward
+  (1738,81), warp 7; D193 intercepts Scout #23 toward (1730,91), warp 7. They
+  no longer get pulled into the distant freighter group's home rendezvous.
+- Separate in-memory scenario from that same copy removes small local contacts:
+  D188 advances toward large #32 at (1547,144); D193 takes a funded forward leg
+  toward large #25 at (1575,61). Both have actual moving routes after final
+  safety checks. No simulated year increment and no personal DB write.
+- Native cs/ai/db/converter regressions pass (32.787/2.859/2.902/1.241 seconds),
+  excluding unrelated uncommitted audit/proposal suites as in prior releases.
+- Native and WASM rebuilt; compiled UI smoke and deployment follow below.
+
+Limits: movement follows available reports and actual fuel access. It does not
+invent hidden threats, promise battle victory or replace combat-strength
+assessment. Staging outside observed reach cannot reveal hidden orders or fuel.
+
+Deployment: final compiled API/UI/map smoke passed on isolated ports
+18095/18781, including matching embedded WASM bytes, fresh DB and zero turns.
+Windows 0.6.5 installed; startup confirms schema 30/no migration. SHA-256 and
+local-ready HTTP 200 verified. Player had independently advanced to 2455 during
+development; checks before and after replacement both show WaitingForPlayers
+year 2455. No personal save replaced or turn generated. New assignments take
+effect at the next normal turn calculation; installation does not rewrite orders.
