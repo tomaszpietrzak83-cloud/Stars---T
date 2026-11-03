@@ -10,6 +10,7 @@ const scoutReconTag = "scout-recon"
 
 type scoutReconJob struct {
 	Enemy, Target int
+	Designs       []int  `json:"designs,omitempty"`
 	Watching      bool   `json:"watching,omitempty"`
 	Status        string `json:"status"`
 }
@@ -135,16 +136,10 @@ func patrolNeedsRecon(p *Player, target *Fleet) bool {
 	if target == nil || reportedFleetShips(target) <= 0 {
 		return true
 	}
-	unknown := unknownFleetEquipment(p, target)
-	count := reportedFleetShips(target)
-	for _, enemy := range p.FleetIntels {
-		if enemy == nil || enemy == target || enemy.Num == target.Num && enemy.PlayerNum == target.PlayerNum || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) {
-			continue
-		}
-		if enemy.Position.DistanceTo(target.Position) <= 30 || patrolInterceptPosition(enemy).DistanceTo(patrolInterceptPosition(target)) <= 30 {
-			count += reportedFleetShips(enemy)
-			unknown = unknown || unknownFleetEquipment(p, enemy)
-		}
+	unknown, count := false, 0
+	for _, enemy := range patrolEncounterReports(p, target, patrolInterceptPosition(target), 1) {
+		count += reportedFleetShips(enemy)
+		unknown = unknown || unknownFleetEquipment(p, enemy)
 	}
 	return unknown && count >= 8
 }
@@ -201,7 +196,7 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 		claimed := false
 		for _, other := range t.game.getFleets(p.Num) {
 			job := readScoutRecon(other)
-			if other != f && !other.Delete && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && job.Target == enemy.Num {
+			if other != f && !other.Delete && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && (job.Target == enemy.Num || unknownDesignOverlap(p, enemy, p.GetFleetIntel(job.Enemy, job.Target))) {
 				claimed = true
 				break
 			}
@@ -210,18 +205,22 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 			continue
 		}
 		target := enemy.MapObject.ToTarget()
-		position := enemy.Position
+		position := patrolInterceptPosition(enemy)
 		// Equipment still requires contact unless this race can discover designs
 		// on a remote scan. A scanner alone does not grant hidden components.
 		if p.Race.Spec.DiscoverDesignOnScan || !unknownFleetEquipment(p, enemy) {
 			position = scoutFleetReconPoint(p, f, enemy)
 			target = MapObjectTarget{}
 		}
-		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, position, target, automaticRoutePolicy{AllowThreat: true, MaxTurns: 8, MinWarp: automaticCruiseWarp(p, f)})
+		contact := target.TargetType == MapObjectTypeFleet
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, position, target, automaticRoutePolicy{AllowThreat: true, Fast: contact, OneWay: contact, MaxTurns: 8, MinWarp: automaticCruiseWarp(p, f)})
 		if route == nil || route.WaitForFuel {
 			continue
 		}
 		value := float64(route.Turns)*1000 + f.Position.DistanceTo(enemy.Position)
+		if p.patrolEvaluator != nil {
+			value += float64(patrolMissionRank(p, enemy)) * 100000
+		}
 		if incoming || priorityFleet(p, enemy) {
 			value *= .01
 		}
@@ -237,9 +236,13 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 		return false
 	}
 	job := scoutReconJob{Enemy: chosen.PlayerNum, Target: chosen.Num, Status: fmt.Sprintf("Priority reconnaissance of incoming enemy fleet %s; combat risk accepted", chosen.Name)}
+	for _, token := range chosen.Tokens {
+		job.Designs = append(job.Designs, token.DesignNum)
+	}
 	raw, _ := json.Marshal(job)
 	f.SetTag(scoutReconTag, string(raw))
 	applyExpeditionRoute(p, f, best)
+	delete(f.Tags, patrolSearchTag)
 	if !p.Race.Spec.DiscoverDesignOnScan && unknownFleetEquipment(p, chosen) && len(f.Waypoints) > 1 {
 		f.Waypoints[len(f.Waypoints)-1].MapObjectTarget = chosen.ToTarget()
 	}

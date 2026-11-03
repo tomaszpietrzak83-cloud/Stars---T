@@ -1,0 +1,680 @@
+TRIAL seed17-native
+CAMPAIGN_START seed=17 own_fleets=21 enemy_fleets=6 snapshot_bytes=192716
+Campaign cruiser","version":0,"hull":"Cruiser","hullSetNumber":0,"slots":[{"hullComponent":"Trans-Star 10","hullSlotIndex":1,"quantity":2},{"hullComponent":"Gorilla Delagator","hullSlotIndex":2,"quantity":1},{"hullComponent":"Gorilla Delagator","hullSlotIndex":3,"quantity":1},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":4,"quantity":2},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":5,"quantity":2},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":6,"quantity":2},{"hullComponent":"Gorilla Delagator","hullSlotIndex":7,"quantity":2}],"spec":{"armor":700,"beamBonus":1,"cost":{"ironium":31,"boranium":134,"germanium":21,"resources":231},"engine":{"idealSpeed":10,"freeSpeed":1,"maxSafeSpeed":10,"fuelUsage":[0,0,5,15,20,25,30,35,40,45,50]},"estimatedRange":2400,"estimatedRangeFull":2400,"fuelCapacity":600,"hasWeapons":true,"hullType":"Fighter","shipClass":"Warship","initiative":5,"mass":116,"mineSweep":10392,"movement":8,"movementFull":8,"numBuilt":6,"numEngines":2,"numInstances":6,"powerRating":3895,"reduceCloaking":1,"scanner":true,"scanRangePen":-1,"shields":700,"techLevel":{"energy":14,"weapons":26,"propulsion":23,"construction":9},"weaponSlots":[{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":4,"quantity":2},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":5,"quantity":2},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":6,"quantity":2}]}},{"createdAt":"0001-01-01T00:00:00Z","updatedAt":"0001-01-01T00:00:00Z","num":2,"playerNum":1,"originalPlayerNum":0,"name":"Campaign destroyer","version":0,"hull":"Destroyer","hullSetNumber":0,"slots":[{"hullComponent":"Trans-Star 10","hullSlotIndex":1,"quantity":1},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":2,"quantity":1},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":3,"quantity":1},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":4,"quantity":1},{"hullComponent":"Neutronium","hullSlotIndex":5,"quantity":2},{"hullComponent":"Overthruster","hullSlotIndex":6,"quantity":1},{"hullComponent":"Battle Computer","hullSlotIndex":7,"quantity":1}],"spec":{"armor":750,"beamBonus":1,"cost":{"ironium":21,"boranium":69,"germanium":14,"resources":135},"engine":{"idealSpeed":10,"freeSpeed":1,"maxSafeSpeed":10,"fuelUsage":[0,0,5,15,20,25,30,35,40,45,50]},"estimatedRange":949,"estimatedRangeFull":949,"fuelCapacity":280,"hasWeapons":true,"hullType":"Fighter","shipClass":"Scout","initiative":4,"mass":137,"mineSweep":5196,"movement":9,"movementBonus":2,"movementFull":9,"numBuilt":4,"numEngines":1,"numInstances":4,"powerRating":2109,"reduceCloaking":1,"scanner":true,"scanRange":520,"scanRangePen":260,"techLevel":{"energy":5,"weapons":26,"propulsion":23,"construction":12},"torpedoBonus":0.2,"weaponSlots":[{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":2,"quantity":1},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":3,"quantity":1},{"hullComponent":"Anti-Matter Pulverizer","hullSlotIndex":4,"quantity":1}]}},{"createdAt":"0001-01-01T00:00:00Z","updatedAt":"0001-01-01T00:00:00Z","num":3,"playerNum":1,"originalPlayerNum":0,"name":"Campaign observer","version":0,"hull":"Scout","hullSetNumber":0,"slots":[{"hullComponent":"Fuel Mizer","hullSlotIndex":1,"quantity":1},{"hullComponent":"Peerless Scanner","hullSlotIndex":2,"quantity":1},{"hullComponent":"Peerless Scanner","hullSlotIndex":3,"quantity":1}],"spec":{"armor":20,"beamBonus":1,"cost":{"ironium":9,"boranium":5,"germanium":57,"resources":171},"engine":{"idealSpeed":6,"freeSpeed":4,"maxSafeSpeed":9,"fuelUsage":[0,0,0,0,0,35,120,175,235,360,420]},"estimatedRange":442,"estimatedRangeFull":442,"fuelCapacity":50,"hullType":"Scout","shipClass":"Scout","initiative":1,"mass":22,"movement":4,"movementFull":4,"numBuilt":8,"numEngines":1,"numInstances":8,"reduceCloaking":1,"scanner":true,"scanRange":667,"scanRangePen":260,"techLevel":{"energy":7,"propulsion":2,"electronics":24}}},{"createdAt":"0001-01-01T00:00:00Z","updatedAt":"0001-01-01T00:00:00Z","num":4,"playerNum":1,"originalPlayerNum":0,"name":"Campaign collector","version":0,"hull":"Large Freighter","hullSetNumber":0,"slots":[{"hullComponent":"Trans-Star 10","hullSlotIndex":1,"quantity":2},{"hullComponent":"Overthruster","hullSlotIndex":2,"quantity":2},{"hullComponent":"Gorilla Delagator","hullSlotIndex":3,"quantity":2}],"spec":{"armor":150,"beamBonus":1,"cargoCapacity":1200,"cost":{"ironium":30,"germanium":26,"resources":76},"engine":{"idealSpeed":10,"freeSpeed":1,"maxSafeSpeed":10,"fuelUsage":[0,0,5,15,20,25,30,35,40,45,50]},"estimatedRange":8201,"estimatedRangeFull":897,"fuelCapacity":2600,"hullType":"Freighter","shipClass":"Freighter","initiative":0,"mass":147,"movement":10,"movementBonus":4,"movementFull":3,"numBuilt":3,"numEngines":2,"numInstances":3,"reduceCloaking":1,"scanner":true,"scanRangePen":-1,"shields":350,"techLevel":{"energy":14,"propulsion":23,"construction":8}}},{"createdAt":"0001-01-01T00:00:00Z","updatedAt":"0001-01-01T00:00:00Z","num":5,"playerNum":1,"originalPlayerNum":0,"name":"Campaign supply station","version":0,"hull":"Space Station","hullSetNumber":0,"slots":null,"spec":{"armor":500,"beamBonus":1,"cloakPercentFullCargo":-4611686018427387904,"cost":{"ironium":30,"boranium":20,"germanium":62,"resources":150},"hullType":"Starbase","initiative":14,"mass":0,"maxPopulation":1000000,"numBuilt":1,"numInstances":1,"reduceCloaking":1,"repairBonus":0.15,"scanner":true,"scanRangePen":-1,"spaceDock":-1,"starbase":true}}],"planets":[{"createdAt":"0001-01-01T00:00:00Z","updatedAt":"0001-01-01T00:00:00Z","type":"Planet","position":{"x":0,"y":0},"num":1,"playerNum":1,"name":"Home","hab":{"grav":50,"temp":50,"rad":50},"baseHab":{"grav":50,"temp":50,"rad":50},"mineralConcentration":{"ironium":100,"boranium":100,"germanium":100},"cargo":{"ironium":10000,"boranium":10000,"germanium":10000,"colonists":5000},"partialPopulation":0,"mines":0,"factories":0,"defenses":0,"scanner":true,"spec":{"hasStarbase":true,"starbaseDesignName":"Campaign supply station","starbaseDesignNum":5,"dockCapacity":-1,"defense":"Neutron Shield","growthAmount":45370,"habitability":100,"maxDefenses":100,"maxFactories":500,"maxMines":500,"maxPopulation":1200000,"maxPossibleFactories":1200,"maxPossibleMines":1200,"populationDensity":0.4166666666666667,"resourcesPerYear":500,"resourcesPerYearAvailable":425,"resourcesPerYearResearch":75,"resourcesPerYearResearchEstimatedLeftover":500,"scanner":"Snooper 620X","scanRange":620,"scanRangePen":310,"terraformedHabitability":100}},{"createdAt":"0001-01-01T00:00:00Z","updatedAt":"0001-01-01T00:00:00Z","type":"Planet","position":{"x":120,"y":0},"num":2,"playerNum":1,"name":"Front","hab":{"grav":50,"temp":50,"rad":50},"baseHab":{"grav":50,"temp":50,"rad":50},"mineralConcentration":{"ironium":100,"boranium":100,"germanium":100},"cargo":{"colonists":2000},"partialPopulation":0,"mines":0,"factories":0,"defenses":0,"scanner":true,"spec":{"defense":"Neutron Shield","growthAmount":30000,"habitability":100,"maxDefenses":100,"maxFactories":200,"maxMines":200,"maxPopulation":1200000,"maxPossibleFactories":1200,"maxPossibleMines":1200,"populationDensity":0.16666666666666666,"resourcesPerYear":200,"resourcesPerYearAvailable":170,"resourcesPerYearResearch":30,"resourcesPerYearResearchEstimatedLeftover":200,"scanner":"Snooper 620X","scanRange":620,"scanRangePen":310,"terraformedHabitability":100}},{"createdAt":"0001-01-01T00:00:00Z","updatedAt":"0001-01-01T00:00:00Z","type":"Planet","position":{"x":400,"y":0},"num":3,"playerNum":2,"name":"Enemy port","hab":{"grav":50,"temp":50,"rad":50},"baseHab":{"grav":50,"temp":50,"rad":50},"mineralConcentration":{"ironium":100,"boranium":100,"germanium":100},"cargo":{"colonists":2000},"partialPopulation":0,"mines":0,"factories":0,"defenses":0,"scanner":true,"spec":{"defense":"Neutron Shield","growthAmount":30000,"habitability":100,"maxDefenses":100,"maxFactories":200,"maxMines":200,"maxPopulation":1200000,"maxPossibleFactories":1200,"maxPossibleMines":1200,"populationDensity":0.16666666666666666,"resourcesPerYear":200,"resourcesPerYearAvailable":170,"resourcesPerYearResearch":30,"resourcesPerYearResearchEstimatedLeftover":200,"scanner":"Snooper 620X","scanRange":620,"scanRangePen":310,"terraformedHabitability":100}}]}
+CAMPAIGN step=0 year=2400 visible=6 unknown=6 enemy_ships=13 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=2000 visible_debris=0 collector_cargo=0
+CAMPAIGN step=1 year=2401 visible=5 unknown=3 enemy_ships=12 battles=1 enemy_killed=1 own_lost=0 bombings=1 bombed_colonists=8300 front_population=2217 visible_debris=10 collector_cargo=0
+CAMPAIGN_BATTLE step=1 position=(35, -35) participants=map[1:2 2:1] destroyed=map[1:0 2:1] collectors=1 collector_retreats=0 collector_away_moves=4 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN step=2 year=2402 visible=3 unknown=2 enemy_ships=8 battles=1 enemy_killed=4 own_lost=0 bombings=0 bombed_colonists=0 front_population=2549 visible_debris=0 collector_cargo=10
+CAMPAIGN_BATTLE step=2 position=(120, 0) participants=map[1:4 2:4] destroyed=map[1:0 2:4] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+Campaign cruiser #8]"
+Campaign destroyer #9]"
+Campaign destroyer #5" Fuel=275/280 WarpSpeed=0 Start="(52, -19)" End="(65, -17)"
+Campaign destroyer #5]"
+CAMPAIGN_DELIVERY step=3 collector=Collector-0 amount=10 origin=(0, 0) planet=Home
+CAMPAIGN step=3 year=2403 visible=2 unknown=2 enemy_ships=6 battles=1 enemy_killed=2 own_lost=0 bombings=0 bombed_colonists=0 front_population=2931 visible_debris=18 collector_cargo=0
+CAMPAIGN_BATTLE step=3 position=(157, -75) participants=map[1:2 2:2] destroyed=map[1:0 2:2] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN_ENEMY_MERGE step=4 ships=6 position=(180, 0)
+Campaign cruiser #2" Fuel=558/600 WarpSpeed=3 Start="(157, -75)" End="(151, -69)"
+CAMPAIGN step=4 year=2404 visible=1 unknown=0 enemy_ships=6 battles=1 enemy_killed=0 own_lost=1 bombings=0 bombed_colonists=0 front_population=3371 visible_debris=18 collector_cargo=0
+CAMPAIGN_BATTLE step=4 position=(164, 0) participants=map[1:1 2:6] destroyed=map[1:1 2:0] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=1 peak_survivor_damage=0.0000
+Campaign cruiser #2" Fuel=557/600 WarpSpeed=3 Start="(151, -69)" End="(144, -63)"
+CAMPAIGN step=5 year=2405 visible=1 unknown=0 enemy_ships=6 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=3836 visible_debris=6 collector_cargo=0
+Campaign cruiser #2" Fuel=538/600 WarpSpeed=9 Start="(144, -63)" End="(70, -31)"
+CAMPAIGN step=6 year=2406 visible=0 unknown=0 enemy_ships=0 battles=1 enemy_killed=6 own_lost=0 bombings=0 bombed_colonists=0 front_population=4309 visible_debris=198 collector_cargo=0
+CAMPAIGN_BATTLE step=6 position=(132, 0) participants=map[1:8 2:6] destroyed=map[1:0 2:6] collectors=1 collector_retreats=0 collector_away_moves=3 scouts_lost=0 peak_survivor_damage=0.1080
+Campaign cruiser #2" Fuel=536/600 WarpSpeed=4 Start="(70, -31)" End="(86, -29)"
+Campaign cruiser #4" Fuel=552/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser #5" Fuel=552/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #7" Fuel=257/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #8" Fuel=257/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #9" Fuel=257/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #10" Fuel=257/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=68
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=68
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=68
+CAMPAIGN step=7 year=2407 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=4781 visible_debris=0 collector_cargo=198
+Campaign cruiser #2" Fuel=534/600 WarpSpeed=4 Start="(86, -29)" End="(102, -27)"
+Campaign cruiser #4" Fuel=551/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser #5" Fuel=551/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #7" Fuel=256/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #8" Fuel=256/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #9" Fuel=256/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #10" Fuel=256/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=61
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=61
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=61
+CAMPAIGN_DELIVERY step=8 collector=Collector-0 amount=198 origin=(51, 0) planet=Home
+CAMPAIGN step=8 year=2408 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5243 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=532/600 WarpSpeed=4 Start="(102, -27)" End="(118, -25)"
+Campaign cruiser #4" Fuel=550/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser #5" Fuel=550/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #7" Fuel=255/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #8" Fuel=255/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #9" Fuel=255/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #10" Fuel=255/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=54
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=54
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=54
+CAMPAIGN step=9 year=2409 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5686 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=531/600 WarpSpeed=3 Start="(118, -25)" End="(127, -24)"
+Campaign cruiser #4" Fuel=549/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser #5" Fuel=549/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #7" Fuel=254/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #8" Fuel=254/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #9" Fuel=254/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #10" Fuel=254/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=47
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=47
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=47
+CAMPAIGN step=10 year=2410 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6106 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=530/600 WarpSpeed=3 Start="(127, -24)" End="(136, -23)"
+Campaign cruiser #4" Fuel=548/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser #5" Fuel=548/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #7" Fuel=253/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #8" Fuel=253/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #9" Fuel=253/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #10" Fuel=253/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=40
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=40
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=40
+CAMPAIGN step=11 year=2411 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6499 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=529/600 WarpSpeed=3 Start="(136, -23)" End="(145, -22)"
+Campaign cruiser #4" Fuel=547/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser #5" Fuel=547/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #7" Fuel=252/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #8" Fuel=252/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #9" Fuel=252/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #10" Fuel=252/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=33
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=33
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=33
+CAMPAIGN step=12 year=2412 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6863 visible_debris=0 collector_cargo=0
+CAMPAIGN_END seed=17 mode=native battles=5 splits=0 delivered=208 enemy_remaining_ships=0
+TRIAL seed17-reload
+CAMPAIGN_START seed=17 own_fleets=21 enemy_fleets=6 snapshot_bytes=192716
+CAMPAIGN step=0 year=2400 visible=6 unknown=6 enemy_ships=13 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=2000 visible_debris=0 collector_cargo=0
+CAMPAIGN step=1 year=2401 visible=5 unknown=3 enemy_ships=12 battles=1 enemy_killed=1 own_lost=0 bombings=1 bombed_colonists=8300 front_population=2217 visible_debris=10 collector_cargo=0
+CAMPAIGN_BATTLE step=1 position=(35, -35) participants=map[1:2 2:1] destroyed=map[1:0 2:1] collectors=1 collector_retreats=0 collector_away_moves=4 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN step=2 year=2402 visible=3 unknown=2 enemy_ships=8 battles=1 enemy_killed=4 own_lost=0 bombings=0 bombed_colonists=0 front_population=2549 visible_debris=0 collector_cargo=10
+CAMPAIGN_BATTLE step=2 position=(120, 0) participants=map[1:4 2:4] destroyed=map[1:0 2:4] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+Campaign cruiser #8]"
+Campaign destroyer #9]"
+Campaign destroyer #5" Fuel=275/280 WarpSpeed=0 Start="(52, -19)" End="(65, -17)"
+Campaign destroyer #5]"
+CAMPAIGN_DELIVERY step=3 collector=Collector-0 amount=10 origin=(0, 0) planet=Home
+CAMPAIGN step=3 year=2403 visible=2 unknown=2 enemy_ships=6 battles=1 enemy_killed=2 own_lost=0 bombings=0 bombed_colonists=0 front_population=2931 visible_debris=18 collector_cargo=0
+CAMPAIGN_BATTLE step=3 position=(157, -75) participants=map[1:2 2:2] destroyed=map[1:0 2:2] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN_ENEMY_MERGE step=4 ships=6 position=(180, 0)
+Campaign cruiser #2" Dest=[Guard-5]
+Campaign cruiser #2" Fuel=1068/1200 WarpSpeed=10 Start="(157, -75)" End="(67, -32)"
+CAMPAIGN step=4 year=2404 visible=1 unknown=0 enemy_ships=6 battles=1 enemy_killed=0 own_lost=1 bombings=0 bombed_colonists=0 front_population=3371 visible_debris=18 collector_cargo=0
+Campaign cruiser #2","num":2,"patrol":{"requiredShips":1,"gatheringSince":2404,"leader":2,"enemy":2,"target":5,"grouped":true,"status":"Regrouped as one fleet; withdrawing toward fuel while the enemy is stronger"},"position":{"x":67,"y":-32},"role":"patrol","scout":null,"ships":2,"step":4,"waypoints":[{"targetPosition":{"x":0,"y":0},"position":{"x":67,"y":-32},"warpSpeed":0,"partiallyComplete":true},{"targetPosition":{"x":0,"y":0},"targetType":"Planet","targetName":"Home","targetNum":1,"targetPlayerNum":1,"position":{"x":0,"y":0},"warpSpeed":10,"estFuelUsage":38}]}
+CAMPAIGN_BATTLE step=4 position=(164, 0) participants=map[1:1 2:6] destroyed=map[1:1 2:0] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=1 peak_survivor_damage=0.0000
+Campaign cruiser #2"
+Campaign cruiser #2" Fuel=533/600 WarpSpeed=2 Start="(67, -32)" End="(67, -28)"
+Campaign cruiser #4" Fuel=533/600 WarpSpeed=2 Start="(67, -32)" End="(67, -28)"
+CAMPAIGN step=5 year=2405 visible=1 unknown=0 enemy_ships=6 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=3836 visible_debris=6 collector_cargo=0
+Campaign cruiser #2" Fuel=516/600 WarpSpeed=0 Start="(67, -28)" End="(0, 0)"
+Campaign cruiser #4" Fuel=516/600 WarpSpeed=0 Start="(67, -28)" End="(0, 0)"
+Campaign cruiser #2"
+Campaign cruiser #4"
+Campaign cruiser #2"
+Campaign cruiser #4"
+CAMPAIGN step=6 year=2406 visible=0 unknown=0 enemy_ships=0 battles=1 enemy_killed=6 own_lost=0 bombings=0 bombed_colonists=0 front_population=4309 visible_debris=198 collector_cargo=0
+CAMPAIGN_BATTLE step=6 position=(132, 0) participants=map[1:9 2:6] destroyed=map[1:0 2:6] collectors=1 collector_retreats=0 collector_away_moves=3 scouts_lost=0 peak_survivor_damage=0.0820
+Campaign cruiser #2" Fuel=598/600 WarpSpeed=4 Start="(0, 0)" End="(16, 0)"
+Campaign cruiser #4" Fuel=598/600 WarpSpeed=4 Start="(0, 0)" End="(16, 0)"
+Campaign cruiser #5" Fuel=533/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser #6" Fuel=533/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser #7" Fuel=533/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #8" Fuel=248/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #9" Fuel=248/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #10" Fuel=248/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #15" Fuel=248/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=50
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=50
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=50
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=50
+CAMPAIGN step=7 year=2407 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=4781 visible_debris=0 collector_cargo=198
+Campaign cruiser #2" Fuel=596/600 WarpSpeed=4 Start="(16, 0)" End="(32, 0)"
+Campaign cruiser #4" Fuel=596/600 WarpSpeed=4 Start="(16, 0)" End="(32, 0)"
+Campaign cruiser #5" Fuel=532/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser #6" Fuel=532/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser #7" Fuel=532/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #8" Fuel=247/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #9" Fuel=247/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #10" Fuel=247/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #15" Fuel=247/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=43
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=43
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=43
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=43
+CAMPAIGN_DELIVERY step=8 collector=Collector-0 amount=198 origin=(51, 0) planet=Home
+CAMPAIGN step=8 year=2408 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5243 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=594/600 WarpSpeed=4 Start="(32, 0)" End="(48, 0)"
+Campaign cruiser #4" Fuel=594/600 WarpSpeed=4 Start="(32, 0)" End="(48, 0)"
+Campaign cruiser #5" Fuel=531/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser #6" Fuel=531/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser #7" Fuel=531/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #8" Fuel=246/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #9" Fuel=246/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #10" Fuel=246/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #15" Fuel=246/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=36
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=36
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=36
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=36
+CAMPAIGN step=9 year=2409 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5686 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=592/600 WarpSpeed=4 Start="(48, 0)" End="(64, 0)"
+Campaign cruiser #4" Fuel=592/600 WarpSpeed=4 Start="(48, 0)" End="(64, 0)"
+Campaign cruiser #5" Fuel=530/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser #6" Fuel=530/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser #7" Fuel=530/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #8" Fuel=245/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #9" Fuel=245/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #10" Fuel=245/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #15" Fuel=245/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=29
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=29
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=29
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=29
+CAMPAIGN step=10 year=2410 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6106 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=590/600 WarpSpeed=4 Start="(64, 0)" End="(80, 0)"
+Campaign cruiser #4" Fuel=590/600 WarpSpeed=4 Start="(64, 0)" End="(80, 0)"
+Campaign cruiser #5" Fuel=529/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser #6" Fuel=529/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser #7" Fuel=529/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #8" Fuel=244/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #9" Fuel=244/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #10" Fuel=244/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #15" Fuel=244/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=22
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=22
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=22
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=22
+CAMPAIGN step=11 year=2411 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6499 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=588/600 WarpSpeed=4 Start="(80, 0)" End="(96, 0)"
+Campaign cruiser #4" Fuel=588/600 WarpSpeed=4 Start="(80, 0)" End="(96, 0)"
+Campaign cruiser #5" Fuel=528/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser #6" Fuel=528/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser #7" Fuel=528/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #8" Fuel=243/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #9" Fuel=243/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #10" Fuel=243/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #15" Fuel=243/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=15
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=15
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=15
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=15
+CAMPAIGN step=12 year=2412 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6863 visible_debris=0 collector_cargo=0
+CAMPAIGN_END seed=17 mode=reload battles=5 splits=0 delivered=208 enemy_remaining_ships=0
+TRIAL seed17-reload-split
+CAMPAIGN_START seed=17 own_fleets=21 enemy_fleets=6 snapshot_bytes=192716
+CAMPAIGN step=0 year=2400 visible=6 unknown=6 enemy_ships=13 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=2000 visible_debris=0 collector_cargo=0
+CAMPAIGN step=1 year=2401 visible=5 unknown=3 enemy_ships=12 battles=1 enemy_killed=1 own_lost=0 bombings=1 bombed_colonists=8300 front_population=2217 visible_debris=10 collector_cargo=0
+CAMPAIGN_BATTLE step=1 position=(35, -35) participants=map[1:2 2:1] destroyed=map[1:0 2:1] collectors=1 collector_retreats=0 collector_away_moves=4 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN step=2 year=2402 visible=3 unknown=2 enemy_ships=8 battles=1 enemy_killed=4 own_lost=0 bombings=0 bombed_colonists=0 front_population=2549 visible_debris=0 collector_cargo=10
+CAMPAIGN_BATTLE step=2 position=(120, 0) participants=map[1:4 2:4] destroyed=map[1:0 2:4] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+Campaign cruiser #8]"
+Campaign destroyer #9]"
+Campaign destroyer #5" Fuel=275/280 WarpSpeed=0 Start="(52, -19)" End="(65, -17)"
+Campaign destroyer #5]"
+CAMPAIGN_DELIVERY step=3 collector=Collector-0 amount=10 origin=(0, 0) planet=Home
+CAMPAIGN step=3 year=2403 visible=2 unknown=2 enemy_ships=6 battles=1 enemy_killed=2 own_lost=0 bombings=0 bombed_colonists=0 front_population=2931 visible_debris=18 collector_cargo=0
+CAMPAIGN_BATTLE step=3 position=(157, -75) participants=map[1:2 2:2] destroyed=map[1:0 2:2] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN_ENEMY_MERGE step=4 ships=6 position=(180, 0)
+Campaign cruiser #2" Dest=[Guard-5]
+Campaign cruiser #2" Fuel=1068/1200 WarpSpeed=10 Start="(157, -75)" End="(67, -32)"
+CAMPAIGN step=4 year=2404 visible=1 unknown=0 enemy_ships=6 battles=1 enemy_killed=0 own_lost=1 bombings=0 bombed_colonists=0 front_population=3371 visible_debris=18 collector_cargo=0
+Campaign cruiser #2","num":2,"patrol":{"requiredShips":1,"gatheringSince":2404,"leader":2,"enemy":2,"target":5,"grouped":true,"status":"Regrouped as one fleet; withdrawing toward fuel while the enemy is stronger"},"position":{"x":67,"y":-32},"role":"patrol","scout":null,"ships":2,"step":4,"waypoints":[{"targetPosition":{"x":0,"y":0},"position":{"x":67,"y":-32},"warpSpeed":0,"partiallyComplete":true},{"targetPosition":{"x":0,"y":0},"targetType":"Planet","targetName":"Home","targetNum":1,"targetPlayerNum":1,"position":{"x":0,"y":0},"warpSpeed":10,"estFuelUsage":38}]}
+CAMPAIGN_BATTLE step=4 position=(164, 0) participants=map[1:1 2:6] destroyed=map[1:1 2:0] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=1 peak_survivor_damage=0.0000
+CAMPAIGN_ENEMY_SPLIT step=5 children=5
+CAMPAIGN_RECON_LIFECYCLE step=5 scout=Observer-5 target=5 reported_target=false actual_target=true actual_equipment_already_known=true
+Campaign cruiser #2"
+Campaign cruiser #2" Fuel=533/600 WarpSpeed=2 Start="(67, -32)" End="(67, -28)"
+Campaign cruiser #4" Fuel=533/600 WarpSpeed=2 Start="(67, -32)" End="(67, -28)"
+CAMPAIGN step=5 year=2405 visible=6 unknown=0 enemy_ships=6 battles=1 enemy_killed=0 own_lost=1 bombings=0 bombed_colonists=0 front_population=3836 visible_debris=23 collector_cargo=0
+CAMPAIGN_BATTLE step=5 position=(155, 0) participants=map[1:1 2:1] destroyed=map[1:1 2:0] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=1 peak_survivor_damage=0.0000
+Campaign cruiser #2" Fuel=516/600 WarpSpeed=0 Start="(67, -28)" End="(0, 0)"
+Campaign cruiser #4" Fuel=516/600 WarpSpeed=0 Start="(67, -28)" End="(0, 0)"
+Campaign cruiser #2"
+Campaign cruiser #4"
+Campaign cruiser #2"
+Campaign cruiser #4"
+CAMPAIGN step=6 year=2406 visible=5 unknown=0 enemy_ships=5 battles=1 enemy_killed=1 own_lost=0 bombings=0 bombed_colonists=0 front_population=4309 visible_debris=39 collector_cargo=0
+CAMPAIGN_BATTLE step=6 position=(146, 0) participants=map[1:9 2:1] destroyed=map[1:0 2:1] collectors=1 collector_retreats=0 collector_away_moves=2 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN_PICKUP_PROBE step=6 collector=Collector-0 available=33 native_pickup=33 position=(146, 0)
+Campaign cruiser #4" Fuel=596/600 WarpSpeed=5 Start="(0, 0)" End="(25, 0)"
+Campaign destroyer #9" Fuel=246/280 WarpSpeed=2 Start="(146, 0)" End="(142, 1)"
+Campaign destroyer #10" Fuel=245/280 WarpSpeed=2 Start="(146, 0)" End="(142, 1)"
+Campaign destroyer #15" Fuel=246/280 WarpSpeed=3 Start="(146, 0)" End="(137, -1)"
+Campaign cruiser #5" Fuel=524/600 WarpSpeed=0 Start="(146, 0)" End="(140, 12)"
+Campaign cruiser #6" Fuel=522/600 WarpSpeed=0 Start="(146, 0)" End="(146, -21)"
+Campaign cruiser #7" Fuel=523/600 WarpSpeed=0 Start="(146, 0)" End="(146, 21)"
+Campaign destroyer #8" Fuel=239/280 WarpSpeed=0 Start="(146, 0)" End="(149, 24)"
+CAMPAIGN step=7 year=2407 visible=0 unknown=0 enemy_ships=0 battles=5 enemy_killed=5 own_lost=0 bombings=0 bombed_colonists=0 front_population=4781 visible_debris=177 collector_cargo=0
+Campaign cruiser #5","num":5,"patrol":{"requiredShips":1,"gatheringSince":2407,"leader":5,"enemy":2,"target":7,"status":"Intercepting Enemy torpedo cruiser #7"},"position":{"x":140,"y":12},"role":"patrol","scout":null,"ships":1,"step":7,"waypoints":[{"targetPosition":{"x":148,"y":8},"position":{"x":140,"y":12},"warpSpeed":10}]}
+Campaign cruiser #6","num":6,"patrol":{"requiredShips":1,"gatheringSince":2407,"leader":6,"enemy":2,"target":4,"status":"Intercepting Enemy torpedo cruiser #4"},"position":{"x":146,"y":-21},"role":"patrol","scout":null,"ships":1,"step":7,"waypoints":[{"targetPosition":{"x":152,"y":-14},"position":{"x":146,"y":-21},"warpSpeed":10}]}
+Campaign cruiser #7","num":7,"patrol":{"requiredShips":1,"gatheringSince":2407,"leader":7,"enemy":2,"target":8,"status":"Intercepting Enemy torpedo cruiser #8"},"position":{"x":146,"y":21},"role":"patrol","scout":null,"ships":1,"step":7,"waypoints":[{"targetPosition":{"x":152,"y":14},"position":{"x":146,"y":21},"warpSpeed":10}]}
+Campaign destroyer #8","num":8,"patrol":{"requiredShips":1,"gatheringSince":2407,"leader":8,"enemy":2,"target":9,"status":"Intercepting Enemy torpedo cruiser #9"},"position":{"x":149,"y":24},"role":"patrol","scout":null,"ships":1,"step":7,"waypoints":[{"targetPosition":{"x":154,"y":16},"position":{"x":149,"y":24},"warpSpeed":10}]}
+CAMPAIGN_BATTLE step=7 position=(140, -12) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0400
+CAMPAIGN_BATTLE step=7 position=(140, 12) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0780
+CAMPAIGN_BATTLE step=7 position=(146, -21) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0600
+CAMPAIGN_BATTLE step=7 position=(146, 21) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0400
+CAMPAIGN_BATTLE step=7 position=(149, 24) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.1420
+Campaign cruiser #2" Fuel=598/600 WarpSpeed=4 Start="(0, 0)" End="(16, 0)"
+Campaign cruiser #4" Fuel=592/600 WarpSpeed=5 Start="(25, 0)" End="(50, 0)"
+Campaign cruiser #5" Fuel=523/600 WarpSpeed=3 Start="(140, 12)" End="(149, 11)"
+Campaign cruiser #6" Fuel=521/600 WarpSpeed=3 Start="(146, -21)" End="(155, -20)"
+Campaign cruiser #7" Fuel=522/600 WarpSpeed=3 Start="(146, 21)" End="(155, 20)"
+Campaign destroyer #8" Fuel=238/280 WarpSpeed=3 Start="(149, 24)" End="(158, 22)"
+Campaign destroyer #9" Fuel=245/280 WarpSpeed=3 Start="(142, 1)" End="(151, 1)"
+Campaign destroyer #10" Fuel=244/280 WarpSpeed=3 Start="(142, 1)" End="(151, 1)"
+Campaign destroyer #15" Fuel=245/280 WarpSpeed=3 Start="(137, -1)" End="(146, -1)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=21
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=47
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=35
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=21
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=99
+CAMPAIGN step=8 year=2408 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5243 visible_debris=64 collector_cargo=0
+Campaign cruiser #2" Fuel=596/600 WarpSpeed=4 Start="(16, 0)" End="(32, 0)"
+Campaign cruiser #4" Fuel=589/600 WarpSpeed=0 Start="(50, 0)" End="(73, 0)"
+Campaign cruiser #5" Fuel=522/600 WarpSpeed=3 Start="(149, 11)" End="(158, 10)"
+Campaign cruiser #6" Fuel=520/600 WarpSpeed=3 Start="(155, -20)" End="(164, -19)"
+Campaign cruiser #7" Fuel=521/600 WarpSpeed=3 Start="(155, 20)" End="(164, 19)"
+Campaign destroyer #8" Fuel=237/280 WarpSpeed=3 Start="(158, 22)" End="(167, 20)"
+Campaign destroyer #9" Fuel=244/280 WarpSpeed=3 Start="(151, 1)" End="(160, 1)"
+Campaign destroyer #10" Fuel=243/280 WarpSpeed=3 Start="(151, 1)" End="(160, 1)"
+Campaign destroyer #15" Fuel=244/280 WarpSpeed=3 Start="(146, -1)" End="(155, -1)"
+Campaign cruiser #4"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=14
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=40
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=28
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=14
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=92
+CAMPAIGN step=9 year=2409 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5686 visible_debris=16 collector_cargo=4
+Campaign cruiser #2" Fuel=594/600 WarpSpeed=4 Start="(32, 0)" End="(48, 0)"
+Campaign cruiser #4" Fuel=482/600 WarpSpeed=0 Start="(73, 0)" End="(0, 0)"
+Campaign cruiser #5" Fuel=521/600 WarpSpeed=3 Start="(158, 10)" End="(167, 9)"
+Campaign cruiser #6" Fuel=519/600 WarpSpeed=3 Start="(164, -19)" End="(173, -18)"
+Campaign cruiser #7" Fuel=520/600 WarpSpeed=3 Start="(164, 19)" End="(173, 18)"
+Campaign destroyer #8" Fuel=236/280 WarpSpeed=3 Start="(167, 20)" End="(176, 18)"
+Campaign destroyer #9" Fuel=243/280 WarpSpeed=3 Start="(160, 1)" End="(169, 1)"
+Campaign destroyer #10" Fuel=242/280 WarpSpeed=3 Start="(160, 1)" End="(169, 1)"
+Campaign destroyer #15" Fuel=243/280 WarpSpeed=3 Start="(155, -1)" End="(164, -1)"
+Campaign cruiser #4"
+Campaign cruiser #4"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=7
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=33
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=21
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=7
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=85
+CAMPAIGN step=10 year=2410 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6106 visible_debris=0 collector_cargo=4
+Campaign cruiser #2" Fuel=592/600 WarpSpeed=4 Start="(48, 0)" End="(64, 0)"
+Campaign cruiser #5" Fuel=520/600 WarpSpeed=3 Start="(167, 9)" End="(176, 8)"
+Campaign cruiser #6" Fuel=518/600 WarpSpeed=3 Start="(173, -18)" End="(182, -17)"
+Campaign cruiser #7" Fuel=519/600 WarpSpeed=3 Start="(173, 18)" End="(182, 17)"
+Campaign destroyer #8" Fuel=235/280 WarpSpeed=3 Start="(176, 18)" End="(185, 16)"
+Campaign destroyer #9" Fuel=242/280 WarpSpeed=3 Start="(169, 1)" End="(178, 1)"
+Campaign destroyer #10" Fuel=241/280 WarpSpeed=3 Start="(169, 1)" End="(178, 1)"
+Campaign destroyer #15" Fuel=242/280 WarpSpeed=3 Start="(164, -1)" End="(173, -1)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=0 Damage=0
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=26
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=14
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=0 Damage=0
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=78
+CAMPAIGN_DELIVERY step=11 collector=Collector-1 amount=4 origin=(59, -5) planet=Home
+CAMPAIGN step=11 year=2411 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6499 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=590/600 WarpSpeed=4 Start="(64, 0)" End="(80, 0)"
+Campaign cruiser #4" Fuel=598/600 WarpSpeed=4 Start="(0, 0)" End="(16, 0)"
+Campaign cruiser #5" Fuel=519/600 WarpSpeed=3 Start="(176, 8)" End="(185, 7)"
+Campaign cruiser #6" Fuel=517/600 WarpSpeed=3 Start="(182, -17)" End="(191, -15)"
+Campaign cruiser #7" Fuel=518/600 WarpSpeed=3 Start="(182, 17)" End="(191, 15)"
+Campaign destroyer #8" Fuel=234/280 WarpSpeed=3 Start="(185, 16)" End="(194, 15)"
+Campaign destroyer #9" Fuel=241/280 WarpSpeed=3 Start="(178, 1)" End="(187, 1)"
+Campaign destroyer #10" Fuel=240/280 WarpSpeed=3 Start="(178, 1)" End="(187, 1)"
+Campaign destroyer #15" Fuel=241/280 WarpSpeed=3 Start="(173, -1)" End="(182, -1)"
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=19
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=7
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=71
+CAMPAIGN step=12 year=2412 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6863 visible_debris=0 collector_cargo=0
+CAMPAIGN_END seed=17 mode=reload-split battles=11 splits=1 delivered=14 enemy_remaining_ships=0
+TRIAL seed89-native
+CAMPAIGN_START seed=89 own_fleets=21 enemy_fleets=6 snapshot_bytes=192716
+CAMPAIGN step=0 year=2400 visible=6 unknown=6 enemy_ships=13 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=2000 visible_debris=0 collector_cargo=0
+CAMPAIGN step=1 year=2401 visible=5 unknown=3 enemy_ships=12 battles=1 enemy_killed=1 own_lost=0 bombings=1 bombed_colonists=8200 front_population=2218 visible_debris=10 collector_cargo=0
+CAMPAIGN_BATTLE step=1 position=(35, -35) participants=map[1:2 2:1] destroyed=map[1:0 2:1] collectors=1 collector_retreats=0 collector_away_moves=3 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN step=2 year=2402 visible=3 unknown=2 enemy_ships=8 battles=1 enemy_killed=4 own_lost=0 bombings=0 bombed_colonists=0 front_population=2550 visible_debris=0 collector_cargo=10
+CAMPAIGN_BATTLE step=2 position=(120, 0) participants=map[1:4 2:4] destroyed=map[1:0 2:4] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+Campaign cruiser #8]"
+Campaign destroyer #9]"
+Campaign destroyer #5" Fuel=275/280 WarpSpeed=0 Start="(52, -19)" End="(65, -17)"
+Campaign destroyer #5]"
+CAMPAIGN_DELIVERY step=3 collector=Collector-0 amount=10 origin=(0, 0) planet=Home
+CAMPAIGN step=3 year=2403 visible=2 unknown=2 enemy_ships=6 battles=1 enemy_killed=2 own_lost=0 bombings=0 bombed_colonists=0 front_population=2933 visible_debris=18 collector_cargo=0
+CAMPAIGN_BATTLE step=3 position=(157, -75) participants=map[1:2 2:2] destroyed=map[1:0 2:2] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN_ENEMY_MERGE step=4 ships=6 position=(180, 0)
+Campaign cruiser #2" Fuel=558/600 WarpSpeed=3 Start="(157, -75)" End="(151, -69)"
+CAMPAIGN step=4 year=2404 visible=1 unknown=0 enemy_ships=6 battles=1 enemy_killed=0 own_lost=1 bombings=0 bombed_colonists=0 front_population=3373 visible_debris=18 collector_cargo=0
+CAMPAIGN_BATTLE step=4 position=(164, 0) participants=map[1:1 2:6] destroyed=map[1:1 2:0] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=1 peak_survivor_damage=0.0000
+Campaign cruiser #2" Fuel=557/600 WarpSpeed=3 Start="(151, -69)" End="(144, -63)"
+CAMPAIGN step=5 year=2405 visible=1 unknown=0 enemy_ships=6 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=3838 visible_debris=6 collector_cargo=0
+Campaign cruiser #2" Fuel=538/600 WarpSpeed=9 Start="(144, -63)" End="(70, -31)"
+CAMPAIGN step=6 year=2406 visible=0 unknown=0 enemy_ships=0 battles=1 enemy_killed=6 own_lost=0 bombings=0 bombed_colonists=0 front_population=4311 visible_debris=198 collector_cargo=0
+CAMPAIGN_BATTLE step=6 position=(132, 0) participants=map[1:8 2:6] destroyed=map[1:0 2:6] collectors=1 collector_retreats=0 collector_away_moves=4 scouts_lost=0 peak_survivor_damage=0.1560
+Campaign cruiser #2" Fuel=536/600 WarpSpeed=4 Start="(70, -31)" End="(86, -29)"
+Campaign cruiser #4" Fuel=552/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser #5" Fuel=552/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #7" Fuel=257/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #8" Fuel=257/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #9" Fuel=257/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #10" Fuel=257/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=102
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=102
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=102
+CAMPAIGN step=7 year=2407 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=4783 visible_debris=0 collector_cargo=198
+Campaign cruiser #2" Fuel=534/600 WarpSpeed=4 Start="(86, -29)" End="(102, -27)"
+Campaign cruiser #4" Fuel=551/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser #5" Fuel=551/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #7" Fuel=256/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #8" Fuel=256/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #9" Fuel=256/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #10" Fuel=256/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=95
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=95
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=95
+CAMPAIGN_DELIVERY step=8 collector=Collector-0 amount=198 origin=(51, 0) planet=Home
+CAMPAIGN step=8 year=2408 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5244 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=532/600 WarpSpeed=4 Start="(102, -27)" End="(118, -25)"
+Campaign cruiser #4" Fuel=550/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser #5" Fuel=550/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #7" Fuel=255/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #8" Fuel=255/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #9" Fuel=255/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #10" Fuel=255/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=88
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=88
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=88
+CAMPAIGN step=9 year=2409 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5688 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=531/600 WarpSpeed=3 Start="(118, -25)" End="(127, -24)"
+Campaign cruiser #4" Fuel=549/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser #5" Fuel=549/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #7" Fuel=254/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #8" Fuel=254/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #9" Fuel=254/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #10" Fuel=254/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=81
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=81
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=81
+CAMPAIGN step=10 year=2410 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6107 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=530/600 WarpSpeed=3 Start="(127, -24)" End="(136, -23)"
+Campaign cruiser #4" Fuel=548/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser #5" Fuel=548/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #7" Fuel=253/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #8" Fuel=253/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #9" Fuel=253/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #10" Fuel=253/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=74
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=74
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=74
+CAMPAIGN step=11 year=2411 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6500 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=529/600 WarpSpeed=3 Start="(136, -23)" End="(145, -22)"
+Campaign cruiser #4" Fuel=547/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser #5" Fuel=547/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #7" Fuel=252/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #8" Fuel=252/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #9" Fuel=252/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #10" Fuel=252/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=67
+Campaign cruiser #4" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=67
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=67
+CAMPAIGN step=12 year=2412 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6864 visible_debris=0 collector_cargo=0
+CAMPAIGN_END seed=89 mode=native battles=5 splits=0 delivered=208 enemy_remaining_ships=0
+TRIAL seed89-reload
+CAMPAIGN_START seed=89 own_fleets=21 enemy_fleets=6 snapshot_bytes=192716
+CAMPAIGN step=0 year=2400 visible=6 unknown=6 enemy_ships=13 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=2000 visible_debris=0 collector_cargo=0
+CAMPAIGN step=1 year=2401 visible=5 unknown=3 enemy_ships=12 battles=1 enemy_killed=1 own_lost=0 bombings=1 bombed_colonists=8200 front_population=2218 visible_debris=10 collector_cargo=0
+CAMPAIGN_BATTLE step=1 position=(35, -35) participants=map[1:2 2:1] destroyed=map[1:0 2:1] collectors=1 collector_retreats=0 collector_away_moves=3 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN step=2 year=2402 visible=3 unknown=2 enemy_ships=8 battles=1 enemy_killed=4 own_lost=0 bombings=0 bombed_colonists=0 front_population=2550 visible_debris=0 collector_cargo=10
+CAMPAIGN_BATTLE step=2 position=(120, 0) participants=map[1:4 2:4] destroyed=map[1:0 2:4] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+Campaign cruiser #8]"
+Campaign destroyer #9]"
+Campaign destroyer #5" Fuel=275/280 WarpSpeed=0 Start="(52, -19)" End="(65, -17)"
+Campaign destroyer #5]"
+CAMPAIGN_DELIVERY step=3 collector=Collector-0 amount=10 origin=(0, 0) planet=Home
+CAMPAIGN step=3 year=2403 visible=2 unknown=2 enemy_ships=6 battles=1 enemy_killed=2 own_lost=0 bombings=0 bombed_colonists=0 front_population=2933 visible_debris=18 collector_cargo=0
+CAMPAIGN_BATTLE step=3 position=(157, -75) participants=map[1:2 2:2] destroyed=map[1:0 2:2] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN_ENEMY_MERGE step=4 ships=6 position=(180, 0)
+Campaign cruiser #2" Dest=[Guard-5]
+Campaign cruiser #2" Fuel=1068/1200 WarpSpeed=10 Start="(157, -75)" End="(67, -32)"
+CAMPAIGN step=4 year=2404 visible=1 unknown=0 enemy_ships=6 battles=1 enemy_killed=0 own_lost=1 bombings=0 bombed_colonists=0 front_population=3373 visible_debris=18 collector_cargo=0
+Campaign cruiser #2","num":2,"patrol":{"requiredShips":1,"gatheringSince":2404,"leader":2,"enemy":2,"target":5,"grouped":true,"status":"Regrouped as one fleet; withdrawing toward fuel while the enemy is stronger"},"position":{"x":67,"y":-32},"role":"patrol","scout":null,"ships":2,"step":4,"waypoints":[{"targetPosition":{"x":0,"y":0},"position":{"x":67,"y":-32},"warpSpeed":0,"partiallyComplete":true},{"targetPosition":{"x":0,"y":0},"targetType":"Planet","targetName":"Home","targetNum":1,"targetPlayerNum":1,"position":{"x":0,"y":0},"warpSpeed":10,"estFuelUsage":38}]}
+CAMPAIGN_BATTLE step=4 position=(164, 0) participants=map[1:1 2:6] destroyed=map[1:1 2:0] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=1 peak_survivor_damage=0.0000
+Campaign cruiser #2"
+Campaign cruiser #2" Fuel=533/600 WarpSpeed=2 Start="(67, -32)" End="(67, -28)"
+Campaign cruiser #4" Fuel=533/600 WarpSpeed=2 Start="(67, -32)" End="(67, -28)"
+CAMPAIGN step=5 year=2405 visible=1 unknown=0 enemy_ships=6 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=3838 visible_debris=6 collector_cargo=0
+Campaign cruiser #2" Fuel=516/600 WarpSpeed=0 Start="(67, -28)" End="(0, 0)"
+Campaign cruiser #4" Fuel=516/600 WarpSpeed=0 Start="(67, -28)" End="(0, 0)"
+Campaign cruiser #2"
+Campaign cruiser #4"
+Campaign cruiser #2"
+Campaign cruiser #4"
+CAMPAIGN step=6 year=2406 visible=0 unknown=0 enemy_ships=0 battles=1 enemy_killed=6 own_lost=0 bombings=0 bombed_colonists=0 front_population=4311 visible_debris=198 collector_cargo=0
+CAMPAIGN_BATTLE step=6 position=(132, 0) participants=map[1:9 2:6] destroyed=map[1:0 2:6] collectors=1 collector_retreats=0 collector_away_moves=4 scouts_lost=0 peak_survivor_damage=0.1180
+Campaign cruiser #2" Fuel=598/600 WarpSpeed=4 Start="(0, 0)" End="(16, 0)"
+Campaign cruiser #4" Fuel=598/600 WarpSpeed=4 Start="(0, 0)" End="(16, 0)"
+Campaign cruiser #5" Fuel=533/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser #6" Fuel=533/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser #7" Fuel=533/600 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #8" Fuel=248/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #9" Fuel=248/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #10" Fuel=248/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign destroyer #15" Fuel=248/280 WarpSpeed=3 Start="(132, 0)" End="(141, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=75
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=75
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=75
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=75
+CAMPAIGN step=7 year=2407 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=4783 visible_debris=0 collector_cargo=198
+Campaign cruiser #2" Fuel=596/600 WarpSpeed=4 Start="(16, 0)" End="(32, 0)"
+Campaign cruiser #4" Fuel=596/600 WarpSpeed=4 Start="(16, 0)" End="(32, 0)"
+Campaign cruiser #5" Fuel=532/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser #6" Fuel=532/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser #7" Fuel=532/600 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #8" Fuel=247/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #9" Fuel=247/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #10" Fuel=247/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign destroyer #15" Fuel=247/280 WarpSpeed=3 Start="(141, 0)" End="(150, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=68
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=68
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=68
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=68
+CAMPAIGN_DELIVERY step=8 collector=Collector-0 amount=198 origin=(51, 0) planet=Home
+CAMPAIGN step=8 year=2408 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5244 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=594/600 WarpSpeed=4 Start="(32, 0)" End="(48, 0)"
+Campaign cruiser #4" Fuel=594/600 WarpSpeed=4 Start="(32, 0)" End="(48, 0)"
+Campaign cruiser #5" Fuel=531/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser #6" Fuel=531/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser #7" Fuel=531/600 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #8" Fuel=246/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #9" Fuel=246/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #10" Fuel=246/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign destroyer #15" Fuel=246/280 WarpSpeed=3 Start="(150, 0)" End="(159, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=61
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=61
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=61
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=61
+CAMPAIGN step=9 year=2409 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5688 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=592/600 WarpSpeed=4 Start="(48, 0)" End="(64, 0)"
+Campaign cruiser #4" Fuel=592/600 WarpSpeed=4 Start="(48, 0)" End="(64, 0)"
+Campaign cruiser #5" Fuel=530/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser #6" Fuel=530/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser #7" Fuel=530/600 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #8" Fuel=245/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #9" Fuel=245/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #10" Fuel=245/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign destroyer #15" Fuel=245/280 WarpSpeed=3 Start="(159, 0)" End="(168, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=54
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=54
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=54
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=54
+CAMPAIGN step=10 year=2410 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6107 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=590/600 WarpSpeed=4 Start="(64, 0)" End="(80, 0)"
+Campaign cruiser #4" Fuel=590/600 WarpSpeed=4 Start="(64, 0)" End="(80, 0)"
+Campaign cruiser #5" Fuel=529/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser #6" Fuel=529/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser #7" Fuel=529/600 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #8" Fuel=244/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #9" Fuel=244/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #10" Fuel=244/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign destroyer #15" Fuel=244/280 WarpSpeed=3 Start="(168, 0)" End="(177, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=47
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=47
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=47
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=47
+CAMPAIGN step=11 year=2411 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6500 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=588/600 WarpSpeed=4 Start="(80, 0)" End="(96, 0)"
+Campaign cruiser #4" Fuel=588/600 WarpSpeed=4 Start="(80, 0)" End="(96, 0)"
+Campaign cruiser #5" Fuel=528/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser #6" Fuel=528/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser #7" Fuel=528/600 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #8" Fuel=243/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #9" Fuel=243/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #10" Fuel=243/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign destroyer #15" Fuel=243/280 WarpSpeed=3 Start="(177, 0)" End="(186, 0)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=40
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=40
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=40
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=40
+CAMPAIGN step=12 year=2412 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6864 visible_debris=0 collector_cargo=0
+CAMPAIGN_END seed=89 mode=reload battles=5 splits=0 delivered=208 enemy_remaining_ships=0
+TRIAL seed89-reload-split
+CAMPAIGN_START seed=89 own_fleets=21 enemy_fleets=6 snapshot_bytes=192716
+CAMPAIGN step=0 year=2400 visible=6 unknown=6 enemy_ships=13 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=2000 visible_debris=0 collector_cargo=0
+CAMPAIGN step=1 year=2401 visible=5 unknown=3 enemy_ships=12 battles=1 enemy_killed=1 own_lost=0 bombings=1 bombed_colonists=8200 front_population=2218 visible_debris=10 collector_cargo=0
+CAMPAIGN_BATTLE step=1 position=(35, -35) participants=map[1:2 2:1] destroyed=map[1:0 2:1] collectors=1 collector_retreats=0 collector_away_moves=3 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN step=2 year=2402 visible=3 unknown=2 enemy_ships=8 battles=1 enemy_killed=4 own_lost=0 bombings=0 bombed_colonists=0 front_population=2550 visible_debris=0 collector_cargo=10
+CAMPAIGN_BATTLE step=2 position=(120, 0) participants=map[1:4 2:4] destroyed=map[1:0 2:4] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+Campaign cruiser #8]"
+Campaign destroyer #9]"
+Campaign destroyer #5" Fuel=275/280 WarpSpeed=0 Start="(52, -19)" End="(65, -17)"
+Campaign destroyer #5]"
+CAMPAIGN_DELIVERY step=3 collector=Collector-0 amount=10 origin=(0, 0) planet=Home
+CAMPAIGN step=3 year=2403 visible=2 unknown=2 enemy_ships=6 battles=1 enemy_killed=2 own_lost=0 bombings=0 bombed_colonists=0 front_population=2933 visible_debris=18 collector_cargo=0
+CAMPAIGN_BATTLE step=3 position=(157, -75) participants=map[1:2 2:2] destroyed=map[1:0 2:2] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN_ENEMY_MERGE step=4 ships=6 position=(180, 0)
+Campaign cruiser #2" Dest=[Guard-5]
+Campaign cruiser #2" Fuel=1068/1200 WarpSpeed=10 Start="(157, -75)" End="(67, -32)"
+CAMPAIGN step=4 year=2404 visible=1 unknown=0 enemy_ships=6 battles=1 enemy_killed=0 own_lost=1 bombings=0 bombed_colonists=0 front_population=3373 visible_debris=18 collector_cargo=0
+Campaign cruiser #2","num":2,"patrol":{"requiredShips":1,"gatheringSince":2404,"leader":2,"enemy":2,"target":5,"grouped":true,"status":"Regrouped as one fleet; withdrawing toward fuel while the enemy is stronger"},"position":{"x":67,"y":-32},"role":"patrol","scout":null,"ships":2,"step":4,"waypoints":[{"targetPosition":{"x":0,"y":0},"position":{"x":67,"y":-32},"warpSpeed":0,"partiallyComplete":true},{"targetPosition":{"x":0,"y":0},"targetType":"Planet","targetName":"Home","targetNum":1,"targetPlayerNum":1,"position":{"x":0,"y":0},"warpSpeed":10,"estFuelUsage":38}]}
+CAMPAIGN_BATTLE step=4 position=(164, 0) participants=map[1:1 2:6] destroyed=map[1:1 2:0] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=1 peak_survivor_damage=0.0000
+CAMPAIGN_ENEMY_SPLIT step=5 children=5
+CAMPAIGN_RECON_LIFECYCLE step=5 scout=Observer-5 target=5 reported_target=false actual_target=true actual_equipment_already_known=true
+Campaign cruiser #2"
+Campaign cruiser #2" Fuel=533/600 WarpSpeed=2 Start="(67, -32)" End="(67, -28)"
+Campaign cruiser #4" Fuel=533/600 WarpSpeed=2 Start="(67, -32)" End="(67, -28)"
+CAMPAIGN step=5 year=2405 visible=6 unknown=0 enemy_ships=6 battles=1 enemy_killed=0 own_lost=1 bombings=0 bombed_colonists=0 front_population=3838 visible_debris=23 collector_cargo=0
+CAMPAIGN_BATTLE step=5 position=(155, 0) participants=map[1:1 2:1] destroyed=map[1:1 2:0] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=1 peak_survivor_damage=0.0000
+Campaign cruiser #2" Fuel=516/600 WarpSpeed=0 Start="(67, -28)" End="(0, 0)"
+Campaign cruiser #4" Fuel=516/600 WarpSpeed=0 Start="(67, -28)" End="(0, 0)"
+Campaign cruiser #2"
+Campaign cruiser #4"
+Campaign cruiser #2"
+Campaign cruiser #4"
+CAMPAIGN step=6 year=2406 visible=5 unknown=0 enemy_ships=5 battles=1 enemy_killed=1 own_lost=0 bombings=0 bombed_colonists=0 front_population=4311 visible_debris=39 collector_cargo=0
+CAMPAIGN_BATTLE step=6 position=(146, 0) participants=map[1:9 2:1] destroyed=map[1:0 2:1] collectors=1 collector_retreats=0 collector_away_moves=3 scouts_lost=0 peak_survivor_damage=0.0000
+CAMPAIGN_PICKUP_PROBE step=6 collector=Collector-0 available=33 native_pickup=33 position=(146, 0)
+Campaign cruiser #4" Fuel=596/600 WarpSpeed=5 Start="(0, 0)" End="(25, 0)"
+Campaign destroyer #9" Fuel=246/280 WarpSpeed=2 Start="(146, 0)" End="(142, 1)"
+Campaign destroyer #10" Fuel=245/280 WarpSpeed=2 Start="(146, 0)" End="(142, 1)"
+Campaign destroyer #15" Fuel=246/280 WarpSpeed=3 Start="(146, 0)" End="(137, -1)"
+Campaign cruiser #5" Fuel=524/600 WarpSpeed=0 Start="(146, 0)" End="(140, 12)"
+Campaign cruiser #6" Fuel=522/600 WarpSpeed=0 Start="(146, 0)" End="(146, -21)"
+Campaign cruiser #7" Fuel=523/600 WarpSpeed=0 Start="(146, 0)" End="(146, 21)"
+Campaign destroyer #8" Fuel=239/280 WarpSpeed=0 Start="(146, 0)" End="(149, 24)"
+CAMPAIGN step=7 year=2407 visible=0 unknown=0 enemy_ships=0 battles=5 enemy_killed=5 own_lost=0 bombings=0 bombed_colonists=0 front_population=4783 visible_debris=177 collector_cargo=0
+Campaign cruiser #5","num":5,"patrol":{"requiredShips":1,"gatheringSince":2407,"leader":5,"enemy":2,"target":7,"status":"Intercepting Enemy torpedo cruiser #7"},"position":{"x":140,"y":12},"role":"patrol","scout":null,"ships":1,"step":7,"waypoints":[{"targetPosition":{"x":148,"y":8},"position":{"x":140,"y":12},"warpSpeed":10}]}
+Campaign cruiser #6","num":6,"patrol":{"requiredShips":1,"gatheringSince":2407,"leader":6,"enemy":2,"target":4,"status":"Intercepting Enemy torpedo cruiser #4"},"position":{"x":146,"y":-21},"role":"patrol","scout":null,"ships":1,"step":7,"waypoints":[{"targetPosition":{"x":152,"y":-14},"position":{"x":146,"y":-21},"warpSpeed":10}]}
+Campaign cruiser #7","num":7,"patrol":{"requiredShips":1,"gatheringSince":2407,"leader":7,"enemy":2,"target":8,"status":"Intercepting Enemy torpedo cruiser #8"},"position":{"x":146,"y":21},"role":"patrol","scout":null,"ships":1,"step":7,"waypoints":[{"targetPosition":{"x":152,"y":14},"position":{"x":146,"y":21},"warpSpeed":10}]}
+Campaign destroyer #8","num":8,"patrol":{"requiredShips":1,"gatheringSince":2407,"leader":8,"enemy":2,"target":9,"status":"Intercepting Enemy torpedo cruiser #9"},"position":{"x":149,"y":24},"role":"patrol","scout":null,"ships":1,"step":7,"waypoints":[{"targetPosition":{"x":154,"y":16},"position":{"x":149,"y":24},"warpSpeed":10}]}
+CAMPAIGN_BATTLE step=7 position=(140, -12) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0200
+CAMPAIGN_BATTLE step=7 position=(140, 12) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0960
+CAMPAIGN_BATTLE step=7 position=(146, -21) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0580
+CAMPAIGN_BATTLE step=7 position=(146, 21) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.0580
+CAMPAIGN_BATTLE step=7 position=(149, 24) participants=map[1:1 2:1] destroyed=map[1:0 2:1] collectors=0 collector_retreats=0 collector_away_moves=0 scouts_lost=0 peak_survivor_damage=0.1080
+Campaign cruiser #2" Fuel=598/600 WarpSpeed=4 Start="(0, 0)" End="(16, 0)"
+Campaign cruiser #4" Fuel=592/600 WarpSpeed=5 Start="(25, 0)" End="(50, 0)"
+Campaign cruiser #5" Fuel=523/600 WarpSpeed=3 Start="(140, 12)" End="(149, 11)"
+Campaign cruiser #6" Fuel=521/600 WarpSpeed=3 Start="(146, -21)" End="(155, -20)"
+Campaign cruiser #7" Fuel=522/600 WarpSpeed=3 Start="(146, 21)" End="(155, 20)"
+Campaign destroyer #8" Fuel=238/280 WarpSpeed=3 Start="(149, 24)" End="(158, 22)"
+Campaign destroyer #9" Fuel=245/280 WarpSpeed=3 Start="(142, 1)" End="(151, 1)"
+Campaign destroyer #10" Fuel=244/280 WarpSpeed=3 Start="(142, 1)" End="(151, 1)"
+Campaign destroyer #15" Fuel=245/280 WarpSpeed=3 Start="(137, -1)" End="(146, -1)"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=7
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=60
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=33
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=33
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=74
+CAMPAIGN step=8 year=2408 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5244 visible_debris=64 collector_cargo=0
+Campaign cruiser #2" Fuel=596/600 WarpSpeed=4 Start="(16, 0)" End="(32, 0)"
+Campaign cruiser #4" Fuel=589/600 WarpSpeed=0 Start="(50, 0)" End="(73, 0)"
+Campaign cruiser #5" Fuel=522/600 WarpSpeed=3 Start="(149, 11)" End="(158, 10)"
+Campaign cruiser #6" Fuel=520/600 WarpSpeed=3 Start="(155, -20)" End="(164, -19)"
+Campaign cruiser #7" Fuel=521/600 WarpSpeed=3 Start="(155, 20)" End="(164, 19)"
+Campaign destroyer #8" Fuel=237/280 WarpSpeed=3 Start="(158, 22)" End="(167, 20)"
+Campaign destroyer #9" Fuel=244/280 WarpSpeed=3 Start="(151, 1)" End="(160, 1)"
+Campaign destroyer #10" Fuel=243/280 WarpSpeed=3 Start="(151, 1)" End="(160, 1)"
+Campaign destroyer #15" Fuel=244/280 WarpSpeed=3 Start="(146, -1)" End="(155, -1)"
+Campaign cruiser #4"
+Campaign cruiser" RepairAmount=7 QuantityDamaged=0 Damage=0
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=53
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=26
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=26
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=67
+CAMPAIGN step=9 year=2409 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=5688 visible_debris=16 collector_cargo=4
+Campaign cruiser #2" Fuel=594/600 WarpSpeed=4 Start="(32, 0)" End="(48, 0)"
+Campaign cruiser #4" Fuel=482/600 WarpSpeed=0 Start="(73, 0)" End="(0, 0)"
+Campaign cruiser #5" Fuel=521/600 WarpSpeed=3 Start="(158, 10)" End="(167, 9)"
+Campaign cruiser #6" Fuel=519/600 WarpSpeed=3 Start="(164, -19)" End="(173, -18)"
+Campaign cruiser #7" Fuel=520/600 WarpSpeed=3 Start="(164, 19)" End="(173, 18)"
+Campaign destroyer #8" Fuel=236/280 WarpSpeed=3 Start="(167, 20)" End="(176, 18)"
+Campaign destroyer #9" Fuel=243/280 WarpSpeed=3 Start="(160, 1)" End="(169, 1)"
+Campaign destroyer #10" Fuel=242/280 WarpSpeed=3 Start="(160, 1)" End="(169, 1)"
+Campaign destroyer #15" Fuel=243/280 WarpSpeed=3 Start="(155, -1)" End="(164, -1)"
+Campaign cruiser #4"
+Campaign cruiser #4"
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=46
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=19
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=19
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=60
+CAMPAIGN step=10 year=2410 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6107 visible_debris=0 collector_cargo=4
+Campaign cruiser #2" Fuel=592/600 WarpSpeed=4 Start="(48, 0)" End="(64, 0)"
+Campaign cruiser #5" Fuel=520/600 WarpSpeed=3 Start="(167, 9)" End="(176, 8)"
+Campaign cruiser #6" Fuel=518/600 WarpSpeed=3 Start="(173, -18)" End="(182, -17)"
+Campaign cruiser #7" Fuel=519/600 WarpSpeed=3 Start="(173, 18)" End="(182, 17)"
+Campaign destroyer #8" Fuel=235/280 WarpSpeed=3 Start="(176, 18)" End="(185, 16)"
+Campaign destroyer #9" Fuel=242/280 WarpSpeed=3 Start="(169, 1)" End="(178, 1)"
+Campaign destroyer #10" Fuel=241/280 WarpSpeed=3 Start="(169, 1)" End="(178, 1)"
+Campaign destroyer #15" Fuel=242/280 WarpSpeed=3 Start="(164, -1)" End="(173, -1)"
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=39
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=12
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=12
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=53
+CAMPAIGN_DELIVERY step=11 collector=Collector-1 amount=4 origin=(59, -5) planet=Home
+CAMPAIGN step=11 year=2411 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6500 visible_debris=0 collector_cargo=0
+Campaign cruiser #2" Fuel=590/600 WarpSpeed=4 Start="(64, 0)" End="(80, 0)"
+Campaign cruiser #4" Fuel=598/600 WarpSpeed=4 Start="(0, 0)" End="(16, 0)"
+Campaign cruiser #5" Fuel=519/600 WarpSpeed=3 Start="(176, 8)" End="(185, 7)"
+Campaign cruiser #6" Fuel=517/600 WarpSpeed=3 Start="(182, -17)" End="(191, -15)"
+Campaign cruiser #7" Fuel=518/600 WarpSpeed=3 Start="(182, 17)" End="(191, 15)"
+Campaign destroyer #8" Fuel=234/280 WarpSpeed=3 Start="(185, 16)" End="(194, 15)"
+Campaign destroyer #9" Fuel=241/280 WarpSpeed=3 Start="(178, 1)" End="(187, 1)"
+Campaign destroyer #10" Fuel=240/280 WarpSpeed=3 Start="(178, 1)" End="(187, 1)"
+Campaign destroyer #15" Fuel=241/280 WarpSpeed=3 Start="(173, -1)" End="(182, -1)"
+Campaign cruiser #5" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=32
+Campaign cruiser #6" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=5
+Campaign cruiser #7" Token="Campaign cruiser" RepairAmount=7 QuantityDamaged=1 Damage=5
+Campaign destroyer #8" Token="Campaign destroyer" RepairAmount=7 QuantityDamaged=1 Damage=46
+CAMPAIGN step=12 year=2412 visible=0 unknown=0 enemy_ships=0 battles=0 enemy_killed=0 own_lost=0 bombings=0 bombed_colonists=0 front_population=6864 visible_debris=0 collector_cargo=0
+CAMPAIGN_END seed=89 mode=reload-split battles=11 splits=1 delivered=14 enemy_remaining_ships=0

@@ -1,0 +1,668 @@
+[
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G100-P0",
+		"version": 0,
+		"hull": "Scout",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "Trans-Galactic Drive",
+				"hullSlotIndex": 1,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Blackjack",
+				"hullSlotIndex": 3,
+				"quantity": 1
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G107-P1",
+		"version": 0,
+		"hull": "Scout",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "Trans-Galactic Fuel Scoop",
+				"hullSlotIndex": 1,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Beta Torpedo",
+				"hullSlotIndex": 3,
+				"quantity": 1
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G113-P0",
+		"version": 0,
+		"hull": "Destroyer",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "Galaxy Scoop",
+				"hullSlotIndex": 1,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Big Mutha Cannon",
+				"hullSlotIndex": 2,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Anti-Matter Pulverizer",
+				"hullSlotIndex": 3,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Laser",
+				"hullSlotIndex": 4,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Superlatanium",
+				"hullSlotIndex": 5,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Overthruster",
+				"hullSlotIndex": 6,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Battle Super Computer",
+				"hullSlotIndex": 7,
+				"quantity": 1
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G120-P1",
+		"version": 0,
+		"hull": "Destroyer",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "Fuel Mizer",
+				"hullSlotIndex": 1,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Doomsday Missile",
+				"hullSlotIndex": 2,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Delta Torpedo",
+				"hullSlotIndex": 3,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Upsilon Torpedo",
+				"hullSlotIndex": 4,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Neutronium",
+				"hullSlotIndex": 5,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Overthruster",
+				"hullSlotIndex": 6,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Battle Super Computer",
+				"hullSlotIndex": 7,
+				"quantity": 1
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G126-P0",
+		"version": 0,
+		"hull": "Cruiser",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "Trans-Galactic Fuel Scoop",
+				"hullSlotIndex": 1,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Complete Phase Shield",
+				"hullSlotIndex": 2,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Overthruster",
+				"hullSlotIndex": 3,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Bludgeon",
+				"hullSlotIndex": 4,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Anti-Matter Pulverizer",
+				"hullSlotIndex": 5,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Blackjack",
+				"hullSlotIndex": 6,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Kelarium",
+				"hullSlotIndex": 7,
+				"quantity": 1
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G133-P1",
+		"version": 0,
+		"hull": "Cruiser",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "EEE Galactic Drive",
+				"hullSlotIndex": 1,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Complete Phase Shield",
+				"hullSlotIndex": 2,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Complete Phase Shield",
+				"hullSlotIndex": 3,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Armageddon Missile",
+				"hullSlotIndex": 4,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Jihad Missile",
+				"hullSlotIndex": 5,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Rho Torpedo",
+				"hullSlotIndex": 6,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Bear Neutrino Barrier",
+				"hullSlotIndex": 7,
+				"quantity": 2
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G139-P0",
+		"version": 0,
+		"hull": "Battleship",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "EEE Courier Drive",
+				"hullSlotIndex": 1,
+				"quantity": 4
+			},
+			{
+				"hullComponent": "Jammer 30",
+				"hullSlotIndex": 2,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Cow-hide Shield",
+				"hullSlotIndex": 3,
+				"quantity": 4
+			},
+			{
+				"hullComponent": "Laser",
+				"hullSlotIndex": 4,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Bludgeon",
+				"hullSlotIndex": 5,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Bludgeon",
+				"hullSlotIndex": 6,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Mega Disruptor",
+				"hullSlotIndex": 7,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Heavy Blaster",
+				"hullSlotIndex": 8,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Carbonic Armor",
+				"hullSlotIndex": 9,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Jammer 20",
+				"hullSlotIndex": 10,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Jammer 20",
+				"hullSlotIndex": 11,
+				"quantity": 2
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G146-P1",
+		"version": 0,
+		"hull": "Battleship",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "Alpha Drive 8",
+				"hullSlotIndex": 1,
+				"quantity": 4
+			},
+			{
+				"hullComponent": "Jammer 20",
+				"hullSlotIndex": 2,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Gorilla Delagator",
+				"hullSlotIndex": 3,
+				"quantity": 8
+			},
+			{
+				"hullComponent": "Beta Torpedo",
+				"hullSlotIndex": 4,
+				"quantity": 6
+			},
+			{
+				"hullComponent": "Delta Torpedo",
+				"hullSlotIndex": 5,
+				"quantity": 6
+			},
+			{
+				"hullComponent": "EEE Needle Torpedo",
+				"hullSlotIndex": 6,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Armageddon Missile",
+				"hullSlotIndex": 7,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Beta Torpedo",
+				"hullSlotIndex": 8,
+				"quantity": 4
+			},
+			{
+				"hullComponent": "Kelarium",
+				"hullSlotIndex": 9,
+				"quantity": 6
+			},
+			{
+				"hullComponent": "Battle Computer",
+				"hullSlotIndex": 10,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Jammer 20",
+				"hullSlotIndex": 11,
+				"quantity": 3
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G152-P0",
+		"version": 0,
+		"hull": "Nubian",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "EEE Galactic Drive",
+				"hullSlotIndex": 1,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Myopic Disruptor",
+				"hullSlotIndex": 2,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Heavy Blaster",
+				"hullSlotIndex": 3,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Blackjack",
+				"hullSlotIndex": 4,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Phaser Bazooka",
+				"hullSlotIndex": 5,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Anti-Matter Pulverizer",
+				"hullSlotIndex": 6,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Anti-Matter Pulverizer",
+				"hullSlotIndex": 7,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "EEE Pulse Lance",
+				"hullSlotIndex": 8,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Gatling Gun",
+				"hullSlotIndex": 9,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Laser",
+				"hullSlotIndex": 10,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Big Mutha Cannon",
+				"hullSlotIndex": 11,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Laser",
+				"hullSlotIndex": 12,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Heavy Blaster",
+				"hullSlotIndex": 13,
+				"quantity": 2
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G159-P1",
+		"version": 0,
+		"hull": "Nubian",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "EEE Deep-Space Drive",
+				"hullSlotIndex": 1,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "EEE Needle Torpedo",
+				"hullSlotIndex": 2,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Delta Torpedo",
+				"hullSlotIndex": 3,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Delta Torpedo",
+				"hullSlotIndex": 4,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Epsilon Torpedo",
+				"hullSlotIndex": 5,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Rho Torpedo",
+				"hullSlotIndex": 6,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "EEE Needle Torpedo",
+				"hullSlotIndex": 7,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Rho Torpedo",
+				"hullSlotIndex": 8,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Omega Torpedo",
+				"hullSlotIndex": 9,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Epsilon Torpedo",
+				"hullSlotIndex": 10,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Doomsday Missile",
+				"hullSlotIndex": 11,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Doomsday Missile",
+				"hullSlotIndex": 12,
+				"quantity": 3
+			},
+			{
+				"hullComponent": "Delta Torpedo",
+				"hullSlotIndex": 13,
+				"quantity": 3
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G165-P0",
+		"version": 0,
+		"hull": "Privateer",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "EEE Horizon Drive",
+				"hullSlotIndex": 1,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Kelarium",
+				"hullSlotIndex": 2,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Jammer 20",
+				"hullSlotIndex": 3,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Bludgeon",
+				"hullSlotIndex": 4,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Blackjack",
+				"hullSlotIndex": 5,
+				"quantity": 1
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	},
+	{
+		"createdAt": "0001-01-01T00:00:00Z",
+		"updatedAt": "0001-01-01T00:00:00Z",
+		"playerNum": 0,
+		"originalPlayerNum": 0,
+		"name": "G172-P1",
+		"version": 0,
+		"hull": "Privateer",
+		"hullSetNumber": 0,
+		"slots": [
+			{
+				"hullComponent": "Quick Jump 5",
+				"hullSlotIndex": 1,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Cow-hide Shield",
+				"hullSlotIndex": 2,
+				"quantity": 2
+			},
+			{
+				"hullComponent": "Energy Capacitor",
+				"hullSlotIndex": 3,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Armageddon Missile",
+				"hullSlotIndex": 4,
+				"quantity": 1
+			},
+			{
+				"hullComponent": "Armageddon Missile",
+				"hullSlotIndex": 5,
+				"quantity": 1
+			}
+		],
+		"spec": {
+			"armor": 0,
+			"cost": {},
+			"initiative": 0,
+			"mass": 0
+		}
+	}
+]

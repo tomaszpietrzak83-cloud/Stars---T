@@ -8,14 +8,9 @@ func (t *turnGenerator) releaseExcessPatrolShips(p *Player, f, enemy *Fleet, job
 	if t.ordersOnly || reportedFleetShips(enemy) > 7 || patrolReportedCombatant(p, enemy) || patrolNeedsRecon(p, enemy) || f.Spec.TotalShips <= 1 || f.CargoMass() > 0 || len(job.SupportDesigns) > 0 || f.GetTag(patrolSupportTag) != "" || f.GetTag(escortTag) != "" || fuelNetworkReserved(f) {
 		return
 	}
-	encounterShips := reportedFleetShips(enemy)
-	for _, other := range p.FleetIntels {
-		if other == nil || other.PlayerNum == enemy.PlayerNum && other.Num == enemy.Num || other.Delete || other.Starbase || other.ReportAge != 0 || other.PlayerNum == p.Num || p.IsFriend(other.PlayerNum) {
-			continue
-		}
-		if other.Position.DistanceTo(enemy.Position) <= 30 || patrolInterceptPosition(other).DistanceTo(patrolInterceptPosition(enemy)) <= 30 {
-			encounterShips += reportedFleetShips(other)
-		}
+	encounterShips := 0
+	for _, other := range patrolEncounterReports(p, enemy, patrolInterceptPosition(enemy), 1) {
+		encounterShips += reportedFleetShips(other)
 	}
 	if encounterShips > 7 {
 		return
@@ -55,6 +50,9 @@ func (t *turnGenerator) releaseExcessPatrolShips(p *Player, f, enemy *Fleet, job
 			}
 			trial.Spec = ComputeFleetSpec(&t.game.Rules, p, &trial)
 			if count < wanted || patrolPower(&trial) < needed {
+				continue
+			}
+			if p.patrolEvaluator != nil && !p.patrolEvaluator.assess(p, []*Fleet{&trial}, enemy, patrolInterceptPosition(enemy), 1).Ready {
 				continue
 			}
 			trial.Fuel = min(trial.Spec.FuelCapacity, f.Fuel*trial.Spec.FuelCapacity/max(1, f.Spec.FuelCapacity))

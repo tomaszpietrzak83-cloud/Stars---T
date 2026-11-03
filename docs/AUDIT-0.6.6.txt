@@ -1,0 +1,100 @@
+Version 0.6.6 — report-based native patrol combat and coordinated missions
+
+Reported loss / read-only diagnosis
+- Archived submitted orders from year 2459 show patrol #166 with five design-15
+  destroyers assigned to enemy 12:25 (three transports). The transports' public
+  course approaches stationary 12:32: 25 ships at (1694,149), including eighteen
+  armed destroyers. The year-2460 battle there contains 28 enemy ships; all five
+  own ships die and no enemy ship dies. Private archives stay excluded from Git.
+- A 30-ly neighborhood misses the stationary formation 36 ly from the transport.
+  Relative public motion and the bounded pursuit endpoint must both be checked.
+
+Implementation
+- Production patrol orders now evaluate deep, isolated native battle copies
+  constructed from owned fleets and the player's discovered design reports.
+  Enemy private design pointers, race, technology, cargo, fuel and orders are
+  not used. Every sample owns mutable fleet/token copies and its own seeded RNG.
+- Test mixed merged formations together with automatic/default, damage, range
+  and defensive own tactics; preserve explicit fleet and design-level player
+  plans. Enemy hypotheses include five explicit tactics and native per-design
+  automatic tactics. Automatic plan ownership restores the previous plan when
+  a mission ends or manual control resumes, retaining later player edits.
+- Reject sampled wipes, surviving enemies and excessive mean own lost value.
+  Compare destroyed value, damaged-survivor value and stopped/orbital repair
+  readiness. Useful reinforcements can be retained to reduce damage; surplus
+  whole groups can be released. Existing small-unarmed-stack splitting remains.
+- Cache exact combat inputs for the orders phase. Screen cheaply, then confirm
+  with 16/32/64 seeds according to observed damage/loss. A deterministic 4096
+  work-unit budget per player fails closed. Sampling is not a victory guarantee.
+- Public relative trajectories and contact time include stationary formations
+  approached by moving transports. Nearby receding traffic does not count merely
+  because it lies inside 30 ly. Hostile starbases require a dedicated assault.
+  Revalidate the final departure and every native bounded pursuit endpoint.
+- Reconnaissance of uncertain groups of eight or more remains mandatory; smaller
+  unknown contacts remain eligible under a conservative reported-strength bound.
+  Unknown equipment is never presented as a native equipment simulation.
+- Scout, combat, search and collection share public mission priorities. Already
+  bombing colonies and incoming threats have urgency/deadlines. Equipment jobs
+  deduplicate shared unknown designs; urgent fleet contact precedes planet refresh.
+  Known contacts covered by owned sensors need no extra slow-formation watcher.
+- Funded surplus gathering proceeds alongside reconnaissance, outside reported
+  reach. Known-force gathering evaluates funded rendezvous plus merged-fleet
+  travel, rather than always using the arithmetic mean or a two-year timeout.
+  Existing useful free movement, radiating warp 6 and frontier advance remain.
+- Server-owned lost slow-contact memory persists in automation JSON and is
+  protected from ordinary client order replacement. Searches expand uncertainty
+  and require funded safe scanner routes. Fresh reports are required for attacks;
+  number disappearance/reuse is not proof of destruction or zero fuel.
+- Collectors stage ahead, retain defensive plans and transfer reservations to
+  actual known fields. Pickup under a collector precedes empty return routing
+  and escort waiting. Debris identity includes position; reused numbers cannot
+  load a remote field. Real delivery, fuel rescue and maintenance stay protected.
+
+Verification
+- Archived 2459 copy: initial attack, final departure and bounded pursuit all
+  reject five versus all 28 reported encounter participants. No year increment.
+  Large copied patrol planning/fuel/safety/recovery/departure: 1.431 seconds,
+  548 work units, 547 native samples, 28 cache hits; no personal DB write.
+- Native factory tests prove JSON source-state and real RNG isolation; changing
+  hidden enemy equipment/fuel/plans cannot change a report-derived forecast.
+  Independent combat seeds validate accepted production forecasts; cache and
+  budget-exhaustion behavior, explicit plans and plan restoration are tested.
+- Production rendezvous helper reproduces six -> four funded turns and native
+  merge specs. Zero-fuel useful-free patrol actually moves from a colony without
+  a base, with a real remote refuelling base still correctly distinguished.
+- Native pickup loads 33 kT before empty return; reused field position cannot
+  remotely load 40 kT. Scout shared-design deduplication and cancellation of a
+  changed-number contact, memory JSON reload and funded search are tested.
+- Full cs/ai/db/converter/server suites pass, INCLUDING the previously separate
+  research suites. Two historical characterization assertions were updated to
+  the now-requested course-based threat and incoming-recon priority behavior.
+  Database and API tests verify contact-memory persistence and ownership.
+- Six synthetic twelve-turn native campaigns pass (two seeds, uninterrupted,
+  JSON reload and reload/split). All 13 enemies destroyed, zero own warship or
+  collector losses, two intentional equipment-contact scout losses. Actual cargo
+  delivered: 210 kT in ordinary/reload runs, 32 kT in split runs. Initial bombing
+  still kills 8200/8300 colonists before a funded defender can arrive.
+  The split stress variant now starts the two wings co-located, merges natively
+  before turn 1 and splits before turn 2: improved interception otherwise kills
+  a wing before the former turn-4 merge/turn-5 split. Historical research outputs
+  retain their original scenario; split totals are not directly comparable.
+
+Limits
+- Search/selection is bounded, not a global optimal fleet composition proof.
+  Hidden changes and unobserved reinforcements remain uncertain. Larger known
+  forces must be gathered when a forecast refuses the present force.
+- Three collectors cannot guarantee recovery of every rapidly decaying split
+  field; 32 kT delivered is evidence of real pickup, not full salvage recovery.
+  No personal game is simulated or advanced to produce these campaign results.
+
+Compiled Windows / UI verification and installation
+- Final native 0.6.6 and WASM rebuilt; compiled static UI rebuilt from that WASM.
+  Chrome/API/map smoke passes on isolated ports 18096/18782 and a fresh test
+  database. Compiled embedded WASM bytes match the rebuilt module; zero turns
+  generated. Full source regression pass is followed by focused tests of the
+  final relative-course, battle-plan and gathering changes.
+- Windows 0.6.6 installed after checking no turn was being generated. Startup
+  confirms schema 30, no migration and HTTP 200. Hashes in windows/SHA256SUMS.txt
+  match the installed binary and WASM. Personal game 3 stays WaitingForPlayers
+  in year 2461 across replacement; it is never replaced, simulated or submitted.
+  New automatic orders take effect during the next normal turn calculation.

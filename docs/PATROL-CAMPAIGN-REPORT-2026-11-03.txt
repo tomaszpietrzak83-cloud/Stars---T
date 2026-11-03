@@ -1,0 +1,158 @@
+KAMPANIA PATROLI — RAPORT DO KONSULTACJI, 2026-11-03
+Analiza przekazana 2026-11-03 do czatu „Pobierz projekt Stars---T”.
+Bez zmian osobistych zapisów. Wdrożenie opisanych ulepszeń pozostaje osobnym etapem.
+
+Wniosek
+Przy rzeczywistym pokryciu skanerami obecna automatyka potrafi rozpoznać,
+zebrać siły i zniszczyć modelowaną grupę wroga. Przepływ transporter ->
+bitwa -> załadunek -> powrót działa w większej, pojedynczej bitwie.
+Po rozproszeniu przeciwnika słabszym etapem jest koordynacja zbiórki
+szczątków i odwoływanie nieaktualnych misji scoutów.
+
+Zakres
+- Jedna w pełni syntetyczna sytuacja, sześć przebiegów: dwa ziarna losowe
+  (17/89) i trzy tryby. Każdy przebieg obejmuje 12 pełnych tur 2401..2412.
+  Łącznie 72 tury; zapisano 78 stanów z początkowymi oraz 442 ślady
+  aktywnych rozkazów i stanów kolektorów.
+- Własne siły: 6 osobnych krążowników, 4 niszczyciele, 8 scoutów,
+  3 duże transportery. Razem 21 jednostek w 21 flotach na początku.
+- Przeciwnik: 13 jednostek w 6 flotach. Dwa bombowce na własnej kolonii
+  Front, ich dwa eskortowce, pobliski samotny rajder, dwie nadlatujące
+  trzyokrętowe grupy krążowników i dwie powolne jednostki na flance.
+- Home ma bazę i skaner; Front skaner i nie ma bazy. Wrogi port zapewnia
+  przeciwnikowi kolonię. Własne siły startują w pasie Home–Front.
+- Wszystkie projekty skonstruowano od zera z komponentów. Testowy gracz
+  ma JoaT+IFE i technologie 26. Własne projekty mają przewagę jakościową
+  uzbrojenia nad wybranymi projektami wroga; to nie test wszystkich armii.
+- Początkowe raporty i ich odnowienia powstają z prawdziwych skanerów.
+  NIE przyznaje się graczowi wyposażenia przeciwnika z danych scenariusza.
+  Początkowo wszystkie sześć kontaktów ma nieznane wyposażenie.
+  Po każdej turze test potwierdza, że raporty obejmują wszystkie żywe
+  okręty wroga — założenie pokrycia sensorami rzeczywiście jest spełnione.
+- Każda tura przechodzi pełny native generateTurn: planowanie, ruch,
+  bitwy, bombardowanie, logistykę, zużycie paliwa, naprawy i skanowanie.
+  Nie dopisuje się zniszczeń, cargo ani szczątków jako wyniku testu.
+
+Trzy tryby
+native: normalna kampania w pamięci, nowy generator każdej tury.
+reload: przed kolejną turą stan jest zapisany i odtworzony z JSON,
+  z odbudowaniem specyfikacji/map. Usunięte obiekty są pomijane przed
+  zapisem tak jak przy utrwalaniu gry. Nie jest to test bazy SQLite.
+reload-split: to samo odtworzenie plus rozdzielenie złączonego wroga
+  przed turą 5 na sześć jednookrętowych flot o różnych kursach.
+  Przeciwnik używa prawdziwych Merge/SplitAll i zwykłych tras, bez teleportacji.
+
+We wszystkich trybach przeciwnik najpierw łączy dwie trzyokrętowe grupy
+w sześć krążowników w punkcie (180,0), przed turą 4. Rozkazy scenariusza
+sterują tylko stroną przeciwną. Własne rozkazy wybiera istniejąca automatyka.
+
+Ważne rozróżnienie: kampanie badają aktualny kod gry z tej kopii źródeł.
+Eksperymentalny symulator doboru składu/planów z poprzednich badań nie
+został podłączony do generowania tur. Wyniki nie są jego walidacją end-to-end.
+
+Przebieg bez podziału — oba ziarna, z odtworzeniem i bez
+Tura 1: zniszczenie najbliższego rajdera. Transporter bierze udział
+  w bitwie i wycofuje się na planszy. Bombowce wykonują jeszcze jeden
+  atak: ginie 8300 kolonistów. Jednoczesny wzrost populacji nie kasuje
+  tych strat; dlatego mierzy się zdarzenie bombardowania, nie tylko saldo.
+Tura 2: zniszczenie dwóch bombowców i dwóch eskortowców nad Front.
+  Z tej bitwy minerały trafiają BEZPOŚREDNIO na planetę, zgodnie z kodem
+  gry. Brak transportera na tej orbicie nie oznacza utraty tych minerałów.
+Tura 3: likwidacja powolnej pary na flance. Dostarczenie do Home 10 kT
+  wcześniej zebranych szczątków rajdera. Pole po walce na flance pozostaje
+  bez towarzyszącego transportera i później zanika.
+Tura 4: scout kontaktuje się z połączoną grupą sześciu krążowników,
+  ujawnia projekt i ginie. Aktualny kontakt z samą flotą pozostaje w skanach.
+Tura 5: przygotowanie głównego przechwycenia.
+Tura 6: zniszczenie wszystkich sześciu krążowników. Uczestniczy grupa
+  7–8 jednostek bojowych oraz transporter z planem Disengage.
+  Raport pokazuje faktyczne ruchy transportera od przeciwnika. Walka
+  kończy się przed całkowitym opuszczeniem przez niego planszy bitewnej;
+  nie należy mylić wycofywania z pełną ucieczką z bitwy.
+Tura 7: transporter ładuje 198 kT prawdziwych szczątków i wraca.
+Tura 8: dostarcza je do Home. Łącznie przywieziono 208 kT.
+Tury 9–12: brak żywych okrętów z modelowanej armii wroga; patrole
+  podejmują kolejne zwykłe zadania, a ładownie kolektorów są puste.
+
+W tych czterech przebiegach: 5 bitew, 13 zniszczonych okrętów wroga,
+1 utracony scout, 0 utraconych własnych okrętów bojowych i transporterów.
+Największe odczytane z raportu uszkodzenie ocalałego przed naprawami:
+8,2–15,6% zależnie od przebiegu. To dobry przykład pożytku z nadmiaru siły.
+
+Przebieg z podziałem
+Po kontakcie scouta grupa sześciu krążowników dzieli się przed turą 5.
+Każdy pojedynczy cel jest likwidowany w mniejszej bitwie. Cała modelowana
+armia zostaje zniszczona w turze 7, a nie 6. To koszt rozproszenia pościgu,
+nie dowód większej siły pojedynczych rozdzielonych jednostek.
+Łącznie 11 bitew, 13 zabitych wrogich okrętów, 2 utracone scouty,
+0 utraconych własnych jednostek bojowych i transporterów. Największe
+odczytane uszkodzenie ocalałego: 10,8–14,2%.
+
+Główna luka: odzysk szczątków
+W obu przebiegach z podziałem do kolonii dostarczono tylko 14 kT:
+10 kT po pierwszym rajderze i późniejsze 4 kT. Kolejne małe pola zanikały,
+podczas gdy kolektory czekały lub wracały bez załadunku.
+
+Konkretny stan po turze 6: Collector-0 jest w (146,0), na znanym polu
+z 33 kT i ma wolną ładownię. W osobnej KOPII tego stanu przypisano mu
+zwykłą, legalną pracę salvage i wywołano natywny resolveLogisticsAutomation.
+Załadował pełne 33 kT. Nie zmieniono cargo ręcznie, nie dodano szczątków,
+nie cofnięto ani nie poprawiono kampanii głównej. Jest to sonda przyczyny:
+silnik dopuszcza załadunek; gubi się koordynacja przydziału pracy.
+Sonda nie dowodzi jeszcze bezpieczeństwa całej późniejszej trasy z ładunkiem.
+
+Do poprawy w docelowym algorytmie:
+1. Znany rzeczywisty debris pod transporterem ma przejąć rezerwację
+   bitwy przed ogólnym wybieraniem tras i odsyłaniem pustej jednostki.
+2. Po podziale celu aktualizować przewidywane miejsca bitew i rozdzielać
+   dostępnych kolektorów. Nie przypisywać wszystkich do znikającego starego
+   celu ani nie trzymać kolektora na nieaktualnym, już zanikającym polu.
+3. Uwzględniać faktycznie wspólny dolot i osłonę grupy. Ogólne oczekiwanie
+   na eskortę nie powinno bez końca blokować kolektora, który już jest
+   na miejscu wygranej bitwy. Bezpieczeństwo odlotu trzeba policzyć osobno.
+4. Kolektor ma swój obronny plan w bitwie, następnie ładuje i odchodzi.
+   W obecnej kolejności faz ładunek zwykle pojawia się na początku następnej
+   tury, po czym następuje ruch powrotny. Nie przyznawano dodatkowego ruchu
+   strategicznego po bitwie ani teleportowanego odbioru z daleka.
+
+Druga luka do sprawdzenia: cykl życia misji scouta
+Przed turą 5 Observer-5 nadal ma zadanie kontaktu z numerem 5.
+Raportu tej floty już nie ma po połączeniu, lecz SplitAll ponownie przydziela
+ten numer nowej jednookrętowej flocie. Jej projekt jest już graczowi znany.
+W następnej turze ginie drugi scout. Zapisano konkretny stan wejściowy:
+reported_target=false, actual_target=true, actual_equipment_already_known=true.
+To wskazuje na potrzebę odwoływania/odświeżania misji po fuzji, podziale
+i ponownym użyciu identyfikatora. Nie dowiedziono jeszcze pojedynczej
+gałęzi kodu odpowiedzialnej za ten zgon; nie należy opisywać go jako
+koniecznej ofiary dla poznania nowego projektu.
+
+Priorytety według najnowszej instrukcji użytkownika
+Aktywnie bombardujący przeciwnik jest najpilniejszym zagrożeniem,
+następnie nadlatujący. Równolegle można szybko usuwać bliższe cele.
+Test potwierdza taki praktyczny przebieg: bliski cel znika w turze 1,
+bombowce w 2, a większa nadlatująca grupa później. Nie dowodzi jednak,
+że utrata 8300 kolonistów była nieunikniona. Wspólna kolejka powinna
+porównywać czas do kolejnego bombardowania i najwcześniejszy wykonalny
+atak/rozpoznanie. Nie wymaga osobnego scouta do utrzymywania kontaktu,
+gdy rzeczywiste skany planet i innych scoutów stale ten kontakt odnawiają.
+
+Ograniczenia
+Pełne pokrycie skanami, brak min i silnego cloakingu, jedna rasa,
+wybrane wyposażenie i przewaga jakościowa własnych okrętów. Brak
+rzeczywistego zapisu/odczytu DB, inwazji planet, rozbudowy wojennej,
+wyczerpania zapasów na bardzo długiej wyprawie i optymalizacji doboru
+przez nowy eksperymentalny evaluator. Porównano przebieg i wyniki,
+nie identyczność każdego pola stanu native/reload.
+
+Dowody
+cs/patrolcampaign_test.go — natywne tury i niezależna sonda odbioru.
+PATROL-CAMPAIGN-SCENARIO-2026-11-03.json — konfiguracje i stan początkowy.
+PATROL-CAMPAIGN-TURNS-2026-11-03.csv — 78 stanów kampanii.
+PATROL-CAMPAIGN-RESULTS-2026-11-03.txt — bitwy, straty, dostawy i sondy.
+PATROL-CAMPAIGN-ORDERS-2026-11-03.json — rozkazy i stany kolektorów.
+
+Weryfikacja: sześć przebiegów kampanii PASS; pełny pakiet cs PASS,
+59.827 s; po dodaniu wyłącznie diagnostyki cyklu scouta test kampanii
+ponownie PASS, 1.402 s. PASS oznacza spełnienie sprawdzonych invariantów
+(skany, zniszczenia, brak utraty jednostek bojowych, legalne stany), a nie
+spełnienie jeszcze niewdrożonych zaleceń logistycznych.

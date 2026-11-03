@@ -1,0 +1,161 @@
+PLAN_MIN pool=0 plan=StudyAutomatic counts=[0 3 0] ships=3 cost=1722
+PLAN_MIN pool=0 plan=MaximizeDamage counts=[0 2 0] ships=2 cost=1148
+PLAN_MIN pool=0 plan=MaximizeRange counts=[0 3 0] ships=3 cost=1722
+PLAN_MIN pool=0 plan=MinimizeDamageToSelf unavailable=true
+MIXED_MODEL pool=0 intel=known model=0 trials=320 wiped=0 unfinished=0
+MIXED pool=0 intel=known action=ATTACK accepted=true counts=[0 2 0] ships=2 cost=1148 plan=MaximizeDamage buffer_ships=3 buffer_cost=1722 trials=320 wiped=0 unfinished=0 escaped=0 mean_loss=0.0031 removable=0 battles=4655
+MIXED_PLAN pool=0 intel=known enemy_plan=MaximizeDamage trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=0 intel=known enemy_plan=MaximizeRange trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=0 intel=known enemy_plan=Disengage trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=0 intel=known enemy_plan=MinimizeDamageToSelf trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=0 intel=known enemy_plan=DisengageIfChallenged trials=64 wiped=0 unfinished=0 escaped=0
+MIXED pool=0 intel=one-hidden action=RECON_OR_REPLAN accepted=false battles=6323
+MIXED pool=0 intel=hidden action=RECON_OR_REPLAN accepted=false battles=4722
+PLAN_MIN pool=1 plan=StudyAutomatic counts=[0 2 0] ships=2 cost=1236
+PLAN_MIN pool=1 plan=MaximizeDamage counts=[0 2 0] ships=2 cost=1236
+PLAN_MIN pool=1 plan=MaximizeRange counts=[0 3 0] ships=3 cost=1854
+PLAN_MIN pool=1 plan=MinimizeDamageToSelf counts=[3 1 3] ships=7 cost=2157
+MIXED_MODEL pool=1 intel=known model=0 trials=320 wiped=0 unfinished=0
+MIXED pool=1 intel=known action=ATTACK accepted=true counts=[0 2 0] ships=2 cost=1236 plan=StudyAutomatic buffer_ships=3 buffer_cost=1854 trials=320 wiped=0 unfinished=0 escaped=0 mean_loss=0.0000 removable=0 battles=3251
+MIXED_PLAN pool=1 intel=known enemy_plan=MaximizeDamage trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=1 intel=known enemy_plan=MaximizeRange trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=1 intel=known enemy_plan=Disengage trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=1 intel=known enemy_plan=MinimizeDamageToSelf trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=1 intel=known enemy_plan=DisengageIfChallenged trials=64 wiped=0 unfinished=0 escaped=0
+MIXED_MODEL pool=1 intel=one-hidden model=0 trials=320 wiped=0 unfinished=0
+MIXED_MODEL pool=1 intel=one-hidden model=1 trials=320 wiped=0 unfinished=2
+MIXED_MODEL pool=1 intel=one-hidden model=2 trials=320 wiped=0 unfinished=0
+MIXED pool=1 intel=one-hidden action=RECON accepted=true counts=[2 2 3] ships=7 cost=2379 plan=MinimizeDamageToSelf buffer_ships=10 buffer_cost=3510 trials=960 wiped=0 unfinished=2 escaped=2 mean_loss=0.0435 removable=0 battles=9351
+MIXED_PLAN pool=1 intel=one-hidden enemy_plan=MaximizeDamage trials=192 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=1 intel=one-hidden enemy_plan=MaximizeRange trials=192 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=1 intel=one-hidden enemy_plan=Disengage trials=192 wiped=0 unfinished=2 escaped=2
+MIXED_PLAN pool=1 intel=one-hidden enemy_plan=MinimizeDamageToSelf trials=192 wiped=0 unfinished=0 escaped=0
+MIXED_PLAN pool=1 intel=one-hidden enemy_plan=DisengageIfChallenged trials=192 wiped=0 unfinished=0 escaped=0
+MIXED pool=1 intel=hidden action=RECON_OR_REPLAN accepted=false battles=2732
+MIXED pool=2 intel=known action=RECON_OR_REPLAN accepted=false battles=252
+MIXED pool=2 intel=one-hidden action=RECON_OR_REPLAN accepted=false battles=273
+MIXED pool=2 intel=hidden action=RECON_OR_REPLAN accepted=false battles=282
+MIXED pool=3 intel=known action=RECON_OR_REPLAN accepted=false battles=885
+MIXED pool=3 intel=one-hidden action=RECON_OR_REPLAN accepted=false battles=883
+MIXED pool=3 intel=hidden action=RECON_OR_REPLAN accepted=false battles=1260
+MIXED_COMPLETE elapsed=22.1183983s
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=MaximizeDamage trials=32 wiped=23 unfinished=23 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=MaximizeRange trials=32 wiped=30 unfinished=30 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=Disengage trials=32 wiped=31 unfinished=31 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=MinimizeDamageToSelf trials=32 wiped=31 unfinished=31 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=DisengageIfChallenged trials=32 wiped=31 unfinished=31 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=MaximizeDamage trials=32 wiped=18 unfinished=18 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=MaximizeRange trials=32 wiped=12 unfinished=12 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=Disengage trials=32 wiped=13 unfinished=13 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=MinimizeDamageToSelf trials=32 wiped=13 unfinished=13 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=DisengageIfChallenged trials=32 wiped=20 unfinished=20 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=MaximizeDamage trials=32 wiped=24 unfinished=24 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=MaximizeRange trials=32 wiped=31 unfinished=31 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=Disengage trials=32 wiped=31 unfinished=31 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=MinimizeDamageToSelf trials=32 wiped=31 unfinished=31 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=DisengageIfChallenged trials=32 wiped=30 unfinished=30 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeDamage trials=32 wiped=21 unfinished=21 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeRange trials=32 wiped=30 unfinished=31 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=Disengage trials=32 wiped=10 unfinished=32 escaped=22
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=MinimizeDamageToSelf trials=32 wiped=21 unfinished=32 escaped=0
+FIXED_MIX pool=0 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=DisengageIfChallenged trials=32 wiped=23 unfinished=27 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=MaximizeRange trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=Disengage trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=MinimizeDamageToSelf trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=DisengageIfChallenged trials=32 wiped=4 unfinished=4 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=Disengage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=MaximizeRange trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=Disengage trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=MinimizeDamageToSelf trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=DisengageIfChallenged trials=32 wiped=4 unfinished=4 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeRange trials=32 wiped=3 unfinished=3 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=Disengage trials=32 wiped=0 unfinished=32 escaped=32
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=MinimizeDamageToSelf trials=32 wiped=3 unfinished=18 escaped=0
+FIXED_MIX pool=0 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=DisengageIfChallenged trials=32 wiped=2 unfinished=7 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=MaximizeDamage trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=MaximizeRange trials=32 wiped=2 unfinished=2 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=Disengage trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=MinimizeDamageToSelf trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=DisengageIfChallenged trials=32 wiped=5 unfinished=5 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=Disengage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=MaximizeDamage trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=MaximizeRange trials=32 wiped=2 unfinished=2 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=Disengage trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=MinimizeDamageToSelf trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=DisengageIfChallenged trials=32 wiped=5 unfinished=5 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeRange trials=32 wiped=6 unfinished=6 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=Disengage trials=32 wiped=0 unfinished=23 escaped=23
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=MinimizeDamageToSelf trials=32 wiped=2 unfinished=8 escaped=0
+FIXED_MIX pool=0 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=3 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=MaximizeDamage trials=32 wiped=31 unfinished=31 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=MaximizeRange trials=32 wiped=31 unfinished=31 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=Disengage trials=32 wiped=0 unfinished=32 escaped=32
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=MinimizeDamageToSelf trials=32 wiped=21 unfinished=21 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=StudyAutomatic enemy_plan=DisengageIfChallenged trials=32 wiped=5 unfinished=31 escaped=26
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=MaximizeDamage trials=32 wiped=32 unfinished=32 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=MaximizeRange trials=32 wiped=32 unfinished=32 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=Disengage trials=32 wiped=31 unfinished=32 escaped=1
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=MinimizeDamageToSelf trials=32 wiped=32 unfinished=32 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeDamage enemy_plan=DisengageIfChallenged trials=32 wiped=32 unfinished=32 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=MaximizeDamage trials=32 wiped=13 unfinished=13 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=MaximizeRange trials=32 wiped=1 unfinished=1 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=Disengage trials=32 wiped=0 unfinished=32 escaped=32
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=MinimizeDamageToSelf trials=32 wiped=2 unfinished=2 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MaximizeRange enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=29 escaped=29
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeDamage trials=32 wiped=24 unfinished=24 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeRange trials=32 wiped=25 unfinished=25 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=Disengage trials=32 wiped=0 unfinished=32 escaped=32
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=MinimizeDamageToSelf trials=32 wiped=3 unfinished=4 escaped=0
+FIXED_MIX pool=1 counts=[1 1 1] own_plan=MinimizeDamageToSelf enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=24 escaped=24
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=Disengage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=StudyAutomatic enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=Disengage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeDamage enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=Disengage trials=32 wiped=0 unfinished=31 escaped=31
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MaximizeRange enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=15 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=Disengage trials=32 wiped=0 unfinished=32 escaped=32
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=27 escaped=0
+FIXED_MIX pool=1 counts=[0 2 1] own_plan=MinimizeDamageToSelf enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=7 escaped=7
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=Disengage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=StudyAutomatic enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=Disengage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeDamage enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=Disengage trials=32 wiped=0 unfinished=27 escaped=27
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MaximizeRange enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeDamage trials=32 wiped=0 unfinished=0 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=MaximizeRange trials=32 wiped=0 unfinished=6 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=Disengage trials=32 wiped=0 unfinished=27 escaped=27
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=MinimizeDamageToSelf trials=32 wiped=0 unfinished=4 escaped=0
+FIXED_MIX pool=1 counts=[1 2 0] own_plan=MinimizeDamageToSelf enemy_plan=DisengageIfChallenged trials=32 wiped=0 unfinished=0 escaped=0

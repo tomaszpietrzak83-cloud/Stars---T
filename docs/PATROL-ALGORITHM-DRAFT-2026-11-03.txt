@@ -1,0 +1,371 @@
+ALGORYTM AUTONOMICZNYCH PATROLI — SZKIC DO KONSULTACJI, 2026-11-03
+
+NIE PRZEKAZANO do innego czatu. Nie wdrozono w rozgrywce.
+Prototyp: cs/patrolproposal_test.go, wylacznie kod testowy/offline.
+
+AKTUALIZACJA: najnowsze badanie flot mieszanych, nieznanego wyposazenia
+i planow: docs/PATROL-REVIEW-DRAFT-2026-11-03.txt (do omowienia, nie wyslano).
+Najnowsza korekta uzytkownika i pomiar uszkodzen: sekcja 8 tego raportu.
+Wstepna nadmiarowa koncentracja jest DOZWOLONA rownolegle ze zwiadem.
+Po skanie wolno zwolnic czesc okretow LUB utrzymac je dla mniejszych
+strat/uszkodzen; minimum do zwyciestwa nie jest automatycznie optimum.
+Usuwa ono staly zapas 25% okretow z najnowszego doboru; porownuje sklad
+RAZEM z planem walki. Poprzednie pomiary pozostaja dowodami historycznymi.
+AKTUALIZACJA PO POPRZEDNIEJ KONSULTACJI: sekcja H.
+Zestawy gotowych projektow i ich modyfikacje z sekcji G sa historyczne;
+nowe pomiary uzywaja wylacznie projektow konstruowanych od zera.
+Prototypy koordynacji: cs/patrolcoordinationproposal_test.go.
+Generator: cs/patrolgenerated_test.go. Nadal BEZ przekazania do innego czatu.
+Niniejszy dokument uzupelnia i koryguje szkic AUDIT-PATROLS-2026-11-03.txt.
+
+WYMAGANIA UZYTKOWNIKA (nadrzedne wobec wczesniejszych zalecen audytu)
+1. Maksymalna autonomia i efektywnosc. Systematycznie likwidowac intruzow;
+   szczelnosc ma byc skutkiem skutecznego oczyszczania przestrzeni.
+2. Koncentracja przeciw duzym, niebezpiecznym flotom jest bardzo wazna.
+   Nie wprowadzac sztywnej zasady pozostawiania obroncy kazdego sektora.
+3. Kolonie bez baz moga byc kotwicami patroli, jesli okret zachowuje
+   przyzwoita predkosc bez paliwa. Paliwo sluzy atakom/ucieczkom i tanim
+   krotkim przelotom. W drodze na rzeczywiste tankowanie mozna zuzyc calosc.
+4. Wrogie posilki doliczac wylacznie przy widocznym kursie na flote-cel.
+5. Scouty maja badac planety i w razie potrzeby poswiecac pojedynczy okret
+   do rozpoznania skladu nieprzebadanej nadlatujacej floty.
+6. Testowac rozne rzeczywiste komponenty/projekty. Raport przekazac drugiemu
+   czatowi dopiero po omowieniu tutaj i zakonczeniu konsultacji.
+
+A. OCENA BOJOWA: WYNIK PRZECIW KONKRETNEMU PRZECIWNIKOWI
+Jedna addytywna liczba nie opisze poprawnie wszystkich zestawien. Tarcze,
+pancerz, sapping, komputery, jammetry i szybkosc maja zalezne od celu efekty.
+Podstawa decyzji: ograniczone, deterministycznie powtarzalne uruchomienia
+NATYWNEGO silnika bitwy na odizolowanych kopiach dozwolonego stanu.
+
+Wejscie: wlasne dostepne tokeny (stan po polaczeniu/uszkodzeniach), raporty
+projektow i liczebnosci wroga, znane plany wlasne, zbior mozliwych planow
+wroga, przyjete miejsce i czas przechwycenia. Brak odczytu prywatnych
+projektow, paliwa, zlecen czy planu wroga z rzeczywistych obiektow.
+
+Procedura prototypu dla znanych jednorodnych flot:
+- Rozwaz liczebnosci 1,2,3,4,6,8,12,16,24,32,48,64.
+- Odrzuc kandydata po pierwszej probie, w ktorej przeciwnik przezyl albo
+  patrol zostal calkowicie zniszczony. Screening: 16 ziaren.
+- Warunek ekonomiczny: srednie straty wlasne <=25% poczatkowego kosztu.
+  W tej macierzy udzial okretow = udzial kosztu, bo floty sa jednorodne.
+- Dodaj 25% okretow (w gore) i potwierdz caly warunek na 64 ziarnach.
+  Jesli sie nie uda, przejdz do kolejnej liczebnosci. Maksymalnie 80 okretow
+  po buforze; brak odpowiedniej grupy oznacza brak zgody, nie atak w ciemno.
+- W probach zmieniaj tez strone gracza (parzystosc ziarna), aby ograniczyc
+  zaleznosc wyniku od miejsc startowych i remisow inicjatywy.
+- Zwroc: status, liczebnosc/sklad, udzial wygranych, ryzyko zniszczenia,
+  koszt strat i zakres niepewnosci. Parametry 25%/64 to propozycje robocze.
+
+Punkty kontekstowe do porownania projektow:
+  P(A | B,k) = 100 * k / N(A przeciw k okretom B).
+Oznacza to liczbe jednostek wzorcowego przeciwnika przypadajaca na okret A
+przy zaakceptowanym wyniku testow. Brak bezpiecznej liczebnosci oznacza
+"brak potwierdzonej przewagi", nie magiczne zero sily.
+Nie sumowac tych punktow dla flot mieszanych. Dla mieszanek powtorzyc
+probe calego skladu, bo sapping/chaff/bron dalekiego zasiegu tworza synergie.
+Jesli UI wymaga jednego wyniku, pokazywac profil przeciw kilku klasom celu
+albo znormalizowany wynik na stalym panelu referencyjnym; nie stosowac
+takiej liczby jako samodzielnego kryterium decyzji bojowej.
+
+Docelowa integracja, jeszcze nie wykonana:
+- Prototyp korzysta z BuildScenario, narzedzia testowego, NIE do przeniesienia
+  do produkcji. Wydzielic czysta fabryke kopii bitwy z bezpiecznych raportow.
+  runBattle modyfikuje floty, plany i RNG; wszystkie te obiekty musza byc lokalne.
+  Nigdy nie zuzywac generatora losowego prawdziwej tury dla prob.
+- Klucz cache: pelny sklad/sloty, ilosci, uszkodzenia, rasy istotne bojowo,
+  plany, geometria, rozne warianty raportu i wersja zasad. Bez cache na samych
+  nazwach/PowerRating. Budzet prob na gracza/ture i priorytet groznych grup.
+- Szybki filtr zasieg/bron/przyblizony DPS i obrona redukuje liczbe kandydatow;
+  graniczne decyzje zatwierdza symulator. Wyczerpanie budzetu = utrzymanie
+  poprzedniej waznej decyzji lub zbieranie/rozpoznanie, nie udawana pewnosc.
+- Nieznane sloty: zgodne z kadlubem warianty wyposazenia z publicznych
+  ograniczen; NIE uzalezniac uzbrojenia wroga od maksimum wlasnych projektow.
+  Brak obronionego zakresu niepewnosci uruchamia zwiad. Docelowo badac tez
+  rozne dozwolone plany wroga, cloaking, uszkodzenia i floty mieszane.
+- Dla mieszanek koszt = zasoby + wartosc mineralow wedlug lokalnych niedoborow,
+  a nie procent liczby okretow; dodatkowo policzyc uszkodzenia i czas napraw.
+- 64/64 udane probki nie gwarantuja zwyciestwa. Dla ustalonego scenariusza
+  dolna jednostronna granica 95% przy 64/64 wynosi okolo 95.4% (Clopper-Pearson).
+  Nie obejmuje blednego modelu uzbrojenia, planu, pozycji ani nowych posilkow.
+
+B. POSILKI TYLKO NA WIDOCZNYM KURSIE DO CELU
+Z raportow wylicz predkosci wektorowe. Dla wsparcia R i celu T:
+  d=T.pos-R.pos; v=R.vel-T.vel.
+  Najpierw wymagaj dodatniego iloczynu R.vel dot d: R leci w strone T.
+  Potem tClosest=(d dot v)/(v dot v), jesli mianownik >0.
+  Dolicz tylko gdy 0<=tClosest<=horyzont ataku i odleglosc wzgledna
+  w tym czasie <= tolerancja kontaktu (prototyp 3 ly, do sprawdzenia).
+Nie doliczaj automatycznie stacjonarnych, odlatujacych, lecacych obok
+lub przybywajacych po bitwie. Ponawiaj ocene z nowego raportu co ture.
+Jesli wsparcie zlaczy sie z celem przed atakiem, ocena obejmuje wspolny
+sklad. Flota stojaca juz w miejscu bitwy jest bezposrednim uczestnikiem,
+a nie "nadlatujacym wsparciem"; to rozroznienie wymaga testu integracyjnego.
+Prototyp geometrii: 7 przypadkow, w tym ruchomy cel i brak zbieznosci.
+
+C. ZBIORKA DLA ZNISZCZENIA DUZEJ FLOTY
+Wolne jednostki dostaja oferty celow; aktywna grupa przechowuje intencje
+zniszczenia konkretnego celu. Nie rozpraszaj gotowej duzej grupy dla scouta.
+Priorytet: reczne polecenie, grozba szybkiego ataku na kolonie, grozna flota
+bojowa, lokalne latwe likwidacje. Liczba okretow sama nie oznacza grozby.
+
+Dla kazdego celu generuj miejsca spotkania: pozycje flot/baz/tankerow,
+przeciecia ich osiagalnych obszarow i punkty na przewidywanym kursie celu.
+Policz realne, finansowane paliwem i bezpieczne trasy dla kazdego uczestnika.
+Minimalizuj czas do WSPOLNEJ bitwy:
+  max(ETA uczestnikow do zbiorki) + ETA polaczonej grupy do celu,
+z uwzglednieniem przyszlego ruchu celu, czasu na tankowanie i okna zagrozenia.
+Nie minimalizuj samego dystansu ani sredniej wspolrzednych.
+
+Sklad dobieraj przyrostowo wedlug poprawy prognozy bitwy / opoznienia
+dolaczenia; sprawdz kilka kombinacji i usun nadmiarowych uczestnikow po
+uzyskaniu bezpiecznego wyniku. Bron sapping/chaff moze byc cenna mimo
+niskiego samodzielnego DPS. Tylko rzeczywiscie zebrane tokeny dopuszczaja atak.
+Brak sztywnego promienia 100 ly: odleglejsze wsparcie dopusc, jesli przybedzie
+w uzytecznym oknie. Lokalni moga wspolnie sledzic cel lub wycofac sie do
+punktu spotkania. Nie scigaj pojedynczo silniejszego wroga.
+
+Przerwij/zmien zbiorke przy braku realnego postepu lub nieosiagalnym oknie,
+a nie po sztywnych dwoch latach niezaleznie od postepu. Krotka utrata kontaktu
+uruchamia odswiezenie skanu, zamiast natychmiastowego dzielenia armady.
+Koszt chwilowego odsloniecia kolonii jest miekka kara, nie wetem wobec
+koniecznej koncentracji. Utrzymuj tlumienie czestych zmian celu.
+Test analityczny ETA: wolna flota x=0 (16 ly/ture), szybka x=100 (81),
+cel x=140, atak polaczona grupa 81. Srednia pozycji daje 6 tur do bitwy;
+przeszukanie miejsc spotkania daje 4. To test arytmetyki, bez paliwa/min.
+
+D. PALIWO I KOLONIE BEZ BAZ
+Rozdziel STANOWISKO patrolowe od DOCKU tankowania. Kolonia bez bazy jest
+stanowiskiem, a nie automatycznie zrodlem paliwa.
+Kwalifikacja silnika: faktyczny darmowy ruch calej floty, nie ideal speed
+ani nazwa silnika. Roboczy prog przydzialu do kolonii bez bazy: >=16 ly/ture,
+lecz ostatecznie licz czas do sasiednich kolonii i realnego tankowania.
+
+Trzy budzety:
+- Patrol: darmowy ruch, albo tanie krotkie przeloty; zachowaj rezerwe zrywu.
+- Atak/ucieczka: wolno wydac rezerwe na rzeczywista przewage/czas reakcji.
+- Tankowanie: rezerwa po dotarciu moze wynosic ZERO, jesli potwierdzono
+  dzialajaca baze albo rendezvous z tankerem i zarezerwowano dostepne paliwo.
+  Potrzebny jest nadal sfinansowany dolot. Nie zakladaj tankera w starym
+  punkcie, obcej bazy ani niepotwierdzonej przyszlej produkcji paliwa.
+Po zuzyciu paliwa normalny ruch darmowy jest dozwolony. Nie wstrzymuj
+takiego patrolu tylko dlatego, ze zbiornik spadl ponizej 25%.
+Przed scaleniem sprawdz darmowa predkosc NAJWOLNIEJSZEGO silnika grupy.
+
+Natywne testy ruchu przy zerowym paliwie dla czterech projektow:
+Long Hump 6: free warp 1, 1 ly/ture.
+Fuel Mizer: free warp 4, 16 ly/ture.
+Trans-Star 10: free warp 1, 1 ly/ture (mimo tanich szybkich przelotow).
+Sub-Galactic Fuel Scoop: free warp 5, 25 ly/ture.
+
+E. SCOUTY
+Istniejace regresje potwierdzaja wspolne postoje skanujace wiele planet,
+prawdziwe skanowanie penetracyjne i koniecznosc orbity bez penetracji,
+rozne cele dla scoutow oraz odswiezanie raportow wrogich kolonii.
+Nie stanowi to dowodu pelnego pokrycia calej mapy w wieloletniej kampanii.
+
+Kontakt samobojczy juz istnieje: pojedynczy autentyczny scout bez kolonistow
+moze sledzic nieznana nadlatujaca bojowa flote; odkrycie sprzetu nastepuje
+przed bitwa. Nowy test odtwarza zniszczenie scouta przez bron promieniowa
+i potwierdza zachowanie poznanego wyposazenia przeciwnika po jego smierci.
+
+Odtworzona luka: osiagalna priorytetowa planeta przejmuje scouta przed
+nieznana nadlatujaca flota. planScoutAutomation wywoluje planPriorityColonyRecon
+przed planScoutRecon; test pokazuje skasowanie kwalifikujacej sie misji kontaktu.
+Inne ograniczenia z kodu: plan kontaktu nadal wymaga powrotnego paliwa,
+horyzont trasy 8 tur, tylko cele z kursem na kolonie; nie kazda pobliska
+nieznana flota zostanie automatycznie zbadana.
+
+Propozycja: wspolna kolejka zadan wedlug pilnosci i wartosci informacji.
+Nieznana duza flota zagrazajaca kolonii lub planowanemu przechwyceniu dostaje
+jednego najtanszego scouta zdolnego zdazyc. Znany sklad eliminuje poswiecenie.
+Rasy odkrywajace projekty ze skanu pozostaja na bezpiecznym dystansie.
+Misja swiadomego kontaktu moze miec budzet jednokierunkowy, bez rezerwy
+powrotnej. Nie wysylac calego stosu ani kolejnego scouta do poznanych projektow.
+Zachowac pokrycie planet przez pozostalych zwiadowcow i wspolne punkty skanu.
+
+F. OGRANICZENIA PROTOTYPU I BRAMKI PRZED WDROZENIEM
+Prototyp nie steruje zywa gra. Parametry wymagaja konsultacji.
+Macierz jest kontrolowana, ma domyslne plany i znane projekty; to nie
+statystyka realnej kampanii. Warianty sprawdzono pod katem typu slotow
+i pojemnosci, nie wspolnego budzetu rasy i dostepnosci technologii.
+W pierwszej eksploracyjnej macierzy odkryto nielegalne polozenie jammera
+w starym fixture Jammed Defender. Do koncowej macierzy poprawiono tylko
+KOPIE tego projektu w prototypie; oryginalnego fixture nie zmieniano.
+Wynikow pierwszej macierzy nie mieszac z pozniejsza poprawiona macierza.
+
+Przed wdrozeniem: nieznane projekty, mieszane stosy, rozne plany/rasy,
+uszkodzenia, posilki i ich dolot, koszt procesora na duzej mapie, paliwo
+jednokierunkowe do realnych dockow, wieloturowe ruchome zbiorki, wspolna
+kolejka zwiadu oraz brak mutacji stanu/RNG przez evaluator.
+Zmiany gry beda wymagaly osobnej integracji, przebudowania native/WASM/UI,
+izolowanych testow kompilowanej aplikacji i aktualnych SHA256SUMS.
+
+G. WYNIKI ROZSZERZONEJ MACIERZY (wersja z legalnymi slotami i buforem)
+14 projektow: 6 bazowych (w tym poprawiona kopia jammed defender) oraz
+8 wlasnych wariantow broni/slotow: ciezki pancerz, podstawowa tarcza,
+brak tarczy, wolniejszy silnik, scoop, komputer, sapper i gatling w miksie.
+Kazdy projekt przeciw kazdemu, cele 1/5/20 okretow: 588 scenariuszy.
+Wybor grupy: ziarna 0..15, zatwierdzenie z buforem: 0..63.
+Osobna kontrola: ziarna 2000..2031; obie strony graczy.
+
+563 scenariusze uzyskaly grupe, 25 odrzucono w ograniczonym przeszukiwaniu.
+Dla zaakceptowanych: 18016 dodatkowych bitew kontrolnych, ZERO zaglady
+patrolu i ZERO bitew z ocalalym przeciwnikiem. Najwieksza zaobserwowana
+srednia strata wlasna w pojedynczym scenariuszu wyniosla 15% okretow.
+Na tych SAMYCH 563 scenariuszach stara regula 150% dala 2400 zaglad
+patrolu i 2928 bitew z ocalalym przeciwnikiem (zawiera owe 2400 porazek).
+Na wszystkich 588 stara regula dala 2560 zaglad i 3216 niepelnych zniszczen
+przeciwnika; nie mieszac mianownikow z podzbiorem zaakceptowanym.
+
+W 180 scenariuszach prototyp wybral MNIEJ okretow niz stara regula,
+w 287 WIECEJ, w 96 tyle samo. Poprawa nie polega wiec na mechanicznym
+zwiekszaniu grup; dopasowuje je do celu. Nadal nie udowodniono minimum
+kosztu: dyskretna lista liczebnosci i bufor 25% sa konserwatywne, a bufor
+dla jednej jednostki zaokragla sie do dwoch. To jawny obszar optymalizacji.
+Odrzucenie 25 przypadkow nie dowodzi niemozliwosci zwyciestwa: moglaby
+pomoc wieksza, mieszana grupa albo inny plan bitewny.
+
+Przyklad Jihad Cruiser przeciw Torpedo Destroyer:
+cel 5: stara regula 1 krazownik, zniszczony w 31/32 kontrolnych bitew;
+prototyp 3 krazowniki, zniszczenie celu we wszystkich 32.
+cel 20: stara regula 4 krazowniki, zniszczone w 30/32;
+prototyp 8 krazownikow, zniszczenie celu we wszystkich 32.
+
+Wczesniejszy prototyp bez bufora/64 prob zostawial rzadkie porazki poza
+probka. To powod rozszerzenia potwierdzenia, a nie dowod nieomylnosci
+koncowego wariantu. Wyniki rozwojowe nie sluza jako niezalezna walidacja.
+Koncowe ziarna kontrolne sa inne niz doborowe, lecz projekty sa znane:
+przed produkcja potrzebny rowniez zestaw nieuzywanych dotad projektow.
+Plik danych: docs/PATROL-PROPOSAL-MATRIX-2026-11-03.csv.
+Macierz finalna trwala okolo 44 s; to masowy eksperyment offline, nie
+pomiar opoznienia prawdziwej tury. Integracja musi mierzyc koszt na mapie.
+
+Dodatkowa obserwacja paliwowa do weryfikacji mechaniki:
+getFuelGeneration wylicza przyrost na podstawie FreeSpeed bez sprawdzenia,
+czy silnik jest scoopem. Test fizycznego lotu startujacego z zerem paliwa
+wykazuje regeneracje takze dla Long Hump 6 i Trans-Star 10 przy warp 1.
+Nie poprawiano tego w ramach prototypu. Docelowy planer musi korzystac
+z faktycznych zasad gry; ewentualna zmiana generacji to osobna korekta
+mechaniki, wymagajaca sprawdzenia intencji i wszystkich tras paliwowych.
+
+H. NAJNOWSZE WYMAGANIA I TESTY — KONFIGURACJE OD ZERA
+
+H1. Bez gotowych projektow
+proposalDesigns nie korzysta juz z DesignDestroyerDelta/DesignBattleBeam
+ani innych gotowych projektow. Generator czyta sloty kadluba i katalog
+dostepnych komponentow, filtruje je przez GetHullComponentsByHullSlotType,
+losuje reprodukowalne zestawienia i ilosci oraz uruchamia pelne Validate.
+Gracz testowy: JoaT, IFE, technologie 26; takie same ustawienia w bitwach.
+Wykluczone sa wiec elementy niedostepne dla tego gracza, a nie tylko
+fizycznie niepasujace do slotu. To przekrojowy stress test, nie optymalizator
+projektowania okretow ani dowod objecia wszystkich kadlubow i ras.
+
+12 projektow na szesciu kadlubach: Scout, Destroyer, Cruiser, Battleship,
+Nubian, Privateer. Profile beam i torpedo/missile, mieszane konkretne bronie
+w slotach, rozne silniki (takze EEE), pancerze, tarcze, komputery i zaklocacze.
+Manifest: docs/PATROL-GENERATED-DESIGNS-2026-11-03.json.
+Nowe pomocnicze scouty, stacja i interceptor tez zlozone sa od zera.
+Historyczne testy starego audytu pozostaja dla zachowania dowodow.
+
+432 zestawienia (12 x 12 x cele 1/5/20 okretow): 335 zaakceptowanych,
+97 bez grupy mieszczacej sie w ograniczeniach wyszukiwania. Na 10720
+nieuzywanych do wyboru grup bitew kontrolnych: 0 calkowitych utrat patrolu,
+0 bitew z przezywajacym przeciwnikiem. Maksimum sredniej straty wlasnej
+w jednym zestawieniu: 20%. NIE oznacza to braku strat pojedynczych okretow.
+Na tych samych 335 zestawieniach dawny prog punktowy 150% daje 1612
+calkowitych utrat i 1612 niepelnych zniszczen celu. To porownanie wzoru
+punktowego, nie pelnego aktualnego planera (ktory wymaga juz rozpoznania).
+Nowy sklad mniejszy w 74, wiekszy w 229, taki sam w 32 zestawieniach.
+Pozostale 97 przypadkow to odrzucenie/ograniczony budzet, nie sukces ani
+dowod braku mozliwosci zwyciestwa. Dane: PATROL-GENERATED-MATRIX-2026-11-03.csv.
+
+H2. Zbiorka 6 -> 4 na natywnych trasach i ruchu
+proposalChooseRally ocenia kandydatow rzeczywistym planAutomaticRoute:
+finansowanie dolotu kazdego uczestnika, rezerwy, czas zebrania, a nastepnie
+specyfikacje POLACZONEJ floty i czas/fundusze dolotu do celu. Minimalizuje
+maksymalny ETA uczestnikow + ETA ataku; przy remisie zuzycie paliwa.
+Przy liczeniu kandydatow nie modyfikuje rzeczywistych flot.
+
+Test: dwie konfiguracje Destroyera od zera, pozycje (0,0)/(100,0), silniki
+Fuel Mizer/Trans-Star 10, zadane warpy zbierania 4/9. Cel (140,0).
+Dla starego punktu (50,0) natywny planer wylicza 6 tur do wspolnego ataku.
+Nowy wybiera (32,0): 2 tury do zbiorki + 2 po polaczeniu = 4.
+WYKONANO oba doloty, prawdziwy Merge i dolot do celu przez fleetMove:
+pozycje (0->16->32) i (100->32), potem wspolnie (32->113->140).
+Budzet trasy wyniosl 76 paliwa; scisle potwierdzono dotarcie i brak mutacji
+flot podczas prognozy. To nadal helper offline, nie podmiana movingPatrolRally.
+Przed integracja potrzebne sa ruchome cele, miny, wieloosobowe grupy,
+stacje/tankery i generowanie kandydatow na rzeczywistej mapie. Test nie
+obiecuje, ze kazda zbiorka w dowolnym polozeniu bedzie trwala cztery tury.
+
+H3. Trwala pamiec szczegolnie slabych, powolnych celow
+Pamietac osobno od raportu: wlasciciel/numer, rok ostatniej obserwacji,
+pozycja, publiczna predkosc/kurs, zakres niepewnosci, ostatnia ocena
+oplacalnosci, etap polowania, zlecone poszukiwanie i jego postep.
+Slaby oznacza korzystny wynik oceny bojowej przeciw dostepnemu mysliwemu,
+nie po prostu mala liczbe statkow. Wolna obserwacja nie dowodzi pustego
+zbiornika ani tego, ze flota nie przyspieszy w przyszlosci.
+
+Brak kontaktu -> zadanie search, bez kierowania ataku na nieistniejacy
+aktualny cel. Rejon rozszerza sie z wiekiem obserwacji wedlug granicy
+mozliwego ruchu, a nie tylko ostatniego malego warp. Scout sprawdza najpierw
+ostatnia/przewidywana pozycje, potem niepokryte obszary; inni scouty nie
+dubluja juz zarezerwowanych pol poszukiwan. Znany cloak zmienia zasieg
+i dobor sensora. Puste skany usuwaja tylko rzeczywiscie przeskanowany obszar.
+Nie wolno uznac celu za zniszczony z powodu wieku raportu, pustego jednego
+skanu, podzialu floty ani ponownego uzycia numeru innego skladu.
+
+Ponowne wykrycie -> swieza identyfikacja i ponowna ocena bojowa -> atak/
+zbiorka. Potwierdzone zniszczenie -> zbieranie rzeczywistego debris i dobor
+transportow do jego ladunku. Brak debris nie tworzy zadania kolekcji.
+Wczesniejsze ustawienie kolektora dopuszczalne jako ograniczona rezerwacja,
+ktora nie odbiera stale transportu wazniejszym dostawom i wygasa bez bitwy.
+Przy kosztownych bezowocnych poszukiwaniach wydluzaj odstep, zachowuj pamiec.
+Po swiezym raporcie floty sojuszniczej/przyjaznej anuluj polowanie.
+
+Prototyp udowadnia zapis/odczyt JSON pamieci i przejscia search -> reassess
+-> potwierdzone destroyed -> collect tylko dla realnego debris -> done.
+Osobny test wykonuje sfinansowany lot scouta do punktu wynikajacego wylacznie
+z pamieci (7 tur przy warp 4), a potem rzeczywisty test zasiegu skanera
+i discoverFleet. Dopiero wtedy odnawia raport i dopuszcza ponowna ocene
+ataku. Nie czyta pozycji ukrytej floty do planowania trasy.
+Pelne pokrywanie rosnacego rejonu, wybor najlepszego scouta i zapis pamieci
+w Automation/bazie NIE sa jeszcze podlaczone — test JSON nie zastapi testu DB.
+
+Uwaga integracyjna: obecne cs/slowprey.go dotyczy glownie duzych grup
+(co najmniej 8 okretow, warp <=2, raport do 2 tur) i obserwacji/containment.
+Nie spelnia samo nowego wymagania trwalej pamieci pojedynczej slabej floty.
+Istniejacego progu liczebnosci nie wolno kopiowac do tej pamieci.
+
+H4. Wspolna kolejka wedlug pilnosci
+Jedna kolekcja zadania-cel ze stabilnym kluczem i zaleznosciami:
+0 bezposrednia ucieczka/ratowanie, 1 pilna obrona i rozpoznanie nieznanej
+groznej floty, 2 koncentracja/zniszczenie duzej groznej grupy, 3 ponowne
+odszukanie i likwidacja zapamietanego oplacalnego celu, 4 rutynowe skany.
+Kolekcja debris ma pilnosc wynikajaca z zaniku i wartosci, nie stala ostatnia
+pozycje; po destrukcji generuje osobne zadanie z zaleznoscia od zdarzenia.
+Reczny priorytet modyfikuje wybor celu, z zachowaniem wykonalnosci.
+W obrebie pilnosci: termin dotarcia, wartosc, wiek i stabilny klucz.
+Oczekiwanie zwieksza priorytet w ograniczony sposob; nie wyprzedza ratowania.
+
+Kolejka NIE oznacza wykonywania jednego zadania na raz. Kazdy rodzaj
+wymaga odpowiednich zdolnosci: kontakt/search/scan dla scouta, atak dla
+grupy bojowej, collect dla odpowiedniego kolektora. Zajete naprawa,
+ratowaniem lub finansowaniem innych misji jednostki pozostaja zablokowane.
+Rezerwacja jest atomowa: jedna flota nie dostaje dwoch sprzecznych rozkazow,
+jedno search/contact nie rekrutuje kilku scoutow przypadkiem, sklad grupy
+jest rezerwowany jako calosc. Pilne przerwanie uwalnia wszystkie rezerwacje.
+
+Test proposalDispatch: usuwa powtorzona misje, pilny kontakt dostaje
+pierwszego scouta, lost-target search drugiego; rutynowa planeta czeka.
+Atak oraz collect jednoczesnie dostaja osobne odpowiednie jednostki;
+zablokowanego scouta nie rusza. To test algorytmu przydzialu, nie dowod
+przeniesienia wszystkich obecnych plannerow do wspolnej kolejki.
+
+STATUS: powyzsze ustalenia sa objete testami prototypu; integracja w grze,
+testy DB/pelnych kampanii i publikacja pozostaja niewykonane. Nie wysylano
+raportu do innego czatu. Zachowac wszystkie wymogi paliwowe i koncentracji
+z poprzedniej konsultacji. Zmieniono tylko testy i dokumentacje tego audytu.
+
+Weryfikacja koncowa sekcji H: pelny go test ./cs -count=1 PASS, 28.429 s. Cztery testy koordynacji, generator/manifest oraz pozostale testy prototypu przechodza. Starszy test obsady sektora otrzymal znany raport wyposazenia, aby nadal izolowal rekrutacje przy obecnej obowiazkowej regule zwiadu. Nie jest to zmiana zasad gry.

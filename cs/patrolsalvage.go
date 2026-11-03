@@ -11,6 +11,7 @@ const patrolSalvageTag = "patrol-salvage"
 const anticipatedSalvageTag = "anticipated-battle-salvage"
 
 type anticipatedSalvage struct {
+	Staging  bool `json:",omitempty"`
 	Position Vector
 	Until    int
 	Hunter   int `json:",omitempty"`
@@ -51,6 +52,7 @@ func (t *turnGenerator) planPatrolSalvage() {
 		if p.Automation.DisableSalvage {
 			continue
 		}
+		t.assignLocalDebrisPickups(p)
 		// Release speculative reservations promptly, even if a battle produces no debris.
 		for _, f := range t.game.getFleets(p.Num) {
 			var pending anticipatedSalvage
@@ -65,8 +67,8 @@ func (t *turnGenerator) planPatrolSalvage() {
 				}
 			}
 			hunter := t.game.getFleet(p.Num, pending.Hunter)
-			valid := hunter != nil && !hunter.Delete && len(hunter.Waypoints) > 1 && readPatrolJob(hunter).Enemy == pending.Enemy && readPatrolJob(hunter).Target == pending.Target && patrolCanAttack(p, hunter)
-			if valid {
+			valid := hunter != nil && !hunter.Delete && len(hunter.Waypoints) > 1 && readPatrolJob(hunter).Enemy == pending.Enemy && readPatrolJob(hunter).Target == pending.Target && (pending.Staging || patrolCanAttack(p, hunter))
+			if valid && !pending.Staging {
 				position := hunter.Waypoints[len(hunter.Waypoints)-1].Position
 				route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{hunter}, position, MapObjectTarget{}, automaticRoutePolicy{MaxTurns: 1, Fast: true, AllowThreat: true, MinWarp: automaticCruiseWarp(p, hunter)})
 				valid = route != nil && !route.WaitForFuel
@@ -85,7 +87,9 @@ func (t *turnGenerator) planPatrolSalvage() {
 		}
 		for _, f := range t.game.getFleets(p.Num) {
 			if job := logisticsWork(f); job != nil && job.Kind == "salvage" {
-				claimed[job.TargetNum] = true
+				if current := t.currentLogisticsWork(p, f); current != nil {
+					claimed[current.TargetNum] = true
+				}
 			}
 		}
 		collectors := func(position Vector, amount, salvageNum int) (*Fleet, *expeditionRoute) {
@@ -94,13 +98,15 @@ func (t *turnGenerator) planPatrolSalvage() {
 			score := math.Inf(1)
 			for _, f := range t.game.getFleets(p.Num) {
 				role := p.Automation.FleetRoles[f.Num]
+				work := logisticsWork(f)
+				protectedWork := work != nil && !(salvageNum != 0 && work.Kind == "return" && f.CargoMass() == 0)
 				if salvageNum == 0 && f.GetTag(containmentTag) != "" {
 					job := readContainment(f)
 					if job == nil || job.Kind != "collector" {
 						continue
 					}
 				}
-				if f.Delete || f.Starbase || f.InDesignMaintenance() || f.InAutomaticSafety() || f.GetTag("maintenance-pending") != "" || p.FleetInActiveAssembly(f) || fuelNetworkManaged(f) || readTankerJob(f) != nil || f.GetTag(tankerAwaitTag) != "" || salvageNum == 0 && f.GetTag(anticipatedSalvageTag) != "" || salvageNum != 0 && f.GetTag("empty-salvage") == strconv.Itoa(salvageNum) || f.CargoMass() > 0 || f.Spec.CargoCapacity <= 0 || logisticsWork(f) != nil {
+				if f.Delete || f.Starbase || f.InDesignMaintenance() || f.InAutomaticSafety() || f.GetTag("maintenance-pending") != "" || p.FleetInActiveAssembly(f) || fuelNetworkManaged(f) || readTankerJob(f) != nil || f.GetTag(tankerAwaitTag) != "" || salvageNum == 0 && f.GetTag(anticipatedSalvageTag) != "" || salvageNum != 0 && f.GetTag("empty-salvage") == strconv.Itoa(salvageNum) || f.CargoMass() > 0 || f.Spec.CargoCapacity <= 0 || protectedWork {
 					continue
 				}
 				if role != "freighter" && (role != "patrol" || !patrolAvailable(p, f) || readPatrolJob(f).Leader != 0) {
@@ -109,7 +115,7 @@ func (t *turnGenerator) planPatrolSalvage() {
 				if role == "patrol" && priorityContact {
 					continue // Reserve combat ships for the player's explicit destruction order.
 				}
-				policy := automaticRoutePolicy{MaxTurns: 5}
+				policy := automaticRoutePolicy{MaxTurns: 5, Fast: true}
 				if salvageNum == 0 {
 					policy = automaticRoutePolicy{MaxTurns: 1, Fast: true, AllowThreat: true, MinWarp: automaticCruiseWarp(p, f)}
 				}
@@ -162,13 +168,25 @@ func (t *turnGenerator) planPatrolSalvage() {
 		for _, hunter := range t.game.getFleets(p.Num) {
 			job := readPatrolJob(hunter)
 			enemy := patrolEnemy(p, job)
-			if hunter.Delete || job.Leader != hunter.Num || !patrolCanAttack(p, hunter) || enemy == nil || len(hunter.Waypoints) < 2 {
+			if hunter.Delete || job.Leader != hunter.Num || enemy == nil || len(hunter.Waypoints) < 2 {
 				continue
 			}
 			position := hunter.Waypoints[len(hunter.Waypoints)-1].Position
+			orbital := false
+			for _, planet := range p.PlanetIntels {
+				orbital = orbital || planet != nil && planet.OwnedBy(p.Num) && planet.Position == enemy.Position
+			}
+			if orbital {
+				continue
+			}
+			if !patrolCanAttack(p, hunter) {
+				t.stagePatrolCollector(p, hunter, enemy, position)
+				continue
+			}
 			policy := automaticRoutePolicy{MaxTurns: 1, Fast: true, AllowThreat: true, MinWarp: automaticCruiseWarp(p, hunter)}
 			arrival := planAutomaticRoute(&t.game.Rules, p, []*Fleet{hunter}, position, MapObjectTarget{}, policy)
 			if arrival == nil || arrival.WaitForFuel {
+				t.stagePatrolCollector(p, hunter, enemy, position)
 				continue
 			}
 			reserved := false
@@ -186,6 +204,7 @@ func (t *turnGenerator) planPatrolSalvage() {
 						continue
 					}
 					pending.Position, pending.Until = position, t.game.Year+1
+					pending.Staging = false
 					pending.Hunter, pending.Enemy, pending.Target = hunter.Num, job.Enemy, job.Target
 					data, _ := json.Marshal(pending)
 					f.SetTag(anticipatedSalvageTag, string(data))

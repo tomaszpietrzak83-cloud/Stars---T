@@ -54,6 +54,7 @@ func (t *turnGenerator) generateTurn() error {
 
 	// reset players for start of the turn
 	for _, player := range t.game.Players {
+		rememberPatrolReports(player, t.game.Year-1)
 		// Automatic orders need the reports visible when the player submitted
 		// this turn. Replace transient reports immediately before the new scan.
 		player.incrementReportAge()
@@ -66,6 +67,7 @@ func (t *turnGenerator) generateTurn() error {
 	}
 
 	t.computeSpecs()
+	t.startPatrolEvaluation()
 	t.enablePlanningThreatIndex()
 	defer t.disablePlanningThreatIndex()
 	t.packetInit()
@@ -81,6 +83,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.restoreBorrowedManualFleets()
 	t.resumeCompletedEvades()
 	t.repairStaleScoutRoles()
+	t.refreshScoutReconOrders()
 	t.unloadArrivedColonizers()
 	t.refreshAutomaticFuelIntel()
 	t.releaseColonizerFuelDetours()
@@ -1342,7 +1345,7 @@ func (t *turnGenerator) fleetPursue(pursuits []*fleetMove) {
 				wp1.Position = fleet.Position
 				t.clearWaypointTarget(fleet, wp1)
 				move.done = true
-				fleet.SetTag(fuelStatusTag, "Interception canceled: target left the funded one-turn range; selecting another task")
+				fleet.SetTag(fuelStatusTag, "Interception cancelled: combat forecast, fuel or one-turn range no longer confirmed")
 				t.finishPursuit(move)
 				if player := t.game.getPlayer(fleet.PlayerNum); player.Automation.FleetRoles[fleet.Num] == "patrol" {
 					t.declinePatrolTarget(player, fleet)

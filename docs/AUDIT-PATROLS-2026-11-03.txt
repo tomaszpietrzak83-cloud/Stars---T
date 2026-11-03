@@ -1,0 +1,127 @@
+AUDYT PATROLI AUTOMATYCZNYCH — 2026-11-03
+
+STATUS: SZKIC ROBOCZY, nadal konsultowany z uzytkownikiem.
+Nie przekazywac do wdrozenia przed zakonczeniem konsultacji.
+Nowsze wymagania i prototyp: docs/PATROL-ALGORITHM-DRAFT-2026-11-03.txt.
+Uzytkownik wyjasnil, ze systematyczne niszczenie intruzow i koncentracja
+przeciw duzym flotom maja pierwszenstwo przed stala szczelna obsada.
+Ponizsze zalecenie rezerwy sektorowej jest historyczna propozycja audytu,
+a nie zaakceptowanym wymaganiem ani powodem blokowania koncentracji.
+
+Wniosek: patrol dobrze wykonuje lokalne przechwycenia i fizyczne laczenie
+okretow, lecz nie gwarantuje szczelnej obrony imperium. Najpowazniejsza
+slabosc to ocena sily: prog 150% punktow nie zapewnia wygranej.
+
+Zakres i dowody
+- Wylacznie ta kopia robocza; syntetyczne wszechswiaty w pamieci.
+  Nie otwierano ani nie przesuwano osobistej rozgrywki.
+- Dotychczasowe testy wybrane przez `go test ./cs -run Patrol -count=1 -v`:
+  45 testow najwyzszego poziomu, wszystkie PASS (57 wraz z podtestami).
+- Nowy plik cs/patrolaudit_test.go: trzy testy charakterystyki ograniczen
+  i macierz 1500 rzeczywistych bitew, wszystkie PASS. PASS oznacza tu,
+  ze ograniczenie zostalo odtworzone, a nie ze jest pozadanym zachowaniem.
+- Pelny `go test ./cs -count=1`: PASS, 4.535 s.
+- Macierz: piec istniejacych projektow bojowych po obu stronach, przeciwnik
+  1/5/20 okretow, 20 ziaren losowych 0..19, czyli 75 zestawien x 20.
+  Patrol ma najmniejsza calkowita liczbe okretow spelniajaca obecny prog
+  ataku. Kazda bitwa ma swiezy stan, pelna znajomosc projektu przeciwnika,
+  brak poczatkowych uszkodzen, domyslne plany bitewne i brak bazy.
+  Przed kazda bitwa sprawdzane jest rzeczywiste patrolCanAttack.
+  Wyniki: docs/PATROL-COMBAT-MATRIX-2026-11-03.csv.
+- Nie jest to wieloletnia symulacja calej kampanii ani pomiar procentu
+  porazek w osobistej grze. Nie testowano wszystkich technologii, ras,
+  planow bitewnych, flot mieszanych i geometrii kolonii.
+- Nie zmieniono logiki gry ani kompilowanych plikow. Dodano testy i raport.
+
+1. Ochrona wlasnej przestrzeni
+Patrol przypisuje sektory do wlasnych baz paliwowych. Dopiero gdy nie ma
+baz, bierze jako kotwice wszystkie wlasne planety. Nadmiarowe jednostki
+rozprowadza do nieobstawionych sektorow; priorytety planet zmieniaja podzial.
+Lokalne petle maja promien 24 ly, ekonomiczny lot do warp 6 i planowany
+powrot do tankowania. Istniejacy test potwierdza pozostanie lokalnego
+patrolu przy zajetej bazie i skierowanie nadmiarowego do drugiej bazy.
+
+Przechwycenia zwykle obejmuja swieze widoczne cele w promieniu 150 ly.
+Wyjatki: reczny priorytet, dostep przez brame i obrona kolonii na
+zaobserwowanym kursie przeciwnika. Dla tej ostatniej stosowany jest korytarz
+20 ly i horyzont dziesieciu obserwowanych rocznych przemieszczen.
+Sortowanie wyroznia priorytet gracza, nadlatujace transporty, nadlatujace
+bombowce, inne transporty, zwiadowcow, a nastepnie pozostale cele.
+
+Ograniczenia: nie ma wyznaczonej szczelnej granicy ani minimalnej stalej
+obsady sektorow. Nowy test potwierdza, ze obaj dostepni obroncy z roznymi
+tagami sektorow moga zostac wcieleni do jednej grupy. Nie dowodzi to,
+ze zawsze opuszcza fizycznie rozne kolonie; dowodzi braku ochrony obsady
+wynikajacej z samego przydzialu sektora. Kolonie bez baz nie sa osobnymi
+kotwicami, gdy istnieja bazy. Dzialanie zalezy od skanerow i swiezych raportow;
+brak celu w aktualnym rozpoznaniu konczy misje i moze rozdzielic grupe.
+
+2. Grupy przeciw wiekszym flotom
+Tak, sa rzeczywiscie tworzone: z dostepnych patroli i wolnych eskort do
+100 ly od lidera. Zajete eskorty, floty remontowane, uszkodzone powyzej
+progu i zablokowane zadaniami paliwowymi sa w podstawowej kwalifikacji
+wykluczane. Wsparcie leci na zbiorke, takze do wspolnego ruchomego punktu,
+a wspolobecne floty lacza sie natywnym rozkazem Merge przed bitwa.
+Testy potwierdzaja polaczenie, przechwycenie i pozniejszy podzial z
+zachowaniem liczby okretow i paliwa. Eskorty maja ewidencje powrotu do roli.
+
+Koszt dla gry: zbiorka opoznia reakcje, laczenie skupia sile kosztem liczby
+miejsc obstawionych jednoczesnie, a mieszana grupa moze miec inne osiagi
+paliwowe/ruchowe. Kolejne trasy sa liczone dla polaczonej floty. Ostatnia
+uwaga jest konsekwencja mechaniki, nie osobnym pomiarem opoznienia kampanii.
+Nieudana odlegla zbiorka moze po dwoch latach zostac rozwiazana z czasowym
+odroczeniem celu; lokalne zagrozenie moze dluzej utrzymywac koncentracje.
+Po bitwie, w ktorej cel przezyl, patrol moze prosic o dodatkowe wsparcie.
+RecruitPower zwieksza rekrutacje, ale nie jest twardym nowym progiem ataku:
+patrolCanAttack nadal uzywa standardowego progu 150%.
+
+3. Rachunek sily
+Wlasna sila = antyokretowy PowerRating calej floty x
+  (100 - procent uszkodzen) / 100, z arytmetyka calkowita.
+Punkty bomb planetarnych sa odejmowane. PowerRating obejmuje uzbrojenie,
+zasieg i czesc modyfikatorow ruchu/broni; nie modeluje pelnego starcia.
+Brak w nim pelnego porownania pancerza, tarcz, inicjatywy, komputerow,
+zaklocania, dopasowania broni do obrony i zachowania planow bitewnych.
+
+Zagrozenie = ocena celu + aktualnie raportowane bojowe posilki do 30 ly
+od jego OBECNEJ pozycji. Wroga baza w poblizu raportowanej planety
+ustawia wartosc na miliard, praktycznie blokujac typowy atak.
+Wymagana sila = floor(3 * zagrozenie / 2) + 1.
+Dochodzi wymagana liczba okretow: dla celu bojowego zwykle 1, dla
+potwierdzonych niebojowych grup do 3, ograniczona dostepnoscia jednostek.
+Nie jest to rozkaz wyslania tylko jednego okretu: prog sily nadal obowiazuje.
+
+Znany projekt liczony jest z raportu projektu. Nieznany: z pojemnosci
+slotow uzbrojenia i skali wlasnych projektow, albo z ogolnego przyblizenia.
+Nowy test zmienia tylko biblioteke wlasnych projektow i uzyskuje inna
+ocene tego samego nierozpoznanego wroga (780 -> 300000 w celowo skrajnym
+przykladzie testowym). To estymacja, nie pomiar uzbrojenia wroga.
+Drugi test pokazuje ostra granice: cel 100 + wsparcie 400 w odleglosci
+30 ly wymaga 751; to samo wsparcie w odleglosci 31 ly daje prog 151.
+Nie uwzglednia to czasu dolotu tego wsparcia ani przyszlego miejsca bitwy.
+
+4. Weryfikacja na silniku bitwy
+150/1500 bitew konczy sie calkowitym zniszczeniem patrolu mimo zgody
+patrolCanAttack. W 183/1500 co najmniej jeden przeciwnik przezywa bitwe
+(obejmuje tez owe 150 porazek). To wynik tej macierzy, nie statystyka gry.
+Przyklady (wszystkie ataki dozwolone przez obecna logike):
+- 1 Jihad Cruiser, sila 510, vs 5 Torpedo Destroyer, sila 260:
+  patrol zniszczony 20/20 razy.
+- 21 Destroyer, sila 1638, vs 20 Torpedo Destroyer, sila 1040:
+  patrol zniszczony 20/20 razy.
+- 2 Beam Destroyer, sila 220, vs 5 Stalwart Defender, sila 135:
+  patrol zniszczony 20/20 razy.
+W zestawieniach tego samego projektu prog 150% wystarczal do zniszczenia
+przeciwnika bez calkowitej utraty patrolu we wszystkich badanych probach.
+
+Zalecenia, jeszcze NIE wdrozone
+1. Najpierw poprawic porownanie sily: uwzglednic obrone i dopasowanie
+   uzbrojenia, a najlepiej ograniczona liczbe prob bitwy na kopiach stanu.
+   Samo podniesienie mnoznika dla wszystkich typow nie rozwiazuje problemu.
+2. Liczyc posilki na podstawie mozliwego spotkania w czasie i przestrzeni,
+   zamiast ostrego promienia 30 ly przy obecnej pozycji celu.
+3. Dodac rezerwe obronna sektorow i koszt odsloniecia kolonii przy zbiorkach.
+4. Oddzielic brak aktualnego rozpoznania od potwierdzonego konca zagrozenia,
+   aby krotka utrata kontaktu nie wymuszala przedwczesnego rozproszenia.
+5. Monitorowac czas reakcji, pokrycie kolonii i straty w dluzszych syntetycznych
+   kampaniach. Obecne testy jednostkowe nie dowodza skutecznosci strategicznej.

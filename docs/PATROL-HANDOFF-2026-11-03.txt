@@ -1,0 +1,145 @@
+PATROLE — PRZEKAZANIE ANALIZY I TESTÓW DO WDROŻENIA
+2026-11-03. Etap badawczy gotowy. Implementacja i jej końcowa weryfikacja pozostają do wykonania.
+
+PRZEKAZANO 2026-11-03 do czatu „Pobierz projekt Stars---T”
+(01a19d4e-24eb-7291-b26e-1bdb521074f3). Wiadomość z zadaniem integracji
+została przyjęta przez narzędzie wysyłania. Wdrożenie nie zostało przez
+ten czat wykonane ani oznaczone jako zakończone.
+
+Dokument wejściowy dla czatu „Pobierz projekt Stars---T”. Użytkownik po
+konsultacjach poprosił o przekazanie wyników. Pliki już znajdują się we
+wspólnej kopii C:\Users\DELL\Documents\developer\stars!; większość jest
+nieśledzona przez Git. Nie usuwaj ich ani nie traktuj jako cudzych zapisów gry.
+
+PRZECZYTAJ W TEJ KOLEJNOŚCI
+1. PATROL-REVIEW-DRAFT-2026-11-03.txt — aktualne ustalenia, zwłaszcza 8 i 9.
+2. PATROL-CAMPAIGN-REPORT-2026-11-03.txt — pełne tury i odtworzone luki.
+3. PATROL-ALGORITHM-DRAFT-2026-11-03.txt — szczegóły projektu i wcześniejsze badania.
+4. SUGGESTIONS-CHECKLIST.txt i AGENTS.md — wszystkie zachowane wymagania.
+Pierwotny AUDIT-PATROLS-2026-11-03.txt to dowód historyczny, nie nadrzędny projekt.
+
+WAŻNA ZGODNOŚĆ Z ISTNIEJĄCĄ PRACĄ DRUGIEGO CZATU
+Przeczytano końcowe ustalenia 0.6.4 i 0.6.5:
+- Małe nieznane zgrupowania wolno atakować przy wystarczającej przewadze.
+  Obowiązkowe rozpoznanie dotyczy grup od 8 statków, z uwzględnieniem
+  faktycznie zbliżających się bojowych posiłków. Zachowaj tę instrukcję.
+  Wyniki RECON dla wszystkich niepełnych raportów w eksperymencie mieszanym
+  oznaczają konserwatywną politykę LABORATORYJNĄ; nie wdrażaj jej jako
+  całkowitego zakazu atakowania każdego małego nierozpoznanego kontaktu.
+- Zachowaj wydzielanie właściwej części stosu do małych celów z 0.6.4.
+- Zachowaj darmowy warp 6 radiacyjnych patroli i możliwość szybszego zrywu.
+- Zachowaj przesuwanie wolnych patroli ku widocznym zagrożeniom na rubieżach
+  z 0.6.5, zamiast powrotu do bezczynnych pętli przy bazach.
+
+WYMAGANIA Z TEGO CZATU
+A. Autonomia i efektywność w całej misji: wykrycie, zwiad, koncentracja,
+   przechwycenie, walka/pościg, szczątki, odlot, naprawa i ponowna gotowość.
+B. Najpilniejsze są floty już bombardujące własne kolonie, następnie te
+   nadlatujące. Można równolegle szybko usuwać bliższe cele. Nie wymagać
+   sztywnej obsady każdego sektora kosztem koncentracji przeciw groźnej flocie.
+C. Zwykły kontakt zapewniają realne skanery planet i wielu scoutów. Nie
+   przydzielaj dodatkowego scouta tylko do widocznego już kontaktu, jeśli
+   nie wymaga tego poznanie sprzętu albo wyjście poza zasięg sensorów.
+D. Zwiad i koncentracja Z NADMIAROWĄ SIŁĄ mogą trwać równolegle. Zgoda
+   na zbiórkę nie jest zgodą na atak nieznanej dużej grupy. Po skanie
+   wolno zwolnić część okrętów ALBO zatrzymać je dla ograniczenia strat,
+   uszkodzeń ocalałych i przestojów naprawczych. Minimum do wygranej nie
+   jest automatycznie najlepszym składem. Stały zapas procentowy nie zastąpi oceny.
+E. Skład dobieraj RAZEM z planem walki. Porównuj całe mieszane stosy na
+   kopiach natywnej bitwy, a nie samą sumę PowerRating. Rozpoznanie ma
+   pochodzić z raportów; nie czytać ukrytych projektów/rozkazów/paliwa wroga.
+   Testowe BuildScenario nie jest fabryką produkcyjną do wklejenia w tury.
+   Symulacje nie mogą modyfikować prawdziwych flot, planów ani RNG tury.
+F. Poszkodowane lub odległe wsparcie ma koszt. Dołączaj je, jeżeli zdąży
+   i daje korzyść; porównuj utratę gotowości, paliwo, opóźnienie i inne zadania.
+   Zachowaj ręczny wybór planu; automatyczny dobór dotyczy oddanych automatyce.
+G. Zbiórka ma minimalizować czas do WSPÓLNEJ bitwy, z rzeczywistymi trasami
+   i specyfikacją scalonej floty. Natywny test potwierdził przykład 6 -> 4 tury.
+H. Bojowe posiłki doliczaj przy widocznym kursie zbieżnym z celem i dotarciu
+   w użytecznym oknie. Sama obecność w promieniu 30 ly nie wystarcza.
+   Bezpośrednich uczestników już w miejscu bitwy nie pomijaj jako „posiłków”.
+I. Pamiętaj słabe, powolne cele po utracie kontaktu; scout szuka rejonu,
+   potem odświeżenie oceny, przechwycenie i rzeczywiste debris. Wolny kurs
+   nie dowodzi pustego zbiornika. Fuzja/podział/ponowne użycie numeru nie
+   może utrzymywać starej misji samobójczej ani udawać zniszczenia celu.
+J. Wspólna kolejka pilności rozdziela zadania równolegle według zdolności.
+   Deduplikuj także potrzebę wyposażenia wspólnego projektu. Chronione
+   misje dostaw, ratowania, napraw i finansowania paliwem zachowują priorytety.
+K. Kolonia bez bazy może być stanowiskiem patrolu dla silnika z użytecznym
+   ruchem bez paliwa. Paliwo służy zrywom/ucieczkom/tanim przelotom. Można
+   zużyć całość podczas sfinansowanego dolotu do potwierdzonego tankowania
+   w tankerze/bazie. Weryfikuj najwolniejszy silnik całego połączonego składu.
+L. Kolektor/kolektory mają być przygotowane z grupą, uczestniczyć w bitwie
+   z obronnym planem, ładować prawdziwe szczątki i odchodzić. Szanuj kolejność
+   faz gry, realny zasięg i cargo. Na własnej orbicie minerały z bitwy trafiają
+   już bezpośrednio na planetę — nie blokuj kolektora wyłącznie dla tego odzysku.
+
+NAJPILNIEJSZE ODTWORZONE LUKI
+1. Po podziale wroga logistyka dostarczyła 14 kT zamiast 208 kT w wariancie
+   ze wspólną bitwą, mimo ciągłego pokrycia skanami i trzech kolektorów.
+   Collector-0 stał na rzeczywistym polu 33 kT w (146,0) po turze 6,
+   ale wracał bez załadunku. Osobna kopia stanu, z legalnym zadaniem salvage,
+   ładuje wszystkie 33 kT natywnym resolveLogisticsAutomation. Popraw przekazanie
+   rezerwacja bitwy -> rzeczywisty odbiór, odświeżanie miejsc bitew/eskort
+   i przydziały po podziale. Sonda sama nie dowodzi bezpieczeństwa odlotu.
+2. Observer-5 przed turą 5 ma starą misję na #5, brak raportu #5, natomiast
+   podział nadał #5 nowemu znanemu już projektowi. Scout ginie. Sprawdź
+   odwoływanie misji i celów waypointów po fuzji/podziale/reuse. Dokładnej
+   odpowiedzialnej gałęzi nie przypisano; nie ma jeszcze poprawki.
+3. Jedno początkowe bombardowanie zabiło 8300 kolonistów. Net population
+   rosła, dlatego sam wzrost nie dowodzi braku strat. Kolejka powinna
+   uwzględniać termin następnego bombardowania i najszybsze gotowe siły.
+
+CO JEST PRZETESTOWANE, A CO NIE
+- 12 oryginalnych konfiguracji na sześciu kadłubach: 432 zestawienia;
+  335 zaakceptowanych, 10720 dodatkowych bitew bez zagłady grupy/ocalałego wroga.
+- Floty mieszane: 63 składy na pulę, cztery własne i pięć wrogich taktyk;
+  12 stanów wiedzy oraz 3840 bitew ustalonych, rzeczywiście mieszanych składów.
+  Dwie znane sytuacje: po 2 okręty, 640 dodatkowych zwycięskich prób.
+  W jednej sytuacji plan zachowawczy wymagał 7 zamiast 2 okrętów.
+  Nieznany model sugerował 7, ale dodatkowy niesamplowany wariant uciekł
+  dwa razy na 960 prób. Próbka hipotez nie jest gwarancją przewagi.
+- Rezerwa i uszkodzenia: 3840 dalszych bitew. Przykładowe maksimum
+  uszkodzenia ocalałego dla 2/3/4/6 jednostek: 82/35/23/13 procent.
+  Ekwiwalent uszkodzeń jest miarą gotowości, nie rachunkiem za naprawę.
+- Kampanie istniejącej automatyki: sześć przebiegów po 12 tur; wszystkie
+  13 okrętów wroga zniszczone do 6/7 tury, bez strat własnych jednostek
+  bojowych i transporterów, 1/2 utracone scouty. Przy scalonym wrogu
+  kolektor rzeczywiście był w bitwie i wycofywał się, a potem dowiózł cargo.
+- Pełny cs PASS ostatnio 59.827 s; aktualny test kampanii z diagnostyką PASS.
+- Są to TESTY I PROTOTYPY OFFLINE. Nowy evaluator, kolejka, pełna pamięć,
+  nowa zbiórka i poprawki luk nie są wdrożone przez ten czat. Nie przenoś
+  całej kosztownej macierzy do każdej tury: potrzebne cache, budżet obliczeń,
+  priorytety i test czasu działania na dużej grze.
+
+PLIKI TESTOWE (nieśledzone w tej kopii)
+cs/patrolaudit_test.go — historyczny audyt; fixture znanego sprzętu dostosowany
+  do późniejszej reguły reconnaissance. Nie używaj pierwotnych założeń jako wymagań.
+cs/patrolgenerated_test.go — generator legalnych projektów, bez presetów.
+cs/patrolproposal_test.go — pierwsze próby siły/kursów/scoutów.
+cs/patrolcoordinationproposal_test.go — native zbiórka 6->4, kolejka, pamięć i szukanie.
+cs/patrolmixedproposal_test.go — mieszanki, maskowanie sprzętu, jawne plany,
+  minimalizacja kosztu, kontrola usuwania jednostek, obrażenia ocalałych.
+cs/patrolreserveproposal_test.go — równoległy zwiad/koncentracja i wartość rezerwy.
+cs/patrolcampaign_test.go — pełne tury, zapis/odczyt JSON, Merge/Split, cargo i sondy.
+Wyniki i manifesty są w docs/PATROL-*.json/csv/txt. Dodatkowe pliki tmp to logi
+lokalne; nie publikuj baz, osobistych zapisów, runtime ani cache.
+
+SPOSÓB DALSZEJ PRACY
+Zintegruj wymagania z istniejącymi poprawkami 0.6.4/0.6.5, bez ich cofania.
+Najpierw odtwórz luki i wyodrębnij natywną fabrykę bezpiecznej kopii bitwy.
+Wdrażaj etapami, z testami i kontrolą kosztu, bez wymagania nowej gry.
+Zapisz dowody w checklist i raportach. Produkcyjne zmiany wymagają przebudowy
+native/WASM/UI, sprawdzenia gotowej aplikacji na izolowanych portach i aktualnych
+SHA256SUMS, zgodnie z AGENTS.md. Nie przesuwaj osobistego save'u w testach.
+Uprawnienie do publikacji jest w AGENTS.md; nie publikuj samego nieprzetestowanego
+prototypu jako ukończonej poprawki. Raportuj użytkownikowi faktyczny stan integracji.
+
+PRODUCTION INTEGRATION 0.6.6 (2026-11-03)
+The receiving chat integrated the report-only native forecast, composition/tactic
+selection, provisional gathering, funded rally selection, mission urgency,
+contact memory/search, shared-design recon, sensor coverage and real debris
+handoff. Current evidence and limits are in docs/AUDIT-0.6.6.txt. Earlier research
+results remain historical; do not equate their offline matrices with production
+forecast guarantees. The current split campaign starts merge/split earlier so
+improved interception does not remove the enemy wing before the scripted split.

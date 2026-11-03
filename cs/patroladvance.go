@@ -51,6 +51,13 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 		return false
 	}
 	docks := expeditionStations(p, f)
+	if usefulFreePatrolMovement(p, f) {
+		for _, planet := range t.game.getPlanets(p.Num) {
+			if !planet.Spec.HasStarbase {
+				docks = append(docks, planet)
+			}
+		}
+	}
 	if len(docks) == 0 {
 		return false
 	}

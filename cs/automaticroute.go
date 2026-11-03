@@ -160,7 +160,7 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 			if limit > 0 && math.Ceil(position.DistanceTo(station.Position)/fleet.StrategicSpeed(speed)) > float64(limit) {
 				continue
 			}
-			if (player.Automation.FleetRoles[fleet.Num] == "scout" || player.Automation.FleetRoles[fleet.Num] == "patrol" || passengerCruiseFleet(fleet) || isAutomaticFleet(player, fleet) && cruiseSafe) && speed < automaticCruiseWarp(player, fleet) && position.DistanceTo(station.Position) > fleet.StrategicSpeed(speed) {
+			if (player.Automation.FleetRoles[fleet.Num] == "scout" || player.Automation.FleetRoles[fleet.Num] == "patrol" || passengerCruiseFleet(fleet) || isAutomaticFleet(player, fleet) && cruiseSafe) && speed < automaticCruiseWarp(player, fleet) && position.DistanceTo(station.Position) > fleet.StrategicSpeed(speed) && !(usefulFreePatrolMovement(player, fleet) && speed <= fleet.Spec.Engine.FreeSpeed) {
 				continue
 			}
 			if automaticLegSafe(rules, player, position, station.Position, speed, allowThreat, fleet.StrategicSpeed(speed)) {

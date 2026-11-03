@@ -142,6 +142,13 @@ func (t *turnGenerator) planAutomaticSafety() {
 				if candidate == nil {
 					continue
 				}
+				if intercepted && len(candidate.Waypoints) > 1 {
+					probe := *fleet
+					probe.Waypoints = candidate.Waypoints
+					if interceptionThreat(player, &probe) > 0 || knownRouteThreat(player, fleet.Position, fleet.Position) > 0 && !knownWithdrawalRoute(player, fleet.Position, candidate.Waypoints[1].Position) {
+						continue
+					}
+				}
 				if route == nil || candidate.Turns < route.Turns || candidate.Turns == route.Turns && planet.Num < chosen.Num {
 					chosen, route = planet, candidate
 				}

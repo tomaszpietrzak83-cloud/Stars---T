@@ -12,6 +12,8 @@ import (
 // A Player contains all intel, messages, tech levels, and research orders for a single empire in the game.
 // It is tied to a single User (or no user, for AI)
 type Player struct {
+	patrolQueue      []patrolMission
+	patrolEvaluator  *patrolEvaluator
 	routeThreatIndex *routeThreatIndex
 	shipIntelIndex   map[playerObject]*ShipDesign
 	shipIntelCount   int

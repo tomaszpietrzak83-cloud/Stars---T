@@ -21,7 +21,7 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 	owned := t.game.getPlanets(p.Num)
 	bases := []*Planet{}
 	for _, planet := range owned {
-		if planet.Spec.HasStarbase {
+		if planet.Spec.HasStarbase || usefulFreePatrolMovement(p, f) {
 			bases = append(bases, planet)
 		}
 	}

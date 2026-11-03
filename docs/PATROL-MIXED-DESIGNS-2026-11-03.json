@@ -1,0 +1,1074 @@
+[
+	{
+		"enemyActual": [
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G9100-P0",
+				"version": 0,
+				"hull": "Destroyer",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Quick Jump 5",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "EEE Pulse Lance",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Mega Disruptor",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Heavy Blaster",
+						"hullSlotIndex": 4,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Kelarium",
+						"hullSlotIndex": 5,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Maneuvering Jet",
+						"hullSlotIndex": 6,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Battle Computer",
+						"hullSlotIndex": 7,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G9131-P1",
+				"version": 0,
+				"hull": "Cruiser",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Radiating Hydro-Ram Scoop",
+						"hullSlotIndex": 1,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mole-skin Shield",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Elephant Hide Fortress",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Delta Torpedo",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Rho Torpedo",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Doomsday Missile",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Wolverine Diffuse Shield",
+						"hullSlotIndex": 7,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			}
+		],
+		"enemyCounts": [2, 2],
+		"own": [
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6100-P0",
+				"version": 0,
+				"hull": "Destroyer",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Fuel Mizer",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Mini Blaster",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Bludgeon",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Yakimora Light Phaser",
+						"hullSlotIndex": 4,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Neutronium",
+						"hullSlotIndex": 5,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Maneuvering Jet",
+						"hullSlotIndex": 6,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Battle Computer",
+						"hullSlotIndex": 7,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6113-P1",
+				"version": 0,
+				"hull": "Cruiser",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Alpha Drive 8",
+						"hullSlotIndex": 1,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Wolverine Diffuse Shield",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Complete Phase Shield",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Pulsed Sapper",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Doomsday Missile",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Omega Torpedo",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Complete Phase Shield",
+						"hullSlotIndex": 7,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6126-P0",
+				"version": 0,
+				"hull": "Privateer",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "EEE Courier Drive",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Valanium",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Jammer 30",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "EEE Pulse Lance",
+						"hullSlotIndex": 4,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Yakimora Light Phaser",
+						"hullSlotIndex": 5,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			}
+		],
+		"pool": 0
+	},
+	{
+		"enemyActual": [
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G9143-P0",
+				"version": 0,
+				"hull": "Battleship",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Daddy Long Legs 7",
+						"hullSlotIndex": 1,
+						"quantity": 4
+					},
+					{
+						"hullComponent": "Battle Nexus",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Elephant Hide Fortress",
+						"hullSlotIndex": 3,
+						"quantity": 4
+					},
+					{
+						"hullComponent": "Mini Blaster",
+						"hullSlotIndex": 4,
+						"quantity": 3
+					},
+					{
+						"hullComponent": "Mark IV Blaster",
+						"hullSlotIndex": 5,
+						"quantity": 3
+					},
+					{
+						"hullComponent": "Yakimora Light Phaser",
+						"hullSlotIndex": 6,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Laser",
+						"hullSlotIndex": 7,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Disruptor",
+						"hullSlotIndex": 8,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "EEE Ceramic Armor",
+						"hullSlotIndex": 9,
+						"quantity": 3
+					},
+					{
+						"hullComponent": "Energy Capacitor",
+						"hullSlotIndex": 10,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Energy Capacitor",
+						"hullSlotIndex": 11,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G9174-P1",
+				"version": 0,
+				"hull": "Scout",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Quick Jump 5",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Delta Torpedo",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			}
+		],
+		"enemyCounts": [2, 6],
+		"own": [
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6167-P1",
+				"version": 0,
+				"hull": "Cruiser",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Trans-Galactic Drive",
+						"hullSlotIndex": 1,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Gorilla Delagator",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Cow-hide Shield",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Jihad Missile",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Beta Torpedo",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Doomsday Missile",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Gorilla Delagator",
+						"hullSlotIndex": 7,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6180-P0",
+				"version": 0,
+				"hull": "Nubian",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Trans-Galactic Super Scoop",
+						"hullSlotIndex": 1,
+						"quantity": 3
+					},
+					{
+						"hullComponent": "Pulsed Sapper",
+						"hullSlotIndex": 2,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Phaser Bazooka",
+						"hullSlotIndex": 3,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Yakimora Light Phaser",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Laser",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mark IV Blaster",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Gatling Gun",
+						"hullSlotIndex": 7,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Bludgeon",
+						"hullSlotIndex": 8,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mini Blaster",
+						"hullSlotIndex": 9,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mini Blaster",
+						"hullSlotIndex": 10,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "EEE Pulse Lance",
+						"hullSlotIndex": 11,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Yakimora Light Phaser",
+						"hullSlotIndex": 12,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mega Disruptor",
+						"hullSlotIndex": 13,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6193-P1",
+				"version": 0,
+				"hull": "Scout",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "EEE Courier Drive",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Doomsday Missile",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			}
+		],
+		"pool": 1
+	},
+	{
+		"enemyActual": [
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G9186-P0",
+				"version": 0,
+				"hull": "Destroyer",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Sub-Galactic Fuel Scoop",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Mark IV Blaster",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Myopic Disruptor",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Laser",
+						"hullSlotIndex": 4,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "EEE Ceramic Armor",
+						"hullSlotIndex": 5,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Overthruster",
+						"hullSlotIndex": 6,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Jammer 20",
+						"hullSlotIndex": 7,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G9217-P1",
+				"version": 0,
+				"hull": "Cruiser",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "EEE Horizon Drive",
+						"hullSlotIndex": 1,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Cow-hide Shield",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Bear Neutrino Barrier",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Delta Torpedo",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Doomsday Missile",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Upsilon Torpedo",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Elephant Hide Fortress",
+						"hullSlotIndex": 7,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			}
+		],
+		"enemyCounts": [4, 4],
+		"own": [
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6234-P0",
+				"version": 0,
+				"hull": "Destroyer",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "EEE Galactic Drive",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Bludgeon",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Colloidal Phaser",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Streaming Pulverizer",
+						"hullSlotIndex": 4,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Crobmnium",
+						"hullSlotIndex": 5,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Overthruster",
+						"hullSlotIndex": 6,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Jammer 30",
+						"hullSlotIndex": 7,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6247-P1",
+				"version": 0,
+				"hull": "Cruiser",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Fuel Mizer",
+						"hullSlotIndex": 1,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Gorilla Delagator",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Bear Neutrino Barrier",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Pulsed Sapper",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Alpha Torpedo",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Doomsday Missile",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Cow-hide Shield",
+						"hullSlotIndex": 7,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6260-P0",
+				"version": 0,
+				"hull": "Privateer",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Sub-Galactic Fuel Scoop",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Crobmnium",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Maneuvering Jet",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Anti-Matter Pulverizer",
+						"hullSlotIndex": 4,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Mega Disruptor",
+						"hullSlotIndex": 5,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			}
+		],
+		"pool": 2
+	},
+	{
+		"enemyActual": [
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G9229-P0",
+				"version": 0,
+				"hull": "Battleship",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Trans-Galactic Mizer Scoop",
+						"hullSlotIndex": 1,
+						"quantity": 4
+					},
+					{
+						"hullComponent": "Jammer 20",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Wolverine Diffuse Shield",
+						"hullSlotIndex": 3,
+						"quantity": 4
+					},
+					{
+						"hullComponent": "Gatling Gun",
+						"hullSlotIndex": 4,
+						"quantity": 3
+					},
+					{
+						"hullComponent": "Mark IV Blaster",
+						"hullSlotIndex": 5,
+						"quantity": 3
+					},
+					{
+						"hullComponent": "Phaser Bazooka",
+						"hullSlotIndex": 6,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "EEE Pulse Lance",
+						"hullSlotIndex": 7,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Colloidal Phaser",
+						"hullSlotIndex": 8,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Valanium",
+						"hullSlotIndex": 9,
+						"quantity": 3
+					},
+					{
+						"hullComponent": "Jammer 30",
+						"hullSlotIndex": 10,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Battle Nexus",
+						"hullSlotIndex": 11,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G9260-P1",
+				"version": 0,
+				"hull": "Scout",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "EEE Galactic Drive",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Jihad Missile",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			}
+		],
+		"enemyCounts": [4, 10],
+		"own": [
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6301-P1",
+				"version": 0,
+				"hull": "Cruiser",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Daddy Long Legs 7",
+						"hullSlotIndex": 1,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Wolverine Diffuse Shield",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Complete Phase Shield",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Jihad Missile",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Epsilon Torpedo",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Alpha Torpedo",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Elephant Hide Fortress",
+						"hullSlotIndex": 7,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6314-P0",
+				"version": 0,
+				"hull": "Nubian",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Trans-Galactic Drive",
+						"hullSlotIndex": 1,
+						"quantity": 3
+					},
+					{
+						"hullComponent": "Pulsed Sapper",
+						"hullSlotIndex": 2,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Yakimora Light Phaser",
+						"hullSlotIndex": 3,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mega Disruptor",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mark IV Blaster",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Yakimora Light Phaser",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Myopic Disruptor",
+						"hullSlotIndex": 7,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "X-Ray Laser",
+						"hullSlotIndex": 8,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Bludgeon",
+						"hullSlotIndex": 9,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mega Disruptor",
+						"hullSlotIndex": 10,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Mini Blaster",
+						"hullSlotIndex": 11,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Phaser Bazooka",
+						"hullSlotIndex": 12,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Gatling Gun",
+						"hullSlotIndex": 13,
+						"quantity": 2
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			},
+			{
+				"createdAt": "0001-01-01T00:00:00Z",
+				"updatedAt": "0001-01-01T00:00:00Z",
+				"playerNum": 0,
+				"originalPlayerNum": 0,
+				"name": "G6327-P1",
+				"version": 0,
+				"hull": "Scout",
+				"hullSetNumber": 0,
+				"slots": [
+					{
+						"hullComponent": "Galaxy Scoop",
+						"hullSlotIndex": 1,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Juggernaut Missile",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					}
+				],
+				"spec": {
+					"armor": 0,
+					"cost": {},
+					"initiative": 0,
+					"mass": 0
+				}
+			}
+		],
+		"pool": 3
+	}
+]

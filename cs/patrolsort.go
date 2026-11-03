@@ -29,6 +29,13 @@ func sortedPatrolTargets(player *Player, fleet *Fleet) []*Fleet {
 		if ri != rj {
 			return ri < rj
 		}
+		if player.patrolEvaluator != nil {
+			_, di := patrolColonyDeadline(player, enemies[i])
+			_, dj := patrolColonyDeadline(player, enemies[j])
+			if di != dj {
+				return di < dj
+			}
+		}
 		ib, jb := patrolReportedBomber(player, enemies[i]), patrolReportedBomber(player, enemies[j])
 		if ib != jb {
 			return ib
@@ -58,6 +65,13 @@ func patrolReportedTransport(p *Player, f *Fleet) bool {
 	return f.Spec.HullType == TechHullTypeFreighter || f.Spec.HullType == TechHullTypeColonizer || f.Spec.HullType == TechHullTypeMultiPurposeFreighter
 }
 func patrolTargetPriority(p *Player, f *Fleet, approaching bool) int {
+	bombing, deadline := patrolColonyDeadline(p, f)
+	if bombing {
+		return -4
+	}
+	if approaching && deadline < 1000 && patrolReportedBomber(p, f) {
+		return -3
+	}
 	if priorityFleet(p, f) {
 		return -2
 	}

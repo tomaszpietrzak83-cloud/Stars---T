@@ -12,6 +12,12 @@ Open the game at `http://localhost:5173`. The launcher signs into the local game
 
 The source is Go and Svelte/TypeScript. Developers need the Go version from `go.mod`, Node.js 22.17 or newer, and a CGO-capable C compiler. Run `npm ci` in `frontend`; build `wasm/main.go` using `GOOS=js GOARCH=wasm CGO_ENABLED=0` into `frontend/src/lib/wasm/cs.wasm`; run `npm run build` in `frontend`; build the native server with CGO into `windows/stars-local.exe`. The committed edition can be played without rebuilding.
 
+## Version 0.6.6
+
+Patrols assess reported encounter forces with isolated native combat simulations and select mixed reinforcements together with battle tactics. The final departure and bounded pursuit checks reject an unsafe destination even when the original target was a weak transport. Reconnaissance and funded concentration run in parallel; survivor damage, repair downtime, public reinforcement courses, contact memory and real debris pickup are included.
+
+Verification and limits: [docs/AUDIT-0.6.6.txt](docs/AUDIT-0.6.6.txt).
+
 ## Version 0.6.5
 
 Free patrols advance from cleared local sectors toward reported frontier formations, balancing reinforcements against threat and existing support. Long unarmed chases yield to active fronts; nearby interception and imminent colony defense remain first. Movement stages outside enemy reach with funded return routes, and shifts farther out as contacts clear.

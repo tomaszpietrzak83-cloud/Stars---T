@@ -11,33 +11,35 @@ import (
 )
 
 type LogisticsAutomation struct {
-	PriorityFleets               map[string]bool       `json:"priorityFleets,omitempty"`
-	PriorityTraders              map[int]bool          `json:"priorityTraders,omitempty"`
-	PriorityPlanets              map[int]bool          `json:"priorityPlanets,omitempty"`
-	ServeTerraformingWorlds      bool                  `json:"serveTerraformingWorlds,omitempty"`
-	InfrastructureTransport      bool                  `json:"infrastructureTransport,omitempty"`
-	ManualPassengerThresholds    bool                  `json:"manualPassengerThresholds,omitempty"`
-	DisablePassengerTransport    bool                  `json:"disablePassengerTransport,omitempty"`
-	DesignFamilies               map[int]int           `json:"designFamilies,omitempty"`
-	ScoutMaxReturnTurns          int                   `json:"scoutMaxReturnTurns,omitempty"`
-	ResearchTax                  *ResearchTaxPolicy    `json:"researchTax,omitempty"`
-	RepairThresholdPercent       int                   `json:"repairThresholdPercent,omitempty"`
-	DisableAutomaticRepair       bool                  `json:"disableAutomaticRepair,omitempty"`
-	DisableInterceptionEvasion   bool                  `json:"disableInterceptionEvasion,omitempty"`
-	AutomaticPackets             bool                  `json:"automaticPackets,omitempty"`
-	FleetAssemblies              map[int]FleetAssembly `json:"fleetAssemblies,omitempty"`
-	PassengerTransport           bool                  `json:"passengerTransport,omitempty"`
-	SourcePopulationPercent      int                   `json:"sourcePopulationPercent,omitempty"`
-	DestinationPopulationPercent int                   `json:"destinationPopulationPercent,omitempty"`
-	EscortMarginLY               int                   `json:"escortMarginLy,omitempty"`
-	EscortStrengthPercent        int                   `json:"escortStrengthPercent,omitempty"`
-	DisableSalvage               bool                  `json:"disableSalvage,omitempty"`
-	DisableMineralSupply         bool                  `json:"disableMineralSupply,omitempty"`
-	SingleShipyardRebuild        bool                  `json:"singleShipyardRebuild,omitempty"`
-	FleetRoles                   map[int]string        `json:"fleetRoles,omitempty"`
-	RebuildFleets                map[int]bool          `json:"rebuildFleets,omitempty"`
-	BattleSalvage                bool                  `json:"battleSalvage,omitempty"`
-	OffloadCombatCargo           bool                  `json:"offloadCombatCargo,omitempty"`
+	// Server-owned reports retained for lost-contact search, never attack authority.
+	PatrolMemory                 map[string]PatrolContactMemory `json:"patrolMemory,omitempty"`
+	PriorityFleets               map[string]bool                `json:"priorityFleets,omitempty"`
+	PriorityTraders              map[int]bool                   `json:"priorityTraders,omitempty"`
+	PriorityPlanets              map[int]bool                   `json:"priorityPlanets,omitempty"`
+	ServeTerraformingWorlds      bool                           `json:"serveTerraformingWorlds,omitempty"`
+	InfrastructureTransport      bool                           `json:"infrastructureTransport,omitempty"`
+	ManualPassengerThresholds    bool                           `json:"manualPassengerThresholds,omitempty"`
+	DisablePassengerTransport    bool                           `json:"disablePassengerTransport,omitempty"`
+	DesignFamilies               map[int]int                    `json:"designFamilies,omitempty"`
+	ScoutMaxReturnTurns          int                            `json:"scoutMaxReturnTurns,omitempty"`
+	ResearchTax                  *ResearchTaxPolicy             `json:"researchTax,omitempty"`
+	RepairThresholdPercent       int                            `json:"repairThresholdPercent,omitempty"`
+	DisableAutomaticRepair       bool                           `json:"disableAutomaticRepair,omitempty"`
+	DisableInterceptionEvasion   bool                           `json:"disableInterceptionEvasion,omitempty"`
+	AutomaticPackets             bool                           `json:"automaticPackets,omitempty"`
+	FleetAssemblies              map[int]FleetAssembly          `json:"fleetAssemblies,omitempty"`
+	PassengerTransport           bool                           `json:"passengerTransport,omitempty"`
+	SourcePopulationPercent      int                            `json:"sourcePopulationPercent,omitempty"`
+	DestinationPopulationPercent int                            `json:"destinationPopulationPercent,omitempty"`
+	EscortMarginLY               int                            `json:"escortMarginLy,omitempty"`
+	EscortStrengthPercent        int                            `json:"escortStrengthPercent,omitempty"`
+	DisableSalvage               bool                           `json:"disableSalvage,omitempty"`
+	DisableMineralSupply         bool                           `json:"disableMineralSupply,omitempty"`
+	SingleShipyardRebuild        bool                           `json:"singleShipyardRebuild,omitempty"`
+	FleetRoles                   map[int]string                 `json:"fleetRoles,omitempty"`
+	RebuildFleets                map[int]bool                   `json:"rebuildFleets,omitempty"`
+	BattleSalvage                bool                           `json:"battleSalvage,omitempty"`
+	OffloadCombatCargo           bool                           `json:"offloadCombatCargo,omitempty"`
 }
 
 func (a LogisticsAutomation) sourcePopulationPercent() int {
@@ -297,6 +299,13 @@ func (t *turnGenerator) prepareConvoy(player *Player, fleet *Fleet, job *logisti
 	t.prepareConvoyWithMinimum(player, fleet, job, target, 0)
 }
 func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, job *logisticsJob, target MapObjectTarget, minimum int) {
+	if job.Kind == "salvage" && fleet.Position == job.Position && !t.armedEnemyAt(player, fleet.Position) {
+		// Loading here requires no strategic movement. Evaluate the loaded
+		// departure separately, rather than withdrawing empty while awaiting cover.
+		job.Status = "Collecting local debris before planning loaded departure"
+		holdAutomaticFleet(player, fleet, job.Status)
+		return
+	}
 
 	threat := int(math.Ceil(float64(knownRouteThreat(player, fleet.Position, job.Position)) * float64(player.Automation.escortStrength()) / 100))
 	if knownWithdrawalRoute(player, fleet.Position, job.Position) {
@@ -677,7 +686,7 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 				t.releaseEscorts(player, fleet)
 			case "salvage":
 				salvage := t.game.getSalvage(job.TargetNum)
-				if salvage != nil && !salvage.Delete {
+				if salvage != nil && !salvage.Delete && salvage.Position == fleet.Position {
 					takeMinerals(fleet, &salvage.Cargo)
 					if salvage.Cargo.ToMineral().Total() == 0 {
 						t.game.deleteSalvage(salvage)

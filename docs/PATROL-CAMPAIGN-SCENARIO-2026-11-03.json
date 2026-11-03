@@ -1,0 +1,2766 @@
+{
+	"enemyDesigns": [
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"num": 1,
+			"playerNum": 2,
+			"originalPlayerNum": 0,
+			"name": "Enemy torpedo cruiser",
+			"version": 0,
+			"hull": "Cruiser",
+			"hullSetNumber": 0,
+			"slots": [
+				{
+					"hullComponent": "Trans-Star 10",
+					"hullSlotIndex": 1,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Gorilla Delagator",
+					"hullSlotIndex": 2,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Gorilla Delagator",
+					"hullSlotIndex": 3,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Delta Torpedo",
+					"hullSlotIndex": 4,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Delta Torpedo",
+					"hullSlotIndex": 5,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Delta Torpedo",
+					"hullSlotIndex": 6,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Gorilla Delagator",
+					"hullSlotIndex": 7,
+					"quantity": 2
+				}
+			],
+			"spec": {
+				"armor": 700,
+				"beamBonus": 1,
+				"cost": {
+					"ironium": 79,
+					"boranium": 20,
+					"germanium": 33,
+					"resources": 87
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": [0, 0, 5, 15, 20, 25, 30, 35, 40, 45, 50]
+				},
+				"estimatedRange": 1096,
+				"estimatedRangeFull": 1096,
+				"fuelCapacity": 600,
+				"hasWeapons": true,
+				"hullType": "Fighter",
+				"shipClass": "Warship",
+				"initiative": 5,
+				"mass": 254,
+				"movement": 7,
+				"movementFull": 7,
+				"numBuilt": 6,
+				"numEngines": 2,
+				"numInstances": 6,
+				"powerRating": 156,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 700,
+				"techLevel": {
+					"energy": 14,
+					"weapons": 10,
+					"propulsion": 23,
+					"construction": 9
+				},
+				"weaponSlots": [
+					{
+						"hullComponent": "Delta Torpedo",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Delta Torpedo",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Delta Torpedo",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					}
+				]
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"num": 2,
+			"playerNum": 2,
+			"originalPlayerNum": 0,
+			"name": "Enemy weak destroyer",
+			"version": 0,
+			"hull": "Destroyer",
+			"hullSetNumber": 0,
+			"slots": [
+				{
+					"hullComponent": "Long Hump 6",
+					"hullSlotIndex": 1,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "X-Ray Laser",
+					"hullSlotIndex": 2,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "X-Ray Laser",
+					"hullSlotIndex": 3,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "X-Ray Laser",
+					"hullSlotIndex": 4,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Neutronium",
+					"hullSlotIndex": 5,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Overthruster",
+					"hullSlotIndex": 6,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Battle Computer",
+					"hullSlotIndex": 7,
+					"quantity": 1
+				}
+			],
+			"spec": {
+				"armor": 750,
+				"beamBonus": 1,
+				"cost": {
+					"ironium": 19,
+					"boranium": 6,
+					"germanium": 12,
+					"resources": 49
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 9,
+					"fuelUsage": [0, 0, 20, 60, 100, 100, 105, 450, 750, 900, 1080]
+				},
+				"estimatedRange": 450,
+				"estimatedRangeFull": 450,
+				"fuelCapacity": 280,
+				"hasWeapons": true,
+				"hullType": "Fighter",
+				"shipClass": "Scout",
+				"initiative": 4,
+				"mass": 138,
+				"mineSweep": 48,
+				"movement": 5,
+				"movementBonus": 2,
+				"movementFull": 5,
+				"numBuilt": 5,
+				"numEngines": 1,
+				"numInstances": 5,
+				"powerRating": 44,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"techLevel": {
+					"energy": 5,
+					"weapons": 3,
+					"propulsion": 12,
+					"construction": 12
+				},
+				"torpedoBonus": 0.2,
+				"weaponSlots": [
+					{
+						"hullComponent": "X-Ray Laser",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "X-Ray Laser",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "X-Ray Laser",
+						"hullSlotIndex": 4,
+						"quantity": 1
+					}
+				]
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"num": 3,
+			"playerNum": 2,
+			"originalPlayerNum": 0,
+			"name": "Enemy bomber",
+			"version": 0,
+			"hull": "Mini Bomber",
+			"hullSetNumber": 0,
+			"slots": [
+				{
+					"hullComponent": "Long Hump 6",
+					"hullSlotIndex": 1,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Black Cat Bomb",
+					"hullSlotIndex": 2,
+					"quantity": 2
+				}
+			],
+			"spec": {
+				"armor": 50,
+				"beamBonus": 1,
+				"bomber": true,
+				"bombs": [
+					{
+						"quantity": 2,
+						"killRate": 0.9,
+						"minKillRate": 300,
+						"structureDestroyRate": 4
+					}
+				],
+				"cost": {
+					"ironium": 8,
+					"boranium": 11,
+					"germanium": 3,
+					"resources": 14
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 9,
+					"fuelUsage": [0, 0, 20, 60, 100, 100, 105, 450, 750, 900, 1080]
+				},
+				"estimatedRange": 209,
+				"estimatedRangeFull": 209,
+				"fuelCapacity": 120,
+				"hullType": "Bomber",
+				"shipClass": "Bomber",
+				"initiative": 0,
+				"mass": 127,
+				"movement": 3,
+				"movementFull": 3,
+				"numBuilt": 2,
+				"numEngines": 1,
+				"numInstances": 2,
+				"powerRating": 52,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"techLevel": {
+					"weapons": 5,
+					"propulsion": 3,
+					"construction": 1
+				}
+			}
+		}
+	],
+	"fleets": [
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 0,
+				"y": 20
+			},
+			"num": 1,
+			"playerNum": 1,
+			"name": "Guard-0",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 0,
+						"y": 20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Guard-0",
+			"fuel": 600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 1,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 700,
+				"cost": {
+					"ironium": 31,
+					"boranium": 134,
+					"germanium": 21,
+					"resources": 231
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 2405,
+				"fuelCapacity": 600,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 116,
+				"mineSweep": 10392,
+				"powerRating": 3895,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 700,
+				"baseCloakedCargo": 116,
+				"massEmpty": 116,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 12,
+				"y": 20
+			},
+			"num": 2,
+			"playerNum": 1,
+			"name": "Guard-1",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 12,
+						"y": 20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Guard-1",
+			"fuel": 600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 1,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 700,
+				"cost": {
+					"ironium": 31,
+					"boranium": 134,
+					"germanium": 21,
+					"resources": 231
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 2405,
+				"fuelCapacity": 600,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 116,
+				"mineSweep": 10392,
+				"powerRating": 3895,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 700,
+				"baseCloakedCargo": 116,
+				"massEmpty": 116,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 24,
+				"y": 20
+			},
+			"num": 3,
+			"playerNum": 1,
+			"name": "Guard-2",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 24,
+						"y": 20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Guard-2",
+			"fuel": 600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 1,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 700,
+				"cost": {
+					"ironium": 31,
+					"boranium": 134,
+					"germanium": 21,
+					"resources": 231
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 2405,
+				"fuelCapacity": 600,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 116,
+				"mineSweep": 10392,
+				"powerRating": 3895,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 700,
+				"baseCloakedCargo": 116,
+				"massEmpty": 116,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 36,
+				"y": 20
+			},
+			"num": 4,
+			"playerNum": 1,
+			"name": "Guard-3",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 36,
+						"y": 20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Guard-3",
+			"fuel": 600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 1,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 700,
+				"cost": {
+					"ironium": 31,
+					"boranium": 134,
+					"germanium": 21,
+					"resources": 231
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 2405,
+				"fuelCapacity": 600,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 116,
+				"mineSweep": 10392,
+				"powerRating": 3895,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 700,
+				"baseCloakedCargo": 116,
+				"massEmpty": 116,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 48,
+				"y": 20
+			},
+			"num": 5,
+			"playerNum": 1,
+			"name": "Guard-4",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 48,
+						"y": 20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Guard-4",
+			"fuel": 600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 1,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 700,
+				"cost": {
+					"ironium": 31,
+					"boranium": 134,
+					"germanium": 21,
+					"resources": 231
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 2405,
+				"fuelCapacity": 600,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 116,
+				"mineSweep": 10392,
+				"powerRating": 3895,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 700,
+				"baseCloakedCargo": 116,
+				"massEmpty": 116,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 60,
+				"y": 20
+			},
+			"num": 6,
+			"playerNum": 1,
+			"name": "Guard-5",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 60,
+						"y": 20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Guard-5",
+			"fuel": 600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 1,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 700,
+				"cost": {
+					"ironium": 31,
+					"boranium": 134,
+					"germanium": 21,
+					"resources": 231
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 2405,
+				"fuelCapacity": 600,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 116,
+				"mineSweep": 10392,
+				"powerRating": 3895,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 700,
+				"baseCloakedCargo": 116,
+				"massEmpty": 116,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 30,
+				"y": -20
+			},
+			"num": 7,
+			"playerNum": 1,
+			"name": "Light-0",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 30,
+						"y": -20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Light-0",
+			"fuel": 280,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 2,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 750,
+				"cost": {
+					"ironium": 21,
+					"boranium": 69,
+					"germanium": 14,
+					"resources": 135
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 950,
+				"fuelCapacity": 280,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 137,
+				"mineSweep": 5196,
+				"powerRating": 2109,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 137,
+				"massEmpty": 137,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 42,
+				"y": -20
+			},
+			"num": 8,
+			"playerNum": 1,
+			"name": "Light-1",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 42,
+						"y": -20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Light-1",
+			"fuel": 280,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 2,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 750,
+				"cost": {
+					"ironium": 21,
+					"boranium": 69,
+					"germanium": 14,
+					"resources": 135
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 950,
+				"fuelCapacity": 280,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 137,
+				"mineSweep": 5196,
+				"powerRating": 2109,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 137,
+				"massEmpty": 137,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 54,
+				"y": -20
+			},
+			"num": 9,
+			"playerNum": 1,
+			"name": "Light-2",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 54,
+						"y": -20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Light-2",
+			"fuel": 280,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 2,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 750,
+				"cost": {
+					"ironium": 21,
+					"boranium": 69,
+					"germanium": 14,
+					"resources": 135
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 950,
+				"fuelCapacity": 280,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 137,
+				"mineSweep": 5196,
+				"powerRating": 2109,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 137,
+				"massEmpty": 137,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 66,
+				"y": -20
+			},
+			"num": 10,
+			"playerNum": 1,
+			"name": "Light-3",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 66,
+						"y": -20
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Light-3",
+			"fuel": 280,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 2,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 750,
+				"cost": {
+					"ironium": 21,
+					"boranium": 69,
+					"germanium": 14,
+					"resources": 135
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 950,
+				"fuelCapacity": 280,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 137,
+				"mineSweep": 5196,
+				"powerRating": 2109,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 137,
+				"massEmpty": 137,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 20,
+				"y": 35
+			},
+			"num": 11,
+			"playerNum": 1,
+			"name": "Observer-0",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 20,
+						"y": 35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Observer-0",
+			"fuel": 50,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 20,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 445,
+				"fuelCapacity": 50,
+				"initiative": 0,
+				"mass": 22,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 22,
+				"massEmpty": 22,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 38,
+				"y": 35
+			},
+			"num": 12,
+			"playerNum": 1,
+			"name": "Observer-1",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 38,
+						"y": 35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Observer-1",
+			"fuel": 50,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 20,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 445,
+				"fuelCapacity": 50,
+				"initiative": 0,
+				"mass": 22,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 22,
+				"massEmpty": 22,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 56,
+				"y": 35
+			},
+			"num": 13,
+			"playerNum": 1,
+			"name": "Observer-2",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 56,
+						"y": 35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Observer-2",
+			"fuel": 50,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 20,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 445,
+				"fuelCapacity": 50,
+				"initiative": 0,
+				"mass": 22,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 22,
+				"massEmpty": 22,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 74,
+				"y": 35
+			},
+			"num": 14,
+			"playerNum": 1,
+			"name": "Observer-3",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 74,
+						"y": 35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Observer-3",
+			"fuel": 50,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 20,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 445,
+				"fuelCapacity": 50,
+				"initiative": 0,
+				"mass": 22,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 22,
+				"massEmpty": 22,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 92,
+				"y": 35
+			},
+			"num": 15,
+			"playerNum": 1,
+			"name": "Observer-4",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 92,
+						"y": 35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Observer-4",
+			"fuel": 50,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 20,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 445,
+				"fuelCapacity": 50,
+				"initiative": 0,
+				"mass": 22,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 22,
+				"massEmpty": 22,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 110,
+				"y": 35
+			},
+			"num": 16,
+			"playerNum": 1,
+			"name": "Observer-5",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 110,
+						"y": 35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Observer-5",
+			"fuel": 50,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 20,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 445,
+				"fuelCapacity": 50,
+				"initiative": 0,
+				"mass": 22,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 22,
+				"massEmpty": 22,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 128,
+				"y": 35
+			},
+			"num": 17,
+			"playerNum": 1,
+			"name": "Observer-6",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 128,
+						"y": 35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Observer-6",
+			"fuel": 50,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 20,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 445,
+				"fuelCapacity": 50,
+				"initiative": 0,
+				"mass": 22,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 22,
+				"massEmpty": 22,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 146,
+				"y": 35
+			},
+			"num": 18,
+			"playerNum": 1,
+			"name": "Observer-7",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 146,
+						"y": 35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Observer-7",
+			"fuel": 50,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 20,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 445,
+				"fuelCapacity": 50,
+				"initiative": 0,
+				"mass": 22,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 22,
+				"massEmpty": 22,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 0,
+				"y": 0
+			},
+			"num": 19,
+			"playerNum": 1,
+			"name": "Collector-0",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"targetType": "Planet",
+					"targetName": "Home",
+					"targetNum": 1,
+					"position": {
+						"x": 0,
+						"y": 0
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Collector-0",
+			"fuel": 2600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 4,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"orbitingPlanetNum": 1,
+			"spec": {
+				"armor": 150,
+				"cargoCapacity": 1200,
+				"cost": {
+					"ironium": 30,
+					"germanium": 26,
+					"resources": 76
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 8226,
+				"fuelCapacity": 2600,
+				"initiative": 0,
+				"mass": 147,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 350,
+				"baseCloakedCargo": 147,
+				"massEmpty": 147,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 0,
+				"y": 0
+			},
+			"num": 20,
+			"playerNum": 1,
+			"name": "Collector-1",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"targetType": "Planet",
+					"targetName": "Home",
+					"targetNum": 1,
+					"position": {
+						"x": 0,
+						"y": 0
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Collector-1",
+			"fuel": 2600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 4,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"orbitingPlanetNum": 1,
+			"spec": {
+				"armor": 150,
+				"cargoCapacity": 1200,
+				"cost": {
+					"ironium": 30,
+					"germanium": 26,
+					"resources": 76
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 8226,
+				"fuelCapacity": 2600,
+				"initiative": 0,
+				"mass": 147,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 350,
+				"baseCloakedCargo": 147,
+				"massEmpty": 147,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 0,
+				"y": 0
+			},
+			"num": 21,
+			"playerNum": 1,
+			"name": "Collector-2",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"targetType": "Planet",
+					"targetName": "Home",
+					"targetNum": 1,
+					"position": {
+						"x": 0,
+						"y": 0
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Collector-2",
+			"fuel": 2600,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 4,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"orbitingPlanetNum": 1,
+			"spec": {
+				"armor": 150,
+				"cargoCapacity": 1200,
+				"cost": {
+					"ironium": 30,
+					"germanium": 26,
+					"resources": 76
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 8226,
+				"fuelCapacity": 2600,
+				"initiative": 0,
+				"mass": 147,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 350,
+				"baseCloakedCargo": 147,
+				"massEmpty": 147,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 120,
+				"y": 0
+			},
+			"num": 1,
+			"playerNum": 2,
+			"name": "Bombarding",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"targetType": "Planet",
+					"targetName": "Front",
+					"targetNum": 2,
+					"position": {
+						"x": 120,
+						"y": 0
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Bombarding",
+			"fuel": 240,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 3,
+					"quantity": 2
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"orbitingPlanetNum": 2,
+			"spec": {
+				"armor": 100,
+				"bomber": true,
+				"bombs": [
+					{
+						"quantity": 4,
+						"killRate": 0.9,
+						"minKillRate": 300,
+						"structureDestroyRate": 4
+					}
+				],
+				"cost": {
+					"ironium": 16,
+					"boranium": 22,
+					"germanium": 6,
+					"resources": 28
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 209,
+				"fuelCapacity": 240,
+				"initiative": 0,
+				"mass": 254,
+				"powerRating": 104,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"baseCloakedCargo": 254,
+				"massEmpty": 254,
+				"purposes": {},
+				"totalShips": 2
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 120,
+				"y": 0
+			},
+			"num": 2,
+			"playerNum": 2,
+			"name": "Bomber escort",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"targetType": "Planet",
+					"targetName": "Front",
+					"targetNum": 2,
+					"position": {
+						"x": 120,
+						"y": 0
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Bomber escort",
+			"fuel": 560,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 2,
+					"quantity": 2
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"orbitingPlanetNum": 2,
+			"spec": {
+				"armor": 1500,
+				"cost": {
+					"ironium": 38,
+					"boranium": 12,
+					"germanium": 24,
+					"resources": 98
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 450,
+				"fuelCapacity": 560,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 276,
+				"mineSweep": 96,
+				"powerRating": 88,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 276,
+				"massEmpty": 276,
+				"purposes": {},
+				"totalShips": 2
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 35,
+				"y": -35
+			},
+			"num": 3,
+			"playerNum": 2,
+			"name": "Near raider",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 35,
+						"y": -35
+					},
+					"warpSpeed": 0
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Near raider",
+			"fuel": 280,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 2,
+					"quantity": 1
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 750,
+				"cost": {
+					"ironium": 19,
+					"boranium": 6,
+					"germanium": 12,
+					"resources": 49
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 450,
+				"fuelCapacity": 280,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 138,
+				"mineSweep": 48,
+				"powerRating": 44,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 138,
+				"massEmpty": 138,
+				"purposes": {},
+				"totalShips": 1
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 220,
+				"y": 20
+			},
+			"num": 4,
+			"playerNum": 2,
+			"name": "Incoming wing A",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 220,
+						"y": 20
+					},
+					"warpSpeed": 0
+				},
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 180,
+						"y": 0
+					},
+					"warpSpeed": 4,
+					"estFuelUsage": 30
+				},
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"targetType": "Planet",
+					"targetName": "Front",
+					"targetNum": 2,
+					"position": {
+						"x": 120,
+						"y": 0
+					},
+					"warpSpeed": 4,
+					"estFuelUsage": 39
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Incoming wing A",
+			"fuel": 1800,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 1,
+					"quantity": 3
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 2100,
+				"cost": {
+					"ironium": 237,
+					"boranium": 60,
+					"germanium": 99,
+					"resources": 261
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 1098,
+				"fuelCapacity": 1800,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 762,
+				"powerRating": 468,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 2100,
+				"baseCloakedCargo": 762,
+				"massEmpty": 762,
+				"purposes": {},
+				"totalShips": 3
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 220,
+				"y": -20
+			},
+			"num": 5,
+			"playerNum": 2,
+			"name": "Incoming wing B",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 220,
+						"y": -20
+					},
+					"warpSpeed": 0
+				},
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 180,
+						"y": 0
+					},
+					"warpSpeed": 4,
+					"estFuelUsage": 30
+				},
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"targetType": "Planet",
+					"targetName": "Front",
+					"targetNum": 2,
+					"position": {
+						"x": 120,
+						"y": 0
+					},
+					"warpSpeed": 4,
+					"estFuelUsage": 39
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Incoming wing B",
+			"fuel": 1800,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 1,
+					"quantity": 3
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 2100,
+				"cost": {
+					"ironium": 237,
+					"boranium": 60,
+					"germanium": 99,
+					"resources": 261
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": null
+				},
+				"estimatedRange": 1098,
+				"fuelCapacity": 1800,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 762,
+				"powerRating": 468,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 2100,
+				"baseCloakedCargo": 762,
+				"massEmpty": 762,
+				"purposes": {},
+				"totalShips": 3
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Fleet",
+			"position": {
+				"x": 160,
+				"y": -75
+			},
+			"num": 6,
+			"playerNum": 2,
+			"name": "Slow weak flank",
+			"waypoints": [
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"position": {
+						"x": 160,
+						"y": -75
+					},
+					"warpSpeed": 0
+				},
+				{
+					"targetPosition": {
+						"x": 0,
+						"y": 0
+					},
+					"targetType": "Planet",
+					"targetName": "Home",
+					"targetNum": 1,
+					"position": {
+						"x": 0,
+						"y": 0
+					},
+					"warpSpeed": 1
+				}
+			],
+			"planetNum": 0,
+			"baseName": "Slow weak flank",
+			"fuel": 560,
+			"age": 0,
+			"tokens": [
+				{
+					"designNum": 2,
+					"quantity": 2
+				}
+			],
+			"heading": {
+				"x": 0,
+				"y": 0
+			},
+			"spec": {
+				"armor": 1500,
+				"cost": {
+					"ironium": 38,
+					"boranium": 12,
+					"germanium": 24,
+					"resources": 98
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 9,
+					"fuelUsage": null
+				},
+				"estimatedRange": 450,
+				"fuelCapacity": 560,
+				"hasWeapons": true,
+				"initiative": 0,
+				"mass": 276,
+				"mineSweep": 96,
+				"powerRating": 88,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"baseCloakedCargo": 276,
+				"massEmpty": 276,
+				"purposes": {},
+				"totalShips": 2
+			}
+		}
+	],
+	"ownDesigns": [
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"num": 1,
+			"playerNum": 1,
+			"originalPlayerNum": 0,
+			"name": "Campaign cruiser",
+			"version": 0,
+			"hull": "Cruiser",
+			"hullSetNumber": 0,
+			"slots": [
+				{
+					"hullComponent": "Trans-Star 10",
+					"hullSlotIndex": 1,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Gorilla Delagator",
+					"hullSlotIndex": 2,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Gorilla Delagator",
+					"hullSlotIndex": 3,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Anti-Matter Pulverizer",
+					"hullSlotIndex": 4,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Anti-Matter Pulverizer",
+					"hullSlotIndex": 5,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Anti-Matter Pulverizer",
+					"hullSlotIndex": 6,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Gorilla Delagator",
+					"hullSlotIndex": 7,
+					"quantity": 2
+				}
+			],
+			"spec": {
+				"armor": 700,
+				"beamBonus": 1,
+				"cost": {
+					"ironium": 31,
+					"boranium": 134,
+					"germanium": 21,
+					"resources": 231
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": [0, 0, 5, 15, 20, 25, 30, 35, 40, 45, 50]
+				},
+				"estimatedRange": 2400,
+				"estimatedRangeFull": 2400,
+				"fuelCapacity": 600,
+				"hasWeapons": true,
+				"hullType": "Fighter",
+				"shipClass": "Warship",
+				"initiative": 5,
+				"mass": 116,
+				"mineSweep": 10392,
+				"movement": 8,
+				"movementFull": 8,
+				"numBuilt": 6,
+				"numEngines": 2,
+				"numInstances": 6,
+				"powerRating": 3895,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 700,
+				"techLevel": {
+					"energy": 14,
+					"weapons": 26,
+					"propulsion": 23,
+					"construction": 9
+				},
+				"weaponSlots": [
+					{
+						"hullComponent": "Anti-Matter Pulverizer",
+						"hullSlotIndex": 4,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Anti-Matter Pulverizer",
+						"hullSlotIndex": 5,
+						"quantity": 2
+					},
+					{
+						"hullComponent": "Anti-Matter Pulverizer",
+						"hullSlotIndex": 6,
+						"quantity": 2
+					}
+				]
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"num": 2,
+			"playerNum": 1,
+			"originalPlayerNum": 0,
+			"name": "Campaign destroyer",
+			"version": 0,
+			"hull": "Destroyer",
+			"hullSetNumber": 0,
+			"slots": [
+				{
+					"hullComponent": "Trans-Star 10",
+					"hullSlotIndex": 1,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Anti-Matter Pulverizer",
+					"hullSlotIndex": 2,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Anti-Matter Pulverizer",
+					"hullSlotIndex": 3,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Anti-Matter Pulverizer",
+					"hullSlotIndex": 4,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Neutronium",
+					"hullSlotIndex": 5,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Overthruster",
+					"hullSlotIndex": 6,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Battle Computer",
+					"hullSlotIndex": 7,
+					"quantity": 1
+				}
+			],
+			"spec": {
+				"armor": 750,
+				"beamBonus": 1,
+				"cost": {
+					"ironium": 21,
+					"boranium": 69,
+					"germanium": 14,
+					"resources": 135
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": [0, 0, 5, 15, 20, 25, 30, 35, 40, 45, 50]
+				},
+				"estimatedRange": 949,
+				"estimatedRangeFull": 949,
+				"fuelCapacity": 280,
+				"hasWeapons": true,
+				"hullType": "Fighter",
+				"shipClass": "Scout",
+				"initiative": 4,
+				"mass": 137,
+				"mineSweep": 5196,
+				"movement": 9,
+				"movementBonus": 2,
+				"movementFull": 9,
+				"numBuilt": 4,
+				"numEngines": 1,
+				"numInstances": 4,
+				"powerRating": 2109,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 520,
+				"scanRangePen": 260,
+				"techLevel": {
+					"energy": 5,
+					"weapons": 26,
+					"propulsion": 23,
+					"construction": 12
+				},
+				"torpedoBonus": 0.2,
+				"weaponSlots": [
+					{
+						"hullComponent": "Anti-Matter Pulverizer",
+						"hullSlotIndex": 2,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Anti-Matter Pulverizer",
+						"hullSlotIndex": 3,
+						"quantity": 1
+					},
+					{
+						"hullComponent": "Anti-Matter Pulverizer",
+						"hullSlotIndex": 4,
+						"quantity": 1
+					}
+				]
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"num": 3,
+			"playerNum": 1,
+			"originalPlayerNum": 0,
+			"name": "Campaign observer",
+			"version": 0,
+			"hull": "Scout",
+			"hullSetNumber": 0,
+			"slots": [
+				{
+					"hullComponent": "Fuel Mizer",
+					"hullSlotIndex": 1,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Peerless Scanner",
+					"hullSlotIndex": 2,
+					"quantity": 1
+				},
+				{
+					"hullComponent": "Peerless Scanner",
+					"hullSlotIndex": 3,
+					"quantity": 1
+				}
+			],
+			"spec": {
+				"armor": 20,
+				"beamBonus": 1,
+				"cost": {
+					"ironium": 9,
+					"boranium": 5,
+					"germanium": 57,
+					"resources": 171
+				},
+				"engine": {
+					"idealSpeed": 6,
+					"freeSpeed": 4,
+					"maxSafeSpeed": 9,
+					"fuelUsage": [0, 0, 0, 0, 0, 35, 120, 175, 235, 360, 420]
+				},
+				"estimatedRange": 442,
+				"estimatedRangeFull": 442,
+				"fuelCapacity": 50,
+				"hullType": "Scout",
+				"shipClass": "Scout",
+				"initiative": 1,
+				"mass": 22,
+				"movement": 4,
+				"movementFull": 4,
+				"numBuilt": 8,
+				"numEngines": 1,
+				"numInstances": 8,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRange": 667,
+				"scanRangePen": 260,
+				"techLevel": {
+					"energy": 7,
+					"propulsion": 2,
+					"electronics": 24
+				}
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"num": 4,
+			"playerNum": 1,
+			"originalPlayerNum": 0,
+			"name": "Campaign collector",
+			"version": 0,
+			"hull": "Large Freighter",
+			"hullSetNumber": 0,
+			"slots": [
+				{
+					"hullComponent": "Trans-Star 10",
+					"hullSlotIndex": 1,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Overthruster",
+					"hullSlotIndex": 2,
+					"quantity": 2
+				},
+				{
+					"hullComponent": "Gorilla Delagator",
+					"hullSlotIndex": 3,
+					"quantity": 2
+				}
+			],
+			"spec": {
+				"armor": 150,
+				"beamBonus": 1,
+				"cargoCapacity": 1200,
+				"cost": {
+					"ironium": 30,
+					"germanium": 26,
+					"resources": 76
+				},
+				"engine": {
+					"idealSpeed": 10,
+					"freeSpeed": 1,
+					"maxSafeSpeed": 10,
+					"fuelUsage": [0, 0, 5, 15, 20, 25, 30, 35, 40, 45, 50]
+				},
+				"estimatedRange": 8201,
+				"estimatedRangeFull": 897,
+				"fuelCapacity": 2600,
+				"hullType": "Freighter",
+				"shipClass": "Freighter",
+				"initiative": 0,
+				"mass": 147,
+				"movement": 10,
+				"movementBonus": 4,
+				"movementFull": 3,
+				"numBuilt": 3,
+				"numEngines": 2,
+				"numInstances": 3,
+				"reduceCloaking": 1,
+				"scanner": true,
+				"scanRangePen": -1,
+				"shields": 350,
+				"techLevel": {
+					"energy": 14,
+					"propulsion": 23,
+					"construction": 8
+				}
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"num": 5,
+			"playerNum": 1,
+			"originalPlayerNum": 0,
+			"name": "Campaign supply station",
+			"version": 0,
+			"hull": "Space Station",
+			"hullSetNumber": 0,
+			"slots": null,
+			"spec": {
+				"armor": 500,
+				"beamBonus": 1,
+				"cloakPercentFullCargo": -4611686018427387904,
+				"cost": {
+					"ironium": 30,
+					"boranium": 20,
+					"germanium": 62,
+					"resources": 150
+				},
+				"hullType": "Starbase",
+				"initiative": 14,
+				"mass": 0,
+				"maxPopulation": 1000000,
+				"numBuilt": 1,
+				"numInstances": 1,
+				"reduceCloaking": 1,
+				"repairBonus": 0.15,
+				"scanner": true,
+				"scanRangePen": -1,
+				"spaceDock": -1,
+				"starbase": true
+			}
+		}
+	],
+	"planets": [
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Planet",
+			"position": {
+				"x": 0,
+				"y": 0
+			},
+			"num": 1,
+			"playerNum": 1,
+			"name": "Home",
+			"hab": {
+				"grav": 50,
+				"temp": 50,
+				"rad": 50
+			},
+			"baseHab": {
+				"grav": 50,
+				"temp": 50,
+				"rad": 50
+			},
+			"mineralConcentration": {
+				"ironium": 100,
+				"boranium": 100,
+				"germanium": 100
+			},
+			"cargo": {
+				"ironium": 10000,
+				"boranium": 10000,
+				"germanium": 10000,
+				"colonists": 5000
+			},
+			"partialPopulation": 0,
+			"mines": 0,
+			"factories": 0,
+			"defenses": 0,
+			"scanner": true,
+			"spec": {
+				"hasStarbase": true,
+				"starbaseDesignName": "Campaign supply station",
+				"starbaseDesignNum": 5,
+				"dockCapacity": -1,
+				"defense": "Neutron Shield",
+				"growthAmount": 45370,
+				"habitability": 100,
+				"maxDefenses": 100,
+				"maxFactories": 500,
+				"maxMines": 500,
+				"maxPopulation": 1200000,
+				"maxPossibleFactories": 1200,
+				"maxPossibleMines": 1200,
+				"populationDensity": 0.4166666666666667,
+				"resourcesPerYear": 500,
+				"resourcesPerYearAvailable": 425,
+				"resourcesPerYearResearch": 75,
+				"resourcesPerYearResearchEstimatedLeftover": 500,
+				"scanner": "Snooper 620X",
+				"scanRange": 620,
+				"scanRangePen": 310,
+				"terraformedHabitability": 100
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Planet",
+			"position": {
+				"x": 120,
+				"y": 0
+			},
+			"num": 2,
+			"playerNum": 1,
+			"name": "Front",
+			"hab": {
+				"grav": 50,
+				"temp": 50,
+				"rad": 50
+			},
+			"baseHab": {
+				"grav": 50,
+				"temp": 50,
+				"rad": 50
+			},
+			"mineralConcentration": {
+				"ironium": 100,
+				"boranium": 100,
+				"germanium": 100
+			},
+			"cargo": {
+				"colonists": 2000
+			},
+			"partialPopulation": 0,
+			"mines": 0,
+			"factories": 0,
+			"defenses": 0,
+			"scanner": true,
+			"spec": {
+				"defense": "Neutron Shield",
+				"growthAmount": 30000,
+				"habitability": 100,
+				"maxDefenses": 100,
+				"maxFactories": 200,
+				"maxMines": 200,
+				"maxPopulation": 1200000,
+				"maxPossibleFactories": 1200,
+				"maxPossibleMines": 1200,
+				"populationDensity": 0.16666666666666666,
+				"resourcesPerYear": 200,
+				"resourcesPerYearAvailable": 170,
+				"resourcesPerYearResearch": 30,
+				"resourcesPerYearResearchEstimatedLeftover": 200,
+				"scanner": "Snooper 620X",
+				"scanRange": 620,
+				"scanRangePen": 310,
+				"terraformedHabitability": 100
+			}
+		},
+		{
+			"createdAt": "0001-01-01T00:00:00Z",
+			"updatedAt": "0001-01-01T00:00:00Z",
+			"type": "Planet",
+			"position": {
+				"x": 400,
+				"y": 0
+			},
+			"num": 3,
+			"playerNum": 2,
+			"name": "Enemy port",
+			"hab": {
+				"grav": 50,
+				"temp": 50,
+				"rad": 50
+			},
+			"baseHab": {
+				"grav": 50,
+				"temp": 50,
+				"rad": 50
+			},
+			"mineralConcentration": {
+				"ironium": 100,
+				"boranium": 100,
+				"germanium": 100
+			},
+			"cargo": {
+				"colonists": 2000
+			},
+			"partialPopulation": 0,
+			"mines": 0,
+			"factories": 0,
+			"defenses": 0,
+			"scanner": true,
+			"spec": {
+				"defense": "Neutron Shield",
+				"growthAmount": 30000,
+				"habitability": 100,
+				"maxDefenses": 100,
+				"maxFactories": 200,
+				"maxMines": 200,
+				"maxPopulation": 1200000,
+				"maxPossibleFactories": 1200,
+				"maxPossibleMines": 1200,
+				"populationDensity": 0.16666666666666666,
+				"resourcesPerYear": 200,
+				"resourcesPerYearAvailable": 170,
+				"resourcesPerYearResearch": 30,
+				"resourcesPerYearResearchEstimatedLeftover": 200,
+				"scanner": "Snooper 620X",
+				"scanRange": 620,
+				"scanRangePen": 310,
+				"terraformedHabitability": 100
+			}
+		}
+	]
+}

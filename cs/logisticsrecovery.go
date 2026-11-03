@@ -14,9 +14,11 @@ func (t *turnGenerator) currentLogisticsWork(p *Player, f *Fleet) *logisticsJob 
 	switch job.Kind {
 	case "salvage":
 		known := false
+		reused := false
 		for _, intel := range p.SalvageIntels {
 			if intel != nil && intel.Num == job.TargetNum && !intel.Delete && intel.Cargo.ToMineral().Total() > 0 {
-				known = true
+				known = intel.Position == job.Position
+				reused = !known
 				break
 			}
 		}
@@ -25,7 +27,10 @@ func (t *turnGenerator) currentLogisticsWork(p *Player, f *Fleet) *logisticsJob 
 			actual := t.game.getSalvage(job.TargetNum)
 			valid = valid && actual != nil && !actual.Delete && actual.Cargo.ToMineral().Total() > 0
 		}
-		if !valid {
+		if reused {
+			delete(f.Tags, "empty-salvage")
+		}
+		if !valid && !reused && f.Position == job.Position {
 			f.SetTag("empty-salvage", strconv.Itoa(job.TargetNum))
 		}
 	case "fleet":

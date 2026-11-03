@@ -16,9 +16,21 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			wp := fleet.Waypoints[1]
+			if player.Automation.FleetRoles[fleet.Num] == "scout" && wp.TargetType == MapObjectTypeFleet && wp.TargetPlayerNum != player.Num && !player.IsFriend(wp.TargetPlayerNum) {
+				job := readScoutRecon(fleet)
+				report := player.GetFleetIntel(wp.TargetPlayerNum, wp.TargetNum)
+				if job == nil || job.Watching || job.Enemy != wp.TargetPlayerNum || job.Target != wp.TargetNum || report == nil || report.Delete || report.ReportAge != 0 || !unknownFleetEquipment(player, report) {
+					holdAutomaticFleet(player, fleet, "Obsolete contact order cancelled; equipment or target report changed")
+					continue
+				}
+			}
 			if player.Automation.FleetRoles[fleet.Num] == "patrol" {
+				if !t.patrolDepartureConfirmed(player, fleet) {
+					holdAutomaticFleet(player, fleet, "Departure cancelled: reported encounter exceeds the confirmed combat force")
+					continue
+				}
 				job := readPatrolJob(fleet)
-				if enemy := patrolEnemy(player, job); job.Leader != 0 && enemy != nil && patrolNeedsRecon(player, enemy) && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() && !fundedEmergencyReturn(&t.game.Rules, player, fleet) && !knownWithdrawalRoute(player, fleet.Position, wp.Position) {
+				if enemy := patrolEnemy(player, job); job.Leader != 0 && enemy != nil && patrolNeedsRecon(player, enemy) && !provisionalPatrolLeg(player, fleet) && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() && !fundedEmergencyReturn(&t.game.Rules, player, fleet) && !knownWithdrawalRoute(player, fleet.Position, wp.Position) {
 					holdAutomaticFleet(player, fleet, "Waiting for scout equipment reconnaissance")
 					continue
 				}
@@ -32,6 +44,9 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 			}
 			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
 			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
+			if provisionalPatrolLeg(player, fleet) && !fleet.InAutomaticSafety() {
+				allowThreat = false
+			}
 			if fleet.GetTag(patrolFrontTag) != "" && readPatrolJob(fleet).Leader == 0 && !fleet.InAutomaticSafety() && !fundedEmergencyReturn(&t.game.Rules, player, fleet) {
 				allowThreat = false
 			}
@@ -53,6 +68,9 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 					reserve = networkReserve
 				}
 				if fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet) {
+					reserve = 0
+				}
+				if job := readScoutRecon(fleet); scoutReconActive(player, fleet) && job != nil && !job.Watching {
 					reserve = 0
 				}
 				if colonizationOneWay(player, fleet, wp) {

@@ -1,0 +1,268 @@
+PATROLE AUTONOMICZNE — RAPORT DO KOŃCOWEGO OMÓWIENIA
+2026-11-03. ETAP ANALIZY PRZEKAZANO DO CZATU WDROŻENIOWEGO.
+Potwierdzenie i aktualny dokument wejściowy: PATROL-HANDOFF-2026-11-03.txt.
+Dalsze historyczne wzmianki o braku przekazania opisują etap konsultacji.
+
+AKTUALIZACJA PRZEKAZANIA: etap analizy gotowy do wdrożenia; dokument
+wejściowy PATROL-HANDOFF-2026-11-03.txt rozdziela prototypy i pracę produkcyjną.
+Zachowuje również nowsze ustalenie użytkownika z czatu wdrożeniowego:
+małe nieznane grupy wolno atakować przy przewadze; zwiad obowiązkowy
+dotyczy grup od 8 statków. Ostrożniejsze RECON w naszych próbach było
+wariantem laboratoryjnym, a nie nakazem blokady wszystkich małych kontaktów.
+
+Najnowsze uzupełnienie: sekcja 9 i PATROL-CAMPAIGN-REPORT-2026-11-03.txt
+zawierają pełne kampanie oraz nowe ustalenia o transporterach i scoutach.
+
+Najważniejszy wniosek
+Najpierw dopasować skład i plan walki, potem dopiero zwiększać grupę.
+Korekta po konsultacji: koncentracja Z NADMIAROWĄ SIŁĄ może już trwać
+równolegle z rozpoznaniem. Po skanie można zwolnić część okrętów albo
+utrzymać większy skład, jeśli ogranicza straty, uszkodzenia i czas napraw.
+Minimum wystarczające do zwycięstwa nie jest automatycznie optimum misji.
+Brak rozpoznania ogranicza zgodę na atak, nie rozpoczęcie zbiórki.
+
+1. Co rzeczywiście przetestowano
+Wszystkie nowe projekty złożono bez gotowych projektów okrętów, z katalogu
+komponentów. Pełne Validate sprawdza kadłub, sloty i dostępność dla testowego
+JoaT+IFE przy technologiach 26. To konfiguracja laboratoryjna, nie zapis gracza.
+
+Nowe badanie obejmuje cztery dostępne pule trzech różnych projektów,
+z maksymalnie trzema okrętami każdego projektu. Wśród projektów są Scout,
+Privateer, Destroyer, Cruiser i Nubian; przeciwnik ma mieszanki Destroyer/
+Cruiser albo Battleship/Scout. Jeden projekt wsparcia zmodyfikowano legalnie
+o Pulsed Sapper, zachowując pozostałe uzbrojenie. Formacje wroga liczą
+odpowiednio 2+2, 2+6, 4+4 i 4+10 okrętów.
+
+Każdą pulę sprawdzono przy trzech stanach wiedzy: oba projekty rozpoznane,
+jeden nierozpoznany i oba nierozpoznane. Łącznie 12 stanów decyzji.
+Raport nierozpoznanego projektu przekazuje wyłącznie kadłub; liczebność
+stosów jest obserwowana osobno. Nie przekazuje slotów, specyfikacji, nazw
+ani prywatnych wskaźników do rzeczywistych projektów.
+
+Cztery warianty własnej taktyki: automatyczny dobór osobno dla stosów,
+MaximizeDamage, MaximizeRange i MinimizeDamageToSelf.
+Pięć taktyk wroga: MaximizeDamage, MaximizeRange, Disengage,
+MinimizeDamageToSelf i DisengageIfChallenged.
+Jawne plany mają niedomyślny numer; raport KAŻDEGO stosu potwierdza
+faktycznie zastosowaną taktykę. To istotne: plan domyślny może zostać
+zastąpiony przez mechanizm automatycznego doboru taktyki do uzbrojenia.
+Wczesna próba z numerem 0 nie służy jako dowód działania jawnych planów.
+
+Oddzielny test utrzymuje trzy ustalone, rzeczywiście mieszane własne
+składy w dwóch pulach: 120 kombinacji składów i taktyk, 3840 bitew
+na ziarnach 4000..4031. Nie dobiera się im grupy po obejrzeniu wyniku.
+
+2. Dobór bez nadmiernej koncentracji
+Dla każdej puli rozważono wszystkie 63 niepuste składy (0..3 każdego
+projektu) i cztery własne plany. Kolejność: rosnący koszt zaangażowanych
+jednostek, następnie ich liczba. Koszt referencyjny to zasoby + minerały
+z równymi wagami; nie jest to jeszcze wycena niedoborów w żywej gospodarce.
+
+Krótki screening może odrzucić wykazaną porażkę/ucieczkę przeciwnika,
+ale nie zawyża grupy z powodu średniej z zaledwie czterech pechowych strat.
+Pełne potwierdzenie: 64 ziarna 0..63 dla każdego modelu wroga i każdej
+z pięciu jego taktyk. Wymagania: zniszczenie celu, brak zagłady własnej
+grupy, średni koszt zniszczonych własnych okrętów do 25% zaangażowanego.
+
+Nie ma stałego mnożnika +25% okrętów. Po wyborze dodatkowo sprawdza się
+usunięcie jednego okrętu każdego obecnego typu przy ponownym doborze planu.
+Żaden taki zbędny okręt nie pozostał w wybranych grupach.
+Minimum dotyczy badanego zbioru składów, planów i kryterium 64 prób;
+nie oznacza absolutnego minimum we wszystkich możliwych flotach.
+
+Zewnętrzna kontrola używa dwóch oddzielnych zakresów 3000..3031 oraz
+5000..5031, obu stron graczy. Składy i plany wybierane są wcześniej.
+
+3. Wynik dla znanego wyposażenia
+W dwóch z czterech rozpoznanych sytuacji znaleziono dopuszczalną grupę.
+Obie miały po dwa okręty. W 640 zewnętrznych bitwach kontrolnych
+zniszczyły przeciwnika, bez całkowitej utraty własnej grupy i bez ucieczki
+przeciwnika. Średni koszt strat: około 0,31% i 0% odpowiednio.
+To nie jest twierdzenie o braku pojedynczych strat ani gwarancja kampanijna.
+
+Pierwsza pula: plan MaximizeDamage wymagał 2 okrętów, automatyczny lub
+MaximizeRange po 3. Dla planu MinimizeDamageToSelf nie znaleziono grupy
+w dostępnej puli spełniającej wszystkie wymagania.
+Druga pula: automatyczny/MaximizeDamage po 2, MaximizeRange 3,
+MinimizeDamageToSelf 7. Zmiana taktyki oszczędza więc więcej niż sam
+mechaniczny dobór dodatkowych statków.
+
+Stałe powiększenie wybranych dwójek o 25%, po zaokrągleniu, wymagałoby
+trójek: +50% liczby i kosztu. To zbędny zapas w tych konkretnych próbach.
+
+Pozostałe dwie rozpoznane sytuacje nie otrzymały zgody w badanej puli.
+Nie oznacza to, że przeciwnik jest niezwyciężony. Potrzebna może być inna
+broń, geometria przechwycenia, termin lub większa dostępna siła. Nie wolno
+mylić nieudanego poszukiwania składu z dowodem, że należy bez końca zbierać.
+
+4. Wynik dla nieznanego wyposażenia
+Z samych raportów wygenerowano po trzy legalne hipotezy. Rzeczywisty ukryty
+projekt i dwie dodatkowe konfiguracje (warianty 90/91) są używane dopiero
+po wyborze grupy, jako kontrola. Test izolacji potwierdza, że zmiana ukrytych
+slotów/nazwy przy niezmienionym raporcie nie zmienia modeli planistycznych.
+
+W siedmiu z ośmiu niepełnie rozpoznanych sytuacji nie znaleziono składu
+przechodzącego modelowe próby. W ósmej model zasugerował 7 okrętów.
+Ta siódemka przeszła próby wyboru, lecz w 960 zewnętrznych bitwach
+kontrolnych dwa razy pozwoliła przeciwnikowi uciec. Obie ucieczki wystąpiły
+przy nowej konfiguracji spoza modelowego zestawu i planie Disengage.
+Żadnej z tych hipotetycznych bitew nie zaliczono jako zniszczenia celu.
+
+Dla rzeczywiście rozpoznanego wyposażenia tej samej sytuacji wystarczały 2
+okręty do kryterium zwycięstwa/strat zniszczonych jednostek. Po skanie
+można więc zwolnić część wcześniej zebranej siódemki ALBO utrzymać
+nadwyżkę dla ograniczenia uszkodzeń. Sama ta próba nie porównywała jeszcze
+uszkodzeń ocalałych — uzupełnienie w sekcji 8. Dalsze dodanie 25% do
+siódemki wymagałoby aż 10; takiego dodatku nie stosuje się bez oceny korzyści.
+
+Wynik niepełnego rozpoznania ma status RECON, nigdy ATTACK na podstawie
+samych trzech próbkowanych hipotez. To 960 hipotetycznych prób kontrolnych,
+a nie 960 dozwolonych ataków. Użyteczny, ścisły zakres niepewności mógłby
+w przyszłości uzasadniać wyjątek, ale próbka możliwych projektów go nie zastąpi.
+
+5. Co pokazują ustalone floty mieszane
+W 3840 celowo sztywnych próbach: 839 całkowitych utrat własnej grupy,
+1314 niepełnych zniszczeń celu, w tym 377 prób z ucieczką przeciwnika.
+To wyniki mieszanki także złych składów i taktyk, NIE statystyka strat
+grup wybranych przez algorytm.
+
+Przykład: dwie jednostki drugiego projektu i jedna trzeciego w pierwszej
+puli przeciw tej samej formacji. Przy planie MaximizeDamage zniszczyły
+przeciwnika we wszystkich 160 próbach obejmujących pięć jego planów.
+Przy MinimizeDamageToSelf i uciekającym przeciwniku cel uciekł w 32/32.
+Taktyka potrafi być przyczyną niepowodzenia mimo identycznego składu.
+Punkty poszczególnych okrętów nie powinny być bezrefleksyjnie sumowane:
+liczą się wzajemne wsparcie, wybór celów, dystans i rozdzielenie stosów.
+
+6. Proponowana reguła do wdrożenia po konsultacji
+1) Wyznacz dostępne jednostki i realne okno wspólnego ataku. Nie rezerwuj
+   z góry wszystkich pobliskich okrętów i nie przerywaj chronionych zadań.
+2) Brak ważnego wyposażenia -> pilny scout ORAZ wstępna koncentracja
+   z rezerwą, jeśli pomaga zdążyć na atak. Punkt zbiórki ma być bezpieczny
+   według aktualnych raportów; hipotetyczna siła nie upoważnia do ataku.
+3) Dla rozpoznanego celu porównaj składy RAZEM z planami walki i realnymi
+   posiłkami lecącymi na cel. Ręcznie wybrany plan gracza pozostaje wiążący;
+   automatyczny dobór dotyczy jednostek oddanych automatyce.
+4) Po rozpoznaniu porównaj minimum do zwycięstwa z większymi składami
+   ograniczającymi uszkodzenia. Zwolnij część jednostek albo zachowaj je,
+   zależnie od marginalnej korzyści, paliwa, czasu i pozostałych zadań.
+   Sprawdź też zmianę planu. Nie stosuj stałego procentu jako ostatecznej
+   decyzji i nie czekaj na dalekie wsparcie o małej korzyści.
+5) Zbiórka minimalizuje czas do wspólnego ataku, nie średnią pozycji flot.
+   Wcześniej potwierdzono natywny przykład 6 -> 4 tury.
+6) Gdy wróg ucieka, oddziel problem skuteczności przechwycenia od siły
+   ognia. Przelicz geometrię/szybkość, utrzymuj śledzenie; nie żądaj
+   automatycznie kolejnego podwojenia grupy.
+7) Po utracie słabego, powolnego celu zachowaj pamięć i szukaj scoutem.
+   Po odnowieniu kontaktu oceniaj świeży skład. Po potwierdzonej destrukcji
+   zbieraj rzeczywiste debris, bez blokowania transportów na wieczne rezerwacje.
+
+Pozostają przyjęte wymagania: koncentracja przeciw dużym niebezpiecznym
+flotom ma pierwszeństwo przed sztywną obsadą sektorów; kolonie bez baz
+mogą kotwiczyć patrole ze sprawnym ruchem bez paliwa; paliwo służy zrywom,
+ucieczkom i tanim przelotom, a na potwierdzony dolot do tankowania można
+zużyć całość. Wspólna kolejka pilności rozdziela równolegle zadania scoutom,
+grupom bojowym i kolektorom. Nie korzysta z ukrytych rozkazów wroga.
+
+7. Granice i status
+To nadal prototyp offline, bez podłączenia do generowania tur. Nie zmieniono
+tej rozgrywki ani jej zapisu. Nie przekazano raportu do drugiego czatu.
+Macierz nie obejmuje wszystkich ras, technologii, chaffu, flot z ładunkiem,
+uszkodzeń przed bitwą ani wszystkich geometrii. Wycena strat nie dolicza
+czasu napraw i kosztu uszkodzeń ocalałych; ma być rozszerzona przed wdrożeniem.
+Nie dowiedziono, że nieznane wyposażenie można niezawodnie odgadnąć.
+Potrzebne są limity kosztu obliczeń, cache z pełnym kluczem, bezpieczny
+podział realnych stosów i przeliczenie paliwa/ETA dla wybranego składu.
+
+Dowody:
+- cs/patrolmixedproposal_test.go — dobór, próby, izolacja raportów, taktyki.
+- docs/PATROL-MIXED-DESIGNS-2026-11-03.json — projekty z komponentów.
+- docs/PATROL-MIXED-RESULTS-2026-11-03.txt — wyniki doboru i kontroli.
+- docs/PATROL-MIXED-FIXED-2026-11-03.csv — 120 ustalonych kombinacji.
+- docs/PATROL-ALGORITHM-DRAFT-2026-11-03.txt — pełne wcześniejsze wymagania.
+
+Weryfikacja końcowa: trzy nowe testy tego badania przechodzą; pełny go test ./cs -count=1 PASS, 54.012 s. Zapisano wszystkie 120 wierszy ustalonych składów oraz manifest czterech pul. Zmiany niniejszego badania dotyczą wyłącznie testów i dokumentacji; integracja i przekazanie pozostają osobnym etapem po konsultacji.
+
+8. KONCENTRACJA PRZED ZWIADEM I STAN OCALAŁYCH — NAJNOWSZA KOREKTA
+Użytkownik dopuszcza nadmiarową koncentrację przed rozpoznaniem. Po skanie
+decyzja nie sprowadza się do wybrania najmniejszej liczby okrętów.
+Przygotuj kilka wariantów: wystarczający do zwycięstwa, ze wsparciem
+ograniczającym uszkodzenia, oraz pozostały już zebrany skład. Wybieraj
+na podstawie łącznych skutków i szans wykonania innych pilnych zadań.
+Wartość rezerwy jest sytuacyjna, nie domyślnie zerowa ani zawsze dodatnia.
+
+Nowy test mierzy KOŃCOWE uszkodzenia pancerza żywych okrętów; nie sumuje
+trafień w regenerujące się tarcze i nie liczy drugi raz zniszczonych kadłubów.
+Obrażenia ocalałych przelicza również na umowny ekwiwalent wartości kadłuba:
+koszt projektu razy utracona część pancerza razy liczba uszkodzonych ocalałych.
+To wskaźnik utraconej gotowości, a NIE rzeczywista opłata za naprawę.
+Nie zastępuje jeszcze prognozy tur napraw według miejsca i dostępnych baz.
+
+3840 nowych bitew: dwie sytuacje, po sześć składów, pięć planów wroga,
+64 nowe ziarna 6000..6063 z zamianą stron graczy. Wszystkie te warianty
+zniszczyły cel, bez całkowitej utraty własnej grupy.
+
+Największe zaobserwowane uszkodzenie pojedynczego ocalałego okrętu:
+                2 okręty   3 okręty   4 okręty   6 okrętów
+Pierwsza pula:    81,71%     35,29%     23,00%     13,29%
+Druga pula:       86,40%     42,80%     21,40%     14,60%
+To maksima w próbach, nie średnie, przed naprawami po bitwie.
+
+W pierwszej puli umowny ekwiwalent uszkodzeń ocalałych maleje średnio
+313,07 -> 199,32 -> 138,90 -> 64,76. W drugiej:
+867,15 -> 716,73 -> 477,68 -> 469,02. Zatem większy skład może zmniejszyć
+nawet BEZWZGLĘDNĄ sumę szkód, a nie tylko rozdzielić tę samą szkodę
+na więcej okrętów. W drugiej puli przejście 4 -> 6 daje już niewielką
+poprawę średniej sumy szkód, chociaż poprawia najgorszy stan jednostki.
+Dołożenie innego, słabszego typu nie zawsze daje tę samą korzyść:
+w pierwszej puli niektóre większe mieszanki zaczęły tracić te jednostki.
+
+Prototyp porównania marginalnego zestawia spadek oczekiwanych strat
+i ekwiwalentu uszkodzeń z kosztem innych zadań wsparcia. Gdy ten koszt
+jest zerowy i bitwa pozostaje skuteczna, dodatnia poprawa uzasadnia
+zachowanie nadwyżki. Gdy koszt przekracza poprawę, wsparcie jest zwalniane.
+Test sprawdza obie strony tej decyzji na rzeczywistych wynikach bitew;
+nie ustanawia jeszcze arbitralnych wag całej gospodarki gry.
+
+Wspólna kolejka potrafi przydzielić jednocześnie scoutowi kontakt,
+a jednostce bojowej wstępną zbiórkę dla tego samego celu. Oddzielone są
+uprawnienia do zbiórki i ataku. Po nowym raporcie odświeża się ocenę,
+skład, plan, paliwo i przydziały; nie odwołuje całej koncentracji tylko
+dlatego, że minimum jest mniejsze. Dane: PATROL-RESERVE-RESULTS-2026-11-03.txt.
+Testy: cs/patrolreserveproposal_test.go. Nadal prototyp offline, bez handoffu.
+
+Weryfikacja uzupełnienia sekcji 8: testy rezerwy i pełny pakiet cs PASS, 51.389 s. Historyczne wyniki minimum odnoszą się do ówczesnego kryterium zwycięstwa i strat zniszczonych jednostek; nie uzasadniają obowiązkowego rozpuszczania nadwyżki po skanie.
+
+9. PEŁNE TURY KAMPANII — NAJNOWSZE UZUPEŁNIENIE
+Zgodnie z instrukcją przetestowano obronę własnego pasa Home–Front
+z rzeczywistymi skanerami planet i ośmioma scoutami. Sześć przebiegów
+tej samej sztucznej sytuacji po 12 pełnych tur: 72 tury, bez osobistych zapisów.
+21 własnych jednostek, 13 wrogich w 6 flotach; aktywne bombardowanie,
+najbliższy rajder, wolna flanka, nadlatujące grupy, ich Merge i wariant SplitAll.
+
+Bez podziału wroga: oczyszczenie z modelowanej armii w turze 6,
+1 utracony scout, brak strat własnych okrętów bojowych/transporterów.
+Kolektor bierze udział w bitwie z planem Disengage i rzeczywiście porusza
+się na planszy od przeciwnika. Ładuje 198 kT w turze 7, dostarcza je
+w 8. Łączne dostawy szczątków: 208 kT. Bitwa nad własną planetą oddaje
+minerały bezpośrednio kolonii, więc tam nie potrzeba kolektora do ich odzysku.
+
+Z podziałem na sześć celów: oczyszczenie w turze 7, 2 utracone scouty,
+brak strat okrętów bojowych/transporterów, ale tylko 14 kT dostaw.
+Kolektor obecny na polu 33 kT nie dostaje skutecznego zadania odbioru.
+Izolowana sonda na kopii stanu ładuje te 33 kT przez natywny mechanizm;
+to konkretna luka koordynacji do poprawy, bez poprawiania wyniku kampanii.
+Drugi scout ginie po zmianie/ponownym użyciu numeru celu, gdy wyposażenie
+tego typu jest już znane — cykl życia misji wymaga sprawdzenia.
+
+Priorytet użytkownika: aktualnie bombardujący, potem zbliżający się;
+możliwe równoległe szybkie usuwanie bliższych celów. Kontakt utrzymują
+istniejące skanery; specjalny scout potrzebny do wyposażenia/obszaru
+poza pokryciem. W kampanii wszystkie żywe okręty były stale w raportach.
+Jedno bombardowanie w turze 1 kosztowało 8300 kolonistów mimo późniejszego
+wzrostu populacji. Nie wykazano, że to opóźnienie było konieczne.
+
+Są to kampanie OBECNEJ automatyki z kodu źródłowego. Nowy symulator
+doboru siły/planów pozostaje offline; nie jest to jego test end-to-end.
+Pełne wyniki i ograniczenia w PATROL-CAMPAIGN-REPORT-2026-11-03.txt.
+Nie przekazano raportu do innego czatu ani nie zmieniono osobistej gry.

@@ -164,6 +164,9 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			}
 			group := convoyMembers(player, fleet, t.game.getFleets(player.Num))
 			if len(fleet.Waypoints) < 2 {
+				if fleet.GetTag(anticipatedSalvageTag) != "" {
+					continue
+				}
 				if len(fleet.Waypoints) > 0 && colonizationOneWay(player, fleet, fleet.Waypoints[0]) {
 					continue
 				}
@@ -201,6 +204,16 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			}
 			if fleet.GetTag(patrolFrontTag) != "" && readPatrolJob(fleet).Leader == 0 && !fleet.InAutomaticSafety() {
 				policy = economicalContainmentPolicy(player, fleet, fleet.Position.DistanceTo(goal.Position))
+			}
+			if job := readPatrolJob(fleet); job.Provisional && job.Leader != 0 && goal.Position == job.Rally && !fleet.InAutomaticSafety() {
+				policy = automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: 20}
+			}
+			if job := readScoutRecon(fleet); scoutReconActive(player, fleet) && job != nil && !job.Watching && !fleet.InAutomaticSafety() {
+				policy = automaticRoutePolicy{AllowThreat: true, Fast: true, OneWay: true, MaxTurns: 8, MinWarp: automaticCruiseWarp(player, fleet)}
+			}
+			if job := logisticsWork(fleet); job != nil && job.Kind == "salvage" && !fleet.InAutomaticSafety() {
+				policy.Fast = true
+				policy.MaxTurns = 5
 			}
 			// Include cargo that a waypoint-zero loading order may add before movement.
 			budgets := make([]*Fleet, len(group))

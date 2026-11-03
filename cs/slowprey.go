@@ -163,6 +163,9 @@ func (t *turnGenerator) planSlowPreyObservers() {
 	for _, p := range t.automaticPlayers() {
 		used := map[int]bool{}
 		for _, enemy := range t.slowPreyTargets(p) {
+			if !unknownFleetEquipment(p, enemy) && reportedContactCovered(p, t.game.getFleets(p.Num), enemy) {
+				continue
+			}
 			firstSlot := 0
 			for _, f := range t.game.getFleets(p.Num) {
 				if job := readScoutRecon(f); !f.Delete && scoutReconActive(p, f) && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && job.Target == enemy.Num {
@@ -180,9 +183,6 @@ func (t *turnGenerator) planSlowPreyObservers() {
 						continue
 					}
 					if existing := readScoutRecon(f); existing != nil && !existing.Watching {
-						continue
-					}
-					if t.planPriorityColonyRecon(p, f) {
 						continue
 					}
 					rangeAvailable := scoutFleetScanRadius(f, enemy)

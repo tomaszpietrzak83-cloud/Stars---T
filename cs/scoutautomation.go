@@ -65,6 +65,30 @@ func (t *turnGenerator) planScoutAutomation() {
 	for _, player := range t.automaticPlayers() {
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
+		if player.patrolEvaluator != nil {
+			// Give contact duties to the available scouts with the shortest public
+			// travel estimate; funded native routes are still required per task.
+			var first *Fleet
+			for _, task := range player.patrolQueue {
+				if task.Kind == "recon" {
+					first = player.GetFleetIntel(task.Enemy, task.Target)
+					break
+				}
+			}
+			if first != nil {
+				slices.SortStableFunc(fleets, func(a, b *Fleet) int {
+					ta := a.Position.DistanceTo(first.Position) / max(1, a.StrategicSpeed(automaticMaxWarp(player, a)))
+					tb := b.Position.DistanceTo(first.Position) / max(1, b.StrategicSpeed(automaticMaxWarp(player, b)))
+					if ta < tb {
+						return -1
+					}
+					if ta > tb {
+						return 1
+					}
+					return a.Num - b.Num
+				})
+			}
+		}
 		claimed := map[int]int{}
 		active := 0
 		unknown := 0
@@ -94,10 +118,13 @@ func (t *turnGenerator) planScoutAutomation() {
 				continue
 			}
 
-			if !scoutHasRetirement(player, fleet) && t.planPriorityColonyRecon(player, fleet) {
+			if !scoutHasRetirement(player, fleet) && t.planScoutRecon(player, fleet) {
 				continue
 			}
-			if !scoutHasRetirement(player, fleet) && t.planScoutRecon(player, fleet) {
+			if !scoutHasRetirement(player, fleet) && t.planLostPatrolSearch(player, fleet) {
+				continue
+			}
+			if !scoutHasRetirement(player, fleet) && t.planPriorityColonyRecon(player, fleet) {
 				continue
 			}
 			if t.planScannerExploration(player, fleet, claimed, quota) {

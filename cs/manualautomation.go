@@ -9,6 +9,7 @@ import (
 // borrowed manual mission, and preserves cargo, notes and committed building work.
 func (p *Player) TakeManualControl(f *Fleet) {
 	restoreCollectionBattlePlan(p, f, true)
+	restorePatrolBattlePlan(p, f)
 	var borrowed bomberBorrow
 	if json.Unmarshal([]byte(f.GetTag(bomberBorrowTag)), &borrowed) == nil && borrowed.Role == "" && p.Automation.FleetRoles[f.Num] == "escort" && len(borrowed.Orders.Waypoints) > 0 {
 		f.FleetOrders = borrowed.Orders

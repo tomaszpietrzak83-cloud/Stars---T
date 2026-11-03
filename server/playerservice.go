@@ -188,6 +188,7 @@ func (s *playerService) UpdatePlayerOrders(ctx context.Context, req *connect.Req
 	orders := converter.C.ConvertPlayerOrders(req.Msg.Orders)
 	// Family history is created atomically by the design Upgrade action.
 	orders.Automation.DesignFamilies = player.Automation.DesignFamilies
+	orders.Automation.PatrolMemory = player.Automation.PatrolMemory
 	designs, err := dbClient.GetShipDesignsForPlayer(ctx, game.ID, player.Num)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("load ship designs"))

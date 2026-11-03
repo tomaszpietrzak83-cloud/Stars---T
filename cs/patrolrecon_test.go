@@ -43,7 +43,7 @@ func TestUnknownConvergingFleetBlocksKnownTargetAttack(t *testing.T) {
 	unknown := patrolTestEnemy(0)
 	unknown.Tokens = []ShipToken{{DesignNum: 9999, Quantity: 8}}
 	unknown.Num = 92
-	unknown.Position = Vector{70, 0}
+	unknown.Position = Vector{66, 0}
 	unknown.WarpSpeed = 6
 	unknown.Heading = VectorFloat64{-1, 0}
 	p.FleetIntels = []*Fleet{target, unknown}

@@ -1,0 +1,23 @@
+RESERVE pool=0 counts=[0 2 0] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=313.0709 mean_damaged_ships=1.9438 worst_ship_damage=0.8171
+RESERVE pool=0 counts=[0 3 0] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=199.3215 mean_damaged_ships=2.6344 worst_ship_damage=0.3529
+RESERVE pool=0 counts=[0 4 0] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=138.8977 mean_damaged_ships=3.0000 worst_ship_damage=0.2300
+RESERVE pool=0 counts=[0 6 0] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=64.7595 mean_damaged_ships=2.5125 worst_ship_damage=0.1329
+RESERVE pool=0 counts=[0 2 1] trials=320 wiped=0 unfinished=0 mean_loss=63.4531 mean_damage_equivalent=198.3461 mean_damaged_ships=2.1375 worst_ship_damage=0.9815
+RESERVE pool=0 counts=[1 2 1] trials=320 wiped=0 unfinished=0 mean_loss=100.5312 mean_damage_equivalent=176.6923 mean_damaged_ships=2.0375 worst_ship_damage=0.9815
+RESERVE_DECISION pool=0 option=1 avoided_damage_equivalent=113.7494 keep_if_idle=true
+RESERVE_DECISION pool=0 option=2 avoided_damage_equivalent=174.1731 keep_if_idle=true
+RESERVE_DECISION pool=0 option=3 avoided_damage_equivalent=248.3114 keep_if_idle=true
+RESERVE_DECISION pool=0 option=4 avoided_damage_equivalent=51.2717 keep_if_idle=true
+RESERVE_DECISION pool=0 option=5 avoided_damage_equivalent=35.8474 keep_if_idle=true
+RESERVE pool=1 counts=[0 2 0] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=867.1467 mean_damaged_ships=2.0000 worst_ship_damage=0.8640
+RESERVE pool=1 counts=[0 3 0] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=716.7332 mean_damaged_ships=3.0000 worst_ship_damage=0.4280
+RESERVE pool=1 counts=[0 4 0] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=477.6831 mean_damaged_ships=4.0000 worst_ship_damage=0.2140
+RESERVE pool=1 counts=[0 6 0] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=469.0156 mean_damaged_ships=6.0000 worst_ship_damage=0.1460
+RESERVE pool=1 counts=[0 2 1] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=861.6156 mean_damaged_ships=2.0000 worst_ship_damage=0.8680
+RESERVE pool=1 counts=[1 2 1] trials=320 wiped=0 unfinished=0 mean_loss=0.0000 mean_damage_equivalent=778.5923 mean_damaged_ships=2.0938 worst_ship_damage=0.8280
+RESERVE_DECISION pool=1 option=1 avoided_damage_equivalent=150.4135 keep_if_idle=true
+RESERVE_DECISION pool=1 option=2 avoided_damage_equivalent=389.4636 keep_if_idle=true
+RESERVE_DECISION pool=1 option=3 avoided_damage_equivalent=398.1311 keep_if_idle=true
+RESERVE_DECISION pool=1 option=4 avoided_damage_equivalent=5.5311 keep_if_idle=true
+RESERVE_DECISION pool=1 option=5 avoided_damage_equivalent=88.5544 keep_if_idle=true
+STAGING: scout and provisional combat gathering assigned concurrently; attack remains pending fresh reconnaissance
