@@ -7,7 +7,7 @@ import (
 )
 
 func (t *turnGenerator) productionMinerals(player *Player, planet *Planet, shipsOnly bool) Mineral {
-	need := manufacturingStockTarget(&t.game.Rules, player, planet).Add(t.incomingRebuildMinerals(player, planet))
+	need := manufacturingWorkStock(&t.game.Rules, player, planet).Add(t.incomingRebuildMinerals(player, planet))
 	calculator := newProducer(t.log, &t.game.Rules, planet, player)
 	for _, item := range planet.ProductionQueue {
 		if item.Type == QueueItemTypeShipToken && player.DesignMaintenance[item.DesignNum] != 0 {
@@ -34,7 +34,7 @@ func (t *turnGenerator) productionMinerals(player *Player, planet *Planet, ships
 			need = need.Add(remaining.ToMineral())
 		}
 	}
-	return need
+	return need.Max(automaticBaseMineralStock(planet))
 }
 
 // Exports only stock beyond a source's own committed production. Destinations
@@ -74,7 +74,7 @@ func (t *turnGenerator) findShipyardSupplyMode(player *Player, fleet *Fleet, cla
 		}
 	}
 	for _, yard := range t.game.getPlanets(player.Num) {
-		if (!yard.Spec.HasStarbase || yard.Spec.DockCapacity == 0) && !queuedStarbase(yard) {
+		if !yard.Spec.HasStarbase && !queuedStarbase(yard) {
 			continue
 		}
 		if !idleStock && t.incomingRebuildMinerals(player, yard).Total() == 0 {
@@ -257,12 +257,12 @@ func (t *turnGenerator) previewShipyardPickup(p *Player, f *Fleet, source, dest 
 	origin.Cargo = origin.Cargo.Subtract(before.Subtract(cargo))
 	t.topUpShipyardBuffer(p, &probe, &origin, dest, requested)
 	t.topUpLogisticsCargo(p, &probe, &origin, dest)
-	t.loadOpportunisticInfrastructure(p, &probe, &origin, dest, 0)
 	if automaticPassengersAllowed(p, f) && suitableColony(p, dest) && !p.Automation.DisablePassengerTransport {
 		incoming, _ := t.passengerReservations(p, f.Num)
 		pax := max(0, min(probe.availableColonistSpace(), origin.Cargo.Colonists-sourcePopulationReserve(p, &origin), populationTarget(dest, p.Automation.destinationPopulationPercent())-dest.Cargo.Colonists-incoming[dest.Num]))
 		origin.Cargo.Colonists -= pax
 		probe.Cargo.Colonists += pax
 	}
+	t.loadOpportunisticInfrastructure(p, &probe, &origin, dest, 0)
 	return probe, origin
 }

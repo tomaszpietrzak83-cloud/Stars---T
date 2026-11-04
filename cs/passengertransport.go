@@ -56,9 +56,23 @@ func suitableColony(player *Player, planet *Planet) bool {
 
 func (t *turnGenerator) passengerDestination(player *Player, fleet *Fleet, preferred int) *Planet {
 	incoming, _ := t.passengerReservations(player, fleet.Num)
+	stalled := false
+	if fleet.Cargo.Colonists > 0 && preferred != 0 {
+		dest := t.game.getPlanet(preferred)
+		if suitableColony(player, dest) {
+			stalled = t.deliveryStalled(fleet, dest)
+			room := populationTarget(dest, max(35, player.Automation.destinationPopulationPercent())) - dest.Cargo.Colonists
+			if !stalled && (room > 0 || fleet.Cargo.ToMineral().Total() > 0 || fleet.carriesInfrastructure()) {
+				return dest
+			}
+		}
+	}
 	var best *Planet
 	distance := math.Inf(1)
 	for _, planet := range t.game.Planets {
+		if stalled && planet.Num == preferred {
+			continue
+		}
 		if !suitableColony(player, planet) || populationTarget(planet, player.Automation.destinationPopulationPercent())-planet.Cargo.Colonists-incoming[planet.Num] <= 0 {
 			continue
 		}
@@ -69,7 +83,7 @@ func (t *turnGenerator) passengerDestination(player *Player, fleet *Fleet, prefe
 			return planet
 		}
 		d := passengerScore(planet, fleet.Position.DistanceTo(planet.Position))
-		if fleet.Cargo.Colonists > 0 && fleet.Cargo.Colonists*4 < fleet.Spec.CargoCapacity {
+		if fleet.Cargo.Colonists > 0 {
 			d = fleet.Position.DistanceTo(planet.Position)
 		}
 		if incoming[planet.Num] > 0 {
@@ -150,6 +164,11 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 		af, bf := a.job.Passengers >= fleet.availableColonistSpace(), b.job.Passengers >= fleet.availableColonistSpace()
 		if af != bf {
 			return af
+		}
+		ad, bd := t.game.getPlanet(a.job.DeliveryNum), t.game.getPlanet(b.job.DeliveryNum)
+		aFragile, bFragile := ad.Cargo.Colonists*100 < ad.Spec.MaxPopulation/10, bd.Cargo.Colonists*100 < bd.Spec.MaxPopulation/10
+		if aFragile != bFragile {
+			return aFragile
 		}
 		if a.quality != b.quality {
 			return a.quality > b.quality
@@ -345,6 +364,7 @@ func (t *turnGenerator) preparePassengerMixedCargo(p *Player, f *Fleet, source, 
 	if colonizationMode(p.Automation.FleetRoles[f.Num]) != "" {
 		return 0
 	}
+	beforeInfrastructure := readInfrastructure(f)
 	minimum := 0
 	placeholder := 0
 	if t.prefetchStarbaseMinerals(p, dest).Total() > 0 {
@@ -354,9 +374,10 @@ func (t *turnGenerator) preparePassengerMixedCargo(p *Player, f *Fleet, source, 
 	}
 	// Surplus installations and advance mineral stock share the non-passenger
 	// allowance, so construction deliveries cannot displace the 80% passenger share.
-	t.loadOpportunisticInfrastructure(p, f, source, dest, passengers)
+	t.loadOpportunisticInfrastructure(p, f, source, dest, passengers, placeholder)
 	t.loadStarbasePrefetch(p, f, source, dest)
 	f.Cargo.Colonists -= placeholder
+	t.reconcileMixedInstallations(p, f, source, dest, passengers, beforeInfrastructure)
 	return minimum
 }
 

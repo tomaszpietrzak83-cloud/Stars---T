@@ -180,6 +180,10 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
 			if job := logisticsWork(fleet); job != nil {
 				goal.Position = job.Position
+				goal.MapObjectTarget = MapObjectTarget{}
+				if dest := player.GetPlanetIntel(job.TargetNum); dest != nil && dest.Position == job.Position {
+					goal.MapObjectTarget = dest.ToTarget()
+				}
 				allowThreat = knownRouteThreat(player, fleet.Position, job.Position) > 0 && len(group) > 1
 			}
 			target := goal.MapObjectTarget

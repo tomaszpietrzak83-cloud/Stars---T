@@ -1,0 +1,71 @@
+Transport delivery completion - source-only merge handoff
+2026-11-04
+
+Base: 14121492 (0.6.12). Branch: codex/transport-delivery-completion.
+The implementation chat handles the eventual merge, release build and installation.
+This branch deliberately leaves the installed Windows executable, compiled UI,
+embedded WASM and their release hashes unchanged after isolated validation.
+
+Changes
+
+* An already loaded passenger delivery keeps its usable receiver despite competing
+  reservations. It can recover after six full years without getting closer, or
+  choose another receiver if ownership/capacity makes the old one unusable.
+* Orphaned passenger/installation cargo regains a delivery. Loaded freighters defer
+  new refits even when an old planning tag disappeared. Existing active refits and
+  funded replacement orders retain the 0.6.12 safeguards.
+* Packed installations follow the actual passenger receiver. Exports remain
+  opportunistic and retain at least 95% of current operating installation capacity
+  after the actual mixed passenger/mineral/building load, not the proposed load.
+* New passenger pickups give fragile colonies below 10% population precedence over
+  habitability among otherwise comparable full, unreserved, safe deliveries.
+* Fuel replanning replaces both the final coordinates and target identity. A saved
+  intermediate dock ID must not overwrite the final passenger/invasion destination.
+* Mineral cargo can reach its assigned own colony without a starbase.
+* All existing bases target at least 500 kT Ironium and 500 kT Germanium. Existing
+  shipyard Boranium reserve stays 300 kT; other bases gain no Boranium floor.
+  Existing incoming-load reservations and donor production reserves apply.
+
+Verification completed before handoff
+
+Native cs, ai, db, server and proto/converter suites pass. The initial run exposed
+one old full-stock fixture still using 300/300/300; it now uses 500/300/500 and the
+entire cs suite passed again (102.635 s). Added tests cover reservation stability,
+orphaned refit deferral, mixed installation conservation/capacity, actual passenger
+and installation unloading, minerals at a colony without a base, progress timeout,
+fragile-colony priority, reserve/incoming accounting, and native invasion arrival
+and capture after an obsolete intermediate-dock waypoint.
+
+Native executable, WASM and static UI were rebuilt. Chrome smoke passed on isolated
+ports 18104/18790 using a fresh test database: compiled UI/native/WASM agreement,
+R/map/phone, saved Auto orders, design upgrade inheritance, Minesweeper restrictions.
+The smoke game stayed at year 2400. Original shipped build artifacts were restored.
+
+An online read-only backup of the personal database was copied AGAIN into a Go
+test temporary directory. Optional TestCopiedTransportCampaign uses actual server
+turn generation, including AI, only on that second copy. It accepts 1-30 turns,
+checks sequential years and checks the input backup hash. No database or private
+snapshot belongs in this commit. Private logs and comparisons remain under tmp/
+and audit-results/transport-fix/. Eight full copied turns, 2472 through 2480, passed
+in 911.30 s, including input-backup hash preservation. The old-code comparison
+produced seven complete results before its 20-minute timeout; compare only the
+common years. The old exporter also serialized all AI report caches, so its runtime
+must not be presented as a performance comparison with the new compact exporter.
+
+Interpretation and limits
+
+Snapshot cargo decreases are lower bounds on actual transfers, not exact manifests.
+Early copied turns show installation receiver mismatches falling to zero and actual
+installation/mineral unloading. Colony losses and escort/fuel constraints remain
+strategic conditions; this does not claim that every loaded ship can safely sail.
+No new successful invasion occurred in the eight-turn copied campaign. The
+long-standing hostile target in the private audit has severely stale population
+reports and subsequently a known base; sending unarmed transports regardless would
+not be a valid repair. Native capture is independently tested on an eligible target.
+No waiting in hostile orbit, invented intelligence, relaxed safety, free cargo,
+partial-load departure, or independent installation-hauling mission was introduced.
+
+Other pending work belongs to the implementation chat: Commands/empire production,
+batch completion color correction, Shift-range selection and mass Auto orders.
+Do not include pre-existing dirty checklist edits, local audit tests, private data,
+runtime downloads or unrelated working files in this branch's merge.

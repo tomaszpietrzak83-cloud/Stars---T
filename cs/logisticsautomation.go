@@ -459,7 +459,13 @@ func (t *turnGenerator) planLogisticsAutomation() {
 				delete(fleet.Tags, patrolSalvageTag)
 				continue
 			}
-			if fleet.GetTag("maintenance-pending") != "" && job == nil {
+			if job == nil && passengerCarrier(player, fleet) && fleet.CargoMass() > 0 {
+				job = t.recoverLoadedDelivery(player, fleet)
+				if job != nil {
+					saveLogisticsWork(fleet, job)
+				}
+			}
+			if fleet.GetTag("maintenance-pending") != "" && job == nil && fleet.CargoMass() == 0 {
 				continue
 			}
 			if !passengerCarrier(player, fleet) {
@@ -493,13 +499,14 @@ func (t *turnGenerator) planLogisticsAutomation() {
 					saveLogisticsWork(fleet, job)
 					continue
 				}
+				t.alignDeliveryInfrastructure(fleet, destination)
 				job.TargetNum, job.DeliveryNum, job.Position = destination.Num, destination.Num, destination.Position
 				target = destination.MapObject.ToTarget()
 			} else if job != nil && job.Kind == "return" {
 				var nearest *Planet
 				best := math.Inf(1)
 				for _, planet := range t.game.Planets {
-					if planet.OwnedBy(player.Num) && ((planet.Spec.HasStarbase && planet.Spec.DockCapacity != 0) || job.DeliveryNum == planet.Num && queuedStarbase(planet)) {
+					if planet.OwnedBy(player.Num) && ((planet.Spec.HasStarbase && planet.Spec.DockCapacity != 0) || job.DeliveryNum == planet.Num) {
 						if job.DeliveryNum != 0 && planet.Num != job.DeliveryNum {
 							continue
 						}

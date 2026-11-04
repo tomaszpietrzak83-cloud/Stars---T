@@ -143,7 +143,7 @@ func TestManufacturingDeliveryUsesArrivalAndStockWindowIsBounded(t *testing.T) {
 	load := Mineral{10, 10, 10}
 	require.True(t, manufacturingDeliveryUseful(&u.Game.Rules, p, planet, load, 1))
 	require.True(t, manufacturingDeliveryUseful(&u.Game.Rules, p, planet, load, base.Finish[0]+5), "the new shipyard stock floor remains useful for later orders")
-	planet.Cargo = Cargo{Ironium: 300, Boranium: 300, Germanium: 300, Colonists: 2500}
+	planet.Cargo = Cargo{Ironium: 500, Boranium: 300, Germanium: 500, Colonists: 2500}
 	require.False(t, manufacturingDeliveryUseful(&u.Game.Rules, p, planet, load, base.Finish[0]+5), "a full stock and completed queue must not request late redundant delivery")
 }
 
