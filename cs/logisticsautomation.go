@@ -323,6 +323,18 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		}
 	}
 	threat = max(threat, minimum)
+	// A threat on the straight segment does not make a funded dock detour
+	// dangerous. Finish already loaded deliveries along verified safe legs
+	// before reserving escorts for the blocked direct corridor.
+	if minimum == 0 && threat > 0 && fleet.CargoMass() > 0 && (job.Kind == "settle" || job.Kind == "return" || job.Kind == "invade") {
+		if safe := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, job.Position, target, automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet)}); safe != nil && !safe.WaitForFuel {
+			t.releaseEscorts(player, fleet)
+			applyExpeditionRoute(player, fleet, safe)
+			t.appendLogisticsReturn(player, []*Fleet{fleet}, job, safe)
+			job.Status = "Travelling on a funded safe route through owned docks"
+			return
+		}
+	}
 	var escorts []*Fleet
 	power := 0
 	if fleet.Spec.HasWeapons {
