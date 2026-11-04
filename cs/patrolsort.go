@@ -9,13 +9,24 @@ import (
 // this call: later planning passes must observe new reports and planet owners.
 func sortedPatrolTargets(player *Player, fleet *Fleet) []*Fleet {
 	enemies := slices.Clone(player.FleetIntels)
-	approaching := make(map[*Fleet]bool)
-	approaches := func(enemy *Fleet) bool {
-		if value, ok := approaching[enemy]; ok {
+	type targetRank struct {
+		priority, deadline  int
+		bomber, approaching bool
+		distance            float64
+	}
+	ranks := make(map[*Fleet]targetRank, len(enemies))
+	rank := func(enemy *Fleet) targetRank {
+		if value, ok := ranks[enemy]; ok {
 			return value
 		}
-		value := enemyApproachingColony(player, enemy)
-		approaching[enemy] = value
+		value := targetRank{approaching: enemyApproachingColony(player, enemy)}
+		value.priority = patrolTargetPriority(player, enemy, value.approaching)
+		if player.patrolEvaluator != nil {
+			_, value.deadline = patrolColonyDeadline(player, enemy)
+		}
+		value.bomber = patrolReportedBomber(player, enemy)
+		value.distance = fleet.Position.DistanceTo(enemy.Position)
+		ranks[enemy] = value
 		return value
 	}
 	sort.SliceStable(enemies, func(i, j int) bool {
@@ -25,26 +36,25 @@ func sortedPatrolTargets(player *Player, fleet *Fleet) []*Fleet {
 		if enemies[j] == nil {
 			return true
 		}
-		ri, rj := patrolTargetPriority(player, enemies[i], approaches(enemies[i])), patrolTargetPriority(player, enemies[j], approaches(enemies[j]))
-		if ri != rj {
-			return ri < rj
+		ri, rj := rank(enemies[i]), rank(enemies[j])
+		if ri.priority != rj.priority {
+			return ri.priority < rj.priority
 		}
 		if player.patrolEvaluator != nil {
-			_, di := patrolColonyDeadline(player, enemies[i])
-			_, dj := patrolColonyDeadline(player, enemies[j])
+			di, dj := ri.deadline, rj.deadline
 			if di != dj {
 				return di < dj
 			}
 		}
-		ib, jb := patrolReportedBomber(player, enemies[i]), patrolReportedBomber(player, enemies[j])
+		ib, jb := ri.bomber, rj.bomber
 		if ib != jb {
 			return ib
 		}
-		ii, ji := approaches(enemies[i]), approaches(enemies[j])
+		ii, ji := ri.approaching, rj.approaching
 		if ii != ji {
 			return ii
 		}
-		return fleet.Position.DistanceTo(enemies[i].Position) < fleet.Position.DistanceTo(enemies[j].Position)
+		return ri.distance < rj.distance
 	})
 	return enemies
 }

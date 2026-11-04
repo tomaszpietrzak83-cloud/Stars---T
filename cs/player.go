@@ -17,6 +17,7 @@ type Player struct {
 	routeThreatIndex *routeThreatIndex
 	shipIntelIndex   map[playerObject]*ShipDesign
 	shipIntelCount   int
+	fleetIntelIndex  map[playerObject]*Fleet // active only during the append-only scan phase
 	GameDBObject
 	PlayerOrders
 	Intels
@@ -455,6 +456,7 @@ func (p *Player) GetNextTransportPlanNum() int {
 
 // clear this player's transient intel
 func (p *Player) clearTransientIntel() {
+	p.fleetIntelIndex = nil
 	p.FleetIntels = []*Fleet{}
 	p.MinefieldIntels = []*Minefield{}
 	p.SalvageIntels = []*Salvage{}
@@ -533,6 +535,9 @@ func (p *Player) GetMineralPacketIntel(playerNum, num int) *MineralPacket {
 }
 
 func (p *Player) GetFleetIntel(playerNum, num int) *Fleet {
+	if p.fleetIntelIndex != nil {
+		return p.fleetIntelIndex[playerObjectKey(playerNum, num)]
+	}
 	for _, intel := range p.FleetIntels {
 		if intel.PlayerNum == playerNum && intel.Num == num {
 			return intel
@@ -540,6 +545,16 @@ func (p *Player) GetFleetIntel(playerNum, num int) *Fleet {
 	}
 
 	return nil
+}
+
+func (p *Player) buildFleetIntelIndex() {
+	p.fleetIntelIndex = make(map[playerObject]*Fleet, len(p.FleetIntels))
+	for _, intel := range p.FleetIntels {
+		key := playerObjectKey(intel.PlayerNum, intel.Num)
+		if p.fleetIntelIndex[key] == nil {
+			p.fleetIntelIndex[key] = intel
+		}
+	}
 }
 
 // getMovingFleetIntel returns our intel of the fleet a map object refers to, if it's a fleet we know is moving

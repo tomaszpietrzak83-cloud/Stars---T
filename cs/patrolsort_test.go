@@ -22,6 +22,13 @@ func referencePatrolTargets(p *Player, f *Fleet) []*Fleet {
 		if ri != rj {
 			return ri < rj
 		}
+		if p.patrolEvaluator != nil {
+			_, di := patrolColonyDeadline(p, enemies[i])
+			_, dj := patrolColonyDeadline(p, enemies[j])
+			if di != dj {
+				return di < dj
+			}
+		}
 		ib, jb := patrolReportedBomber(p, enemies[i]), patrolReportedBomber(p, enemies[j])
 		if ib != jb {
 			return ib
@@ -61,6 +68,8 @@ func TestPatrolTargetSortPreservesOrderAndRefreshesReports(t *testing.T) {
 			require.True(t, original[i] == p.FleetIntels[i], "intel source reordered")
 		}
 	}
+	check()
+	p.patrolEvaluator = &patrolEvaluator{}
 	check()
 	p.PlanetIntels[1].PlayerNum = 2
 	p.FleetIntels[0].Heading.X = 1

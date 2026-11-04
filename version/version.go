@@ -4,7 +4,7 @@ package version
 import "time"
 
 // Semver is the semantic-release version injected at build time.
-var Semver = "0.6.7"
+var Semver = "0.6.10"
 
 // Commit is the source commit injected at build time.
 var Commit = "local"

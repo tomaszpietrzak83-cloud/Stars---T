@@ -10,6 +10,9 @@ import (
 // fuel and cargo just before movement, and stop the whole convoy on a shortfall.
 func (t *turnGenerator) enforceAutomaticDeparture() {
 	for _, player := range t.automaticPlayers() {
+		// Departure checks change orders and fuel reservations, not intel. Reuse
+		// one current report index across all return-fuel and convoy checks.
+		defer scopedRouteThreatIndex(player)()
 		blocked := map[int]bool{}
 		for _, fleet := range t.game.getFleets(player.Num) {
 			if !isAutomaticFleet(player, fleet) || len(fleet.Waypoints) < 2 {

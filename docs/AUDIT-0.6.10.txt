@@ -1,0 +1,85 @@
+tomek-stars 0.6.10 - turn-generation performance
+2026-11-04
+
+Problem and evidence
+- Read-only live log: the independently submitted turn to 2466 took
+  23m28.261s: simulation 23m18.101s, AI orders 0.435s, database commit 7.023s.
+- A full disposable copy of audit-results/frontier-advance/input.db reproduces
+  the reported five-minute delay: GenerateTurn 307.237s before this change.
+- CPU profile: GetFleetIntel accounts for 265.73s flat (83.26% of CPU samples).
+  Ally scanning repeatedly searched an ever-growing fleet report slice.
+
+Change
+- Build per-player fleet-report lookup maps for the scan phase, including all
+  ally recipients before scanning starts. Append discoveries to both the list
+  and lookup; existing reports are updated through the same pointers.
+- Dispose of lookup maps when scanning exits, including error paths. Transient
+  report clearing also invalidates the map. Other phases keep existing lookup
+  semantics; no persistent cache or hidden-information access is introduced.
+- Update the existing ship-design report index incrementally on discovery,
+  avoiding a full rebuild after each appended design.
+- No scanning ranges, diplomacy, combat decisions, RNG consumption, report
+  ordering or transport rules are intentionally changed.
+
+Verification
+- Same full copied database, same native test: GenerateTurn 30.878s after,
+  approximately 9.95x faster / 90% less elapsed time. Both tests pass. Each test
+  recopies the audit backup to its own temporary database; personal saves are
+  never advanced by these tests. Timings are machine/load dependent.
+- Indexed versus original linear discovery produces identical JSON reports
+  across allied repeated discoveries and a second year's reset, including
+  equal fleet numbers belonging to different owners, cargo and scanner data.
+- Full cs suite PASS (111.454s), AI PASS, db PASS, server PASS (132.710s),
+  proto/converter PASS. An initial converter command used a nonexistent path;
+  it was corrected and the actual converter suite passed separately.
+- Optional copied-archive diagnostic PASS: 36.954s simulation, 41 players,
+  5950 fleets, 3584 planets. Archives omit AI intel: missing report containers
+  are initialized for this diagnostic, so it is NOT an exact saved-game replay
+  or a full server timing. The full database comparison above is authoritative.
+- Native Windows, WASM and compiled UI rebuilt. Isolated compiled browser/API
+  smoke on ports 18100/18786 PASS: map rendering, R view, saved preference,
+  phone layout and embedded WASM byte equality. Test game remains year 2400.
+
+Deployment
+- Installation initially deferred by the explicit running-turn guard because
+  the user independently submitted another turn (2466 -> 2467). No process
+  was stopped and no personal save or order was replaced by that attempt.
+- Final installation/publication evidence will be appended after completion.
+
+Additional full-result equivalence verification
+- Repeated full copied DB runs: 358.137s before and 18.133s after.
+- Recursive comparison of the entire saved result: all game fields identical
+  except database createdAt/updatedAt timestamps (5866 timestamp fields).
+  This includes all players' reports, AI orders, fleets, battles and economy.
+- Timings vary with machine load; first profiled comparison remains 307 -> 31s.
+
+Additional optimizations requested during the wait
+- Reuse one report-based route-threat index during final departure validation;
+  this phase changes orders/reservations but not reports. Dispose on exit.
+- Memoize each patrol target's complete stable-sort rank only within one sort.
+  Priorities/deadlines/bomber flags/approach/distance remain unchanged; modified
+  reports and planet ownership are re-evaluated on the next call.
+- Reference-comparator test now covers both presence/absence of the native
+  patrol evaluator, nils, duplicate pointers, ties and changes between sorts.
+- Isolated source snapshot excludes concurrent, unfinished patrol-rule edits,
+  as explicitly requested by the user. Go build overlays keep those working
+  files untouched and compile the exact performance-only release sources.
+- Newer archive diagnostic: 36.954s -> 20.898s. Full copied database final
+  GenerateTurn: 19.620s (test including setup/readback: 27.88s). No claim of
+  speedup between 18.133s and 19.620s: different system load affects timings.
+- Entire original/first-optimized/final saved results match after removing only
+  createdAt/updatedAt database timestamps. Normalized SHA-256 for all three:
+  b465106d2480b5946668d8348d6319da07f405f0b15bf96b9f53279c3e6a0e32.
+- Final isolated full cs suite PASS (89.159s). Final native/UI release checks
+  and installation are recorded below when completed.
+
+Final release verification
+- Performance-only source snapshot: full cs 89.159s, AI 3.234s, db 3.702s,
+  server 107.671s, proto/converter 1.837s, all PASS.
+- Final native/WASM/compiled UI rebuilt; isolated final browser smoke PASS on
+  18100/18786, matching embedded WASM, test year unchanged at 2400.
+- Installed 0.6.10 only after personal turn completed independently. Game 3
+  remains WaitingForPlayers year 2467 before/after restart. HTTP 200, schema 30,
+  no migration. windows/SHA256SUMS.txt regenerated for native and WASM.
+- Concurrent patrol-rule edits and private audit files are excluded from the
+  release commit. No private saves, archives, profiles or runtime caches ship.

@@ -369,6 +369,9 @@ func (d *discover) discoverFleet(fleet *Fleet, discoverName bool) {
 		// discover this new minefield
 		intel = newFleetIntel(fleet.PlayerNum, fleet.Num)
 		player.FleetIntels = append(player.FleetIntels, intel)
+		if player.fleetIntelIndex != nil {
+			player.fleetIntelIndex[playerObjectKey(fleet.PlayerNum, fleet.Num)] = intel
+		}
 		intel = player.FleetIntels[len(player.FleetIntels)-1]
 		d.log.Debug("player discovered fleet",
 			slog.Int("FleetPlayer", fleet.PlayerNum),
@@ -535,6 +538,10 @@ func (d *discover) discoverDesign(design *ShipDesign, discoverSlots bool) {
 
 		// save this new design to our intel
 		player.ShipDesignIntels = append(player.ShipDesignIntels, intel)
+		if player.shipIntelIndex != nil {
+			player.shipIntelIndex[playerObjectKey(design.PlayerNum, design.Num)] = intel
+			player.shipIntelCount = len(player.ShipDesignIntels)
+		}
 		intel = player.ShipDesignIntels[len(player.ShipDesignIntels)-1]
 
 		d.log.Debug("player discovered design",

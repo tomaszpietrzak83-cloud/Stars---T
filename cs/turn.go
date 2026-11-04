@@ -3584,6 +3584,16 @@ func (t *turnGenerator) fleetPatrol(player *Player) {
 }
 
 func (t *turnGenerator) scan() error {
+	// Discoveries propagate to allies too, so index every recipient before scanning.
+	// Reports are only appended/updated in this phase; discard indices afterwards.
+	for _, player := range t.game.Players {
+		player.buildFleetIntelIndex()
+	}
+	defer func() {
+		for _, player := range t.game.Players {
+			player.fleetIntelIndex = nil
+		}
+	}()
 	for _, player := range t.game.Players {
 		player.Spec = ComputePlayerSpec(player, &t.game.Rules)
 
