@@ -1,0 +1,27 @@
+Designer upgrades update production immediately (2026-11-04)
+
+Creating an upgraded version replaces all queued ship/starbase items from older
+members of its family on this player's planets. A regular copy/create is not
+an upgrade. Quantities, order, paid allocation, notes and reserved metadata stay
+intact. Existing physical fleets and bases are not changed by saving a design.
+Design, player orders and changed planets are saved in a single transaction.
+Installed bases are loaded to recompute dock/upgrade costs and queue estimates.
+The response supplies changed planets to the browser and WASM universe.
+
+Validation:
+- Isolated native server tests: TestDesignerUpgradeReplacesProductionImmediately
+  (ships + starbases, repeated upgrade from oldest family member), design history,
+  maintenance and deleting unused superseded designs all passed.
+- Test caught an unwanted automatic mine insertion when using UpdatePlanetOrders;
+  direct spec/estimate recomputation now preserves the original queue order.
+- svelte-check: 0 errors, 0 warnings. Compiled frontend and native executable built
+  successfully. WASM rebuilt from the same clean main baseline plus this change.
+- Compiled UI smoke: create a synthetic game, seed paid production, use actual
+  Designer Upgrade and Save controls, verify response and reloaded persisted
+  queue, navigate within app without reload; no browser errors. Year stays 2400.
+- Active install: game 3 remained WaitingForPlayers, year 2474. Database schema
+  remains 30; no migration. Backup stored locally, outside version control.
+
+This release excludes unrelated, unfinished transport/recapture source edits.
+The test port initially failed due to the restricted process environment; the
+successful smoke used separate ports 18117/18803 and the installed Node runtime.

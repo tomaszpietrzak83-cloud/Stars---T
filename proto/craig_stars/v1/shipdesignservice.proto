@@ -57,6 +57,7 @@ message CreateShipDesignRequest {
   ShipDesign design = 2;
 }
 message CreateShipDesignResponse {
+  repeated Planet planets = 3;
   PlayerOrders player_orders = 2;
   ShipDesign design = 1;
 }

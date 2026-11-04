@@ -1061,7 +1061,11 @@ export async function createGameContext(
 
 	async function createDesign(design: ShipDesign, upgradeFrom = 0): Promise<ShipDesign> {
 		// update this design
-		const { design: created, playerOrders } = await shipDesignClient.createShipDesign({
+		const {
+			design: created,
+			playerOrders,
+			planets
+		} = await shipDesignClient.createShipDesign({
 			gameId,
 			design,
 			upgradeFromDesignNum: upgradeFrom
@@ -1076,6 +1080,9 @@ export async function createGameContext(
 		u.addDesign(created!);
 		await cs.wasmService.setDesigns({ designs: u.getMyDesigns() });
 		universe.set(u);
+		for (const planet of planets) {
+			await updatePlanet(new CommandedPlanet(planet), planet);
+		}
 
 		return created!;
 	}

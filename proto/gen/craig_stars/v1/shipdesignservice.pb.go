@@ -7,12 +7,11 @@
 package craig_starsv1
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -372,6 +371,7 @@ func (x *CreateShipDesignRequest) GetDesign() *ShipDesign {
 
 type CreateShipDesignResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Planets       []*Planet              `protobuf:"bytes,3,rep,name=planets,proto3" json:"planets,omitempty"`
 	PlayerOrders  *PlayerOrders          `protobuf:"bytes,2,opt,name=player_orders,json=playerOrders,proto3" json:"player_orders,omitempty"`
 	Design        *ShipDesign            `protobuf:"bytes,1,opt,name=design,proto3" json:"design,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -406,6 +406,13 @@ func (x *CreateShipDesignResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateShipDesignResponse.ProtoReflect.Descriptor instead.
 func (*CreateShipDesignResponse) Descriptor() ([]byte, []int) {
 	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CreateShipDesignResponse) GetPlanets() []*Planet {
+	if x != nil {
+		return x.Planets
+	}
+	return nil
 }
 
 func (x *CreateShipDesignResponse) GetPlayerOrders() *PlayerOrders {
@@ -757,8 +764,9 @@ const file_craig_stars_v1_shipdesignservice_proto_rawDesc = "" +
 	"\x17CreateShipDesignRequest\x125\n" +
 	"\x17upgrade_from_design_num\x18\x03 \x01(\x05R\x14upgradeFromDesignNum\x12\x17\n" +
 	"\agame_id\x18\x01 \x01(\x03R\x06gameId\x122\n" +
-	"\x06design\x18\x02 \x01(\v2\x1a.craig_stars.v1.ShipDesignR\x06design\"\x91\x01\n" +
-	"\x18CreateShipDesignResponse\x12A\n" +
+	"\x06design\x18\x02 \x01(\v2\x1a.craig_stars.v1.ShipDesignR\x06design\"\xc3\x01\n" +
+	"\x18CreateShipDesignResponse\x120\n" +
+	"\aplanets\x18\x03 \x03(\v2\x16.craig_stars.v1.PlanetR\aplanets\x12A\n" +
 	"\rplayer_orders\x18\x02 \x01(\v2\x1c.craig_stars.v1.PlayerOrdersR\fplayerOrders\x122\n" +
 	"\x06design\x18\x01 \x01(\v2\x1a.craig_stars.v1.ShipDesignR\x06design\"f\n" +
 	"\x17UpdateShipDesignRequest\x12\x17\n" +
@@ -818,42 +826,43 @@ var file_craig_stars_v1_shipdesignservice_proto_goTypes = []any{
 	(*DeleteShipDesignRequest)(nil),             // 12: craig_stars.v1.DeleteShipDesignRequest
 	(*DeleteShipDesignResponse)(nil),            // 13: craig_stars.v1.DeleteShipDesignResponse
 	(*ShipDesign)(nil),                          // 14: craig_stars.v1.ShipDesign
-	(*PlayerOrders)(nil),                        // 15: craig_stars.v1.PlayerOrders
-	(*Fleet)(nil),                               // 16: craig_stars.v1.Fleet
-	(*Planet)(nil),                              // 17: craig_stars.v1.Planet
+	(*Planet)(nil),                              // 15: craig_stars.v1.Planet
+	(*PlayerOrders)(nil),                        // 16: craig_stars.v1.PlayerOrders
+	(*Fleet)(nil),                               // 17: craig_stars.v1.Fleet
 }
 var file_craig_stars_v1_shipdesignservice_proto_depIdxs = []int32{
 	14, // 0: craig_stars.v1.UpdateShipDesignAutoOrdersResponse.design:type_name -> craig_stars.v1.ShipDesign
 	14, // 1: craig_stars.v1.GetShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
 	14, // 2: craig_stars.v1.GetShipDesignsResponse.design:type_name -> craig_stars.v1.ShipDesign
 	14, // 3: craig_stars.v1.CreateShipDesignRequest.design:type_name -> craig_stars.v1.ShipDesign
-	15, // 4: craig_stars.v1.CreateShipDesignResponse.player_orders:type_name -> craig_stars.v1.PlayerOrders
-	14, // 5: craig_stars.v1.CreateShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
-	14, // 6: craig_stars.v1.UpdateShipDesignRequest.design:type_name -> craig_stars.v1.ShipDesign
-	14, // 7: craig_stars.v1.UpdateShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
-	14, // 8: craig_stars.v1.UpdateShipDesignDescriptionResponse.design:type_name -> craig_stars.v1.ShipDesign
-	16, // 9: craig_stars.v1.DeleteShipDesignResponse.fleets:type_name -> craig_stars.v1.Fleet
-	16, // 10: craig_stars.v1.DeleteShipDesignResponse.starbases:type_name -> craig_stars.v1.Fleet
-	17, // 11: craig_stars.v1.DeleteShipDesignResponse.planets:type_name -> craig_stars.v1.Planet
-	2,  // 12: craig_stars.v1.ShipDesignService.GetShipDesign:input_type -> craig_stars.v1.GetShipDesignRequest
-	4,  // 13: craig_stars.v1.ShipDesignService.GetShipDesigns:input_type -> craig_stars.v1.GetShipDesignsRequest
-	6,  // 14: craig_stars.v1.ShipDesignService.CreateShipDesign:input_type -> craig_stars.v1.CreateShipDesignRequest
-	8,  // 15: craig_stars.v1.ShipDesignService.UpdateShipDesign:input_type -> craig_stars.v1.UpdateShipDesignRequest
-	10, // 16: craig_stars.v1.ShipDesignService.UpdateShipDesignDescription:input_type -> craig_stars.v1.UpdateShipDesignDescriptionRequest
-	12, // 17: craig_stars.v1.ShipDesignService.DeleteShipDesign:input_type -> craig_stars.v1.DeleteShipDesignRequest
-	0,  // 18: craig_stars.v1.ShipDesignService.UpdateShipDesignAutoOrders:input_type -> craig_stars.v1.UpdateShipDesignAutoOrdersRequest
-	3,  // 19: craig_stars.v1.ShipDesignService.GetShipDesign:output_type -> craig_stars.v1.GetShipDesignResponse
-	5,  // 20: craig_stars.v1.ShipDesignService.GetShipDesigns:output_type -> craig_stars.v1.GetShipDesignsResponse
-	7,  // 21: craig_stars.v1.ShipDesignService.CreateShipDesign:output_type -> craig_stars.v1.CreateShipDesignResponse
-	9,  // 22: craig_stars.v1.ShipDesignService.UpdateShipDesign:output_type -> craig_stars.v1.UpdateShipDesignResponse
-	11, // 23: craig_stars.v1.ShipDesignService.UpdateShipDesignDescription:output_type -> craig_stars.v1.UpdateShipDesignDescriptionResponse
-	13, // 24: craig_stars.v1.ShipDesignService.DeleteShipDesign:output_type -> craig_stars.v1.DeleteShipDesignResponse
-	1,  // 25: craig_stars.v1.ShipDesignService.UpdateShipDesignAutoOrders:output_type -> craig_stars.v1.UpdateShipDesignAutoOrdersResponse
-	19, // [19:26] is the sub-list for method output_type
-	12, // [12:19] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	15, // 4: craig_stars.v1.CreateShipDesignResponse.planets:type_name -> craig_stars.v1.Planet
+	16, // 5: craig_stars.v1.CreateShipDesignResponse.player_orders:type_name -> craig_stars.v1.PlayerOrders
+	14, // 6: craig_stars.v1.CreateShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 7: craig_stars.v1.UpdateShipDesignRequest.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 8: craig_stars.v1.UpdateShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 9: craig_stars.v1.UpdateShipDesignDescriptionResponse.design:type_name -> craig_stars.v1.ShipDesign
+	17, // 10: craig_stars.v1.DeleteShipDesignResponse.fleets:type_name -> craig_stars.v1.Fleet
+	17, // 11: craig_stars.v1.DeleteShipDesignResponse.starbases:type_name -> craig_stars.v1.Fleet
+	15, // 12: craig_stars.v1.DeleteShipDesignResponse.planets:type_name -> craig_stars.v1.Planet
+	2,  // 13: craig_stars.v1.ShipDesignService.GetShipDesign:input_type -> craig_stars.v1.GetShipDesignRequest
+	4,  // 14: craig_stars.v1.ShipDesignService.GetShipDesigns:input_type -> craig_stars.v1.GetShipDesignsRequest
+	6,  // 15: craig_stars.v1.ShipDesignService.CreateShipDesign:input_type -> craig_stars.v1.CreateShipDesignRequest
+	8,  // 16: craig_stars.v1.ShipDesignService.UpdateShipDesign:input_type -> craig_stars.v1.UpdateShipDesignRequest
+	10, // 17: craig_stars.v1.ShipDesignService.UpdateShipDesignDescription:input_type -> craig_stars.v1.UpdateShipDesignDescriptionRequest
+	12, // 18: craig_stars.v1.ShipDesignService.DeleteShipDesign:input_type -> craig_stars.v1.DeleteShipDesignRequest
+	0,  // 19: craig_stars.v1.ShipDesignService.UpdateShipDesignAutoOrders:input_type -> craig_stars.v1.UpdateShipDesignAutoOrdersRequest
+	3,  // 20: craig_stars.v1.ShipDesignService.GetShipDesign:output_type -> craig_stars.v1.GetShipDesignResponse
+	5,  // 21: craig_stars.v1.ShipDesignService.GetShipDesigns:output_type -> craig_stars.v1.GetShipDesignsResponse
+	7,  // 22: craig_stars.v1.ShipDesignService.CreateShipDesign:output_type -> craig_stars.v1.CreateShipDesignResponse
+	9,  // 23: craig_stars.v1.ShipDesignService.UpdateShipDesign:output_type -> craig_stars.v1.UpdateShipDesignResponse
+	11, // 24: craig_stars.v1.ShipDesignService.UpdateShipDesignDescription:output_type -> craig_stars.v1.UpdateShipDesignDescriptionResponse
+	13, // 25: craig_stars.v1.ShipDesignService.DeleteShipDesign:output_type -> craig_stars.v1.DeleteShipDesignResponse
+	1,  // 26: craig_stars.v1.ShipDesignService.UpdateShipDesignAutoOrders:output_type -> craig_stars.v1.UpdateShipDesignAutoOrdersResponse
+	20, // [20:27] is the sub-list for method output_type
+	13, // [13:20] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_craig_stars_v1_shipdesignservice_proto_init() }

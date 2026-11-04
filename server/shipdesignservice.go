@@ -123,6 +123,7 @@ func (s *shipDesignService) CreateShipDesign(ctx context.Context, req *connect.R
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	var updatedPlanets []*cs.Planet
 	if req.Msg.UpgradeFromDesignNum != 0 {
 		design.Spec.VersionCreatedYear = game.Year
 		design.Spec.PreviousVersionNum = 0
@@ -133,6 +134,45 @@ func (s *shipDesignService) CreateShipDesign(ctx context.Context, req *connect.R
 		if err := s.db.WrapInTransaction(func(c db.Client) error {
 			if err := c.SaveShipDesign(ctx, design); err != nil {
 				return err
+			}
+			player.Designs = append(player.Designs, design)
+			planets, err := c.GetPlanetsForPlayer(ctx, game.ID, player.Num)
+			if err != nil {
+				return err
+			}
+			for _, planet := range planets {
+				// Load the installed base too, for correct dock and upgrade costs.
+				planet, err = c.GetPlanetByNum(ctx, game.ID, planet.Num)
+				if err != nil {
+					return err
+				}
+				changed := false
+				for i := range planet.ProductionQueue {
+					item := &planet.ProductionQueue[i]
+					if (item.Type == cs.QueueItemTypeShipToken || item.Type == cs.QueueItemTypeStarbase) && item.DesignNum != design.Num && player.Automation.DesignFamilies[item.DesignNum] == player.Automation.DesignFamilies[design.Num] {
+						item.DesignNum = design.Num
+						changed = true
+					}
+				}
+				if !changed {
+					continue
+				}
+				// These are server-owned replacements. Preserve paid allocation and
+				// reserved rebuild metadata, then recompute costs and completion dates.
+				if err := planet.PopulateStarbaseDesign(player); err != nil {
+					return err
+				}
+				planet.Spec = cs.ComputePlanetSpec(&game.Rules, player, planet)
+				if err := planet.PopulateProductionQueueDesigns(player); err != nil {
+					return err
+				}
+				if err := planet.PopulateProductionQueueEstimates(&game.Rules, player); err != nil {
+					return err
+				}
+				if err := c.SavePlanet(ctx, planet); err != nil {
+					return err
+				}
+				updatedPlanets = append(updatedPlanets, planet)
 			}
 			return c.UpdatePlayerOrders(ctx, player)
 		}); err != nil {
@@ -151,6 +191,7 @@ func (s *shipDesignService) CreateShipDesign(ctx context.Context, req *connect.R
 	return connect.NewResponse(&craig_starsv1.CreateShipDesignResponse{
 		Design:       converter.C.ConvertCSShipDesign(design),
 		PlayerOrders: converter.C.ConvertCSPlayer(player).PlayerOrders,
+		Planets:      converter.C.ConvertCSPlanets(updatedPlanets),
 	}), nil
 }
 
