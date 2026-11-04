@@ -42,7 +42,11 @@
 
 <div class="navbar bg-base-100 flex flex-row w-full">
 	<div class="min-w-0 flex-1">
-		<a class="btn btn-ghost shrink-0 text-xl text-primary" href="/launch" title="tomek-stars main menu">ts</a>
+		<a
+			class="btn btn-ghost shrink-0 text-xl text-primary"
+			href="/launch"
+			title="tomek-stars main menu">ts</a
+		>
 		<div class="min-w-0 flex-1 md:flex-initial">
 			<a
 				data-type="game-link"
@@ -70,7 +74,11 @@
 			</div>
 		{/if}
 		{#if page.url.pathname === `/games/${$game.id}` && canEdit && $game.state === GameState.WAITING_FOR_PLAYERS}
-			<EmpireResources planets={$universe.planets} playerNum={$player.num} researchHref={`/games/${$game.id}/research`} />
+			<EmpireResources
+				planets={$universe.planets}
+				playerNum={$player.num}
+				researchHref={`/games/${$game.id}/research`}
+			/>
 			<button type="button" onclick={onSubmitTurn} class="btn btn-primary" title="submit turn">
 				<span class="hidden md:inline-block mr-1">Submit Turn</span>
 				<Icon src={ArrowUpTray} size="16" />
@@ -90,6 +98,7 @@
 					>
 						<li><a href={`/games/${$game.id}/research`}>Research</a></li>
 						<li><a href={`/games/${$game.id}/designer`}>Ship Designer</a></li>
+						<li><a href={`/games/${$game.id}/ship-production`}>Ship Production</a></li>
 						<li><a href={`/games/${$game.id}/relations`}>Relations</a></li>
 						<li><a href={`/games/${$game.id}/battle-plans`}>Battle Plans</a></li>
 						<li><a href={`/games/${$game.id}/production-plans`}>Production Plans</a></li>
@@ -114,7 +123,7 @@
 						<li><a href={`/games/${$game.id}/designs`}>Designs</a></li>
 						<li><a href={`/games/${$game.id}/messages`}>Messages</a></li>
 						<li><a href={`/games/${$game.id}/battles`}>Battles</a></li>
-<li><a href={`/games/${$game.id}/statistics`}>Statistics</a></li>
+						<li><a href={`/games/${$game.id}/statistics`}>Statistics</a></li>
 					</ul>
 				</div>
 			</div>
@@ -146,6 +155,9 @@
 							</li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/research`}>Research</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/designer`}>Ship Designer</a></li>
+							<li class="md:hidden">
+								<a href={`/games/${$game.id}/ship-production`}>Ship Production</a>
+							</li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/automation`}>Automation</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/relations`}>Relations</a></li>
 							<li class="md:hidden">

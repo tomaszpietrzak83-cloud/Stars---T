@@ -1,0 +1,117 @@
+Przegląd wcześniejszych próśb — 4 listopada 2026, wersja 0.6.13
+
+Zakres
+Przejrzano komentarze tej rozmowy, późniejsze doprecyzowania, checklistę oraz
+raporty wdrożeń. Poniższe grupy odpowiadają wymaganiom 240–283 w checkliście.
+Starsze wpisy zachowano wraz z dowodami; nie odtwarzano wszystkich historycznych
+prywatnych rozgrywek. Nowe testy nie przesuwają osobistej zapisanej gry.
+
+Zrealizowane zachowania i ważne doprecyzowania
+
+1. Tworzenie gry: objaśnienia opcji, w tym Galaxy clumping; położenie przy brzegu
+   z marginesem około 5%; zapamiętywanie ustawień i warunków zwycięstwa.
+   Zwijanie paneli informacji o planetach i statkach. Dowody: wpisy 240–244,
+   raport wdrożenia 0.4.7 i obecne komponenty tworzenia gry/paneli.
+
+2. Scout wykorzystuje zasięg skanera do odwiedzania okolic wielu planet,
+   rozpoznawania flot i odświeżania informacji o wrogich planetach. Rozpoznanie
+   wyposażenia dużych nieznanych grup (od 8 zgłoszonych statków) poprzedza atak;
+   małe nieznane grupy nadal można atakować przy konserwatywnej ocenie siły.
+   Zbieranie posiłków może odbywać się równocześnie z rozpoznaniem.
+   Dowody: 244, 257–265; docs/AUDIT-0.6.4.txt i AUDIT-0.6.6.txt.
+
+3. Claim Adjuster uwzględnia maksymalną dostępną terraformację przy wyborze
+   kolonii. Chodzi o aktualnie dostępne technologie, nie przyszłe wynalazki.
+   Dowody: 245, testy kolonizacji/terraformacji w pełnym pakiecie cs.
+
+4. Rebuild: zakończenie dostawy i zachowanie zadania mają pierwszeństwo przed
+   nowym refitem. Płatne kolejki i role zastępowanych jednostek pozostają.
+   Bezpośredni następca projektu utworzony nie więcej niż 4 lata później daje
+   90% odzysku kosztu starego projektu; nowy buduje się za pełną cenę. To zastępuje
+   wcześniejszy pomysł opłaty 10% ceny nowego. Zasada obejmuje także bazy,
+   uwzględniając lepszy istniejący odzysk ponownie używanych komponentów.
+   Zbiorcze podsumowanie upgrade w turze i rok utworzenia projektu są obecne.
+   Dowody: 246, 248–250, 255–256, 270, 273, raporty 0.6.11–0.6.13.
+
+5. Transport/debris: zanik ograniczono do 8% z minimum 8 kT; kolektory etapują
+   się z przechwyceniem, uczestniczą w bitwie z Disengage, potem rzeczywiście
+   ładują i odwożą minerały. Najpierw podjęcie dostępnego pola, potem powrót.
+   Pola rozróżnia także położenie. Minerały z bitwy na orbicie trafiają na planetę.
+   Transport instalacji jest oportunistyczny, tylko ponad 95% rzeczywistej
+   zdolności działania po ostatecznym zabraniu kolonistów.
+   Dowody: 251–253, 258, 265, 271; raporty 0.6.6/0.6.11 i transportowe poniżej.
+
+6. Patrole: priorytet floty/planety wygasa po potwierdzonym zniszczeniu/podboju;
+   wolne jednostki przesuwają się ku zagrożonym rubieżom. Obsługa wolnych celów,
+   obserwatorów, lecącego wsparcia i tankowców korzysta z widocznych raportów.
+   Radiating scoop może patrolować ekonomicznie z warp 6 i użyć większego
+   opłaconego warp do pościgu. Rzeczywiste symulacje bitew oceniają całe spotkanie,
+   mieszany skład, taktykę, uszkodzenia oraz straty liczby/wartości/masy.
+   Refity nie blokują zbierania; gotowa lokalna grupa może ruszyć przed odległymi
+   posiłkami. Małe bezpieczne przechwycenia nie opóźniają pilnej koncentracji.
+   Dowody: 257–265, 271; docs/AUDIT-0.6.6.txt, AUDIT-0.6.11.txt, AUDIT-0.6.12.txt.
+
+7. Bombowce: pobliskie DD mogą przybyć z rzeczywistym paliwem do osłony.
+   Uprzedzające wycofanie dotyczy dalekich bombardowań; zwykłe unikanie
+   bezpośredniego niebezpieczeństwa nadal działa. Stojąca flota bombardująca
+   własną kolonię nie otrzymuje wymyślonego pościgu za odległymi bombowcami;
+   zaobserwowany odlot zmienia ocenę. Naprawiono pomijanie bezpieczeństwa przy
+   reficie/rally i podatną budowę. Izolowany scenariusz wcześniejszej straty
+   sześciu statków zmienia wynik na zero; nie jest gwarancją przyszłych bitew.
+   Dowody: 272, 274, 276 i raporty 0.6.11–0.6.12.
+
+8. Gatling-only MineSwap służy wyłącznie do niszczenia min: właściwe Auto orders,
+   bez przydziału do patrolu/osłony i bez strzelania w bitwie, także przy
+   agresywnym zwykłym planie walki. Dowody: 275, AUDIT-0.6.12.txt.
+
+9. Interfejs: zasoby imperium i niebieskie badania przy Submit Turn; zachowanie
+   wybranego zoom po odnośniku z raportu; widok R wyłącznie błękitne koło i baza
+   (wcześniejsza prośba o minerały została wycofana); osobna zapamiętywana ikona
+   tras flot; rzeczywiście zniszczone statki na żółto przy obrażeniach.
+   Dowody: 247, 254, 266–269, 277, 279, AUDIT-0.6.12.txt.
+
+10. Auto orders projektu obowiązują przy budowie, są dziedziczone przez następcę;
+    upgrade zachowuje faktyczną dotychczasową rolę i misję floty. Osobne Commands
+    → Ship Production w 0.6.13 rozdziela zamówienia po istniejących bazach, nadaje
+    rolę konkretnym nowym zamówieniom i oferuje wypełnienie tegorocznej zdolności.
+    Zielona jest cała partia kończąca się w roku; nadwyżka jest osobną niebieską
+    partią. W zwykłej kolejce zwiększenie całej partii ponad rok zmienia jej kolor
+    od razu na niebieski. Wcześniejsze kryterium „pierwszy statek w roku” było
+    błędne i zostało zastąpione. Dowody: 273, 278, 280, 282 i AUDIT-0.6.13.txt.
+
+11. Automation: Shift zaznacza zakres w aktualnej kolejności tabeli; wspólna rola
+    zapisuje się jednym żądaniem. Widać liczbę zgodnych flot; ograniczenia
+    wyposażenia, aktywnego refitu/assembly i trybu tylko do odczytu pozostają.
+    Błąd zapisu cofa zmianę. Dowody: 283 i AUDIT-0.6.13.txt.
+
+12. Bazy zachowują/przyjmują minimum 500 kT Ironium i 500 kT Germanium; Boranium
+    bez podwyżki. Uwzględniono dostawy w drodze i rzeczywiste potrzeby pracy.
+    Dowody: cs/manufacturinglogistics.go, transportcompletion_test.go,
+    docs/TRANSPORT-DELIVERY-HANDOFF-2026-11-04.txt.
+
+Pozostałe ograniczenia — nie oznaczono wszystkiego jako zakończone
+
+- Nowe naprawy dostaw przeszły osiem pełnych tur skopiowanej bazy: rzeczywiste
+  dostawy i brak rozbieżnych celów pasażerów/instalacji od dalszych tur. Kolejny
+  test udowadnia bezpieczny objazd i natywne zdobycie legalnego celu. Dłuższa
+  kampania nie pokazała nowej skutecznej inwazji. Skuteczność wszystkich dawnych
+  inwazji i każdego starego załadowanego transportu pozostaje niepotwierdzona.
+  Dowody: TRANSPORT-DELIVERY-HANDOFF-2026-11-04.txt oraz
+  TRANSPORT-SAFE-DETOURS-2026-11-04.txt.
+- Patrole nie mają pełnej wiedzy o przeciwniku ani gwarancji bezstratnej walki.
+  Są limity pracy symulacji; zmiany ukrytego wyposażenia i niewidoczne posiłki
+  pozostają niepewne. Kampanie testowe pokazują realne dostawy debris, ale nie
+  zebranie każdego szybko zanikającego pola; dotarcie obrony też wymaga czasu.
+- Dostarczony osobno pakiet rozszerzonych taktyk adaptacyjnych jest materiałem
+  do integracji. Nie jest częścią działającego systemu ani wydania 0.6.13.
+  Pozostają zapis danych, podłączenie do rund walki, replay i wspólne plany/UI.
+- Kontrola UI wykonała 504 testy w 86 plikach. Stary MessageDetail.svelte.test.ts
+  nie wczytuje się: jego mock Stores nie eksportuje showTooltip wymaganego przez
+  podgląd technologii. Próby rozszerzenia mocka ujawniają cykl ładowania. Nie
+  zmieniano ani nie wyłączano tego testu w wydaniu; pełnego UI suite nie opisuje
+  się jako zielonego. Nowe funkcje mają oddzielne przechodzące testy i kontrolę
+  skompilowanej wersji. To zaległość testowego środowiska raportów.
+
+Historyczne prośby zatrzymania/wznowienia, pytania o model i rozwiązana blokada
+Windows są zdarzeniami rozmowy, nie brakującymi funkcjami gry. To wydanie nie
+zmienia ustawień zabezpieczeń Windows.

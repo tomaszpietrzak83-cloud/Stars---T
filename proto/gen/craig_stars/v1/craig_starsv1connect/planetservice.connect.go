@@ -34,6 +34,12 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// PlanetServicePreviewShipProductionProcedure is the fully-qualified name of the PlanetService's
+	// PreviewShipProduction RPC.
+	PlanetServicePreviewShipProductionProcedure = "/craig_stars.v1.PlanetService/PreviewShipProduction"
+	// PlanetServiceQueueShipProductionProcedure is the fully-qualified name of the PlanetService's
+	// QueueShipProduction RPC.
+	PlanetServiceQueueShipProductionProcedure = "/craig_stars.v1.PlanetService/QueueShipProduction"
 	// PlanetServiceGetPlanetProcedure is the fully-qualified name of the PlanetService's GetPlanet RPC.
 	PlanetServiceGetPlanetProcedure = "/craig_stars.v1.PlanetService/GetPlanet"
 	// PlanetServiceUpdatePlanetOrdersProcedure is the fully-qualified name of the PlanetService's
@@ -43,6 +49,8 @@ const (
 
 // PlanetServiceClient is a client for the craig_stars.v1.PlanetService service.
 type PlanetServiceClient interface {
+	PreviewShipProduction(context.Context, *connect.Request[v1.ShipProductionRequest]) (*connect.Response[v1.ShipProductionResponse], error)
+	QueueShipProduction(context.Context, *connect.Request[v1.ShipProductionRequest]) (*connect.Response[v1.ShipProductionResponse], error)
 	GetPlanet(context.Context, *connect.Request[v1.GetPlanetRequest]) (*connect.Response[v1.GetPlanetResponse], error)
 	UpdatePlanetOrders(context.Context, *connect.Request[v1.UpdatePlanetOrdersRequest]) (*connect.Response[v1.UpdatePlanetOrdersResponse], error)
 }
@@ -58,6 +66,19 @@ func NewPlanetServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 	baseURL = strings.TrimRight(baseURL, "/")
 	planetServiceMethods := v1.File_craig_stars_v1_planetservice_proto.Services().ByName("PlanetService").Methods()
 	return &planetServiceClient{
+		previewShipProduction: connect.NewClient[v1.ShipProductionRequest, v1.ShipProductionResponse](
+			httpClient,
+			baseURL+PlanetServicePreviewShipProductionProcedure,
+			connect.WithSchema(planetServiceMethods.ByName("PreviewShipProduction")),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
+		),
+		queueShipProduction: connect.NewClient[v1.ShipProductionRequest, v1.ShipProductionResponse](
+			httpClient,
+			baseURL+PlanetServiceQueueShipProductionProcedure,
+			connect.WithSchema(planetServiceMethods.ByName("QueueShipProduction")),
+			connect.WithClientOptions(opts...),
+		),
 		getPlanet: connect.NewClient[v1.GetPlanetRequest, v1.GetPlanetResponse](
 			httpClient,
 			baseURL+PlanetServiceGetPlanetProcedure,
@@ -77,8 +98,20 @@ func NewPlanetServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // planetServiceClient implements PlanetServiceClient.
 type planetServiceClient struct {
-	getPlanet          *connect.Client[v1.GetPlanetRequest, v1.GetPlanetResponse]
-	updatePlanetOrders *connect.Client[v1.UpdatePlanetOrdersRequest, v1.UpdatePlanetOrdersResponse]
+	previewShipProduction *connect.Client[v1.ShipProductionRequest, v1.ShipProductionResponse]
+	queueShipProduction   *connect.Client[v1.ShipProductionRequest, v1.ShipProductionResponse]
+	getPlanet             *connect.Client[v1.GetPlanetRequest, v1.GetPlanetResponse]
+	updatePlanetOrders    *connect.Client[v1.UpdatePlanetOrdersRequest, v1.UpdatePlanetOrdersResponse]
+}
+
+// PreviewShipProduction calls craig_stars.v1.PlanetService.PreviewShipProduction.
+func (c *planetServiceClient) PreviewShipProduction(ctx context.Context, req *connect.Request[v1.ShipProductionRequest]) (*connect.Response[v1.ShipProductionResponse], error) {
+	return c.previewShipProduction.CallUnary(ctx, req)
+}
+
+// QueueShipProduction calls craig_stars.v1.PlanetService.QueueShipProduction.
+func (c *planetServiceClient) QueueShipProduction(ctx context.Context, req *connect.Request[v1.ShipProductionRequest]) (*connect.Response[v1.ShipProductionResponse], error) {
+	return c.queueShipProduction.CallUnary(ctx, req)
 }
 
 // GetPlanet calls craig_stars.v1.PlanetService.GetPlanet.
@@ -93,6 +126,8 @@ func (c *planetServiceClient) UpdatePlanetOrders(ctx context.Context, req *conne
 
 // PlanetServiceHandler is an implementation of the craig_stars.v1.PlanetService service.
 type PlanetServiceHandler interface {
+	PreviewShipProduction(context.Context, *connect.Request[v1.ShipProductionRequest]) (*connect.Response[v1.ShipProductionResponse], error)
+	QueueShipProduction(context.Context, *connect.Request[v1.ShipProductionRequest]) (*connect.Response[v1.ShipProductionResponse], error)
 	GetPlanet(context.Context, *connect.Request[v1.GetPlanetRequest]) (*connect.Response[v1.GetPlanetResponse], error)
 	UpdatePlanetOrders(context.Context, *connect.Request[v1.UpdatePlanetOrdersRequest]) (*connect.Response[v1.UpdatePlanetOrdersResponse], error)
 }
@@ -104,6 +139,19 @@ type PlanetServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewPlanetServiceHandler(svc PlanetServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	planetServiceMethods := v1.File_craig_stars_v1_planetservice_proto.Services().ByName("PlanetService").Methods()
+	planetServicePreviewShipProductionHandler := connect.NewUnaryHandler(
+		PlanetServicePreviewShipProductionProcedure,
+		svc.PreviewShipProduction,
+		connect.WithSchema(planetServiceMethods.ByName("PreviewShipProduction")),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
+	)
+	planetServiceQueueShipProductionHandler := connect.NewUnaryHandler(
+		PlanetServiceQueueShipProductionProcedure,
+		svc.QueueShipProduction,
+		connect.WithSchema(planetServiceMethods.ByName("QueueShipProduction")),
+		connect.WithHandlerOptions(opts...),
+	)
 	planetServiceGetPlanetHandler := connect.NewUnaryHandler(
 		PlanetServiceGetPlanetProcedure,
 		svc.GetPlanet,
@@ -120,6 +168,10 @@ func NewPlanetServiceHandler(svc PlanetServiceHandler, opts ...connect.HandlerOp
 	)
 	return "/craig_stars.v1.PlanetService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case PlanetServicePreviewShipProductionProcedure:
+			planetServicePreviewShipProductionHandler.ServeHTTP(w, r)
+		case PlanetServiceQueueShipProductionProcedure:
+			planetServiceQueueShipProductionHandler.ServeHTTP(w, r)
 		case PlanetServiceGetPlanetProcedure:
 			planetServiceGetPlanetHandler.ServeHTTP(w, r)
 		case PlanetServiceUpdatePlanetOrdersProcedure:
@@ -132,6 +184,14 @@ func NewPlanetServiceHandler(svc PlanetServiceHandler, opts ...connect.HandlerOp
 
 // UnimplementedPlanetServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedPlanetServiceHandler struct{}
+
+func (UnimplementedPlanetServiceHandler) PreviewShipProduction(context.Context, *connect.Request[v1.ShipProductionRequest]) (*connect.Response[v1.ShipProductionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("craig_stars.v1.PlanetService.PreviewShipProduction is not implemented"))
+}
+
+func (UnimplementedPlanetServiceHandler) QueueShipProduction(context.Context, *connect.Request[v1.ShipProductionRequest]) (*connect.Response[v1.ShipProductionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("craig_stars.v1.PlanetService.QueueShipProduction is not implemented"))
+}
 
 func (UnimplementedPlanetServiceHandler) GetPlanet(context.Context, *connect.Request[v1.GetPlanetRequest]) (*connect.Response[v1.GetPlanetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("craig_stars.v1.PlanetService.GetPlanet is not implemented"))

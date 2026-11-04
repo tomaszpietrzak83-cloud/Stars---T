@@ -1,0 +1,77 @@
+tomek-stars 0.6.13 — global production, fleet selection and completed deliveries
+2026-11-04
+
+Changes
+- Commands > Ship Production opens a separate empire-wide production screen on
+  desktop and phone. Select a current own design, total quantity and new ships'
+  Auto orders; Fill this year's capacity chooses the real aggregate free capacity.
+  Existing paid/concrete work stays first. Native mining, queue, production budget,
+  research and dock mass limits are used on private copies. All available current
+  year capacity is filled before later batches are allocated by completion year.
+  Green and blue batches stay separate; the preview shows both totals per base.
+- A queue position is green only when its ENTIRE batch finishes within one year.
+  Increasing the quantity beyond that deadline turns the item blue even when its
+  first ship would still finish this year. This corrects the 0.6.12 interpretation.
+- The chosen role belongs to the particular production queue item. New fleets
+  receive it through actual native construction; explicit Manual overrides a
+  design default. Existing fleets/design defaults and old paid orders are not
+  changed. Partial batches retain the override for subsequent construction.
+- Production preview is read-only. Applying verifies the source hash/year/state,
+  recalculates and saves all bases in a transaction; a stale/repeated request is
+  rejected and a failed second-yard save rolls everything back. UI ignores stale
+  previews and blocks applying pending/read-only orders.
+- Automation supports real Shift-click range selection in displayed order,
+  selection by fleet name and bulk Auto orders with an explicit eligible count.
+  Equipment, dedicated minesweeper, active maintenance/assembly restrictions and
+  read-only controls remain. One player-order save; failures restore old roles.
+- Merged transport branches d43fe2e and 2de0a7c9 preserve loaded deliveries before
+  new refits, destination identity/reservations and actual mixed-load operating
+  capacity; recover orphaned deliveries; deliver to colonies without bases;
+  prefer fragile colonies and existing funded safe dock detours when escorts are
+  optional. Mandatory escort minimum, fuel, mine and combat guards remain.
+  Bases now keep/receive at least 500 kT Ironium and Germanium; Boranium unchanged.
+- Yellow ship-loss damage marks stay inside the bottom battle-board row at large
+  display scale. Locale-sensitive tests retain existing localized game numbers.
+
+Verification
+- Complete native packages pass: cs 81.220 s, ai 1.260 s, db 1.807 s,
+  server 99.932 s; proto/converter passes separately. The first combined command
+  included a nonexistent ./converter path; its correct ./proto/converter package
+  was then run successfully. No regression golden files were updated. Untagged
+  native construction retains legacy tag aliasing and default-role timing, as
+  required by the unchanged deterministic AI regression results.
+- New core tests: all-base capacity and +1 boundary, immutable input state,
+  research/mining/mineral/dock limits, validation, real construction with a
+  one-off role, preserved paid work and retained partial manual override.
+- API tests: read-only preview, two bases, durable role/one-year estimates,
+  repeated/stale apply rejection, year 2400 unchanged and all-yard rollback.
+- 504 frontend tests pass in 86 files, including 28 focused production/selection
+  cases and bottom-row damage bounds. Full UI run has ONE pre-existing suite
+  import failure: MessageDetail.svelte.test.ts mocks Stores without showTooltip
+  required by TechnologyPressPreview. Attempts to expand those mocks hit a
+  loading cycle; the test is left unchanged and not disabled in this release.
+  Thus the complete frontend suite is NOT claimed to pass. Svelte check reports
+  zero errors and zero warnings. New feature tests pass independently in Chrome.
+- Transport handoffs retain their eight-turn twice-copied campaign, additional
+  copied native turn, real eligible capture/delivery and frozen full-suite proof:
+  TRANSPORT-DELIVERY-HANDOFF-2026-11-04.txt and TRANSPORT-SAFE-DETOURS-2026-11-04.txt.
+  No new successful invasion in the historical eight-turn campaign is claimed.
+
+Compiled release
+- Rebuilt native executable, WASM and static frontend. Isolated compiled Chrome
+  smoke on backend 18106 / frontend 18792 creates a fresh zero-AI game, sets up
+  two test bases and never submits a turn. Native preview uses both bases;
+  adding one ship preserves green capacity and visibly adds a blue later batch.
+  Actual API/SQLite readback confirms quantity and per-order Tanker tags.
+- Real Shift-click selects three fleets, one bulk role update persists across
+  reload. Desktop and phone Commands links work; route visibility persists.
+  Screenshots inspected; embedded WASM equals the source artifact byte for byte.
+  No browser errors; the isolated game's year remains 2400.
+- Installed Windows 0.6.13 with immutable compiled UI between personal turns.
+  Live year 2474 / WaitingForPlayers is identical immediately before and after
+  replacement. HTTP 200; schema 30, no migration; SHA256SUMS.txt refreshed.
+  No personal turn generated, order modified or personal save replaced by tests.
+
+Previous-request reconciliation and remaining limitations are recorded in
+docs/REQUESTS-REVIEW-2026-11-04.txt and SUGGESTIONS-CHECKLIST.txt. The separate
+adaptive-tactics handoff remains unintegrated and is excluded from this release.

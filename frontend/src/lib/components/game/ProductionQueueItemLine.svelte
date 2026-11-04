@@ -44,11 +44,7 @@
 	);
 
 	let buildsThisTurn = $derived(
-		!!item.queueItemCompletionEstimate &&
-			!estimate.skipped &&
-			estimate.yearsToBuildOne > 0 &&
-			estimate.yearsToBuildOne <= 1 &&
-			estimate.yearsToBuildOne !== Infinite
+		!!item.queueItemCompletionEstimate && !estimate.skipped && estimate.yearsToBuildAll === 1
 	);
 	let skipped = $derived(
 		!autoAlchemy &&
@@ -68,7 +64,7 @@
 	class:text-queue-item-this-year={buildsThisTurn}
 	class:text-queue-item-next-year={!autoAlchemy &&
 		!estimate.skipped &&
-		estimate.yearsToBuildOne > 1 &&
+		(estimate.yearsToBuildAll > 1 || estimate.yearsToBuildAll === Infinite) &&
 		estimate.yearsToBuildOne != Infinite}
 	class:text-queue-item-skipped={skipped}
 	class:text-queue-item-never={!autoAlchemy && estimate.yearsToBuildOne == Infinite && !skipped}

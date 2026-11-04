@@ -1,6 +1,10 @@
 import '../../../css/app.css';
 import { Universe } from '#lib/services/Universe.js';
-import { ProductionQueueItemSchema, QueueItemType } from '#lib/types/cs-proto.js';
+import {
+	ProductionQueueItemSchema,
+	QueueItemCompletionEstimateSchema,
+	QueueItemType
+} from '#lib/types/cs-proto.js';
 import { Infinite } from '#lib/types/Consts.js';
 import { create } from '@bufbuild/protobuf';
 import { writable } from 'svelte/store';
@@ -18,7 +22,7 @@ it.each([1, 2])('highlights selected ship completion in year %s', (year) => {
 	const item = create(ProductionQueueItemSchema, {
 		type: QueueItemType.SHIP_TOKEN,
 		quantity: 5,
-		queueItemCompletionEstimate: { yearsToBuildOne: year, yearsToBuildAll: 5 }
+		queueItemCompletionEstimate: { yearsToBuildOne: 1, yearsToBuildAll: year }
 	});
 	const { container, unmount } = render(ProductionQueueItemLine, {
 		index: 0,
@@ -29,6 +33,36 @@ it.each([1, 2])('highlights selected ship completion in year %s', (year) => {
 		year === 1 ? 'var(--color-success)' : 'var(--color-info)'
 	);
 	unmount();
+});
+
+it('changes immediately from green to blue when the enlarged batch extends beyond this year', async () => {
+	state.context = { universe: writable(new Universe()) };
+	const item = create(ProductionQueueItemSchema, {
+		type: QueueItemType.SHIP_TOKEN,
+		quantity: 1,
+		queueItemCompletionEstimate: { yearsToBuildOne: 1, yearsToBuildAll: 1 }
+	});
+	const view = render(ProductionQueueItemLine, { index: 0, item, selected: true });
+	expect(view.container.querySelector('button')!.style.backgroundColor).toBe(
+		'var(--color-success)'
+	);
+	await view.rerender({
+		index: 0,
+		item: create(ProductionQueueItemSchema, {
+			...item,
+			quantity: 2,
+			queueItemCompletionEstimate: create(QueueItemCompletionEstimateSchema, {
+				yearsToBuildOne: 1,
+				yearsToBuildAll: 2
+			})
+		}),
+		selected: true
+	});
+	expect(view.container.querySelector('button')!.style.backgroundColor).toBe('var(--color-info)');
+	expect(
+		view.container.querySelector('button')!.classList.contains('text-queue-item-next-year')
+	).toBe(true);
+	view.unmount();
 });
 
 // which of the queue item colors a line gets for these estimates
@@ -46,13 +80,13 @@ function colors(type: QueueItemType, yearsToBuildOne: number, yearsToBuildAll: n
 	return found;
 }
 
-// At least one unit completed this turn stays green, even for a multi-year batch.
+// The entire ordered batch must finish this year to stay green.
 it.each([QueueItemType.MINE, QueueItemType.AUTO_MINES])(
 	'colors item type %s by how much of it is built this year',
 	(type) => {
 		expect(colors(type, 1, 1)).toEqual(['this-year']);
-		expect(colors(type, 1, 3)).toEqual(['this-year']);
-		expect(colors(type, 1, Infinite)).toEqual(['this-year']);
+		expect(colors(type, 1, 3)).toEqual(['next-year']);
+		expect(colors(type, 1, Infinite)).toEqual(['next-year']);
 		expect(colors(type, 4, 6)).toEqual(['next-year']);
 	}
 );

@@ -1,5 +1,5 @@
 TOMEK-STARS — REQUEST CHECKLIST
-Updated: 2026-11-02
+Updated: 2026-11-04
 
 Legend: [x] implemented and tested (evidence below); [~] partial / current audit; [ ] still missing.
 Historical questions, corrections and withdrawn alternatives are recorded separately below.
@@ -620,7 +620,7 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 
 [x] 277. Add a separate persisted fleet-route visibility icon on desktop and narrow screens; hide own/selected and reported fleet routes without changing orders.
 
-[x] 278. Production menu: selected and estimated queue positions green when at least one unit completes this turn, blue when the first completion is later; verify multi-unit/automatic queues and selection.
+[x] 278. Production menu: green only when the entire ordered batch completes within one year, blue when it continues into later years. Final clarification 282 supersedes the earlier first-unit interpretation released in 0.6.12; corrected and tested in 0.6.13.
 
 [x] 279. During a battle attack, display the actual number of ships destroyed in yellow beside armor and shield damage; aggregate multiple shots per target square, omit zero, retain replay phase behavior.
 
@@ -628,7 +628,25 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
 
     Release verification for 275-279: Windows 0.6.12 native/WASM/static UI rebuilt; isolated compiled smoke on 18103/18789 passes route persistence, R/map/phone, in-use and inherited Auto orders, new Gatling-only MineSwap creation/editor/reload with retreat and no combat role. Final UI snapshot e5bab5d30b22cfdd deployed; year 2472/WaitingForPlayers unchanged across native replacement, HTTP 200 and current hashes. No personal turn submitted or save replaced.
 
-[x] Transport delivery repairs 2026-11-04: preserve loaded passenger destinations despite reservations, recover orphaned cargo before new refits, align packed installations with the actual receiver, favor fragile colonies, correct final target identity after intermediate refuelling, and deliver minerals to assigned colonies without bases. Installation exports remain opportunistic and retain 95% of actual operating capacity after the final mixed load. Existing bases protect/receive at least 500 kT Ironium and Germanium, counting incoming cargo; Boranium is unchanged. Native regression suites and rebuilt native/WASM/compiled-UI smoke pass. Eight full turns on a twice-copied private database (2472-2480) pass with backup hash unchanged. See docs/TRANSPORT-DELIVERY-HANDOFF-2026-11-04.txt. Source-only branch awaits merge/release by the implementation chat; installed 0.6.12 artifacts remain unchanged.
+[x] Transport delivery repairs 2026-11-04: preserve loaded passenger destinations despite reservations, recover orphaned cargo before new refits, align packed installations with the actual receiver, favor fragile colonies, correct final target identity after intermediate refuelling, and deliver minerals to assigned colonies without bases. Installation exports remain opportunistic and retain 95% of actual operating capacity after the final mixed load. Existing bases protect/receive at least 500 kT Ironium and Germanium, counting incoming cargo; Boranium is unchanged. Native regression suites and rebuilt native/WASM/compiled-UI smoke pass. Eight full turns on a twice-copied private database (2472-2480) pass with backup hash unchanged. See docs/TRANSPORT-DELIVERY-HANDOFF-2026-11-04.txt. Merged and released in Windows 0.6.13; see docs/AUDIT-0.6.13.txt.
 [ ] Transport campaign follow-up: the eight-turn copy confirms actual deliveries and eliminates installation/passenger target mismatches, but does not show a successful new invasion. Eligible native landing/capture passes separately; stale hostile targets, bases, defenses and unfunded escort/fuel remain constraints. Do not mark the earlier campaign-wide invasion-effectiveness request complete or claim every historical stranded load is resolved from the focused tests alone.
 
-[x] Transport safe-detour follow-up 2026-11-04: loaded passenger, mineral and invasion deliveries may take an existing fully fuel-funded safe dock route instead of waiting for escorts against a blocked straight corridor. Preserve mandatory escort minimum, all threat/mine/fuel/departure guards, actual unloading and immediate native landing resolution. Regression fails before and passes after, including real native capture and mandatory-cover rejection; full frozen cs/ai suites, one twice-copied full database turn with input hash preserved, rebuilt native/WASM/static-UI isolated smoke pass. Private diagnosis identifies 18 available safe routes among 60 loaded missions with a straight-line threat; this is route availability, not completed deliveries. See docs/TRANSPORT-SAFE-DETOURS-2026-11-04.txt. Source-only follow-up awaits integration/release; historical-campaign invasion success remains unproven.
+[x] Transport safe-detour follow-up 2026-11-04: loaded passenger, mineral and invasion deliveries may take an existing fully fuel-funded safe dock route instead of waiting for escorts against a blocked straight corridor. Preserve mandatory escort minimum, all threat/mine/fuel/departure guards, actual unloading and immediate native landing resolution. Regression fails before and passes after, including real native capture and mandatory-cover rejection; full frozen cs/ai suites, one twice-copied full database turn with input hash preserved, rebuilt native/WASM/static-UI isolated smoke pass. Private diagnosis identifies 18 available safe routes among 60 loaded missions with a straight-line threat; this is route availability, not completed deliveries. See docs/TRANSPORT-SAFE-DETOURS-2026-11-04.txt. Merged and released in Windows 0.6.13; historical-campaign invasion success remains unproven.
+
+[x] 280. Commands > Ship Production: distribute ship orders across existing eligible bases using actual native queues/resources/mining/research/dock limits. Fill current-year capacity across all bases first; later work is separate blue batches. Choose one-off post-construction Auto orders without changing designs or existing fleets; provide Fill this year capacity.
+
+[x] 281. Reviewed earlier comments, final clarifications, code, tests and historical checklist evidence. Reconciled obsolete patrol handoff gates and the superseded production-color rule; explicitly retain campaign/invasion, full debris recovery and unintegrated adaptive-tactics limits. See docs/REQUESTS-REVIEW-2026-11-04.txt.
+
+[x] 282. GREEN requires the entire ordered batch to finish within one year. Increasing quantity past that deadline changes the item BLUE even when the first unit still finishes this year. Later global production is a separate blue batch; this supersedes the 0.6.12 first-unit interpretation of 278.
+
+[x] 283. Automation Shift-click selects a range in displayed order. Bulk Auto orders show eligible counts, respect equipment/minesweeper/refit/assembly and read-only restrictions, save once and roll back failures.
+
+    Verification for 280-283: docs/AUDIT-0.6.13.txt. Native cs/AI/db/server/converter pass; core/API all-yard atomicity, immutable forecasts and actual construction role tests pass. 28 focused frontend tests pass; 504 UI tests in 86 files pass, one unchanged legacy report suite has a documented mock import failure. Svelte check zero errors/warnings. Compiled native/static UI/WASM smoke proves two-base green/blue boundary, real saved Shift bulk orders, desktop/phone and unchanged test year 2400.
+
+    Release verification for 280-283 and transport fixes: Windows 0.6.13 native/WASM/static UI rebuilt, isolated ports 18106/18792 checked. Installed immutable UI 16f82fbc389f5e12 between turns; personal year 2474/WaitingForPlayers identical before/after replacement, HTTP 200, schema 30/no migration and current hashes. No personal turn submitted or save replaced.
+
+[~] Retrospective campaign limits: actual 33-kT pickup, field/contact identity and mission/refit corrections are tested in 265/271/276; split campaigns still do not recover every field or prevent all initial bombardment. Historical invasion effectiveness remains open above. docs/REQUESTS-REVIEW-2026-11-04.txt records the distinction.
+
+[ ] Separate adaptive-tactics handoff: building blocks only; persistence, native round/replay integration and shared plan/UI wiring are not installed or released in 0.6.13.
+
+[ ] UI test infrastructure: unchanged MessageDetail.svelte.test.ts mock lacks showTooltip required by technology preview; extending mocks exposes a loading cycle. Resolve without disabling the report assertions. New production/selection tests and compiled native UI checks pass independently.

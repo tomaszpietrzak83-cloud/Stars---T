@@ -100,6 +100,9 @@ func (o *orders) UpdatePlayerOrders(player *Player, playerPlanets []*Planet, ord
 
 // update a planet orders
 func (o *orders) UpdatePlanetOrders(rules *Rules, player *Player, planet *Planet, orders PlanetOrders) error {
+	if err := validateProductionAutoRoles(player, orders.ProductionQueue); err != nil {
+		return err
+	}
 	if err := validateMaintenanceQueueEdits(planet.ProductionQueue, orders.ProductionQueue); err != nil {
 		return err
 	}

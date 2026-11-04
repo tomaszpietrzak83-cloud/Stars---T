@@ -77,7 +77,11 @@ it('discards cancelled edits and starts each opening with the selected waypoint 
 	await action(view.container, 'Colonists').selectOptions(String(Action.UNLOAD_AMOUNT));
 	await amount(view.container, 'Colonists').fill('25');
 	await expect
-		.element(page.getByText('Unloads up to 2,500 colonists to the target', { exact: true }))
+		.element(
+			page.getByText(`Unloads up to ${(2500).toLocaleString()} colonists to the target`, {
+				exact: true
+			})
+		)
 		.toBeVisible();
 	await page.getByRole('button', { name: 'Cancel', exact: true }).click();
 	expect(onCancel).toHaveBeenCalledOnce();

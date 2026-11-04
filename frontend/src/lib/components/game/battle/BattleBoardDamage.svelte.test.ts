@@ -34,3 +34,31 @@ it('renders per-attack losses in yellow with armor and shield damage', () => {
 	expect(empty.container.querySelector('[data-kind="destroyed"]')).toBeNull();
 	empty.unmount();
 });
+
+it('keeps the yellow count inside the bottom row when enlarged on phones', () => {
+	const host = document.createElement('div');
+	host.style.cssText = 'position:relative;width:690px;height:690px;overflow:hidden';
+	document.body.appendChild(host);
+	const battle = {
+		actions: [
+			create(BattleRecordTokenActionSchema, {
+				type: BattleRecordTokenActionType.BEAM_FIRE,
+				to: { x: 5, y: 9 },
+				damageDoneArmor: 500,
+				damageDoneShields: 100,
+				tokensDestroyed: 4
+			})
+		]
+	} as Battle;
+	const view = render(
+		BattleBoardDamage,
+		{ battle, phase: 1, cell: 69, markScale: 2 },
+		{ baseElement: host }
+	);
+	const mark = view.container.querySelector('[data-kind="destroyed"]')!;
+	expect(mark.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+		host.getBoundingClientRect().bottom
+	);
+	view.unmount();
+	host.remove();
+});

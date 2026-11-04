@@ -113,18 +113,27 @@ describe('hab test', () => {
 	});
 
 	it.for(testData)('getGravString(%i) -> %s', ([value, expected]) => {
-		expect(getGravString(value)).toBe(expected);
+		const localized =
+			Number(expected.slice(0, -1)).toLocaleString(undefined, {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2
+			}) + 'g';
+		expect(getGravString(value)).toBe(localized);
 	});
 });
 
 describe('TerraformHabType formatting', () => {
 	it('uses the protobuf axis values rather than the internal indices', () => {
-		expect(getTerraformHabValueString(TerraformHabType.GRAV, 50)).toBe('1.00g');
+		expect(getTerraformHabValueString(TerraformHabType.GRAV, 50)).toBe(
+			(1).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'g'
+		);
 		expect(getTerraformHabValueString(TerraformHabType.TEMP, 50)).toBe('0°C');
 		expect(getTerraformHabValueString(TerraformHabType.RAD, 50)).toBe('50mR');
 	});
 	it('preserves a zero raw value', () => {
-		expect(getTerraformHabValueString(TerraformHabType.GRAV, 0)).toBe('0.12g');
+		expect(getTerraformHabValueString(TerraformHabType.GRAV, 0)).toBe(
+			(0.12).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'g'
+		);
 		expect(getTerraformHabValueString(TerraformHabType.TEMP, 0)).toBe('-200°C');
 		expect(getTerraformHabValueString(TerraformHabType.RAD, 0)).toBe('0mR');
 	});

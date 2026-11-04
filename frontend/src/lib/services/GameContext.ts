@@ -76,6 +76,7 @@ import { setReadOnly } from './asPlayerInterceptor';
 import { addError } from './Errors';
 import { FullGame } from './FullGame';
 import { recalledScannerViewport, rememberScannerViewport } from './scannerViewport.js';
+import type { ShipProductionResponse } from '#lib/types/cs-proto.js';
 import { rollover } from './Math';
 import { automationRoles } from '#lib/types/automationRoles.js';
 import { Universe } from './Universe';
@@ -165,6 +166,18 @@ export type GameContext = {
 	renameFleet: (fleet: CommandedFleet, name: string) => Promise<void>;
 
 	updatePlanetOrders: (planet: CommandedPlanet) => Promise<void>;
+	previewShipProduction: (
+		designNum: number,
+		quantity: number,
+		role: string,
+		fillThisYear?: boolean
+	) => Promise<ShipProductionResponse>;
+	queueShipProduction: (
+		designNum: number,
+		quantity: number,
+		role: string,
+		sourceHash: string
+	) => Promise<ShipProductionResponse>;
 	updateMinefieldOrders: (minefield: Minefield) => Promise<void>;
 
 	// notes
@@ -1510,6 +1523,39 @@ export async function createGameContext(
 		}
 	}
 
+	async function previewShipProduction(
+		designNum: number,
+		quantity: number,
+		role: string,
+		fillThisYear = false
+	) {
+		return planetClient.previewShipProduction({
+			gameId,
+			designNum,
+			quantity,
+			autoRole: role,
+			fillThisYear
+		});
+	}
+	async function queueShipProduction(
+		designNum: number,
+		quantity: number,
+		role: string,
+		sourceHash: string
+	) {
+		const result = await planetClient.queueShipProduction({
+			gameId,
+			designNum,
+			quantity,
+			autoRole: role,
+			expectedSourceHash: sourceHash
+		});
+		for (const yard of result.yards)
+			if (yard.planet && yard.thisYearQuantity + yard.laterQuantity > 0)
+				await updatePlanet(new CommandedPlanet(yard.planet), yard.planet);
+		return result;
+	}
+
 	async function updateMinefieldOrders(minefield: Minefield): Promise<void> {
 		const { minefield: updatedMinefield } = await minefieldClient.updateMinefieldOrders({
 			gameId,
@@ -1784,6 +1830,8 @@ export async function createGameContext(
 		renameFleet,
 
 		updatePlanetOrders,
+		previewShipProduction,
+		queueShipProduction,
 		updateMinefieldOrders,
 		editingNote,
 		editNote,

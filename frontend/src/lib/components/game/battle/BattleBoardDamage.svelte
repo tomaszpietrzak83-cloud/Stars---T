@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { Battle } from '#lib/types/Battle.js';
 	import { attackAtPhase } from './animation/original';
-	import { ARMOR_ICON_PATH, damageByTarget, SHIELD_ICON_PATH, DESTROYED_ICON_PATH } from './damage';
+	import {
+		ARMOR_ICON_PATH,
+		damageByTarget,
+		SHIELD_ICON_PATH,
+		DESTROYED_ICON_PATH,
+		damageMarkOffset
+	} from './damage';
 
 	type Props = {
 		battle: Battle;
@@ -30,7 +36,7 @@
 		>
 			<div
 				class="flex flex-col items-center gap-px origin-top"
-				style={markScale !== 1 ? `transform: scale(${markScale});` : ''}
+				style={`transform: translateY(-${damageMarkOffset(target.y, cell, target.marks.length, markScale)}px) scale(${markScale});`}
 			>
 				{#each target.marks as mark (mark.kind)}
 					<div

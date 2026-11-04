@@ -12,7 +12,258 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file craig_stars/v1/planetservice.proto.
  */
 export const file_craig_stars_v1_planetservice: GenFile = /*@__PURE__*/
-  fileDesc("CiJjcmFpZ19zdGFycy92MS9wbGFuZXRzZXJ2aWNlLnByb3RvEg5jcmFpZ19zdGFycy52MSI3ChBHZXRQbGFuZXRSZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMSEgoKcGxhbmV0X251bRgCIAEoBSI7ChFHZXRQbGFuZXRSZXNwb25zZRImCgZwbGFuZXQYASABKAsyFi5jcmFpZ19zdGFycy52MS5QbGFuZXQidQoZVXBkYXRlUGxhbmV0T3JkZXJzUmVxdWVzdBIPCgdnYW1lX2lkGAEgASgDEhIKCnBsYW5ldF9udW0YAiABKAUSMwoNcGxhbmV0X29yZGVycxgEIAEoCzIcLmNyYWlnX3N0YXJzLnYxLlBsYW5ldE9yZGVycyJEChpVcGRhdGVQbGFuZXRPcmRlcnNSZXNwb25zZRImCgZwbGFuZXQYASABKAsyFi5jcmFpZ19zdGFycy52MS5QbGFuZXQy2AEKDVBsYW5ldFNlcnZpY2USVQoJR2V0UGxhbmV0EiAuY3JhaWdfc3RhcnMudjEuR2V0UGxhbmV0UmVxdWVzdBohLmNyYWlnX3N0YXJzLnYxLkdldFBsYW5ldFJlc3BvbnNlIgOQAgEScAoSVXBkYXRlUGxhbmV0T3JkZXJzEikuY3JhaWdfc3RhcnMudjEuVXBkYXRlUGxhbmV0T3JkZXJzUmVxdWVzdBoqLmNyYWlnX3N0YXJzLnYxLlVwZGF0ZVBsYW5ldE9yZGVyc1Jlc3BvbnNlIgOQAgJiBnByb3RvMw", [file_craig_stars_v1_planet]);
+  fileDesc("CiJjcmFpZ19zdGFycy92MS9wbGFuZXRzZXJ2aWNlLnByb3RvEg5jcmFpZ19zdGFycy52MSKXAQoVU2hpcFByb2R1Y3Rpb25SZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMSEgoKZGVzaWduX251bRgCIAEoBRIQCghxdWFudGl0eRgDIAEoBRIRCglhdXRvX3JvbGUYBCABKAkSFgoOZmlsbF90aGlzX3llYXIYBSABKAgSHAoUZXhwZWN0ZWRfc291cmNlX2hhc2gYBiABKAkitwEKElNoaXB5YXJkUHJvZHVjdGlvbhImCgZwbGFuZXQYASABKAsyFi5jcmFpZ19zdGFycy52MS5QbGFuZXQSGgoSY2FwYWNpdHlfdGhpc195ZWFyGAIgASgFEhoKEnRoaXNfeWVhcl9xdWFudGl0eRgDIAEoBRIWCg5sYXRlcl9xdWFudGl0eRgEIAEoBRIZChF5ZWFyc190b19jb21wbGV0ZRgFIAEoBRIOCgZyZWFzb24YBiABKAki8QEKFlNoaXBQcm9kdWN0aW9uUmVzcG9uc2USMQoFeWFyZHMYASADKAsyIi5jcmFpZ19zdGFycy52MS5TaGlweWFyZFByb2R1Y3Rpb24SGgoScmVxdWVzdGVkX3F1YW50aXR5GAIgASgFEhkKEWFzc2lnbmVkX3F1YW50aXR5GAMgASgFEhoKEnRoaXNfeWVhcl9xdWFudGl0eRgEIAEoBRIbChN1bmFzc2lnbmVkX3F1YW50aXR5GAUgASgFEhEKCWF1dG9fcm9sZRgGIAEoCRITCgtzb3VyY2VfaGFzaBgHIAEoCRIMCgR5ZWFyGAggASgFIjcKEEdldFBsYW5ldFJlcXVlc3QSDwoHZ2FtZV9pZBgBIAEoAxISCgpwbGFuZXRfbnVtGAIgASgFIjsKEUdldFBsYW5ldFJlc3BvbnNlEiYKBnBsYW5ldBgBIAEoCzIWLmNyYWlnX3N0YXJzLnYxLlBsYW5ldCJ1ChlVcGRhdGVQbGFuZXRPcmRlcnNSZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMSEgoKcGxhbmV0X251bRgCIAEoBRIzCg1wbGFuZXRfb3JkZXJzGAQgASgLMhwuY3JhaWdfc3RhcnMudjEuUGxhbmV0T3JkZXJzIkQKGlVwZGF0ZVBsYW5ldE9yZGVyc1Jlc3BvbnNlEiYKBnBsYW5ldBgBIAEoCzIWLmNyYWlnX3N0YXJzLnYxLlBsYW5ldDKtAwoNUGxhbmV0U2VydmljZRJrChVQcmV2aWV3U2hpcFByb2R1Y3Rpb24SJS5jcmFpZ19zdGFycy52MS5TaGlwUHJvZHVjdGlvblJlcXVlc3QaJi5jcmFpZ19zdGFycy52MS5TaGlwUHJvZHVjdGlvblJlc3BvbnNlIgOQAgESZgoTUXVldWVTaGlwUHJvZHVjdGlvbhIlLmNyYWlnX3N0YXJzLnYxLlNoaXBQcm9kdWN0aW9uUmVxdWVzdBomLmNyYWlnX3N0YXJzLnYxLlNoaXBQcm9kdWN0aW9uUmVzcG9uc2UiABJVCglHZXRQbGFuZXQSIC5jcmFpZ19zdGFycy52MS5HZXRQbGFuZXRSZXF1ZXN0GiEuY3JhaWdfc3RhcnMudjEuR2V0UGxhbmV0UmVzcG9uc2UiA5ACARJwChJVcGRhdGVQbGFuZXRPcmRlcnMSKS5jcmFpZ19zdGFycy52MS5VcGRhdGVQbGFuZXRPcmRlcnNSZXF1ZXN0GiouY3JhaWdfc3RhcnMudjEuVXBkYXRlUGxhbmV0T3JkZXJzUmVzcG9uc2UiA5ACAmIGcHJvdG8z", [file_craig_stars_v1_planet]);
+
+/**
+ * @generated from message craig_stars.v1.ShipProductionRequest
+ */
+export type ShipProductionRequest = Message<"craig_stars.v1.ShipProductionRequest"> & {
+  /**
+   * @generated from field: int64 game_id = 1;
+   */
+  gameId: bigint;
+
+  /**
+   * @generated from field: int32 design_num = 2;
+   */
+  designNum: number;
+
+  /**
+   * @generated from field: int32 quantity = 3;
+   */
+  quantity: number;
+
+  /**
+   * @generated from field: string auto_role = 4;
+   */
+  autoRole: string;
+
+  /**
+   * @generated from field: bool fill_this_year = 5;
+   */
+  fillThisYear: boolean;
+
+  /**
+   * @generated from field: string expected_source_hash = 6;
+   */
+  expectedSourceHash: string;
+};
+
+/**
+ * @generated from message craig_stars.v1.ShipProductionRequest
+ */
+export type ShipProductionRequestJson = {
+  /**
+   * @generated from field: int64 game_id = 1;
+   */
+  gameId?: string;
+
+  /**
+   * @generated from field: int32 design_num = 2;
+   */
+  designNum?: number;
+
+  /**
+   * @generated from field: int32 quantity = 3;
+   */
+  quantity?: number;
+
+  /**
+   * @generated from field: string auto_role = 4;
+   */
+  autoRole?: string;
+
+  /**
+   * @generated from field: bool fill_this_year = 5;
+   */
+  fillThisYear?: boolean;
+
+  /**
+   * @generated from field: string expected_source_hash = 6;
+   */
+  expectedSourceHash?: string;
+};
+
+/**
+ * Describes the message craig_stars.v1.ShipProductionRequest.
+ * Use `create(ShipProductionRequestSchema)` to create a new message.
+ */
+export const ShipProductionRequestSchema: GenMessage<ShipProductionRequest, {jsonType: ShipProductionRequestJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_planetservice, 0);
+
+/**
+ * @generated from message craig_stars.v1.ShipyardProduction
+ */
+export type ShipyardProduction = Message<"craig_stars.v1.ShipyardProduction"> & {
+  /**
+   * @generated from field: craig_stars.v1.Planet planet = 1;
+   */
+  planet?: Planet | undefined;
+
+  /**
+   * @generated from field: int32 capacity_this_year = 2;
+   */
+  capacityThisYear: number;
+
+  /**
+   * @generated from field: int32 this_year_quantity = 3;
+   */
+  thisYearQuantity: number;
+
+  /**
+   * @generated from field: int32 later_quantity = 4;
+   */
+  laterQuantity: number;
+
+  /**
+   * @generated from field: int32 years_to_complete = 5;
+   */
+  yearsToComplete: number;
+
+  /**
+   * @generated from field: string reason = 6;
+   */
+  reason: string;
+};
+
+/**
+ * @generated from message craig_stars.v1.ShipyardProduction
+ */
+export type ShipyardProductionJson = {
+  /**
+   * @generated from field: craig_stars.v1.Planet planet = 1;
+   */
+  planet?: PlanetJson;
+
+  /**
+   * @generated from field: int32 capacity_this_year = 2;
+   */
+  capacityThisYear?: number;
+
+  /**
+   * @generated from field: int32 this_year_quantity = 3;
+   */
+  thisYearQuantity?: number;
+
+  /**
+   * @generated from field: int32 later_quantity = 4;
+   */
+  laterQuantity?: number;
+
+  /**
+   * @generated from field: int32 years_to_complete = 5;
+   */
+  yearsToComplete?: number;
+
+  /**
+   * @generated from field: string reason = 6;
+   */
+  reason?: string;
+};
+
+/**
+ * Describes the message craig_stars.v1.ShipyardProduction.
+ * Use `create(ShipyardProductionSchema)` to create a new message.
+ */
+export const ShipyardProductionSchema: GenMessage<ShipyardProduction, {jsonType: ShipyardProductionJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_planetservice, 1);
+
+/**
+ * @generated from message craig_stars.v1.ShipProductionResponse
+ */
+export type ShipProductionResponse = Message<"craig_stars.v1.ShipProductionResponse"> & {
+  /**
+   * @generated from field: repeated craig_stars.v1.ShipyardProduction yards = 1;
+   */
+  yards: ShipyardProduction[];
+
+  /**
+   * @generated from field: int32 requested_quantity = 2;
+   */
+  requestedQuantity: number;
+
+  /**
+   * @generated from field: int32 assigned_quantity = 3;
+   */
+  assignedQuantity: number;
+
+  /**
+   * @generated from field: int32 this_year_quantity = 4;
+   */
+  thisYearQuantity: number;
+
+  /**
+   * @generated from field: int32 unassigned_quantity = 5;
+   */
+  unassignedQuantity: number;
+
+  /**
+   * @generated from field: string auto_role = 6;
+   */
+  autoRole: string;
+
+  /**
+   * @generated from field: string source_hash = 7;
+   */
+  sourceHash: string;
+
+  /**
+   * @generated from field: int32 year = 8;
+   */
+  year: number;
+};
+
+/**
+ * @generated from message craig_stars.v1.ShipProductionResponse
+ */
+export type ShipProductionResponseJson = {
+  /**
+   * @generated from field: repeated craig_stars.v1.ShipyardProduction yards = 1;
+   */
+  yards?: ShipyardProductionJson[];
+
+  /**
+   * @generated from field: int32 requested_quantity = 2;
+   */
+  requestedQuantity?: number;
+
+  /**
+   * @generated from field: int32 assigned_quantity = 3;
+   */
+  assignedQuantity?: number;
+
+  /**
+   * @generated from field: int32 this_year_quantity = 4;
+   */
+  thisYearQuantity?: number;
+
+  /**
+   * @generated from field: int32 unassigned_quantity = 5;
+   */
+  unassignedQuantity?: number;
+
+  /**
+   * @generated from field: string auto_role = 6;
+   */
+  autoRole?: string;
+
+  /**
+   * @generated from field: string source_hash = 7;
+   */
+  sourceHash?: string;
+
+  /**
+   * @generated from field: int32 year = 8;
+   */
+  year?: number;
+};
+
+/**
+ * Describes the message craig_stars.v1.ShipProductionResponse.
+ * Use `create(ShipProductionResponseSchema)` to create a new message.
+ */
+export const ShipProductionResponseSchema: GenMessage<ShipProductionResponse, {jsonType: ShipProductionResponseJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_planetservice, 2);
 
 /**
  * @generated from message craig_stars.v1.GetPlanetRequest
@@ -49,7 +300,7 @@ export type GetPlanetRequestJson = {
  * Use `create(GetPlanetRequestSchema)` to create a new message.
  */
 export const GetPlanetRequestSchema: GenMessage<GetPlanetRequest, {jsonType: GetPlanetRequestJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_planetservice, 0);
+  messageDesc(file_craig_stars_v1_planetservice, 3);
 
 /**
  * @generated from message craig_stars.v1.GetPlanetResponse
@@ -76,7 +327,7 @@ export type GetPlanetResponseJson = {
  * Use `create(GetPlanetResponseSchema)` to create a new message.
  */
 export const GetPlanetResponseSchema: GenMessage<GetPlanetResponse, {jsonType: GetPlanetResponseJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_planetservice, 1);
+  messageDesc(file_craig_stars_v1_planetservice, 4);
 
 /**
  * @generated from message craig_stars.v1.UpdatePlanetOrdersRequest
@@ -123,7 +374,7 @@ export type UpdatePlanetOrdersRequestJson = {
  * Use `create(UpdatePlanetOrdersRequestSchema)` to create a new message.
  */
 export const UpdatePlanetOrdersRequestSchema: GenMessage<UpdatePlanetOrdersRequest, {jsonType: UpdatePlanetOrdersRequestJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_planetservice, 2);
+  messageDesc(file_craig_stars_v1_planetservice, 5);
 
 /**
  * @generated from message craig_stars.v1.UpdatePlanetOrdersResponse
@@ -150,12 +401,28 @@ export type UpdatePlanetOrdersResponseJson = {
  * Use `create(UpdatePlanetOrdersResponseSchema)` to create a new message.
  */
 export const UpdatePlanetOrdersResponseSchema: GenMessage<UpdatePlanetOrdersResponse, {jsonType: UpdatePlanetOrdersResponseJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_planetservice, 3);
+  messageDesc(file_craig_stars_v1_planetservice, 6);
 
 /**
  * @generated from service craig_stars.v1.PlanetService
  */
 export const PlanetService: GenService<{
+  /**
+   * @generated from rpc craig_stars.v1.PlanetService.PreviewShipProduction
+   */
+  previewShipProduction: {
+    methodKind: "unary";
+    input: typeof ShipProductionRequestSchema;
+    output: typeof ShipProductionResponseSchema;
+  },
+  /**
+   * @generated from rpc craig_stars.v1.PlanetService.QueueShipProduction
+   */
+  queueShipProduction: {
+    methodKind: "unary";
+    input: typeof ShipProductionRequestSchema;
+    output: typeof ShipProductionResponseSchema;
+  },
   /**
    * @generated from rpc craig_stars.v1.PlanetService.GetPlanet
    */

@@ -22,6 +22,274 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ShipProductionRequest struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	GameId             int64                  `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	DesignNum          int32                  `protobuf:"varint,2,opt,name=design_num,json=designNum,proto3" json:"design_num,omitempty"`
+	Quantity           int32                  `protobuf:"varint,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	AutoRole           string                 `protobuf:"bytes,4,opt,name=auto_role,json=autoRole,proto3" json:"auto_role,omitempty"`
+	FillThisYear       bool                   `protobuf:"varint,5,opt,name=fill_this_year,json=fillThisYear,proto3" json:"fill_this_year,omitempty"`
+	ExpectedSourceHash string                 `protobuf:"bytes,6,opt,name=expected_source_hash,json=expectedSourceHash,proto3" json:"expected_source_hash,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ShipProductionRequest) Reset() {
+	*x = ShipProductionRequest{}
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ShipProductionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ShipProductionRequest) ProtoMessage() {}
+
+func (x *ShipProductionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ShipProductionRequest.ProtoReflect.Descriptor instead.
+func (*ShipProductionRequest) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ShipProductionRequest) GetGameId() int64 {
+	if x != nil {
+		return x.GameId
+	}
+	return 0
+}
+
+func (x *ShipProductionRequest) GetDesignNum() int32 {
+	if x != nil {
+		return x.DesignNum
+	}
+	return 0
+}
+
+func (x *ShipProductionRequest) GetQuantity() int32 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
+}
+
+func (x *ShipProductionRequest) GetAutoRole() string {
+	if x != nil {
+		return x.AutoRole
+	}
+	return ""
+}
+
+func (x *ShipProductionRequest) GetFillThisYear() bool {
+	if x != nil {
+		return x.FillThisYear
+	}
+	return false
+}
+
+func (x *ShipProductionRequest) GetExpectedSourceHash() string {
+	if x != nil {
+		return x.ExpectedSourceHash
+	}
+	return ""
+}
+
+type ShipyardProduction struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Planet           *Planet                `protobuf:"bytes,1,opt,name=planet,proto3" json:"planet,omitempty"`
+	CapacityThisYear int32                  `protobuf:"varint,2,opt,name=capacity_this_year,json=capacityThisYear,proto3" json:"capacity_this_year,omitempty"`
+	ThisYearQuantity int32                  `protobuf:"varint,3,opt,name=this_year_quantity,json=thisYearQuantity,proto3" json:"this_year_quantity,omitempty"`
+	LaterQuantity    int32                  `protobuf:"varint,4,opt,name=later_quantity,json=laterQuantity,proto3" json:"later_quantity,omitempty"`
+	YearsToComplete  int32                  `protobuf:"varint,5,opt,name=years_to_complete,json=yearsToComplete,proto3" json:"years_to_complete,omitempty"`
+	Reason           string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ShipyardProduction) Reset() {
+	*x = ShipyardProduction{}
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ShipyardProduction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ShipyardProduction) ProtoMessage() {}
+
+func (x *ShipyardProduction) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ShipyardProduction.ProtoReflect.Descriptor instead.
+func (*ShipyardProduction) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ShipyardProduction) GetPlanet() *Planet {
+	if x != nil {
+		return x.Planet
+	}
+	return nil
+}
+
+func (x *ShipyardProduction) GetCapacityThisYear() int32 {
+	if x != nil {
+		return x.CapacityThisYear
+	}
+	return 0
+}
+
+func (x *ShipyardProduction) GetThisYearQuantity() int32 {
+	if x != nil {
+		return x.ThisYearQuantity
+	}
+	return 0
+}
+
+func (x *ShipyardProduction) GetLaterQuantity() int32 {
+	if x != nil {
+		return x.LaterQuantity
+	}
+	return 0
+}
+
+func (x *ShipyardProduction) GetYearsToComplete() int32 {
+	if x != nil {
+		return x.YearsToComplete
+	}
+	return 0
+}
+
+func (x *ShipyardProduction) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type ShipProductionResponse struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Yards              []*ShipyardProduction  `protobuf:"bytes,1,rep,name=yards,proto3" json:"yards,omitempty"`
+	RequestedQuantity  int32                  `protobuf:"varint,2,opt,name=requested_quantity,json=requestedQuantity,proto3" json:"requested_quantity,omitempty"`
+	AssignedQuantity   int32                  `protobuf:"varint,3,opt,name=assigned_quantity,json=assignedQuantity,proto3" json:"assigned_quantity,omitempty"`
+	ThisYearQuantity   int32                  `protobuf:"varint,4,opt,name=this_year_quantity,json=thisYearQuantity,proto3" json:"this_year_quantity,omitempty"`
+	UnassignedQuantity int32                  `protobuf:"varint,5,opt,name=unassigned_quantity,json=unassignedQuantity,proto3" json:"unassigned_quantity,omitempty"`
+	AutoRole           string                 `protobuf:"bytes,6,opt,name=auto_role,json=autoRole,proto3" json:"auto_role,omitempty"`
+	SourceHash         string                 `protobuf:"bytes,7,opt,name=source_hash,json=sourceHash,proto3" json:"source_hash,omitempty"`
+	Year               int32                  `protobuf:"varint,8,opt,name=year,proto3" json:"year,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ShipProductionResponse) Reset() {
+	*x = ShipProductionResponse{}
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ShipProductionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ShipProductionResponse) ProtoMessage() {}
+
+func (x *ShipProductionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ShipProductionResponse.ProtoReflect.Descriptor instead.
+func (*ShipProductionResponse) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ShipProductionResponse) GetYards() []*ShipyardProduction {
+	if x != nil {
+		return x.Yards
+	}
+	return nil
+}
+
+func (x *ShipProductionResponse) GetRequestedQuantity() int32 {
+	if x != nil {
+		return x.RequestedQuantity
+	}
+	return 0
+}
+
+func (x *ShipProductionResponse) GetAssignedQuantity() int32 {
+	if x != nil {
+		return x.AssignedQuantity
+	}
+	return 0
+}
+
+func (x *ShipProductionResponse) GetThisYearQuantity() int32 {
+	if x != nil {
+		return x.ThisYearQuantity
+	}
+	return 0
+}
+
+func (x *ShipProductionResponse) GetUnassignedQuantity() int32 {
+	if x != nil {
+		return x.UnassignedQuantity
+	}
+	return 0
+}
+
+func (x *ShipProductionResponse) GetAutoRole() string {
+	if x != nil {
+		return x.AutoRole
+	}
+	return ""
+}
+
+func (x *ShipProductionResponse) GetSourceHash() string {
+	if x != nil {
+		return x.SourceHash
+	}
+	return ""
+}
+
+func (x *ShipProductionResponse) GetYear() int32 {
+	if x != nil {
+		return x.Year
+	}
+	return 0
+}
+
 type GetPlanetRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GameId        int64                  `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
@@ -32,7 +300,7 @@ type GetPlanetRequest struct {
 
 func (x *GetPlanetRequest) Reset() {
 	*x = GetPlanetRequest{}
-	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[0]
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +312,7 @@ func (x *GetPlanetRequest) String() string {
 func (*GetPlanetRequest) ProtoMessage() {}
 
 func (x *GetPlanetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[0]
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +325,7 @@ func (x *GetPlanetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPlanetRequest.ProtoReflect.Descriptor instead.
 func (*GetPlanetRequest) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{0}
+	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetPlanetRequest) GetGameId() int64 {
@@ -83,7 +351,7 @@ type GetPlanetResponse struct {
 
 func (x *GetPlanetResponse) Reset() {
 	*x = GetPlanetResponse{}
-	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[1]
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -95,7 +363,7 @@ func (x *GetPlanetResponse) String() string {
 func (*GetPlanetResponse) ProtoMessage() {}
 
 func (x *GetPlanetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[1]
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -108,7 +376,7 @@ func (x *GetPlanetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPlanetResponse.ProtoReflect.Descriptor instead.
 func (*GetPlanetResponse) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{1}
+	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetPlanetResponse) GetPlanet() *Planet {
@@ -129,7 +397,7 @@ type UpdatePlanetOrdersRequest struct {
 
 func (x *UpdatePlanetOrdersRequest) Reset() {
 	*x = UpdatePlanetOrdersRequest{}
-	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[2]
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -141,7 +409,7 @@ func (x *UpdatePlanetOrdersRequest) String() string {
 func (*UpdatePlanetOrdersRequest) ProtoMessage() {}
 
 func (x *UpdatePlanetOrdersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[2]
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -154,7 +422,7 @@ func (x *UpdatePlanetOrdersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePlanetOrdersRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePlanetOrdersRequest) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{2}
+	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdatePlanetOrdersRequest) GetGameId() int64 {
@@ -187,7 +455,7 @@ type UpdatePlanetOrdersResponse struct {
 
 func (x *UpdatePlanetOrdersResponse) Reset() {
 	*x = UpdatePlanetOrdersResponse{}
-	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[3]
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -199,7 +467,7 @@ func (x *UpdatePlanetOrdersResponse) String() string {
 func (*UpdatePlanetOrdersResponse) ProtoMessage() {}
 
 func (x *UpdatePlanetOrdersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[3]
+	mi := &file_craig_stars_v1_planetservice_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -212,7 +480,7 @@ func (x *UpdatePlanetOrdersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePlanetOrdersResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePlanetOrdersResponse) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{3}
+	return file_craig_stars_v1_planetservice_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UpdatePlanetOrdersResponse) GetPlanet() *Planet {
@@ -226,7 +494,32 @@ var File_craig_stars_v1_planetservice_proto protoreflect.FileDescriptor
 
 const file_craig_stars_v1_planetservice_proto_rawDesc = "" +
 	"\n" +
-	"\"craig_stars/v1/planetservice.proto\x12\x0ecraig_stars.v1\x1a\x1bcraig_stars/v1/planet.proto\"J\n" +
+	"\"craig_stars/v1/planetservice.proto\x12\x0ecraig_stars.v1\x1a\x1bcraig_stars/v1/planet.proto\"\xe0\x01\n" +
+	"\x15ShipProductionRequest\x12\x17\n" +
+	"\agame_id\x18\x01 \x01(\x03R\x06gameId\x12\x1d\n" +
+	"\n" +
+	"design_num\x18\x02 \x01(\x05R\tdesignNum\x12\x1a\n" +
+	"\bquantity\x18\x03 \x01(\x05R\bquantity\x12\x1b\n" +
+	"\tauto_role\x18\x04 \x01(\tR\bautoRole\x12$\n" +
+	"\x0efill_this_year\x18\x05 \x01(\bR\ffillThisYear\x120\n" +
+	"\x14expected_source_hash\x18\x06 \x01(\tR\x12expectedSourceHash\"\x8b\x02\n" +
+	"\x12ShipyardProduction\x12.\n" +
+	"\x06planet\x18\x01 \x01(\v2\x16.craig_stars.v1.PlanetR\x06planet\x12,\n" +
+	"\x12capacity_this_year\x18\x02 \x01(\x05R\x10capacityThisYear\x12,\n" +
+	"\x12this_year_quantity\x18\x03 \x01(\x05R\x10thisYearQuantity\x12%\n" +
+	"\x0elater_quantity\x18\x04 \x01(\x05R\rlaterQuantity\x12*\n" +
+	"\x11years_to_complete\x18\x05 \x01(\x05R\x0fyearsToComplete\x12\x16\n" +
+	"\x06reason\x18\x06 \x01(\tR\x06reason\"\xdf\x02\n" +
+	"\x16ShipProductionResponse\x128\n" +
+	"\x05yards\x18\x01 \x03(\v2\".craig_stars.v1.ShipyardProductionR\x05yards\x12-\n" +
+	"\x12requested_quantity\x18\x02 \x01(\x05R\x11requestedQuantity\x12+\n" +
+	"\x11assigned_quantity\x18\x03 \x01(\x05R\x10assignedQuantity\x12,\n" +
+	"\x12this_year_quantity\x18\x04 \x01(\x05R\x10thisYearQuantity\x12/\n" +
+	"\x13unassigned_quantity\x18\x05 \x01(\x05R\x12unassignedQuantity\x12\x1b\n" +
+	"\tauto_role\x18\x06 \x01(\tR\bautoRole\x12\x1f\n" +
+	"\vsource_hash\x18\a \x01(\tR\n" +
+	"sourceHash\x12\x12\n" +
+	"\x04year\x18\b \x01(\x05R\x04year\"J\n" +
 	"\x10GetPlanetRequest\x12\x17\n" +
 	"\agame_id\x18\x01 \x01(\x03R\x06gameId\x12\x1d\n" +
 	"\n" +
@@ -239,8 +532,10 @@ const file_craig_stars_v1_planetservice_proto_rawDesc = "" +
 	"planet_num\x18\x02 \x01(\x05R\tplanetNum\x12A\n" +
 	"\rplanet_orders\x18\x04 \x01(\v2\x1c.craig_stars.v1.PlanetOrdersR\fplanetOrders\"L\n" +
 	"\x1aUpdatePlanetOrdersResponse\x12.\n" +
-	"\x06planet\x18\x01 \x01(\v2\x16.craig_stars.v1.PlanetR\x06planet2\xd8\x01\n" +
-	"\rPlanetService\x12U\n" +
+	"\x06planet\x18\x01 \x01(\v2\x16.craig_stars.v1.PlanetR\x06planet2\xab\x03\n" +
+	"\rPlanetService\x12k\n" +
+	"\x15PreviewShipProduction\x12%.craig_stars.v1.ShipProductionRequest\x1a&.craig_stars.v1.ShipProductionResponse\"\x03\x90\x02\x01\x12d\n" +
+	"\x13QueueShipProduction\x12%.craig_stars.v1.ShipProductionRequest\x1a&.craig_stars.v1.ShipProductionResponse\x12U\n" +
 	"\tGetPlanet\x12 .craig_stars.v1.GetPlanetRequest\x1a!.craig_stars.v1.GetPlanetResponse\"\x03\x90\x02\x01\x12p\n" +
 	"\x12UpdatePlanetOrders\x12).craig_stars.v1.UpdatePlanetOrdersRequest\x1a*.craig_stars.v1.UpdatePlanetOrdersResponse\"\x03\x90\x02\x02B\xc5\x01\n" +
 	"\x12com.craig_stars.v1B\x12PlanetserviceProtoP\x01ZFgithub.com/sirgwain/craig-stars/proto/gen/craig_stars/v1;craig_starsv1\xa2\x02\x03CXX\xaa\x02\rCraigStars.V1\xca\x02\rCraigStars\\V1\xe2\x02\x19CraigStars\\V1\\GPBMetadata\xea\x02\x0eCraigStars::V1b\x06proto3"
@@ -257,28 +552,37 @@ func file_craig_stars_v1_planetservice_proto_rawDescGZIP() []byte {
 	return file_craig_stars_v1_planetservice_proto_rawDescData
 }
 
-var file_craig_stars_v1_planetservice_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_craig_stars_v1_planetservice_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_craig_stars_v1_planetservice_proto_goTypes = []any{
-	(*GetPlanetRequest)(nil),           // 0: craig_stars.v1.GetPlanetRequest
-	(*GetPlanetResponse)(nil),          // 1: craig_stars.v1.GetPlanetResponse
-	(*UpdatePlanetOrdersRequest)(nil),  // 2: craig_stars.v1.UpdatePlanetOrdersRequest
-	(*UpdatePlanetOrdersResponse)(nil), // 3: craig_stars.v1.UpdatePlanetOrdersResponse
-	(*Planet)(nil),                     // 4: craig_stars.v1.Planet
-	(*PlanetOrders)(nil),               // 5: craig_stars.v1.PlanetOrders
+	(*ShipProductionRequest)(nil),      // 0: craig_stars.v1.ShipProductionRequest
+	(*ShipyardProduction)(nil),         // 1: craig_stars.v1.ShipyardProduction
+	(*ShipProductionResponse)(nil),     // 2: craig_stars.v1.ShipProductionResponse
+	(*GetPlanetRequest)(nil),           // 3: craig_stars.v1.GetPlanetRequest
+	(*GetPlanetResponse)(nil),          // 4: craig_stars.v1.GetPlanetResponse
+	(*UpdatePlanetOrdersRequest)(nil),  // 5: craig_stars.v1.UpdatePlanetOrdersRequest
+	(*UpdatePlanetOrdersResponse)(nil), // 6: craig_stars.v1.UpdatePlanetOrdersResponse
+	(*Planet)(nil),                     // 7: craig_stars.v1.Planet
+	(*PlanetOrders)(nil),               // 8: craig_stars.v1.PlanetOrders
 }
 var file_craig_stars_v1_planetservice_proto_depIdxs = []int32{
-	4, // 0: craig_stars.v1.GetPlanetResponse.planet:type_name -> craig_stars.v1.Planet
-	5, // 1: craig_stars.v1.UpdatePlanetOrdersRequest.planet_orders:type_name -> craig_stars.v1.PlanetOrders
-	4, // 2: craig_stars.v1.UpdatePlanetOrdersResponse.planet:type_name -> craig_stars.v1.Planet
-	0, // 3: craig_stars.v1.PlanetService.GetPlanet:input_type -> craig_stars.v1.GetPlanetRequest
-	2, // 4: craig_stars.v1.PlanetService.UpdatePlanetOrders:input_type -> craig_stars.v1.UpdatePlanetOrdersRequest
-	1, // 5: craig_stars.v1.PlanetService.GetPlanet:output_type -> craig_stars.v1.GetPlanetResponse
-	3, // 6: craig_stars.v1.PlanetService.UpdatePlanetOrders:output_type -> craig_stars.v1.UpdatePlanetOrdersResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	7, // 0: craig_stars.v1.ShipyardProduction.planet:type_name -> craig_stars.v1.Planet
+	1, // 1: craig_stars.v1.ShipProductionResponse.yards:type_name -> craig_stars.v1.ShipyardProduction
+	7, // 2: craig_stars.v1.GetPlanetResponse.planet:type_name -> craig_stars.v1.Planet
+	8, // 3: craig_stars.v1.UpdatePlanetOrdersRequest.planet_orders:type_name -> craig_stars.v1.PlanetOrders
+	7, // 4: craig_stars.v1.UpdatePlanetOrdersResponse.planet:type_name -> craig_stars.v1.Planet
+	0, // 5: craig_stars.v1.PlanetService.PreviewShipProduction:input_type -> craig_stars.v1.ShipProductionRequest
+	0, // 6: craig_stars.v1.PlanetService.QueueShipProduction:input_type -> craig_stars.v1.ShipProductionRequest
+	3, // 7: craig_stars.v1.PlanetService.GetPlanet:input_type -> craig_stars.v1.GetPlanetRequest
+	5, // 8: craig_stars.v1.PlanetService.UpdatePlanetOrders:input_type -> craig_stars.v1.UpdatePlanetOrdersRequest
+	2, // 9: craig_stars.v1.PlanetService.PreviewShipProduction:output_type -> craig_stars.v1.ShipProductionResponse
+	2, // 10: craig_stars.v1.PlanetService.QueueShipProduction:output_type -> craig_stars.v1.ShipProductionResponse
+	4, // 11: craig_stars.v1.PlanetService.GetPlanet:output_type -> craig_stars.v1.GetPlanetResponse
+	6, // 12: craig_stars.v1.PlanetService.UpdatePlanetOrders:output_type -> craig_stars.v1.UpdatePlanetOrdersResponse
+	9, // [9:13] is the sub-list for method output_type
+	5, // [5:9] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_craig_stars_v1_planetservice_proto_init() }
@@ -293,7 +597,7 @@ func file_craig_stars_v1_planetservice_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_craig_stars_v1_planetservice_proto_rawDesc), len(file_craig_stars_v1_planetservice_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -8,6 +8,10 @@ export const ARMOR_ICON_PATH = 'M12 2 20 5v6c0 5.5-3.4 9.4-8 11-4.6-1.6-8-5.5-8-
 export const SHIELD_COLOR = '#8fe3ff';
 export const ARMOR_COLOR = '#ffb050';
 export const DESTROYED_COLOR = '#ffff00';
+// Keep enlarged feedback inside the bottom of the ten-row battle board.
+export function damageMarkOffset(y: number, cell: number, marks: number, scale: number) {
+	return Math.max(0, y * cell + 2 + (marks * 17 - 1) * scale - cell * 10);
+}
 export const DESTROYED_ICON_PATH = 'M12 3 19 10l-4 3 5 6-8-4-8 4 5-6-4-3Z';
 
 export type DamageKind = 'shield' | 'armor' | 'destroyed';

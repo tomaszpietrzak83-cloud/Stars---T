@@ -2142,12 +2142,26 @@ func (t *turnGenerator) planetProduction() error {
 
 // build a fleet with some number of tokens
 func (t *turnGenerator) buildFleet(player *Player, planet *Planet, token ShipToken, tags Tags, routeTarget *MapObject) (*Fleet, error) {
+	override := tags[ProductionAutoRoleTag]
+	explicitRole := override != ""
+	if explicitRole || tags[shipProductionWindowTag] != "" {
+		tags = maps.Clone(tags)
+		delete(tags, ProductionAutoRoleTag)
+		delete(tags, shipProductionWindowTag)
+	}
 	fleet, err := t.addFleet(player, planet.Position, token, tags)
 	if err != nil {
 		return nil, err
 	}
 	fleet.OrbitingPlanetNum = planet.Num
-	if role := effectiveDesignAutoRole(token.design.Spec); role != "" && !token.design.Spec.Starbase && !(player.AIControlled && token.design.Spec.DefaultAutoRole == "") {
+	role := effectiveDesignAutoRole(token.design.Spec)
+	if explicitRole {
+		role = override
+		if role == "manual" {
+			role = ""
+		}
+	}
+	if role != "" && !token.design.Spec.Starbase && !(player.AIControlled && token.design.Spec.DefaultAutoRole == "" && !explicitRole) {
 		if player.Automation.FleetRoles == nil {
 			player.Automation.FleetRoles = map[int]string{}
 		}
