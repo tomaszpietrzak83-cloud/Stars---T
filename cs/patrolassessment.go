@@ -26,6 +26,7 @@ type patrolEvaluator struct {
 }
 
 func (t *turnGenerator) startPatrolEvaluation() {
+	t.recaptureEvaluation = map[int]*patrolEvaluator{}
 	t.civilianWarnings = map[civilianWarningKey][]*Fleet{}
 	t.bombardmentEvaluation = map[int]*patrolEvaluator{}
 	for _, p := range t.automaticPlayers() {
@@ -76,7 +77,12 @@ func (e *patrolEvaluator) assessEncounter(p *Player, own []*Fleet, reports []*Fl
 func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*Fleet, point Vector, horizon float64, merge bool) patrolAssessment {
 	for _, planet := range p.PlanetIntels {
 		if planet != nil && planet.PlayerNum != p.Num && planet.Owned() && !p.IsFriend(planet.PlayerNum) && planet.Spec.HasStarbase && point.DistanceTo(planet.Position) <= 3 {
-			return patrolAssessment{Reason: "Reported hostile starbase requires a dedicated assault"}
+			included := slices.ContainsFunc(reports, func(f *Fleet) bool {
+				return f != nil && f.Starbase && f.PlayerNum == planet.PlayerNum && f.Position == planet.Position && !unknownFleetEquipment(p, f)
+			})
+			if !included {
+				return patrolAssessment{Reason: "Reported hostile starbase requires a dedicated assault"}
+			}
 		}
 	}
 	count, unknown := 0, false

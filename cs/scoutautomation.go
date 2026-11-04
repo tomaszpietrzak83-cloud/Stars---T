@@ -65,6 +65,7 @@ func (t *turnGenerator) planScoutAutomation() {
 	for _, player := range t.automaticPlayers() {
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
+		colonyRecon := t.planRecaptureReconnaissance(player, fleets)
 		if player.patrolEvaluator != nil {
 			// Give contact duties to the available scouts with the shortest public
 			// travel estimate; funded native routes are still required per task.
@@ -112,6 +113,9 @@ func (t *turnGenerator) planScoutAutomation() {
 		quota := max(1, min(32, unknown/max(1, active)))
 		for _, fleet := range fleets {
 			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "scout" || fleet.GetTag(tankerAwaitTag) != "" {
+				continue
+			}
+			if colonyRecon[fleet.Num] {
 				continue
 			}
 			if fleet.GetTag(preyWatchTag) != "" {

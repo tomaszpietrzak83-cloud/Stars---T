@@ -21,7 +21,7 @@ func (t *turnGenerator) planColonyRecon(p *Player, f *Fleet, priorityOnly bool) 
 	var route *expeditionRoute
 	score := math.Inf(1)
 	for _, planet := range p.PlanetIntels {
-		if planet == nil || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || planet.ReportAge <= 2 || planet.Unexplored() {
+		if planet == nil || planet.PlayerNum == p.Num || planet.Owned() && p.IsFriend(planet.PlayerNum) || planet.ReportAge <= 2 && !recaptureEquipmentMissing(p, planet) || planet.Unexplored() || !planet.Owned() && !p.Automation.PriorityPlanets[planet.Num] {
 			continue
 		}
 		if priorityOnly && !p.Automation.PriorityPlanets[planet.Num] {

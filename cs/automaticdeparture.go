@@ -19,6 +19,12 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			wp := fleet.Waypoints[1]
+			if player.Automation.FleetRoles[fleet.Num] == "bomber" && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() {
+				if target := player.GetPlanetIntel(wp.TargetNum); wp.TargetType == MapObjectTypePlanet && target != nil && target.Owned() && target.PlayerNum != player.Num && !player.IsFriend(target.PlayerNum) && target.Spec.HasStarbase {
+					holdAutomaticFleet(player, fleet, "Bombardment awaits confirmed orbital base destruction")
+					continue
+				}
+			}
 			if player.Automation.FleetRoles[fleet.Num] == "scout" && wp.TargetType == MapObjectTypeFleet && wp.TargetPlayerNum != player.Num && !player.IsFriend(wp.TargetPlayerNum) {
 				job := readScoutRecon(fleet)
 				report := player.GetFleetIntel(wp.TargetPlayerNum, wp.TargetNum)
@@ -45,7 +51,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				}
 				continue
 			}
-			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
 			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
 			if provisionalPatrolLeg(player, fleet) && !fleet.InAutomaticSafety() {
 				allowThreat = false

@@ -308,6 +308,9 @@ func passengerScore(planet *Planet, distance float64) float64 {
 }
 func (t *turnGenerator) passengerTripSafe(player *Player, fleet *Fleet, job *logisticsJob) bool {
 	source, dest := t.game.getPlanet(job.TargetNum), t.game.getPlanet(job.DeliveryNum)
+	if job.Kind == "invade-load" {
+		dest = player.GetPlanetIntel(job.DeliveryNum)
+	}
 	if source == nil || dest == nil {
 		return false
 	}

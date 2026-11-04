@@ -16,7 +16,7 @@ func (t *turnGenerator) patrolDepartureConfirmed(p *Player, f *Fleet) bool {
 	}
 	for _, planet := range p.PlanetIntels {
 		if planet != nil && planet.Owned() && planet.PlayerNum != p.Num && !p.IsFriend(planet.PlayerNum) && planet.Spec.HasStarbase && point.DistanceTo(planet.Position) <= 3 {
-			return false
+			return t.recaptureDepartureConfirmed(p, f, planet)
 		}
 	}
 	for _, report := range p.FleetIntels {

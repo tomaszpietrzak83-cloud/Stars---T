@@ -57,12 +57,24 @@ func TestCopiedTransportCampaign(t *testing.T) {
 	g, err := conn.NewReadClient().GetFullGame(t.Context(), 3)
 	require.NoError(t, err)
 	year := g.Year
+	owners := map[int]int{}
+	for _, planet := range g.Planets {
+		owners[planet.Num] = planet.PlayerNum
+	}
+	captures := 0
 	for step := 0; step <= turns; step++ {
 		if step > 0 {
 			_, err = runner.GenerateTurn(3)
 			require.NoError(t, err)
 			g, err = conn.NewReadClient().GetFullGame(t.Context(), 3)
 			require.NoError(t, err)
+			for _, planet := range g.Planets {
+				if planet.PlayerNum == 1 && owners[planet.Num] != 0 && owners[planet.Num] != 1 {
+					captures++
+					t.Logf("RECAPTURE year=%d planet=%d name=%s formerOwner=%d population=%d", g.Year, planet.Num, planet.Name, owners[planet.Num], planet.GetPopulation())
+				}
+				owners[planet.Num] = planet.PlayerNum
+			}
 		}
 		require.Equal(t, year+step, g.Year)
 		file, err := os.Create(filepath.Join(out, strconv.Itoa(g.Year)+".json.gz"))
@@ -105,4 +117,7 @@ func TestCopiedTransportCampaign(t *testing.T) {
 	after, err := os.ReadFile(absolute)
 	require.NoError(t, err)
 	require.Equal(t, beforeHash, sha256.Sum256(after), "audit input must remain unchanged")
+	if os.Getenv("STARS_REQUIRE_RECAPTURES") == "1" {
+		require.Positive(t, captures, "the copied campaign must actually capture a hostile colony")
+	}
 }

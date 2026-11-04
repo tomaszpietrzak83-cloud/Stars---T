@@ -6,9 +6,28 @@ import (
 )
 
 func invasionColony(player *Player, planet *Planet) bool {
-	return planet != nil && planet.Explored() && planet.Owned() && planet.PlayerNum != player.Num && !player.IsFriend(planet.PlayerNum) && !planet.Spec.HasStarbase && planet.Defenses == 0 && planet.Cargo.Colonists > 0 && prospectivePlanetQuality(player, planet) >= 50
+	return invasionCandidate(player, planet) && !planet.Spec.HasStarbase && !reportedGroundDefenses(planet) && planet.Cargo.Colonists > 0
+}
+
+func reportedGroundDefenses(planet *Planet) bool {
+	return planet.Defenses > 0 || planet.Spec.DefenseCoverage > 0 || planet.Spec.DefenseCoverageSmart > 0
+}
+
+func invasionCandidate(p *Player, planet *Planet) bool {
+	if planet == nil || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) {
+		return false
+	}
+	// An occupation can use immediate instaforming, not future construction.
+	copyPlayer := *p
+	copyPlayer.Automation.ServeTerraformingWorlds = false
+	quality := prospectivePlanetQuality(&copyPlayer, planet)
+	return quality >= 50 || p.Automation.PriorityPlanets[planet.Num] && quality > 0
 }
 func (t *turnGenerator) findAutomaticInvasion(player *Player, fleet *Fleet) *logisticsJob {
+	return t.findInvasionTransfer(player, fleet, false)
+}
+
+func (t *turnGenerator) findInvasionTransfer(player *Player, fleet *Fleet, priorityOnly bool) *logisticsJob {
 	if player.Race.Spec.LivesOnStarbases || !automaticPassengersAllowed(player, fleet) {
 		return nil
 	}
@@ -36,6 +55,9 @@ func (t *turnGenerator) findAutomaticInvasion(player *Player, fleet *Fleet) *log
 			continue
 		}
 		priority := player.Automation.PriorityPlanets[target.Num]
+		if priorityOnly && !priority || target.ReportAge > 2 {
+			continue
+		}
 		staging := false
 		if priorityNeedsBombing(target) {
 			forecast := t.forecastLandingAfterBombing(player, target)
@@ -144,14 +166,20 @@ func (t *turnGenerator) loadAutomaticInvaders(player *Player, fleet *Fleet, job 
 // A priority landing carries both the estimated combat losses and a garrison.
 // Quantities use the same 100-person units as cargo and native ground combat.
 func (t *turnGenerator) priorityLandingRequirement(p *Player, planet *Planet, years int) int {
-	defender := t.game.getPlayer(planet.PlayerNum)
-	defense := 1.0
-	if defender != nil {
-		defense = defender.Race.Spec.InvasionDefendBonus
-	}
+	defense := reportedInvasionDefense(&t.game.Rules)
 	losses := int(math.Ceil(float64(planet.Cargo.Colonists) * defense * math.Pow(1.25, float64(planet.ReportAge+years)) / max(0.1, p.Race.Spec.InvasionAttackBonus)))
 	garrison := max(50, populationTarget(planet, p.Automation.destinationPopulationPercent()))
 	return losses + garrison
+}
+
+// PRT is not public planet intelligence. Budget the strongest ground-defense
+// modifier supported by the public rules, without consulting the hidden owner.
+func reportedInvasionDefense(rules *Rules) float64 {
+	bonus := 1.5
+	for _, spec := range rules.PRTSpecs {
+		bonus = max(bonus, spec.InvasionDefendBonus)
+	}
+	return bonus
 }
 
 // Combine simultaneous transports before checking invasion strength. Priority

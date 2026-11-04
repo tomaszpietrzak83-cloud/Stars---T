@@ -36,6 +36,7 @@ type patrolBattleOutcome struct {
 	LostMass, EnemyMassDestroyed      float64
 	DangerBefore, DangerAfter         float64
 	BombersBefore, BombersAfter       int
+	StarbasesAfter                    int
 }
 
 // Combat and bombardment capability are mission threats. Escaping scouts and
@@ -162,7 +163,7 @@ func newPatrolBattleCopy(rules *Rules, p *Player, own, reports []*Fleet) (*patro
 		fleet.Tags = nil
 		for _, observed := range report.Tokens {
 			intel := p.GetShipDesignIntel(report.PlayerNum, observed.DesignNum)
-			if intel == nil || len(intel.Slots) == 0 || intel.Spec.Armor <= 0 || intel.Spec.Mass <= 0 {
+			if intel == nil || len(intel.Slots) == 0 || intel.Spec.Armor <= 0 || !report.Starbase && intel.Spec.Mass <= 0 {
 				return nil, fmt.Errorf("incomplete public combat specification")
 			}
 			design, err := patrolDeepCopy(intel)
@@ -250,6 +251,9 @@ func (m *patrolBattleCopy) run(tactic, enemyTactic BattleTactic, seed int64) pat
 		for _, token := range fleet.Tokens {
 			if fleet.PlayerNum != m.owner {
 				result.EnemySurvivors += token.Quantity
+				if fleet.Starbase {
+					result.StarbasesAfter += token.Quantity
+				}
 				result.DangerAfter += patrolTokenDanger(token)
 				if patrolTokenBomber(token) {
 					result.BombersAfter += token.Quantity
@@ -317,5 +321,6 @@ func (m *patrolBattleCopy) run(tactic, enemyTactic BattleTactic, seed int64) pat
 	} else {
 		result.MissionSucceeded = result.EnemySurvivors < m.enemyShips
 	}
+	result.MissionSucceeded = result.MissionSucceeded && result.StarbasesAfter == 0
 	return result
 }

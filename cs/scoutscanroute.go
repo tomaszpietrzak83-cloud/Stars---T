@@ -90,6 +90,9 @@ func scoutFleetReconPoint(p *Player, f, anchor *Fleet) Vector {
 }
 
 func scoutColonyScanPoint(p *Player, f *Fleet, anchor *Planet) Vector {
+	if recaptureEquipmentMissing(p, anchor) {
+		return anchor.Position
+	}
 	radius := scoutPlanetScanRadius(f)
 	best := scoutScanPoint(f.Position, anchor.Position, radius)
 	if radius <= 0 {

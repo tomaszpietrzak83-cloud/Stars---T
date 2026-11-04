@@ -253,6 +253,7 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 // Contact reconnaissance is recorded before combat so a destroyed scout still
 // transmits what it physically scanned. Hidden or out-of-range fleets are not read.
 func (t *turnGenerator) scanScoutReconContacts() {
+	t.scanColonyReconContacts()
 	for _, p := range t.game.Players {
 		for _, f := range t.game.getFleets(p.Num) {
 			job := readScoutRecon(f)

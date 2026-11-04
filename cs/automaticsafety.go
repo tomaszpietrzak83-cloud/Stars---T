@@ -114,7 +114,7 @@ func (t *turnGenerator) planAutomaticSafety() {
 			if controlledBombardment {
 				canStand = defenseReady
 			}
-			contactRecon := scoutReconActive(player, fleet) && !readScoutRecon(fleet).Watching
+			contactRecon := scoutReconActive(player, fleet) && !readScoutRecon(fleet).Watching || colonyReconActive(player, fleet)
 			intercepted := !contactRecon && !player.Automation.DisableInterceptionEvasion && threat > 0 && !canStand
 			// A safe refit already replaces damaged ships; only danger may preempt it.
 			needsRepair := !fleet.InDesignMaintenance() && !contactRecon && !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()

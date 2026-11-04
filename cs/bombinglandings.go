@@ -5,7 +5,7 @@ import "math"
 // Predict colonist casualties from published defenses and our own bombs only.
 // Round kills down, leaving one extra cargo unit; forecasts never consume RNG.
 func (t *turnGenerator) forecastLandingAfterBombing(p *Player, target *Planet) *Planet {
-	if target == nil || target.ReportAge > 1 || target.Spec.HasStarbase || target.Defenses > 0 || target.Cargo.Colonists <= 0 {
+	if target == nil || target.ReportAge > 1 || target.Spec.HasStarbase || reportedGroundDefenses(target) || target.Cargo.Colonists <= 0 {
 		return nil
 	}
 	normal, floor, smart := 0.0, 0, 1.0
@@ -53,12 +53,42 @@ func (t *turnGenerator) forecastLandingAfterBombing(p *Player, target *Planet) *
 // Staging stays outside the hostile orbit until a real refreshed report makes
 // the landing eligible. A forecast is never permission to drop troops early.
 func (t *turnGenerator) invasionDestination(p *Player, f *Fleet, job *logisticsJob, target *Planet) MapObjectTarget {
-	if job.BombingStage && target.ReportAge <= 2 && !priorityNeedsBombing(target) {
+	if job.Kind != "invade" || job.LandingTarget != target.Num || job.LandingOwner != target.PlayerNum {
+		job.LandingCleared = false
+	}
+	// A fresh report clears departure. Merely ageing during a funded voyage
+	// must not reverse loaded transports every third year; new hostile evidence
+	// still cancels that clearance, and native arrival checks remain mandatory.
+	blocked := target.Spec.HasStarbase || reportedGroundDefenses(target) || target.ReportAge <= 2 && target.Cargo.Colonists > 1000
+	if p.Automation.PriorityPlanets[target.Num] && (blocked || target.ReportAge > 2 && !job.LandingCleared) {
+		job.BombingStage = true
+		job.LandingCleared = false
+	}
+	if target.ReportAge <= 2 && !priorityNeedsBombing(target) {
 		job.BombingStage = false
+		job.LandingCleared = true
+		job.LandingTarget = target.Num
+		job.LandingOwner = target.PlayerNum
 	}
 	if !job.BombingStage {
 		job.Position = target.Position
 		return target.ToTarget()
+	}
+	// Keep a loaded mission at a reachable own colony while reconnaissance or
+	// bombardment is pending. An arbitrary point next to the enemy is not a rally.
+	var rally *Planet
+	best := math.Inf(1)
+	for _, colony := range t.game.getPlanets(p.Num) {
+		if d := colony.Position.DistanceTo(target.Position); d < best {
+			if colony.Position == f.Position || planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, colony.Position, colony.ToTarget(), automaticRoutePolicy{}) != nil {
+				rally, best = colony, d
+			}
+		}
+	}
+	if rally != nil {
+		job.Position = rally.Position
+		job.Status = "Staging at an owned colony for fresh reconnaissance and bombardment"
+		return rally.ToTarget()
 	}
 	direction := f.Position.Subtract(target.Position).Normalized()
 	if direction.LengthSquared() == 0 {

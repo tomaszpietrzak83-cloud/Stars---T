@@ -33,7 +33,7 @@ func TestCurrentPriorityBombersAndManufacturing(t *testing.T) {
 	year := g.Year
 	for _, planet := range p.PlanetIntels {
 		if planet != nil && p.Automation.PriorityPlanets[planet.Num] {
-			t.Logf("Priority %s owner=%d pop=%d defenses=%d base=%v bombing=%v quality=%d", planet.Name, planet.PlayerNum, planet.Cargo.Colonists, planet.Defenses, planet.Spec.HasStarbase, priorityBombingTarget(p, g.getFleet(1, 21)) == planet, prospectivePlanetQuality(p, planet))
+			t.Logf("Priority %s owner=%d pop=%d defenses=%d base=%v bombing=%v quality=%d", planet.Name, planet.PlayerNum, planet.Cargo.Colonists, planet.Defenses, planet.Spec.HasStarbase, priorityBombingTarget(&g.Rules, p, g.getFleet(1, 21)) == planet, prospectivePlanetQuality(p, planet))
 		}
 	}
 	for _, f := range g.getFleets(1) {

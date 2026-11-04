@@ -104,7 +104,7 @@ func (t *turnGenerator) finishBombingPacks() {
 				continue
 			}
 			target := p.GetPlanetIntel(pack.Target)
-			done := target == nil || !target.Owned() || target.PlayerNum == p.Num || p.IsFriend(target.PlayerNum) || !priorityNeedsBombing(target) && bombingDelegatedToLanding(p, target, t.game.getFleets(p.Num))
+			done := target == nil || !target.Owned() || target.PlayerNum == p.Num || p.IsFriend(target.PlayerNum) || !priorityNeedsBombing(target) && bombingDelegatedToLanding(&t.game.Rules, p, target, t.game.getFleets(p.Num))
 			if done || p.Automation.FleetRoles[f.Num] != "bomber" || t.bombingPackHasSurplusCover(p, f, pack) {
 				t.dissolveBombingPack(p, f, pack)
 			}
@@ -165,6 +165,9 @@ func (t *turnGenerator) planBombingWolfPacks() {
 		for _, leader := range fleets {
 			goal := bomberGoal(leader)
 			if goal == 0 || leader.Delete || leader.InAutomaticSafety() || leader.InDesignMaintenance() || fuelNetworkManaged(leader) || leader.GetTag(tankerAwaitTag) != "" || p.Automation.FleetRoles[leader.Num] != "bomber" {
+				continue
+			}
+			if target := p.GetPlanetIntel(goal); target != nil && target.Spec.HasStarbase && leader.Position != target.Position {
 				continue
 			}
 			members := []*Fleet{leader}
