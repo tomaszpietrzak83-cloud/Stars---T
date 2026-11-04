@@ -58,7 +58,7 @@ func installationCapacity(player *Player, p *Planet, population int) (int, int, 
 
 // Pickup is only called during another already funded logistics pickup.
 // It never creates a route or goes searching for a source planet.
-func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet, source, dest *Planet, passengers int) {
+func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet, source, dest *Planet, passengers int, reservedPassengers ...int) {
 	if !player.Automation.InfrastructureTransport || source == nil || dest == nil || !source.OwnedBy(player.Num) || !dest.OwnedBy(player.Num) || source.Num == dest.Num || f.Position != source.Position {
 		return
 	}
@@ -66,7 +66,7 @@ func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet
 	if packed.mass() > 0 && packed.Destination != dest.Num {
 		return
 	}
-	sf, sm, sd := installationCapacity(player, source, source.GetPopulation())
+	sf, sm, sd := installationCapacity(player, source, max(0, source.GetPopulation()-passengers*100))
 	df, dm, dd := installationCapacity(player, dest, dest.GetPopulation()+passengers*100)
 	for _, other := range t.game.getFleets(player.Num) {
 		if other.Num != f.Num && !other.Delete {
@@ -90,6 +90,21 @@ func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet
 	source.Factories -= factories
 	source.Mines -= mines
 	source.Defenses -= defenses
+	// Packed buildings displace some of the proposed passengers. Recheck the
+	// retained source capacity against the ACTUAL mixed load, not the optimistic
+	// all-passenger proposal. Returning excess buildings frees still more seats.
+	reserved := 0
+	if len(reservedPassengers) > 0 {
+		reserved = reservedPassengers[0]
+	}
+	actualPassengers := min(passengers, max(0, f.availableColonistSpace()+reserved-factories*5-mines*3-defenses))
+	sf, sm, _ = installationCapacity(player, source, max(0, source.GetPopulation()-actualPassengers*100))
+	restoreFactories := min(factories, max(0, (sf*95+99)/100-source.Factories))
+	restoreMines := min(mines, max(0, (sm*95+99)/100-source.Mines))
+	source.Factories += restoreFactories
+	source.Mines += restoreMines
+	factories -= restoreFactories
+	mines -= restoreMines
 	packed.Factories += factories
 	packed.Mines += mines
 	packed.Defenses += defenses
