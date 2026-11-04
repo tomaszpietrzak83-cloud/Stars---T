@@ -119,7 +119,7 @@
 	}
 </script>
 
-<section class="max-w-6xl mx-auto p-3" aria-label="Empire ship production">
+<section class="max-w-6xl min-w-0 w-full mx-auto p-3" aria-label="Empire ship production">
 	<h1 class="text-2xl font-semibold">Ship production</h1>
 	<p class="my-2">
 		Distribute new ships across your existing bases. Green batches finish this year; blue batches

@@ -1,0 +1,74 @@
+tomek-stars 0.6.14 — coordinated native planet recapture
+2026-11-04
+
+Combined source
+- Merge 199f7121 combines reviewed recapture commit 772462ff with main 5ee57b3b.
+  Designer upgrades still replace older-family queued ship/base projects at once,
+  retaining quantity, paid allocation, order, notes and one-off Auto orders.
+- Bounded marked-colony scouts refresh even stale unowned reports. Only actual
+  scout hulls accept the deliberate contact risk; actual scanner evidence is
+  transmitted before combat. Incoming-colony fleet reconnaissance stays protected.
+- Known orbital bases get a separate, bounded assault of physically available
+  local ships. Full reported equipment, the whole observed encounter, native
+  forecasts, manual plans, fuel and the 5% count/value/mass limits remain binding.
+  Forecasts must destroy the base. New unsafe defenders release the claim so
+  actual local reinforcements can merge and restore a safe assault.
+- Bombers wait for base destruction and enough active, funded landing troops.
+  Pending retirement/refit retains the mission throughout multiple bombing turns;
+  actual capture then releases it to maintenance. Ground estimates use the
+  strongest public-rule defense bonus, without reading a private enemy race.
+- Explicitly marked viable colonies can have quality below 50%; occupation uses
+  current habitability or immediate instaforming, never future construction.
+- Loaded accepted invasions keep destination-specific clearance as reports age.
+  Changed target/owner/mission and fresh hostile base/defense or population above
+  100,000 invalidate it. Real native landing, current route, escort, full-load
+  and source population checks remain. Pending landings stage at reachable owned
+  colonies. No hidden intelligence or forced unsafe combat is introduced.
+- The global production panel now contains its table within narrow screens.
+
+Review and verification
+- Read-only peer review found three integration issues, all fixed before merge:
+  arrival clearing a pending bomber mission, an unsafe assault permanently
+  claiming a target without recruiting, and premature handoff against possible
+  double ground defense. Regressions cover native repeated bombing until capture
+  and subsequent maintenance; real reserve merge after stronger enemy reports;
+  insufficient troops and independence from the hidden enemy race.
+- Native synthetic campaign captures in 2414 after real reconnaissance, base
+  destruction, bombardment and landing. A pending-retirement variant also captures
+  and begins maintenance afterward. Negative old/incomplete equipment, superior
+  combined encounter, manual-control, viability and clearance-identity tests pass.
+- Two copied private campaigns are distinct: 2474–2484 captures one planet in
+  2482; the final reviewed 2483–2487 continuation captures another in 2486 and
+  keeps both. Input backups are unchanged. Total colony count still falls because
+  other attacks continue. This proves actual recapture, not campaign-wide victory
+  or resolution of every old load. Source handoff documents exact scope/evidence:
+  docs/PLANET-RECAPTURE-HANDOFF-2026-11-04.txt. Private databases are not published.
+- Full COMBINED native packages pass: cs 104.966 s, AI 3.868 s, db 3.942 s,
+  server 119.489 s, proto/converter 1.599 s. This includes Designer upgrade API
+  tests and recapture/native campaign tests. No golden baselines changed.
+- Thirty focused Chrome/frontend tests pass; Svelte check zero errors/warnings.
+  The pre-existing MessageDetail test-mock import issue recorded in 0.6.13 remains
+  a separate test-infrastructure limitation; no full frontend-suite pass claimed.
+
+Compiled Windows release
+- Rebuilt native, WASM and static UI from the combined source as version 0.6.14.
+  Isolated native/UI test ports 18108/18794 use a fresh synthetic zero-AI database
+  that remains in year 2400; no Submit Turn. No browser errors.
+- Compiled smoke proves two-base production and green/blue +1 boundary, saved
+  per-order roles, real Shift range and bulk role persistence, desktop/phone
+  Commands and route persistence. It then uses real Designer Upgrade controls
+  to update both paid queues, preserving total quantity, one-off Tanker tags,
+  resources already allocated and notes; server reread and in-app browser/WASM
+  update succeed without a manual reload. Embedded WASM matches byte for byte.
+- Final phone smoke checks document width against the 390-pixel viewport after
+  estimates load; the wide table scrolls inside its panel. Screenshots inspected.
+- Windows 0.6.14 installed between personal turns: year 2475/WaitingForPlayers
+  identical immediately before/after native replacement. The user advanced from
+  the earlier audit's 2474 independently; tests never advance the personal game.
+  Updated immutable compiled UI, current SHA256SUMS, HTTP 200, schema 30 and no
+  migration. No personal orders or saved game replaced by installation.
+
+Limits: insufficient available forces/fuel, production latency and other enemy
+attacks remain strategic constraints. Dedicated advanced adaptive-tactics handoff
+is not integrated by this release. Keep actual observations and unknown equipment
+separate; do not infer a universal victory guarantee from these campaign tests.

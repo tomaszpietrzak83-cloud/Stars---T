@@ -1,4 +1,4 @@
-Przegląd wcześniejszych próśb — 4 listopada 2026, wersja 0.6.13
+Przegląd wcześniejszych próśb — 4 listopada 2026, aktualizacja 0.6.14
 
 Zakres
 Przejrzano komentarze tej rozmowy, późniejsze doprecyzowania, checklistę oraz
@@ -94,8 +94,12 @@ Pozostałe ograniczenia — nie oznaczono wszystkiego jako zakończone
 - Nowe naprawy dostaw przeszły osiem pełnych tur skopiowanej bazy: rzeczywiste
   dostawy i brak rozbieżnych celów pasażerów/instalacji od dalszych tur. Kolejny
   test udowadnia bezpieczny objazd i natywne zdobycie legalnego celu. Dłuższa
-  kampania nie pokazała nowej skutecznej inwazji. Skuteczność wszystkich dawnych
-  inwazji i każdego starego załadowanego transportu pozostaje niepotwierdzona.
+  kampania 0.6.13 nie pokazała nowej skutecznej inwazji. W 0.6.14 dodatkowy test
+  kopii 2474–2484 odbił planetę w 2482; osobna kontynuacja 2483–2487 z ostatecznym
+  kodem odbiła drugą w 2486 i zachowała obie. Nie jest to jeden niezmienny test
+  czternastu tur ani gwarancja rozstrzygnięcia każdej dawnej misji. Inne kolonie
+  nadal giną; nie zadeklarowano wygranej całej kampanii. Szczegóły:
+  PLANET-RECAPTURE-HANDOFF-2026-11-04.txt oraz AUDIT-0.6.14.txt.
   Dowody: TRANSPORT-DELIVERY-HANDOFF-2026-11-04.txt oraz
   TRANSPORT-SAFE-DETOURS-2026-11-04.txt.
 - Patrole nie mają pełnej wiedzy o przeciwniku ani gwarancji bezstratnej walki.
@@ -103,7 +107,7 @@ Pozostałe ograniczenia — nie oznaczono wszystkiego jako zakończone
   pozostają niepewne. Kampanie testowe pokazują realne dostawy debris, ale nie
   zebranie każdego szybko zanikającego pola; dotarcie obrony też wymaga czasu.
 - Dostarczony osobno pakiet rozszerzonych taktyk adaptacyjnych jest materiałem
-  do integracji. Nie jest częścią działającego systemu ani wydania 0.6.13.
+  do integracji. Nie jest częścią działającego systemu ani wydania 0.6.14.
   Pozostają zapis danych, podłączenie do rund walki, replay i wspólne plany/UI.
 - Kontrola UI wykonała 504 testy w 86 plikach. Stary MessageDetail.svelte.test.ts
   nie wczytuje się: jego mock Stores nie eksportuje showTooltip wymaganego przez
