@@ -7,8 +7,10 @@ export const ARMOR_ICON_PATH = 'M12 2 20 5v6c0 5.5-3.4 9.4-8 11-4.6-1.6-8-5.5-8-
 
 export const SHIELD_COLOR = '#8fe3ff';
 export const ARMOR_COLOR = '#ffb050';
+export const DESTROYED_COLOR = '#ffff00';
+export const DESTROYED_ICON_PATH = 'M12 3 19 10l-4 3 5 6-8-4-8 4 5-6-4-3Z';
 
-export type DamageKind = 'shield' | 'armor';
+export type DamageKind = 'shield' | 'armor' | 'destroyed';
 
 export type DamageMark = {
 	kind: DamageKind;
@@ -21,6 +23,7 @@ export type DamageMark = {
 type Hit = {
 	damageDoneShields?: number;
 	damageDoneArmor?: number;
+	tokensDestroyed?: number;
 };
 
 export function formatDamage(amount: number): string {
@@ -50,6 +53,16 @@ export function damageMarks(hit: Hit | undefined): DamageMark[] {
 			label: `${shields} shield damage`
 		});
 	}
+	const destroyed = hit?.tokensDestroyed ?? 0;
+	if (destroyed > 0) {
+		marks.push({
+			kind: 'destroyed',
+			amount: destroyed,
+			text: formatDamage(destroyed),
+			color: DESTROYED_COLOR,
+			label: `${destroyed} ${destroyed === 1 ? 'ship' : 'ships'} destroyed`
+		});
+	}
 	return marks;
 }
 
@@ -69,10 +82,12 @@ export function damageByTarget(shots: Shot[]): TargetDamage[] {
 			x,
 			y,
 			damageDoneShields: 0,
-			damageDoneArmor: 0
+			damageDoneArmor: 0,
+			tokensDestroyed: 0
 		};
 		hit.damageDoneShields += shot.damageDoneShields ?? 0;
 		hit.damageDoneArmor += shot.damageDoneArmor ?? 0;
+		hit.tokensDestroyed += shot.tokensDestroyed ?? 0;
 		hits.set(key, hit);
 	}
 	return Array.from(hits.values(), (hit) => ({

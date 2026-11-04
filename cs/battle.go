@@ -302,7 +302,9 @@ func getBattleAttackOrders(players map[int]*Player, fleets []*Fleet) (map[int]ma
 	for _, fleet := range fleets {
 		armed := false
 		for _, token := range fleet.Tokens {
-			armed = armed || token.Quantity > 0 && token.design.Spec.HasWeapons
+			owner := players[fleet.PlayerNum]
+			dedicated := owner != nil && !owner.AIControlled && dedicatedMinesweeperSpec(token.design.Spec)
+			armed = armed || token.Quantity > 0 && token.design.Spec.HasWeapons && !dedicated
 		}
 		if !armed || fleet.battlePlan == nil || !fleet.Starbase && fleet.battlePlan.PrimaryTarget == BattleTargetNone {
 			continue

@@ -6,6 +6,11 @@ import "strings"
 // can keep its beam ships and missile ships at different effective ranges.
 // An explicitly selected non-default fleet plan overrides design preferences.
 func designBattlePlan(rules *Rules, player *Player, design *ShipDesign, fleetPlan BattlePlan) BattlePlan {
+	if !player.AIControlled && dedicatedMinesweeperSpec(design.Spec) {
+		fleetPlan.Name, fleetPlan.Tactic = "Minesweeper retreat", BattleTacticDisengage
+		fleetPlan.PrimaryTarget, fleetPlan.SecondaryTarget = BattleTargetNone, BattleTargetNone
+		return fleetPlan
+	}
 	if fleetPlan.Num != 0 || design.Spec.Starbase {
 		return fleetPlan
 	}

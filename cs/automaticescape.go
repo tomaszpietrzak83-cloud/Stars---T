@@ -11,7 +11,7 @@ func reportedEscapeSeparation(player *Player, fleet *Fleet, position Vector) (cl
 			continue
 		}
 		ev := enemy.Heading.Scale(enemy.observedStrategicSpeed())
-		if player.Automation.FleetRoles[fleet.Num] == "bomber" && player.patrolEvaluator != nil && !stationaryBombardmentGuard(player, enemy) {
+		if civilianFleet(player, fleet) && player.patrolEvaluator != nil && !stationaryBombardmentGuard(player, enemy) {
 			// Escape must not lead into another stationary armed pack. Budget a
 			// possible interception of this endpoint at publicly known max speed.
 			distance := enemy.Position.DistanceTo(position)

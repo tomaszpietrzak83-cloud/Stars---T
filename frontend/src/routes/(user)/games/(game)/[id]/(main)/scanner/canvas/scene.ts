@@ -259,6 +259,7 @@ export function buildWaypointPaths(
 	// the commanded fleet's waypoints from before a waypoint drag started, while one is being dragged
 	dragOrigin?: Waypoint[]
 ): WaypointPath[] {
+	if (settings.showFleetRoutes === false) return [];
 	const paths: WaypointPath[] = universe.fleets
 		.filter(
 			(f) =>

@@ -26,6 +26,7 @@ type patrolEvaluator struct {
 }
 
 func (t *turnGenerator) startPatrolEvaluation() {
+	t.civilianWarnings = map[civilianWarningKey][]*Fleet{}
 	t.bombardmentEvaluation = map[int]*patrolEvaluator{}
 	for _, p := range t.automaticPlayers() {
 		p.patrolEvaluator = &patrolEvaluator{rules: &t.game.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 4096}
@@ -201,8 +202,8 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 				e.Work += work
 				e.Battles++
 				outcome := model.run(tactic, ep, int64(17011+seed*997))
-				if !outcome.safe(model.ownShips, model.ownValue) {
-					return patrolAssessment{Reason: "Native forecast: mission ineffective or own count/value loss exceeds 5%"}
+				if !outcome.safe(model.ownShips, model.ownValue, model.ownMass) || !merge && outcome.CivilianLost > 0 {
+					return patrolAssessment{Reason: "Native forecast: ineffective mission, unsafe tonnage exchange, civilian losses or own count/value/mass loss exceeds 5%"}
 				}
 				result.LostShips = max(result.LostShips, outcome.LostShips)
 				loss += outcome.LostValue

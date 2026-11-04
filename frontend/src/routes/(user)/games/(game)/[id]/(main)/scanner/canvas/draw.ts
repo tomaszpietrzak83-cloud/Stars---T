@@ -79,8 +79,10 @@ export function drawScanner(ctx: CanvasRenderingContext2D, view: ScannerView, fr
 	drawScanners(ctx, view, frame);
 	drawMinefields(ctx, view, frame);
 	drawDestLines(ctx, view, frame.packetDests, colors.packetDestLine);
-	drawDestLines(ctx, view, frame.routeDests, colors.routeLine);
-	drawWaypointPaths(ctx, view, frame);
+	if (frame.settings.showFleetRoutes !== false) {
+		drawDestLines(ctx, view, frame.routeDests, colors.routeLine);
+		drawWaypointPaths(ctx, view, frame);
+	}
 	drawPlanets(ctx, view, frame);
 	drawMineralPackets(ctx, view, frame);
 	drawWormholes(ctx, view, frame);
@@ -929,6 +931,7 @@ function drawWarpLine(ctx: CanvasRenderingContext2D, view: ScannerView, frame: S
 	const { colors } = frame;
 	const mo = frame.selectedMapObject;
 	const type = mo?.mapObject?.type;
+	if (type === MapObjectType.FLEET && frame.settings.showFleetRoutes === false) return;
 	if (
 		!mo?.mapObject ||
 		!(

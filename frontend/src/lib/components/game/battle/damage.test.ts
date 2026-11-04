@@ -1,7 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { ARMOR_COLOR, SHIELD_COLOR, damageByTarget, damageMarks, formatDamage } from './damage';
+import {
+	ARMOR_COLOR,
+	SHIELD_COLOR,
+	DESTROYED_COLOR,
+	damageByTarget,
+	damageMarks,
+	formatDamage
+} from './damage';
 
 describe('battle damage marks', () => {
+	it('shows the actual ships destroyed in yellow, alongside armor and shields', () => {
+		const targets = damageByTarget([
+			{ to: { x: 2, y: 3 }, damageDoneArmor: 80, damageDoneShields: 10, tokensDestroyed: 2 },
+			{ to: { x: 2, y: 3 }, damageDoneArmor: 20, tokensDestroyed: 1 },
+			{ to: { x: 4, y: 3 }, tokensDestroyed: 1 }
+		]);
+		expect(targets[0].marks.map((m) => m.kind)).toEqual(['armor', 'shield', 'destroyed']);
+		expect(targets[0].marks[2]).toEqual({
+			kind: 'destroyed',
+			amount: 3,
+			text: '-3',
+			color: DESTROYED_COLOR,
+			label: '3 ships destroyed'
+		});
+		expect(targets[1].marks[0].label).toBe('1 ship destroyed');
+		expect(damageMarks({ tokensDestroyed: 0 })).toEqual([]);
+	});
 	it('marks armor, then shields', () => {
 		const marks = damageMarks({ damageDoneShields: 10, damageDoneArmor: 30 });
 		expect(marks.map((m) => m.kind)).toEqual(['armor', 'shield']);

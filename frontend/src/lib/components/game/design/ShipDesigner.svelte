@@ -5,6 +5,7 @@
 	import TextInput from '#lib/components/TextInput.svelte';
 	import DesignBattleStrategy from './DesignBattleStrategy.svelte';
 	import DesignAutoOrders from './DesignAutoOrders.svelte';
+	import { designAutoRole, dedicatedMinesweeper } from '#lib/types/automationRoles.js';
 	import Hull from '#lib/components/game/design/Hull.svelte';
 	import TechAvatar from '#lib/components/tech/TechAvatar.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
@@ -22,7 +23,7 @@
 		type ShipDesignSlot,
 		type ShipDesignSpec
 	} from '#lib/types/cs-proto.js';
-	import { create } from '@bufbuild/protobuf';
+	import { create, clone } from '@bufbuild/protobuf';
 	import { ChevronLeft, ChevronRight, QuestionMarkCircle } from '@steeze-ui/heroicons';
 	import { Icon } from '@steeze-ui/svelte-icon';
 	import { onMount } from 'svelte';
@@ -51,12 +52,18 @@
 	let hullSetNumber: number = $state(design.hullSetNumber);
 	let slots: ShipDesignSlot[] = $state(design.slots);
 	let defaultBattlePlan = $state(design.spec?.defaultBattlePlan ?? 0);
-	let defaultAutoRole = $state(
-		design.spec?.defaultAutoRole === 'manual' ? '' : (design.spec?.defaultAutoRole ?? '')
-	);
+	let defaultAutoRole = $state(designAutoRole(design.spec));
+	let wasMinesweeper = $state(dedicatedMinesweeper(design.spec));
 
 	// Derived/spec state from wasm
-	let designSpec: ShipDesignSpec = $state(create(ShipDesignSpecSchema));
+	let designSpec: ShipDesignSpec = $state(
+		design.spec ? clone(ShipDesignSpecSchema, design.spec) : create(ShipDesignSpecSchema)
+	);
+	$effect(() => {
+		const current = dedicatedMinesweeper(designSpec);
+		if (current && !wasMinesweeper) defaultAutoRole = 'minesweeper';
+		wasMinesweeper = current;
+	});
 
 	// Keep parent prop in sync with local state
 	$effect(() => {

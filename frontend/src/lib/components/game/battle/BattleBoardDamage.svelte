@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Battle } from '#lib/types/Battle.js';
 	import { attackAtPhase } from './animation/original';
-	import { ARMOR_ICON_PATH, damageByTarget, SHIELD_ICON_PATH } from './damage';
+	import { ARMOR_ICON_PATH, damageByTarget, SHIELD_ICON_PATH, DESTROYED_ICON_PATH } from './damage';
 
 	type Props = {
 		battle: Battle;
@@ -43,6 +43,8 @@
 						<svg viewBox="0 0 24 24" class="size-3 shrink-0" aria-hidden="true">
 							{#if mark.kind === 'shield'}
 								<path d={SHIELD_ICON_PATH} fill="none" stroke="currentColor" stroke-width="3" />
+							{:else if mark.kind === 'destroyed'}
+								<path d={DESTROYED_ICON_PATH} fill="currentColor" />
 							{:else}
 								<path d={ARMOR_ICON_PATH} fill="currentColor" />
 							{/if}

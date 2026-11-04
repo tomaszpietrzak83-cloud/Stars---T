@@ -43,9 +43,13 @@
 		item.queueItemCompletionEstimate ?? create(QueueItemCompletionEstimateSchema)
 	);
 
-	// for auto items this is the first year they build their full quantity, so an auto item
-	// that only builds some of its quantity this year is colored like any other partial build
-	let yearsToBuildAll = $derived(estimate.yearsToBuildAll);
+	let buildsThisTurn = $derived(
+		!!item.queueItemCompletionEstimate &&
+			!estimate.skipped &&
+			estimate.yearsToBuildOne > 0 &&
+			estimate.yearsToBuildOne <= 1 &&
+			estimate.yearsToBuildOne !== Infinite
+	);
 	let skipped = $derived(
 		!autoAlchemy &&
 			isAuto(item.type) &&
@@ -61,17 +65,23 @@
 	ondblclick={() => onQueueItemDoubleClicked?.(index, item)}
 	oncontextmenu={(e) => onShipDesignTooltip(e, $universe.getMyDesign(item.designNum))}
 	class:italic={isAuto(item.type)}
-	class:text-queue-item-this-year={!estimate.skipped &&
-		estimate.yearsToBuildOne <= 1 &&
-		estimate.yearsToBuildOne != Infinite}
+	class:text-queue-item-this-year={buildsThisTurn}
 	class:text-queue-item-next-year={!autoAlchemy &&
 		!estimate.skipped &&
-		(yearsToBuildAll > 1 || yearsToBuildAll === Infinite) &&
-		estimate.yearsToBuildOne <= 1 &&
+		estimate.yearsToBuildOne > 1 &&
 		estimate.yearsToBuildOne != Infinite}
 	class:text-queue-item-skipped={skipped}
 	class:text-queue-item-never={!autoAlchemy && estimate.yearsToBuildOne == Infinite && !skipped}
-	class:bg-primary={selected}
+	style:background-color={selected
+		? buildsThisTurn
+			? 'var(--color-success)'
+			: 'var(--color-info)'
+		: undefined}
+	style:color={selected
+		? buildsThisTurn
+			? 'var(--color-success-content)'
+			: 'var(--color-info-content)'
+		: undefined}
 	class="w-full text-left px-1 select-none hover:text-secondary-focus"
 >
 	<div class="flex justify-between">

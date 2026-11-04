@@ -4,16 +4,13 @@
 	import { ShipDesignSpecSchema, type ShipDesign } from '#lib/types/cs-proto.js';
 	import { create } from '@bufbuild/protobuf';
 	import DesignAutoOrders from './DesignAutoOrders.svelte';
+	import { designAutoRole } from '#lib/types/automationRoles.js';
 	const { readOnly, updateDesignAutoOrders } = getGameContext();
 	let { design }: { design: ShipDesign } = $props();
-	let selection = $state(
-		untrack(() =>
-			design.spec?.defaultAutoRole === 'manual' ? '' : (design.spec?.defaultAutoRole ?? '')
-		)
-	);
+	let selection = $state(untrack(() => designAutoRole(design.spec)));
 	let saving = $state(false);
 	let error = $state('');
-	let changed = $derived((selection || 'manual') !== (design.spec?.defaultAutoRole || 'manual'));
+	let changed = $derived((selection || 'manual') !== (designAutoRole(design.spec) || 'manual'));
 	async function save() {
 		saving = true;
 		error = '';

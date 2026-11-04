@@ -155,6 +155,9 @@ func patrolReportedCombatant(player *Player, enemy *Fleet) bool {
 	return false
 }
 func patrolCanAttack(player *Player, fleet *Fleet) bool {
+	if fleetHasDedicatedMinesweeper(player, fleet) {
+		return false
+	}
 	job := readPatrolJob(fleet)
 	enemy := patrolTacticalEnemy(player, fleet)
 	if job.CleanupTarget != 0 && player.patrolEvaluator != nil && enemy != nil {
@@ -173,6 +176,9 @@ func patrolAvailable(player *Player, f *Fleet) bool {
 	return f.GetTag(containmentTag) == "" && patrolOperational(player, f)
 }
 func patrolOperational(player *Player, f *Fleet) bool {
+	if fleetHasDedicatedMinesweeper(player, f) {
+		return false
+	}
 	return f.GetTag(patrolSalvageTag) == "" && f.GetTag(anticipatedSalvageTag) == "" && f.GetTag("maintenance-pending") == "" && !fuelNetworkManaged(f) && !f.Delete && !f.Starbase && (player.Automation.FleetRoles[f.Num] == "patrol" || player.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(escortTag) == "" && f.GetTag(bomberBorrowTag) == "") && f.Spec.HasWeapons && patrolPower(f) > 0 && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !player.FleetInActiveAssembly(f) && f.GetTag(tankerAwaitTag) == "" && readTankerJob(f) == nil && fleetDamagePercent(f) < player.Automation.repairThreshold()
 }
 func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {

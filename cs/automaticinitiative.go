@@ -9,7 +9,7 @@ import (
 // interception evasion, engine limits and mine collisions remain separate checks.
 func combatAutonomy(p *Player, f *Fleet) bool {
 	role := p.Automation.FleetRoles[f.Num]
-	return f.Spec.HasWeapons && (role == "patrol" || role == "escort")
+	return f.Spec.HasWeapons && !fleetHasDedicatedMinesweeper(p, f) && (role == "patrol" || role == "escort")
 }
 
 func atOwnFuelDock(p *Player, f *Fleet) bool {
@@ -35,7 +35,7 @@ func (t *turnGenerator) recoverIdleAutomaticFleets() {
 			if !isAutomaticFleet(p, f) || f.Delete || f.Starbase || len(f.Waypoints) > 1 || atOwnFuelDock(p, f) || fuelNetworkManaged(f) || f.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
-			waiting := p.Automation.FleetRoles[f.Num] == "patrol" && f.GetTag(patrolMineSweepTag) != ""
+			waiting := (p.Automation.FleetRoles[f.Num] == "patrol" || p.Automation.FleetRoles[f.Num] == "minesweeper") && f.GetTag(patrolMineSweepTag) != ""
 			if job := readTankerJob(f); job != nil && job.TargetNum > 0 {
 				for _, m := range t.tankerMembers(p, job) {
 					waiting = waiting || m.Position != f.Position && len(m.Waypoints) > 1

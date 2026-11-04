@@ -8,6 +8,7 @@
 	import PlanetViewStateSurfaceMinerals from './PlanetViewStateSurfaceMinerals.svelte';
 	import FilterAllyScanners from './FilterAllyScanners.svelte';
 	import FilterFleetCounts from './FilterFleetCounts.svelte';
+	import FilterFleetRoutes from './FilterFleetRoutes.svelte';
 	import FilterIdleFleets from './FilterIdleFleets.svelte';
 	import FilterMinefields from './FilterMinefields.svelte';
 	import FilterScanners from './FilterScanners.svelte';
@@ -84,6 +85,7 @@
 		<div class="size-10">
 			<FilterFleetCounts />
 		</div>
+		<div class="size-10"><FilterFleetRoutes/></div>
 		<div class="size-10">
 			<FilterIdleFleets />
 		</div>

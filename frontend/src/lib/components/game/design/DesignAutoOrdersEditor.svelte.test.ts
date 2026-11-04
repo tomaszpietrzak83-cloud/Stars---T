@@ -23,7 +23,9 @@ it('allows an in-use design to save Auto orders for future construction', async 
 	await page.getByLabelText('Auto orders after construction').selectOptions('patrol');
 	await page.getByRole('button', { name: 'Save Auto orders' }).click();
 	expect(save).toHaveBeenCalledWith(7, 'patrol');
-	await expect.element(page.getByText(/fleets keep their current orders and automation/)).toBeVisible();
+	await expect
+		.element(page.getByText(/fleets keep their current orders and automation/))
+		.toBeVisible();
 });
 
 it('shows inherited automation and can explicitly select Manual', async () => {
@@ -57,4 +59,29 @@ it('does not offer fleet automation for a station', async () => {
 	await expect
 		.element(page.getByLabelText('Auto orders after construction'))
 		.not.toBeInTheDocument();
+});
+
+it('recognizes an existing Gatling-only design without renaming it or changing the save', async () => {
+	render(DesignAutoOrdersEditor, {
+		design: create(ShipDesignSchema, {
+			num: 32,
+			name: 'MineSwap',
+			spec: {
+				hasWeapons: true,
+				mineSweep: 992,
+				weaponSlots: [
+					{ hullComponent: 'Gatling Gun', quantity: 1 },
+					{ hullComponent: 'Gatling Gun', quantity: 1 }
+				]
+			}
+		})
+	});
+	await expect
+		.element(page.getByLabelText('Auto orders after construction'))
+		.toHaveValue('minesweeper');
+	await expect
+		.element(page.getByRole('option', { name: 'Auto Patrol: intercept and regroup' }))
+		.not.toBeInTheDocument();
+	await expect.element(page.getByText(/Gatling-only design/)).toBeVisible();
+	expect(save).not.toHaveBeenCalled();
 });

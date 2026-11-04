@@ -24,6 +24,7 @@ export class PlayerSettings implements FilterOptions {
 	setRouteDest = false;
 	showNames = false;
 	showFleetTokenCounts = false;
+	showFleetRoutes = true;
 	showScanners = true;
 	showAllyScanners = true;
 	showMinefields = true;

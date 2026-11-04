@@ -11,6 +11,9 @@ func ValidateDesignAutoRole(role string, spec ShipDesignSpec) error {
 	if spec.Starbase {
 		return fmt.Errorf("starbases do not use fleet Auto orders")
 	}
+	if dedicatedMinesweeperSpec(spec) && role != "minesweeper" {
+		return fmt.Errorf("Gatling-only ships are dedicated minesweepers; choose Minesweeper or Manual")
+	}
 	valid := false
 	switch role {
 	case "scout":
@@ -21,6 +24,8 @@ func ValidateDesignAutoRole(role string, spec ShipDesignSpec) error {
 		valid = spec.HasWeapons
 	case "miner":
 		valid = spec.MiningRate > 0
+	case "minesweeper":
+		valid = spec.MineSweep > 0
 	case "terraformer":
 		valid = spec.TerraformRate > 0
 	case "bomber":

@@ -13,6 +13,24 @@ vi.mock('#lib/services/GameContext.js', () => ({ getGameContext: () => state.con
 
 const classes = ['this-year', 'next-year', 'skipped', 'never'];
 
+it.each([1, 2])('highlights selected ship completion in year %s', (year) => {
+	state.context = { universe: writable(new Universe()) };
+	const item = create(ProductionQueueItemSchema, {
+		type: QueueItemType.SHIP_TOKEN,
+		quantity: 5,
+		queueItemCompletionEstimate: { yearsToBuildOne: year, yearsToBuildAll: 5 }
+	});
+	const { container, unmount } = render(ProductionQueueItemLine, {
+		index: 0,
+		item,
+		selected: true
+	});
+	expect(container.querySelector('button')!.style.backgroundColor).toBe(
+		year === 1 ? 'var(--color-success)' : 'var(--color-info)'
+	);
+	unmount();
+});
+
 // which of the queue item colors a line gets for these estimates
 function colors(type: QueueItemType, yearsToBuildOne: number, yearsToBuildAll: number) {
 	state.context = { universe: writable(new Universe()) };
@@ -28,14 +46,14 @@ function colors(type: QueueItemType, yearsToBuildOne: number, yearsToBuildAll: n
 	return found;
 }
 
-// Green means the whole order is built this year, blue means only some of it is.
+// At least one unit completed this turn stays green, even for a multi-year batch.
 it.each([QueueItemType.MINE, QueueItemType.AUTO_MINES])(
 	'colors item type %s by how much of it is built this year',
 	(type) => {
 		expect(colors(type, 1, 1)).toEqual(['this-year']);
-		expect(colors(type, 1, 3)).toEqual(['this-year', 'next-year']);
-		expect(colors(type, 1, Infinite)).toEqual(['this-year', 'next-year']);
-		expect(colors(type, 4, 6)).toEqual([]);
+		expect(colors(type, 1, 3)).toEqual(['this-year']);
+		expect(colors(type, 1, Infinite)).toEqual(['this-year']);
+		expect(colors(type, 4, 6)).toEqual(['next-year']);
 	}
 );
 
@@ -58,7 +76,7 @@ it('tells the queue about clicks and double clicks', () => {
 		onQueueItemDoubleClicked
 	});
 	const button = container.querySelector('button')!;
-	expect(button.classList.contains('bg-primary')).toBe(true);
+	expect(button.style.backgroundColor).toBe('var(--color-info)');
 
 	button.click();
 	expect(onQueueItemClicked).toHaveBeenCalledWith(2, item);

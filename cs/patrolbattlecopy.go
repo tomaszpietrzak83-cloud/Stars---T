@@ -19,6 +19,7 @@ type patrolBattleCopy struct {
 	fleets               []*Fleet
 	automatic            map[int]bool
 	ownValue             float64
+	ownMass              float64
 	ownShips, enemyShips int
 	weights              [3]float64
 	repairRate           float64
@@ -31,6 +32,8 @@ type patrolBattleOutcome struct {
 	RepairTurns                       int
 	OwnSurvivors, EnemySurvivors      int
 	LostShips                         int
+	CivilianLost                      int
+	LostMass, EnemyMassDestroyed      float64
 	DangerBefore, DangerAfter         float64
 	BombersBefore, BombersAfter       int
 }
@@ -51,8 +54,9 @@ func patrolTokenBomber(token ShipToken) bool {
 	return len(s.Bombs)+len(s.SmartBombs)+len(s.RetroBombs) > 0
 }
 
-func (o patrolBattleOutcome) safe(ownShips int, ownValue float64) bool {
-	return !o.Wiped && o.MissionSucceeded && float64(o.LostShips) <= float64(ownShips)*.05+1e-9 && o.LostValue <= ownValue*.05+1e-9
+func (o patrolBattleOutcome) safe(ownShips int, ownValue float64, ownMass ...float64) bool {
+	massSafe := len(ownMass) == 0 || o.LostMass <= ownMass[0]*.05+1e-9 && o.LostMass <= o.EnemyMassDestroyed+1e-9
+	return massSafe && !o.Wiped && o.MissionSucceeded && float64(o.LostShips) <= float64(ownShips)*.05+1e-9 && o.LostValue <= ownValue*.05+1e-9
 }
 
 func patrolDeepCopy[T any](value *T) (*T, error) {
@@ -95,7 +99,7 @@ func newPatrolBattleCopy(rules *Rules, p *Player, own, reports []*Fleet) (*patro
 	for i, stock := range stocks {
 		m.weights[i] = 1 + 300/float64(300+max(0, stock))
 	}
-	owner := &Player{Num: p.Num, Race: p.Race, PlayerPlans: PlayerPlans{BattlePlans: slices.Clone(p.BattlePlans)}}
+	owner := &Player{Num: p.Num, AIControlled: p.AIControlled, Race: p.Race, PlayerPlans: PlayerPlans{BattlePlans: slices.Clone(p.BattlePlans)}}
 	owner.Race.Spec = ComputeRaceSpec(&owner.Race, &m.rules)
 	m.players[p.Num] = owner
 	for _, source := range own {
@@ -119,8 +123,11 @@ func newPatrolBattleCopy(rules *Rules, p *Player, own, reports []*Fleet) (*patro
 			}
 			token.design = copied
 			owner.Designs = append(owner.Designs, copied)
-			m.ownShips += token.Quantity
-			m.ownValue += m.value(copied.Spec.Cost) * float64(token.Quantity)
+			if !source.Starbase {
+				m.ownShips += token.Quantity
+				m.ownValue += m.value(copied.Spec.Cost) * float64(token.Quantity)
+				m.ownMass += float64(copied.Spec.Mass * token.Quantity)
+			}
 		}
 		plan := patrolPlanForFleet(p, source)
 		if isManagedPatrolPlan(source) {
@@ -145,7 +152,9 @@ func newPatrolBattleCopy(rules *Rules, p *Player, own, reports []*Fleet) (*patro
 		}
 		shadow := m.players[report.PlayerNum]
 		if shadow == nil {
-			shadow = &Player{Num: report.PlayerNum, Race: neutral}
+			// Never infer an enemy's private automation doctrine from Gatling
+			// equipment. The shadow retains the ordinary armed combat model.
+			shadow = &Player{Num: report.PlayerNum, AIControlled: true, Race: neutral}
 			shadow.Race.Spec.ShieldRegenerationRate = maxRegeneration
 			m.players[shadow.Num] = shadow
 		}
@@ -247,6 +256,9 @@ func (m *patrolBattleCopy) run(tactic, enemyTactic BattleTactic, seed int64) pat
 				}
 				continue
 			}
+			if fleet.Starbase {
+				continue
+			} // Station losses cannot dilute the protected mobile fleet's budget.
 			result.OwnSurvivors += token.Quantity
 			if token.QuantityDamaged > 0 && token.Quantity > 0 {
 				fraction := Clamp(token.Damage/float64(max(1, token.design.Spec.Armor)), 0.0, 1.0)
@@ -270,9 +282,16 @@ func (m *patrolBattleCopy) run(tactic, enemyTactic BattleTactic, seed int64) pat
 				if patrolTokenBomber(token) {
 					result.BombersBefore += token.Quantity
 				}
+				remaining := 0
+				for _, after := range fleets[i].Tokens {
+					if after.DesignNum == token.DesignNum {
+						remaining += after.Quantity
+					}
+				}
+				result.EnemyMassDestroyed += float64(max(0, token.Quantity-remaining) * token.design.Spec.Mass)
 			}
 		}
-		if original.PlayerNum == m.owner {
+		if original.PlayerNum == m.owner && !original.Starbase {
 			for _, before := range original.Tokens {
 				remaining := 0
 				for _, after := range fleets[i].Tokens {
@@ -281,6 +300,10 @@ func (m *patrolBattleCopy) run(tactic, enemyTactic BattleTactic, seed int64) pat
 					}
 				}
 				result.LostValue += float64(max(0, before.Quantity-remaining)) * m.value(before.design.Spec.Cost)
+				result.LostMass += float64(max(0, before.Quantity-remaining) * before.design.Spec.Mass)
+				if before.design.Spec.Bomber || !before.design.Spec.HasWeapons || dedicatedMinesweeperSpec(before.design.Spec) {
+					result.CivilianLost += max(0, before.Quantity-remaining)
+				}
 			}
 		}
 	}

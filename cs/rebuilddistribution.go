@@ -79,6 +79,9 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 			if !planet.OwnedBy(player.Num) || !planet.CanBuild(target.Spec.Mass) || planet.Spec.ResourcesPerYearAvailable <= 0 {
 				continue
 			}
+			if (civilianFleet(player, unit) || work.OriginalRole == "bomber") && !t.civilianSiteSafe(player, unit, planet.Position, 2) {
+				continue
+			}
 			route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{unit}, planet.Position, planet.ToTarget(), automaticRoutePolicy{AllowThreat: true, EmergencyReturn: true, MaxTurns: 10000})
 			if route == nil {
 				continue
@@ -131,7 +134,10 @@ func (t *turnGenerator) scatterReplacementFleet(player *Player, fleet *Fleet, wo
 
 func (t *turnGenerator) rallyReplacementFleet(player *Player, fleet *Fleet, work *fleetMaintenance) {
 	rally := t.game.getPlanet(work.RallyPlanetNum)
-	if rally == nil || !rally.OwnedBy(player.Num) || !rally.Spec.HasStarbase {
+	protected := civilianFleet(player, fleet)
+	if protected {
+		rally = t.safeMaintenanceRally(player, fleet, work)
+	} else if rally == nil || !rally.OwnedBy(player.Num) || !rally.Spec.HasStarbase {
 		rally = nil
 		for _, planet := range t.game.Planets {
 			if planet.OwnedBy(player.Num) && planet.Spec.HasStarbase {
@@ -141,16 +147,20 @@ func (t *turnGenerator) rallyReplacementFleet(player *Player, fleet *Fleet, work
 		}
 	}
 	if rally == nil {
-		work.Status = "Waiting for an owned rally station"
+		work.Status = "Waiting for a safe owned rally station; original mission retained"
 		writeMaintenance(fleet, work)
 		return
 	}
 	work.RallyPlanetNum = rally.Num
 	work.Status = "Regrouping at " + rally.Name
-	if route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, rally.Position, rally.ToTarget(), automaticRoutePolicy{AllowThreat: true, EmergencyReturn: true, MaxTurns: 10000}); route != nil {
+	if route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, rally.Position, rally.ToTarget(), automaticRoutePolicy{AllowThreat: true, Fast: protected, HighestWarp: protected, EmergencyReturn: true, MaxTurns: 10000}); route != nil && (!protected || t.civilianFirstLegSafe(player, fleet, route)) {
 		applyExpeditionRoute(player, fleet, route)
 	} else {
-		t.routeEmergencyReturn(player, fleet)
+		if !protected {
+			t.routeEmergencyReturn(player, fleet)
+		} else {
+			holdAutomaticFleet(player, fleet, "Unsafe refit rendezvous route paused for emergency safety")
+		}
 		requestAutomaticRescue(player, fleet, true)
 	}
 	writeMaintenance(fleet, work)

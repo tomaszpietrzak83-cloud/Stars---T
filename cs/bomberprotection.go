@@ -79,7 +79,7 @@ func (t *turnGenerator) prepareBombardmentProtection(p *Player, bomber *Fleet) (
 	}
 	var candidates []support
 	for _, f := range t.game.getFleets(p.Num) {
-		if f.Starbase || p.FleetInActiveAssembly(f) {
+		if f.Starbase || p.FleetInActiveAssembly(f) || fleetHasDedicatedMinesweeper(p, f) {
 			continue
 		}
 		if f == bomber || !patrolOperational(p, f) && !(p.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(escortTag) == strconv.Itoa(bomber.Num) && !f.Delete && !f.InDesignMaintenance() && !f.InAutomaticSafety() && f.GetTag("maintenance-pending") == "" && !fuelNetworkManaged(f) && readTankerJob(f) == nil && f.GetTag(tankerAwaitTag) == "") {
@@ -111,17 +111,10 @@ func (t *turnGenerator) prepareBombardmentProtection(p *Player, bomber *Fleet) (
 		}
 		return a.fleet.Num - b.fleet.Num
 	})
-	group := []*Fleet{bomber}
+	group := t.civilianDefense(p, []*Fleet{bomber}, bomber.Position)
 	// A bounded defensive reserve cannot be consumed by earlier offensive
 	// composition searches. Both budgets remain deterministic and fail closed.
-	if t.bombardmentEvaluation == nil {
-		t.bombardmentEvaluation = map[int]*patrolEvaluator{}
-	}
-	evaluation := t.bombardmentEvaluation[p.Num]
-	if evaluation == nil {
-		evaluation = &patrolEvaluator{rules: &t.game.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 2048}
-		t.bombardmentEvaluation[p.Num] = evaluation
-	}
+	evaluation := t.defensiveEvaluator(p)
 	result := evaluation.assessFormations(p, group, reports, bomber.Position, 2, false)
 	selected := []support{}
 	for _, c := range candidates[:min(64, len(candidates))] {
@@ -130,6 +123,9 @@ func (t *turnGenerator) prepareBombardmentProtection(p *Player, bomber *Fleet) (
 		}
 		if patrolNeedsRecon(p, reports[0]) {
 			break
+		}
+		if slices.Contains(group, c.fleet) {
+			continue
 		}
 		group = append(group, c.fleet)
 		selected = append(selected, c)

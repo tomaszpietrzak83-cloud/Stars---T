@@ -1,0 +1,86 @@
+tomek-stars 0.6.12 - minesweepers, refit safety and clearer map/combat feedback
+2026-11-04
+
+Implemented requests 275-279
+
+1. Gatling-only human designs are dedicated minesweepers, identified by equipment,
+   not the design name. New construction defaults to Minesweeper; explicit Manual
+   remains available. Automatic patrol, escort and combat assignments cannot borrow
+   these ships. Native battle stacks use Disengage with no firing targets even if
+   intercepted under an aggressive fleet plan. Enemy equipment does not reveal its
+   private automation: report-only combat models retain armed enemy Gatling ships.
+   Mine approach separates economical cruise from safe-speed entry, then follows
+   the shrinking field toward its center. Actual fuel/return reserves are required.
+
+2. Refit and replacement rendezvous no longer bypass emergency civilian safety.
+   Safe rally selection updates the group's server-owned queue metadata without
+   canceling replacement quantities, paid allocations or saved original orders.
+   Unsafe civilian yards are excluded; scrapping pauses before a reported raid.
+   Vulnerable same-turn construction is deferred because production follows the
+   movement phase, leaving newly built ships unable to evacuate before battle.
+   Warships and other queue entries can still build. Safe refits continue normally
+   instead of being diverted to ordinary repairs for ships about to be replaced.
+   Forecasts count nearby fleets actually staying and the owned base, with native
+   separate formations. Stations cannot dilute mobile loss allowances. Mobile
+   count, value and mass loss limits are 5%, own lost mass cannot exceed enemy mass
+   destroyed, and a defensive forecast cannot accept any civilian ship loss.
+   Existing remote-only advance withdrawal and stationary-siege exceptions remain.
+
+3. A separate Fleet routes icon on desktop and phone controls own/selected/dragged
+   fleet waypoints and reported enemy fleet course lines. Planet ship routing lines
+   follow this control. Packets/traders and actual navigation orders are unchanged.
+   The setting is persisted; older settings default to visible.
+
+4. Production queue text and selected row backgrounds are green when at least one
+   unit completes this turn, including a multi-year batch. The first completion in
+   later years is blue. Skipped/impossible estimates retain their distinct text.
+
+5. Battle attack feedback adds a yellow destroyed-ship count with its own ship
+   marker beside armor and shield damage. It uses native tokensDestroyed for the
+   displayed attack, aggregates shots per square, and omits zero. Phase zero and
+   moves do not display stale losses; normal playback still controls visibility.
+
+Verification
+
+- Complete cs suite PASS (97.900 s); AI, db, server and converter suites PASS
+  (2.180 / 2.764 / 133.621 / 1.533 s). A refit regression found during testing was
+  corrected: ordinary damage cannot preempt a safe replacement job.
+- New native minesweeper tests cover construction/classification, real clearing
+  of a remote field through JSON reload, fuel and safe entry, stale patrol release,
+  restored manual plan, no battle initiation, and no firing when intercepted.
+- New native civilian tests cover incoming known armed raids, safe rally metadata,
+  preserved paid queues/original missions, evacuation priority and resumed refit,
+  deferred vulnerable production with defensive ship construction still available,
+  station exclusion and unfavorable tonnage exchange rejection.
+- 96 frontend tests PASS across nine files, including Chrome component tests:
+  exact yellow pixels/CSS color and attack count, green/blue selected production,
+  partial batches, Gatling-only role selection, route setting persistence, hidden
+  selected/dragged paths, map drawing and responsive toolbar without overflow.
+- Svelte check: zero errors and zero warnings.
+- A private audit used hash-verified copies of years 2467-2471 archives. Actual
+  year-2471 Candide losses were six ships / 2302 kT versus 26 frigates / 936 kT.
+  The attacker was freshly visible one year earlier, 65 ly away at warp 9.
+  Refit/rally exclusions and post-movement replacement construction explain why
+  the bomber safety code did not protect the entire group.
+- Isolated year-2470 orders replay with a fixed diagnostic seed reproduced six
+  own losses (four bombers) before correction. After correction, the same copied
+  starting orders produce zero own losses at Candide. This is a counterfactual
+  native simulation, not an exact replay of the player's RNG or a future guarantee.
+  Private archives, scripts and logs are excluded from publication. No personal
+  turn was generated, no personal orders or saved game replaced by tests.
+
+Compiled release verification
+
+- Native, WASM and static UI rebuilt. Final isolated compiled Chrome/API smoke
+  on 18103/18789 passes saved fleet-route toggling on desktop/phone, R/map drawing,
+  Auto orders persistence on an in-use design and inherited upgraded design, plus
+  API creation and compiled WASM designer inspection of a Gatling-only Destroyer.
+  Minesweeper is selected, combat options absent, retreat enforced in the editor;
+  reload retains the setting. Test game stays year 2400; no turn is submitted.
+  Embedded WASM matches source artifact byte for byte. No browser errors.
+- Desktop and phone screenshots inspected. Final editor text no longer claims
+  an ordinary fleet strategy can override a dedicated minesweeper's retreat.
+- Windows 0.6.12 installed between personal turns; year 2472/WaitingForPlayers
+  unchanged before and after replacement. HTTP 200, schema 30/no migration and
+  current native/WASM hashes verified. Final UI snapshot e5bab5d30b22cfdd is live.
+  Tests and installation do not alter saved orders, advance or replace the game.

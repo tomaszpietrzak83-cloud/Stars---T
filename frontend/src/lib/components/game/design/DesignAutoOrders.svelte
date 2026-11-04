@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { create } from '@bufbuild/protobuf';
 	import { FleetSchema, ShipDesignSchema, type ShipDesignSpec } from '#lib/types/cs-proto.js';
-	import { automationRoles } from '#lib/types/automationRoles.js';
+	import { automationRoles, dedicatedMinesweeper } from '#lib/types/automationRoles.js';
 	let {
 		selection = $bindable(''),
 		spec,
@@ -30,6 +30,10 @@
 		>
 			{#each roles as role (role.value)}<option value={role.value}>{role.label}</option>{/each}
 		</select>
+		{#if dedicatedMinesweeper(spec)}<p class="text-sm mt-1">
+				Gatling-only design: dedicated mine clearing, no patrol or escort assignments. Retreats if
+				intercepted.
+			</p>{/if}
 		<p class="text-xs mt-1">
 			New ships start with this automation enabled. Upgraded versions inherit this setting. Existing
 			fleets keep their current orders and automation.

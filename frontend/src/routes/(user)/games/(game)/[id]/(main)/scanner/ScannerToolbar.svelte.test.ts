@@ -76,6 +76,21 @@ async function layout(width: number, shareMap: boolean, selectedWaypointIndex = 
 			.planetViewState
 	).toBe(PlanetViewState.Resources);
 	expect(resourceButton!.getAttribute('aria-current')).toBe('true');
+	const routesButton = navbar.querySelector<HTMLButtonElement>(
+		'button[aria-label="Fleet routes"]'
+	)!;
+	expect(routesButton).not.toBeNull();
+	expect(routesButton.getAttribute('aria-pressed')).toBe('true');
+	routesButton.click();
+	await tick();
+	const settings = get(
+		(state.context as { settings: ReturnType<typeof writable<PlayerSettings>> }).settings
+	);
+	expect(settings.showFleetRoutes).toBe(false);
+	const loaded = Object.assign(new PlayerSettings(), JSON.parse(JSON.stringify(settings)));
+	loaded.afterLoad();
+	expect(loaded.showFleetRoutes).toBe(false);
+	expect(routesButton.getAttribute('aria-pressed')).toBe('false');
 	deleteButton?.click();
 	const result = {
 		stage,

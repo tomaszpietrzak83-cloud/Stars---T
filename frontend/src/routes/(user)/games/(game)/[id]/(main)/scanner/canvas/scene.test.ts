@@ -521,6 +521,17 @@ it('keeps the path from before a drag while a waypoint is dragged', () => {
 		{ commanded: true, dragOrigin: true, waypoints: before },
 		{ commanded: true, dragging: true, waypoints: fleet.fleetOrders?.waypoints }
 	]);
+	settings.showFleetRoutes = false;
+	expect(
+		buildWaypointPaths(
+			universe,
+			player,
+			settings,
+			commanded,
+			before as Parameters<typeof buildWaypointPaths>[4]
+		)
+	).toEqual([]);
+	expect(fleet.fleetOrders?.waypoints).toHaveLength(2);
 });
 
 describe('notes', () => {

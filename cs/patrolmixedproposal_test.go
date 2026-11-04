@@ -100,6 +100,9 @@ func (s *mixedStudy) battle(own, enemy []ShipDesign, counts, enemyCounts []int, 
 	}
 	g := BuildScenario(scenario)
 	p, q := g.Players[0], g.Players[1]
+	// This research matrix models ordinary armed combatants, including
+	// hypothetical enemy Gatlings, not the player's mine-clearing doctrine.
+	p.AIControlled, q.AIControlled = true, true
 	p.Relations = []PlayerRelationship{{Relation: PlayerRelationFriend}, {Relation: PlayerRelationEnemy}}
 	q.Relations = []PlayerRelationship{{Relation: PlayerRelationEnemy}, {Relation: PlayerRelationFriend}}
 	g.Rules.ResetSeed(seed)

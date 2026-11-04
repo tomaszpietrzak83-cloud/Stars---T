@@ -65,15 +65,24 @@ func interceptionThreat(player *Player, fleet *Fleet) int {
 func (t *turnGenerator) planAutomaticSafety() {
 	for _, player := range t.game.Players {
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if !isAutomaticFleet(player, fleet) || fleet.Starbase || fleet.InDesignMaintenance() {
+			if !isAutomaticFleet(player, fleet) || fleet.Starbase || fleet.InDesignMaintenance() && !civilianFleet(player, fleet) {
 				continue
 			}
 			var job automaticSafetyJob
 			active := json.Unmarshal([]byte(fleet.GetTag(safetyTag)), &job) == nil
 			damage := fleetDamagePercent(fleet)
 			threat := interceptionThreat(player, fleet)
+			if player.Automation.FleetRoles[fleet.Num] == "minesweeper" {
+				threat = max(threat, bomberChaseThreat(player, fleet))
+			}
 			defenseReady, controlledBombardment := false, false
-			if player.Automation.FleetRoles[fleet.Num] == "bomber" && player.patrolEvaluator != nil && len(bomberWarningReports(player, fleet)) > 0 {
+			protectedRefit := fleet.InDesignMaintenance() && civilianFleet(player, fleet)
+			if protectedRefit && len(t.civilianReports(player, fleet.Position, 1)) > 0 {
+				controlledBombardment = true
+				defenseReady = t.civilianSiteSafe(player, fleet, fleet.Position, 1)
+				threat = max(threat, bomberImmediateMaximumThreat(player, fleet))
+			}
+			if !protectedRefit && player.Automation.FleetRoles[fleet.Num] == "bomber" && player.patrolEvaluator != nil && len(bomberWarningReports(player, fleet)) > 0 {
 				controlledBombardment = true
 				var remoteWarning bool
 				defenseReady, remoteWarning = t.prepareBombardmentProtection(player, fleet)
@@ -99,12 +108,16 @@ func (t *turnGenerator) planAutomaticSafety() {
 			}
 			role := player.Automation.FleetRoles[fleet.Num]
 			canStand := role != "scout" && colonizationMode(role) == "" && defenders > threat*3/2
+			if role == "minesweeper" || fleetHasDedicatedMinesweeper(player, fleet) {
+				canStand = false
+			}
 			if controlledBombardment {
 				canStand = defenseReady
 			}
 			contactRecon := scoutReconActive(player, fleet) && !readScoutRecon(fleet).Watching
 			intercepted := !contactRecon && !player.Automation.DisableInterceptionEvasion && threat > 0 && !canStand
-			needsRepair := !contactRecon && !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()
+			// A safe refit already replaces damaged ships; only danger may preempt it.
+			needsRepair := !fleet.InDesignMaintenance() && !contactRecon && !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()
 			if active && ((job.Kind == "repair" && (damage == 0 || player.Automation.DisableAutomaticRepair)) || (job.Kind == "evade" && !intercepted)) {
 				delete(fleet.Tags, safetyTag)
 				delete(fleet.Tags, repairTankerTag)
@@ -156,14 +169,14 @@ func (t *turnGenerator) planAutomaticSafety() {
 				if knownRouteThreat(player, planet.Position, planet.Position) > 0 {
 					continue
 				}
-				candidate := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{AllowThreat: true, Fast: intercepted && role == "bomber", HighestWarp: intercepted && role == "bomber"})
+				candidate := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{AllowThreat: true, Fast: intercepted && civilianFleet(player, fleet), HighestWarp: intercepted && civilianFleet(player, fleet)})
 				if candidate == nil {
 					continue
 				}
 				if intercepted && len(candidate.Waypoints) > 1 {
 					probe := *fleet
 					probe.Waypoints = candidate.Waypoints
-					if role == "bomber" && player.patrolEvaluator != nil {
+					if civilianFleet(player, fleet) && player.patrolEvaluator != nil {
 						wp := candidate.Waypoints[1]
 						point := wp.Position
 						if distance := fleet.Position.DistanceTo(point); distance > fleet.StrategicSpeed(wp.WarpSpeed) {

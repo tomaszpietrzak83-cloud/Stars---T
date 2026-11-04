@@ -137,6 +137,10 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 			continue
 		}
 		player := t.game.getPlayer(fleet.PlayerNum)
+		if fleet.InAutomaticSafety() {
+			// Safety temporarily suspends refit without losing its group or mission.
+			continue
+		}
 		if fleet.carriesInfrastructure() {
 			continue
 		}
@@ -214,6 +218,9 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 			if !planet.OwnedBy(player.Num) || !planet.Spec.HasStarbase {
 				continue
 			}
+			if civilianFleet(player, fleet) && !t.civilianSiteSafe(player, fleet, planet.Position, 2) {
+				continue
+			}
 			if pending && work.PlanetNum != planet.Num {
 				continue
 			}
@@ -275,6 +282,9 @@ func (t *turnGenerator) maintainShipsAtPlanet(player *Player, planet *Planet, av
 		}
 		work := readMaintenance(fleet)
 		if work == nil {
+			continue
+		}
+		if fleet.InAutomaticSafety() || civilianFleet(player, fleet) && !t.civilianSiteSafe(player, fleet, planet.Position, 1) {
 			continue
 		}
 		if work.Stage == "" && hasShipsToReplace(player, fleet) {

@@ -613,3 +613,17 @@ Deployment evidence 0.4.0: current game remained at year 2450; one production qu
     Verification for 271-274: docs/AUDIT-0.6.11.txt. Full native cs/AI/db/server/converter suites pass; six twelve-turn synthetic campaigns destroy all 13 enemies with zero own warship/collector losses and actual debris deliveries. Native loss/count/value, local merge/refit/recon/cleanup, bomber reinforcement, separate defense budget, remote warning and committed-siege tests pass. Auto orders native/API and four Chrome tests pass; Svelte check has zero errors/warnings.
 
     Release verification for 271-274: native/WASM/static UI rebuilt; final isolated 18102/18788 smoke passes in-use design Auto orders save, upgraded-design inheritance and reload, R/map/phone, matching WASM, test year 2400 unchanged. Windows 0.6.11 installed between personal turns with year/state unchanged, HTTP 200, schema 30/no migration and current hashes. No personal game submitted, advanced or replaced by tests.
+
+[x] 275. Gatling-only MineSwap designs are dedicated minesweepers: automatic clearing and funded safe approach; never combat, patrol or bomber cover; retreat without firing if intercepted. Preserve manual orders and refit inheritance.
+
+[x] 276. Diagnose six-ship bomber loss using copied preceding archives, protect refit/rally groups and same-turn construction from reported incoming raids, preserve unfinished replacement orders and paid allocations, test actual counterfactual on isolated copies.
+
+[x] 277. Add a separate persisted fleet-route visibility icon on desktop and narrow screens; hide own/selected and reported fleet routes without changing orders.
+
+[x] 278. Production menu: selected and estimated queue positions green when at least one unit completes this turn, blue when the first completion is later; verify multi-unit/automatic queues and selection.
+
+[x] 279. During a battle attack, display the actual number of ships destroyed in yellow beside armor and shield damage; aggregate multiple shots per target square, omit zero, retain replay phase behavior.
+
+    Verification for 275-279: docs/AUDIT-0.6.12.txt. Full native cs/AI/db/server/converter suites pass; actual remote native mine clearing/reload/no-fire and refit/raid/paid-queue/tonnage tests pass. 96 frontend/Chrome tests pass; Svelte check has zero errors/warnings. Private copied-year-2470 counterfactual changes six losses at Candide to zero; no personal turn generated.
+
+    Release verification for 275-279: Windows 0.6.12 native/WASM/static UI rebuilt; isolated compiled smoke on 18103/18789 passes route persistence, R/map/phone, in-use and inherited Auto orders, new Gatling-only MineSwap creation/editor/reload with retreat and no combat role. Final UI snapshot e5bab5d30b22cfdd deployed; year 2472/WaitingForPlayers unchanged across native replacement, HTTP 200 and current hashes. No personal turn submitted or save replaced.

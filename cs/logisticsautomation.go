@@ -155,8 +155,14 @@ func (p *Player) ValidateLogisticsAutomation(automation LogisticsAutomation, fle
 		if fleet != nil && p.FleetInActiveAssembly(fleet) {
 			return fmt.Errorf("finish or cancel the fleet composition before assigning an automatic role")
 		}
-		if fleet == nil || role != "freighter" && role != "escort" && role != "scout" && role != "miner" && role != "tanker" && role != "terraformer" && role != "bomber" && role != "combat" && role != "patrol" && colonizationMode(role) == "" {
+		if fleet == nil || role != "freighter" && role != "escort" && role != "scout" && role != "miner" && role != "minesweeper" && role != "tanker" && role != "terraformer" && role != "bomber" && role != "combat" && role != "patrol" && colonizationMode(role) == "" {
 			return fmt.Errorf("invalid automatic fleet assignment")
+		}
+		if (role == "patrol" || role == "escort" || role == "combat") && fleetHasDedicatedMinesweeper(p, fleet) {
+			return fmt.Errorf("dedicated minesweepers cannot be assigned to space combat; split mixed fleets first")
+		}
+		if role == "minesweeper" && fleet.Spec.MineSweep <= 0 {
+			return fmt.Errorf("minesweeper requires mine-sweeping equipment")
 		}
 		if role == "freighter" && fleet.Spec.CargoCapacity <= 0 && p.Automation.FleetRoles[num] != role {
 			return fmt.Errorf("automatic transport requires cargo capacity")

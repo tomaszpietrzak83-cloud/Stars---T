@@ -14,6 +14,7 @@ import (
 
 // Generate a turn after all players submit their orders.
 type turnGenerator struct {
+	civilianWarnings      map[civilianWarningKey][]*Fleet
 	bombardmentEvaluation map[int]*patrolEvaluator
 	maintenanceReports    map[int]*maintenanceReport
 	statisticsBefore      map[int]StatisticsCounters
@@ -82,6 +83,7 @@ func (t *turnGenerator) generateTurn() error {
 	// wp0 tasks
 	t.fleetInit()
 	t.restoreBorrowedManualFleets()
+	t.prepareDedicatedMinesweepers()
 	t.resumeCompletedEvades()
 	t.repairStaleScoutRoles()
 	t.refreshScoutReconOrders()
@@ -112,6 +114,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.dispatchReadyLogistics()
 	t.planBomberEscorts()
 	t.planPatrolAutomation()
+	t.planMinesweeperAutomation()
 	t.planSlowPreyContainment()
 	t.planPatrolSalvage()
 	t.planEscortStaging()
@@ -1971,6 +1974,7 @@ func (t *turnGenerator) planetProduction() error {
 		producer := newProducer(t.log, &t.game.Rules, planet, player)
 		producer.onSpend = func(delta Cost) { recordProductionSpending(player.accounting(t.game.Year), delta) }
 		producer.maintainShips = func(available *Cost) { t.maintainShipsAtPlanet(player, planet, available) }
+		producer.deferShip = func(d *ShipDesign) bool { return !t.civilianConstructionSafe(player, planet, d) }
 		result, err := producer.produce()
 		if err != nil {
 			return err
@@ -2143,7 +2147,7 @@ func (t *turnGenerator) buildFleet(player *Player, planet *Planet, token ShipTok
 		return nil, err
 	}
 	fleet.OrbitingPlanetNum = planet.Num
-	if role := token.design.Spec.DefaultAutoRole; role != "" && role != "manual" && !token.design.Spec.Starbase {
+	if role := effectiveDesignAutoRole(token.design.Spec); role != "" && !token.design.Spec.Starbase && !(player.AIControlled && token.design.Spec.DefaultAutoRole == "") {
 		if player.Automation.FleetRoles == nil {
 			player.Automation.FleetRoles = map[int]string{}
 		}

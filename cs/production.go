@@ -40,6 +40,7 @@ type producer struct {
 	estimating bool
 	// Only actual turn production supplies this; estimates never mutate fleets.
 	maintainShips func(*Cost)
+	deferShip     func(*ShipDesign) bool
 	onSpend       func(Cost)
 }
 
@@ -291,6 +292,11 @@ func (p *producer) produce() (productionResult, error) {
 		if item.Quantity <= 0 {
 			queue, i = removeQueueItem(queue, i, alchemy)
 			alchemy = false
+			continue
+		}
+		if item.Type == QueueItemTypeShipToken && p.deferShip != nil && p.deferShip(item.design) {
+			result.messages = append(result.messages, PlayerMessage{Type: PlayerMessageInfo, Text: "Deferred vulnerable ship construction before a reported armed raid; the order and paid allocation are preserved."})
+			i++
 			continue
 		}
 

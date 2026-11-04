@@ -16,6 +16,7 @@ func (p *Player) TakeManualControl(f *Fleet) {
 		f.Waypoints[0] = Waypoint{Position: f.Position}
 	}
 	delete(p.Automation.FleetRoles, f.Num)
+	restoreMinesweeperBattlePlan(p, f)
 	delete(p.Automation.RebuildFleets, f.Num)
 	for key := range f.Tags {
 		if strings.HasPrefix(key, "automatic-") || strings.HasPrefix(key, "scout-") || strings.HasPrefix(key, "patrol-") || strings.HasPrefix(key, "bomber-") || strings.HasPrefix(key, "bombing-") || strings.HasPrefix(key, "escort-") || strings.HasPrefix(key, "fuel-network-") || strings.HasPrefix(key, "logistics-") || key == tankerAwaitTag || key == frontierPatrolTag || key == anticipatedSalvageTag || key == priorityReconTag {

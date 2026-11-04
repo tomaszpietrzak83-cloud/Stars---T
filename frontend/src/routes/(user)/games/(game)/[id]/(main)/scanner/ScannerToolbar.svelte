@@ -66,9 +66,9 @@
 	let toolbarWidth = $state(0);
 	// search/previous/next, plus cycle on small screens
 	let navWidth = $state(0);
-	// 9 filters, plus 2 ally filters when anyone shares their map with us
+	// 10 filters, plus 2 ally filters when anyone shares their map with us
 	let shareMap = $derived($player.relations.some((r) => r.shareMap));
-	let filterCount = $derived(9 + (shareMap ? 2 : 0));
+	let filterCount = $derived(10 + (shareMap ? 2 : 0));
 	// the dropdowns beside the design filters
 	let filterMenusWidth = $derived(12 * (2 + (shareMap ? 1 : 0)));
 

@@ -180,6 +180,9 @@ func (t *turnGenerator) assignBomberProtection(p *Player, bomber *Fleet, target 
 	})
 	for _, f := range candidates {
 		role := p.Automation.FleetRoles[f.Num]
+		if fleetHasDedicatedMinesweeper(p, f) {
+			continue
+		}
 		if f == bomber || f.Delete || !f.Spec.HasWeapons || f.InDesignMaintenance() || f.InAutomaticSafety() || fuelNetworkManaged(f) || readTankerJob(f) != nil || f.GetTag(tankerAwaitTag) != "" || f.GetTag(escortTag) != "" || f.GetTag("maintenance-pending") != "" || p.FleetInActiveAssembly(f) {
 			continue
 		}
