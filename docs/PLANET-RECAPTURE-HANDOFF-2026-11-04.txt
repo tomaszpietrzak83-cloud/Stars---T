@@ -1,0 +1,136 @@
+Planet recapture coordination - source-only review handoff
+2026-11-04
+
+Base: 73727c47 (0.6.13). Branch: codex/planet-recapture-coordination.
+Sequential coordination: the implementation chat explicitly paused source edits.
+It performs the merge/release after review. This task did not replace the installed
+game. Unrelated queue-upgrade changes and build artifacts from another task were
+observed during validation and are excluded from this source-only handoff.
+All new executables, WASM and compiled UI were built under tmp/recapture-validation.
+No private save, campaign snapshots, cache or runtime is part of this handoff.
+
+Observed blockers in the private 2474 campaign copy
+
+* Marked colonies had reports 3-26 years old. Two were still reported unowned.
+  Fleet-equipment reconnaissance consumed scouts before priority-colony refresh.
+* Colony reconnaissance accepted approach risk while planning, but fuel,
+  departure and safety checks did not recognize that mission. A scout destroyed
+  in orbital combat could fail to transmit its new colony report first.
+* Existing loaded invaders retained a target whose report was 26 years old;
+  reconnaissance found an orbital base and more than 100,000 defenders.
+* Pending bomber rebuilds blocked mission continuation. A stalled, insufficient
+  loaded transport could cause a premature bombing handoff.
+* Explicitly selected habitable colonies still hit the ordinary 50% quality
+  cutoff. Empty passenger pickup reservations rarely yielded to a priority landing.
+* Orbital bases had no dedicated, forecast-approved assault controller.
+* During integration testing, report ageing alone reversed already accepted
+  loaded invasions. This required persistent mission-specific landing clearance.
+
+Implemented behavior
+
+1. Reserve a bounded scout share for marked-colony reconnaissance, including old
+   unowned reports. Preserve scouts already examining incoming colony threats.
+   Only real scout hulls receive the deliberate contact-risk exemption; ordinary
+   transport/bomber travel retains the existing route, fuel and safety guards.
+2. Transmit physical scanner evidence before orbital combat. Full base equipment
+   requires actual orbit contact when the public design is incomplete. Planning
+   neither consults hidden fleets/designs nor grants remote equipment knowledge.
+3. A separate orbital assault uses fresh public base equipment, observed nearby
+   fleets and converging reinforcements. It recruits available co-located ships,
+   preserves urgent defense/refit/assembly missions and manual battle plans,
+   merges actual ships and requires funded travel/return fuel. Native forecasts
+   retain the 5% count/value/mass loss limits and require the base's destruction.
+   Ordinary patrols retain their base prohibition. Manual control clears the job.
+   A force invalidated by new enemy reinforcements releases its exclusive claim
+   so the composition pass can recruit physically available local support.
+4. Bombers wait for confirmed base destruction. Pending refits may finish the
+   saved mission without starting a new one; active refits/paid queues stay intact.
+   Bombing handoff requires enough actual passengers on funded, active approaches.
+   Arrival retains the mission identity during multiple bombing turns. Public
+   rules supply the strongest possible ground-defense bonus (normally 2), shared
+   by landing reservations and handoff; the hidden enemy race is not consulted.
+5. Marked targets may be below 50% habitability, but must be viable at occupation
+   using current conditions or immediate instaforming, never future construction.
+   Reported ground-defense coverage is honored even when defense count is absent.
+6. Empty civilian pickup reservations can yield to a priority landing. Full-load
+   and source-population reserves remain mandatory. Loaded missions wait at a
+   reachable owned colony when reconnaissance/bombardment has not cleared departure.
+7. Landing clearance is tied to target, reported owner and invasion mission.
+   Report ageing alone does not reverse an accepted voyage; changed identity,
+   fresh base/defense or fresh population above 100,000 invalidates clearance.
+   Stale reports cannot grant new clearance. Native arrival/attrition drops,
+   hostile fleets, actual defenses, fuel, route and escort checks still apply.
+
+Verification
+
+* Four initial regressions failed before the fix and passed afterward: explicit
+  low-quality habitable target, pending bomber mission, stale unowned priority
+  report and premature delegation to an insufficient/stalled transport.
+* Native synthetic campaign, without manual orders after setup: reconnaissance
+  2401, base destruction 2402, bombardment from 2404, defenders below 100,000 in
+  2412, actual ground-combat capture in 2414 with 49,200 surviving colonists.
+  The separate pending-retirement variant also captures the target, retains its
+  saved bombing mission throughout, and starts maintenance only after capture.
+* Negative tests: incomplete/old base equipment, stronger combined encounter,
+  out-of-range information, manual control, uninhabitable targets, reported
+  defense coverage and changed target/owner/mission/population clearance. A new
+  stronger enemy force cancels an unsafe assault, then actual local reinforcements
+  merge and permit a new native-approved departure. The 150,500-versus-100,000
+  handoff is rejected because the unseen race can have double defense strength.
+* Existing incoming-fleet reconnaissance priority regression remains passing.
+* Full native cs, ai, db, server and proto/converter checks were run. Compiled
+  native/static UI/WASM were checked on isolated ports 18107/18793, including
+  saved automation, two-yard production, desktop/mobile and embedded WASM identity.
+  The separate smoke database stayed in year 2400.
+
+Private campaign evidence (local-only artifacts)
+
+Input: online SQLite backup of the current personal game, then copied AGAIN by
+TestCopiedTransportCampaign into t.TempDir before any turn is generated.
+Input SHA256: c40b18e2b132160517dc437b200161f65402e4fde0516ff5271e9c4b00ab461d.
+The harness checks that input bytes remain identical. No personal turn is submitted.
+Baseline and iterative snapshots/logs live under audit-results/invasion-coordination
+and tmp/recapture-*.log, which are excluded from publication.
+The initial four-turn trial had no captures. A later incomplete candidate also
+failed to reclaim a planet before its obsolete run was stopped.
+The main corrected trial, 2474-2484, PASSED in 1327.76 seconds. Actual successive
+landings reduced the Skynyrd [2] garrison and recaptured it in 2482, with 90,000
+colonists remaining. It remained ours in 2484. Total colonies still declined
+from 37 to 29 because other enemy attacks continued; this is not a claim that
+the whole campaign became winning. Log: tmp/recapture-final-campaign.log.
+
+During read-only peer review, final safeguards were added for target/owner-bound
+clearance, pending multi-turn bombardment, assault reinforcement and public
+ground-defense bonuses. A consistent online backup of the already isolated
+campaign's 2483 database starts a separate four-turn continuation of this final
+source. Its input hash is
+bac08a1ba3068a8d328e4e41b6ac4edfd15200af6cea80309f491538bb8780a7.
+The final continuation 2483-2487 PASSED in 277.85 seconds. Its input hash was
+unchanged, as was the original 2474 backup. Personal game 3 was read-only checked
+after all tests: still year 2474, WaitingForPlayers.
+
+The reviewed continuation also recaptured Atik [2] in 2486, with 18,200 colonists
+remaining. This is an actual native turn on the additional database copy using
+the final reviewed source, rather than the synthetic fixture. The first capture
+and this continuation are distinct runs; they must not be described as a single
+unchanged-binary 14-turn experiment.
+
+Final isolated validation build SHA256:
+1c76d6de4408cb246633944df28020bf9385d90c92ceed1626edca37db5588f7  native
+603a296b75b33ad9cff0db65e226ee0007156e5a78bbedb4301e96331fe455e7  WASM
+The final static UI/native smoke passed again (tmp/recapture-smoke-reviewed.log).
+The post-review cs/ai/proto-converter suite passed (86.369s/1.532s/1.099s);
+earlier full db/server checks and the final copied-server campaign also passed.
+
+Integration owner: merge this source branch into main 5ee57b3b or its descendant,
+preserving Designer queue upgrades. Rebuild release assets from the COMBINED
+source, update release hashes, smoke-check and install/publish through the
+implementation chat. Do not copy the validation build over that newer feature.
+
+Practical limits
+
+This does not promise victory where there are insufficient available warships,
+scouts, effective bombers or funded full transports. It does not relax the loss
+limits to force a base assault or cancel urgent colony defense. A synthetic
+full-chain capture is distinct from a capture in the private campaign. Fleet
+production/rebuild latency and ongoing enemy attacks can still lose other worlds.

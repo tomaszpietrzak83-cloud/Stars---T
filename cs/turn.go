@@ -20,6 +20,7 @@ type turnGenerator struct {
 	statisticsBefore      map[int]StatisticsCounters
 	ordersOnly            bool
 	ordersPlayerNum       int
+	recaptureEvaluation   map[int]*patrolEvaluator
 	game                  *FullGame
 	log                   *slog.Logger
 	scorePopulations      map[*Planet]planetScorePopulation
@@ -113,6 +114,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.unloadOpportunisticInfrastructure()
 	t.dispatchReadyLogistics()
 	t.planBomberEscorts()
+	t.planRecaptureAssaults()
 	t.planPatrolAutomation()
 	t.planMinesweeperAutomation()
 	t.planSlowPreyContainment()

@@ -96,7 +96,7 @@ func bomberChaseThreat(p *Player, f *Fleet) int {
 func (t *turnGenerator) automaticBombingTarget(p *Player, f *Fleet) *Planet {
 	candidates := []*Planet{}
 	for _, planet := range p.PlanetIntels {
-		if planet == nil || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || !priorityNeedsBombing(planet) && bombingDelegatedToLanding(p, planet, t.game.getFleets(p.Num)) {
+		if planet == nil || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || !priorityNeedsBombing(planet) && bombingDelegatedToLanding(&t.game.Rules, p, planet, t.game.getFleets(p.Num)) {
 			continue
 		}
 		candidates = append(candidates, planet)

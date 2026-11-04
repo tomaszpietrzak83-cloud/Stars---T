@@ -176,6 +176,9 @@ func patrolAvailable(player *Player, f *Fleet) bool {
 	return f.GetTag(containmentTag) == "" && patrolOperational(player, f)
 }
 func patrolOperational(player *Player, f *Fleet) bool {
+	if f.GetTag(recaptureAssaultTag) != "" {
+		return false
+	}
 	if fleetHasDedicatedMinesweeper(player, f) {
 		return false
 	}
@@ -503,6 +506,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 		})
 		for _, fleet := range fleets {
 			job := readPatrolJob(fleet)
+			if fleet.GetTag(recaptureAssaultTag) != "" {
+				continue
+			}
 			if fleet.GetTag("maintenance-pending") != "" || fuelNetworkManaged(fleet) || readTankerJob(fleet) != nil {
 				continue
 			}

@@ -163,6 +163,11 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 			if job := readMiningJob(fleet); job != nil && player.Automation.FleetRoles[fleet.Num] == "miner" {
 				taskPending = t.game.Year < job.ArrivedYear+miningMinimumStay
 			}
+			if player.Automation.FleetRoles[fleet.Num] == "bomber" {
+				if target := player.GetPlanetIntel(bomberGoal(fleet)); target != nil && target.Owned() && target.PlayerNum != player.Num && !player.IsFriend(target.PlayerNum) {
+					taskPending = true
+				}
+			}
 			if len(fleet.Waypoints) > 1 || delivery != nil || taskPending || player.Automation.FleetRoles[fleet.Num] == "freighter" && fleet.CargoMass() > 0 {
 				fleet.SetTag("maintenance-pending", "Finish current navigation/delivery before rebuilding")
 				fleet.RepeatOrders = false

@@ -86,15 +86,16 @@ func TestStaleSmallPriorityColonyGetsBombardmentInsteadOfBeingIgnored(t *testing
 	target.Cargo.Colonists = 200
 	target.ReportAge = 19
 	require.True(t, priorityNeedsBombing(target))
-	require.Same(t, target, priorityBombingTarget(p, b))
+	require.Same(t, target, priorityBombingTarget(&u.Game.Rules, p, b))
 	target.ReportAge = 0
 	require.False(t, priorityNeedsBombing(target))
-	require.Same(t, target, priorityBombingTarget(p, b))
+	require.Same(t, target, priorityBombingTarget(&u.Game.Rules, p, b))
 	transport := u.Fleet("Cover")
 	p.Automation.FleetRoles[transport.Num] = "freighter"
-	transport.Cargo.Colonists = 100
-	saveLogisticsWork(transport, &logisticsJob{Kind: "invade", DeliveryNum: target.Num})
-	require.Nil(t, priorityBombingTarget(p, b, transport))
+	transport.Cargo.Colonists = 500
+	transport.Waypoints = []Waypoint{{Position: transport.Position}, {Position: target.Position, MapObjectTarget: target.ToTarget(), WarpSpeed: 6}}
+	saveLogisticsWork(transport, &logisticsJob{Kind: "invade", TargetNum: target.Num, DeliveryNum: target.Num, Position: target.Position})
+	require.Nil(t, priorityBombingTarget(&u.Game.Rules, p, b, transport))
 }
 func TestCompletedBomberEvasionResumesMissionBeforePlanning(t *testing.T) {
 	u := automaticBomberUniverse(t)
