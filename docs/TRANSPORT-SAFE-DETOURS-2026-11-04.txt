@@ -1,0 +1,43 @@
+Loaded deliveries: safe dock detours before unavailable escorts
+2026-11-04; base fe9e3eba (including d43fe2e transport delivery fixes).
+
+Confirmed bug: prepareConvoyWithMinimum sums threats on the straight segment and
+holds the loaded freighter for escorts, even if planAutomaticRoute already finds
+a fully funded safe route via owned docks. The route solver, fuel guard and final
+departure validation accept that route, but convoy assignment never tries it.
+
+Fix: for loaded settle/return/invade missions only, with no mandatory minimum
+escort, try the existing safe route solver before reserving escorts against the
+blocked straight corridor. Require a non-waiting route at normal cruise speed;
+release obsolete escorts, apply the verified route and preserve the funded return.
+All existing threat, mine, fuel and departure safeguards remain active.
+No new pickups, mandatory bomber cover or threat-crossing routes gain permission.
+
+Native regression fails before the hunk and passes after it. With the full
+logistics/fuel/departure/movement/refuel/arrival cycle, a loaded ship detours away
+from the enemy corridor, delivers passengers to its colony, and in a separate
+case captures an eligible hostile colony with 7000 attackers against 1000 defenders,
+leaving 6000 settlers. A mandatory escort minimum still holds the same ship.
+
+The private 2480 snapshot from the preceding copied campaign contains 60 loaded
+missions with a threat on the straight line. Eighteen have funded safe dock routes
+available. This measures available routes, not eighteen completed deliveries.
+
+Full cs/ai suites pass both through the overlay (72.109/1.695 seconds) and again on
+an immutable source snapshot (66.448/1.806 seconds). Further compiled smoke and
+one-full-turn twice-copied database results are recorded in the branch handoff.
+
+Files: the 13-line convoy hunk and transportdetour_test.go. Source development and
+validation occurred only under tmp/transport-proposal; the implementation chat's
+working files and real git index were not changed. Use the dedicated branch commit
+for integration rather than copying an entire old logisticsautomation.go over any
+concurrent changes. Prior 8-turn campaign limitations remain: no actual new invasion
+in that historical scenario, and a known enemy base still requires combat/bombing.
+
+Final acceptance: the frozen native executable, WASM and compiled static UI were
+rebuilt. Isolated Chrome smoke on 18105/18791 passed R/map/phone, Auto orders save,
+upgrade inheritance, MineSwap restrictions and exact embedded-WASM agreement.
+The fresh smoke game stayed at 2400. The additional full copied-database turn
+2472-2473 passed in 148.91 s and verified the input backup hash unchanged.
+No installed artifact was replaced. Final release rebuilding/installing/publishing
+remains with the implementation chat after merging this source-only branch.
