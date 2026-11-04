@@ -939,6 +939,7 @@ func (c *ProtoConverter) ConvertCSShipDesign(source *cs.ShipDesign) *v1.ShipDesi
 }
 func (c *ProtoConverter) ConvertCSShipDesignSpec(source cs.ShipDesignSpec) *v1.ShipDesignSpec {
 	var craig_starsv1ShipDesignSpec v1.ShipDesignSpec
+	craig_starsv1ShipDesignSpec.DefaultAutoRole = source.DefaultAutoRole
 	craig_starsv1ShipDesignSpec.VersionCreatedYear = IntToInt32(source.VersionCreatedYear)
 	craig_starsv1ShipDesignSpec.PreviousVersionNum = IntToInt32(source.PreviousVersionNum)
 	craig_starsv1ShipDesignSpec.AdditionalMassDrivers = IntToInt32(source.AdditionalMassDrivers)
@@ -2218,6 +2219,7 @@ func (c *ProtoConverter) ConvertShipDesignSpec(source *v1.ShipDesignSpec) *cs.Sh
 }
 func (c *ProtoConverter) ConvertShipDesignSpecValue(source v1.ShipDesignSpec) cs.ShipDesignSpec {
 	var csShipDesignSpec cs.ShipDesignSpec
+	csShipDesignSpec.DefaultAutoRole = source.DefaultAutoRole
 	csShipDesignSpec.VersionCreatedYear = Int32ToInt(source.VersionCreatedYear)
 	csShipDesignSpec.PreviousVersionNum = Int32ToInt(source.PreviousVersionNum)
 	csShipDesignSpec.DefaultBattlePlan = Int32ToInt(source.DefaultBattlePlan)

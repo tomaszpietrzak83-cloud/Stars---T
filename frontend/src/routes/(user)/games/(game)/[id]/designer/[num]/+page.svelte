@@ -3,6 +3,7 @@
 	import Breadcrumb from '#lib/components/game/Breadcrumb.svelte';
 	import Design from '#lib/components/game/design/Design.svelte';
 	import DesignDescriptionEditor from '#lib/components/game/design/DesignDescriptionEditor.svelte';
+	import DesignAutoOrdersEditor from '#lib/components/game/design/DesignAutoOrdersEditor.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
 
 	const { game, universe, readOnly } = getGameContext();
@@ -24,6 +25,7 @@
 
 	<div class="grow h-full px-1 md:p-0">
 		<p class="text-sm opacity-80 my-2">Created: {design.spec?.versionCreatedYear || 'unknown'}</p>
+		<DesignAutoOrdersEditor {design} />
 		<Design {design}>
 			{#snippet description()}
 				<DesignDescriptionEditor {design} />

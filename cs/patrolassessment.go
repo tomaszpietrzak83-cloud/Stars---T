@@ -12,6 +12,7 @@ type patrolAssessment struct {
 	Tactic                          BattleTactic
 	Loss, Damage, Score, PeakDamage float64
 	RepairTurns                     int
+	LostShips                       int
 	Reason                          string
 }
 
@@ -25,9 +26,11 @@ type patrolEvaluator struct {
 }
 
 func (t *turnGenerator) startPatrolEvaluation() {
+	t.bombardmentEvaluation = map[int]*patrolEvaluator{}
 	for _, p := range t.automaticPlayers() {
 		p.patrolEvaluator = &patrolEvaluator{rules: &t.game.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 4096}
 		p.patrolQueue = makePatrolMissionQueue(p, t.game.Year-1)
+		t.bombardmentEvaluation[p.Num] = &patrolEvaluator{rules: &t.game.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 2048}
 	}
 }
 
@@ -62,12 +65,19 @@ func patrolEncounterReports(p *Player, target *Fleet, point Vector, horizon floa
 }
 
 func (e *patrolEvaluator) assess(p *Player, own []*Fleet, target *Fleet, point Vector, horizon float64) patrolAssessment {
+	return e.assessEncounter(p, own, patrolEncounterReports(p, target, point, horizon), point, horizon)
+}
+
+func (e *patrolEvaluator) assessEncounter(p *Player, own []*Fleet, reports []*Fleet, point Vector, horizon float64) patrolAssessment {
+	return e.assessFormations(p, own, reports, point, horizon, true)
+}
+
+func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*Fleet, point Vector, horizon float64, merge bool) patrolAssessment {
 	for _, planet := range p.PlanetIntels {
 		if planet != nil && planet.PlayerNum != p.Num && planet.Owned() && !p.IsFriend(planet.PlayerNum) && planet.Spec.HasStarbase && point.DistanceTo(planet.Position) <= 3 {
 			return patrolAssessment{Reason: "Reported hostile starbase requires a dedicated assault"}
 		}
 	}
-	reports := patrolEncounterReports(p, target, point, horizon)
 	count, unknown := 0, false
 	for _, report := range reports {
 		count += reportedFleetShips(report)
@@ -127,17 +137,21 @@ func (e *patrolEvaluator) assess(p *Player, own []*Fleet, target *Fleet, point V
 			orbit = planet
 		}
 	}
-	raw, _ := json.Marshal([]any{inputs, point, horizon, p.Race, p.TechLevels, p.BattlePlans, stocks.ToMineral(), orbit, e.rules.BattleRules, e.rules.RepairRates})
+	raw, _ := json.Marshal([]any{inputs, point, horizon, merge, p.Race, p.TechLevels, p.BattlePlans, stocks.ToMineral(), orbit, e.rules.BattleRules, e.rules.RepairRates})
 	key := sha256.Sum256(raw)
 	if result, ok := e.cache[key]; ok {
 		e.Hits++
 		return result
 	}
-	merged := patrolMergedFormation(e.rules, p, own)
-	if merged == nil {
-		return patrolAssessment{Reason: "Player battle plans cannot be combined by automation"}
+	modeled := own
+	if merge {
+		merged := patrolMergedFormation(e.rules, p, own)
+		if merged == nil {
+			return patrolAssessment{Reason: "Player battle plans cannot be combined by automation"}
+		}
+		modeled = []*Fleet{merged}
 	}
-	model, err := newPatrolBattleCopy(e.rules, p, []*Fleet{merged}, reports)
+	model, err := newPatrolBattleCopy(e.rules, p, modeled, reports)
 	if err != nil {
 		return patrolAssessment{Reason: "Combat report incomplete; reconnaissance or replan required"}
 	}
@@ -187,9 +201,10 @@ func (e *patrolEvaluator) assess(p *Player, own []*Fleet, target *Fleet, point V
 				e.Work += work
 				e.Battles++
 				outcome := model.run(tactic, ep, int64(17011+seed*997))
-				if outcome.Wiped || outcome.Unfinished {
-					return patrolAssessment{Reason: "Native battle forecast does not confirm a decisive safe interception"}
+				if !outcome.safe(model.ownShips, model.ownValue) {
+					return patrolAssessment{Reason: "Native forecast: mission ineffective or own count/value loss exceeds 5%"}
 				}
+				result.LostShips = max(result.LostShips, outcome.LostShips)
 				loss += outcome.LostValue
 				damage += outcome.DamageValue
 				repair = max(repair, outcome.RepairTurns)
@@ -199,7 +214,7 @@ func (e *patrolEvaluator) assess(p *Player, own []*Fleet, target *Fleet, point V
 			result.Damage = max(result.Damage, damage/float64(seeds))
 			result.RepairTurns = max(result.RepairTurns, repair)
 		}
-		result.Ready = result.Loss <= model.ownValue*.25
+		result.Ready = true // Every sampled outcome passed both 5% loss limits.
 		result.Score = result.Loss + result.Damage + float64(result.RepairTurns)*model.ownValue*.02
 		return result
 	}

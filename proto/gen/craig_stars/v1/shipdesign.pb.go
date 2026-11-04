@@ -7,11 +7,12 @@
 package craig_starsv1
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -396,6 +397,8 @@ func (x *ShipDesignSlot) GetQuantity() int32 {
 
 type ShipDesignSpec struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// Default fleet automation for newly built ships; inherited by upgrades.
+	DefaultAutoRole string `protobuf:"bytes,70,opt,name=default_auto_role,json=defaultAutoRole,proto3" json:"default_auto_role,omitempty"`
 	// Server-owned game-year history, exposed for display and local cost forecasts.
 	VersionCreatedYear        int32             `protobuf:"varint,68,opt,name=version_created_year,json=versionCreatedYear,proto3" json:"version_created_year,omitempty"`
 	PreviousVersionNum        int32             `protobuf:"varint,69,opt,name=previous_version_num,json=previousVersionNum,proto3" json:"previous_version_num,omitempty"`
@@ -499,6 +502,13 @@ func (x *ShipDesignSpec) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ShipDesignSpec.ProtoReflect.Descriptor instead.
 func (*ShipDesignSpec) Descriptor() ([]byte, []int) {
 	return file_craig_stars_v1_shipdesign_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ShipDesignSpec) GetDefaultAutoRole() string {
+	if x != nil {
+		return x.DefaultAutoRole
+	}
+	return ""
 }
 
 func (x *ShipDesignSpec) GetVersionCreatedYear() int32 {
@@ -1010,8 +1020,9 @@ const file_craig_stars_v1_shipdesign_proto_rawDesc = "" +
 	"\x0eShipDesignSlot\x12%\n" +
 	"\x0ehull_component\x18\x01 \x01(\tR\rhullComponent\x12&\n" +
 	"\x0fhull_slot_index\x18\x02 \x01(\x05R\rhullSlotIndex\x12\x1a\n" +
-	"\bquantity\x18\x03 \x01(\x05R\bquantity\"\xfc\x16\n" +
-	"\x0eShipDesignSpec\x120\n" +
+	"\bquantity\x18\x03 \x01(\x05R\bquantity\"\xa8\x17\n" +
+	"\x0eShipDesignSpec\x12*\n" +
+	"\x11default_auto_role\x18F \x01(\tR\x0fdefaultAutoRole\x120\n" +
 	"\x14version_created_year\x18D \x01(\x05R\x12versionCreatedYear\x120\n" +
 	"\x14previous_version_num\x18E \x01(\x05R\x12previousVersionNum\x126\n" +
 	"\x17additional_mass_drivers\x18\x01 \x01(\x05R\x15additionalMassDrivers\x12\x14\n" +

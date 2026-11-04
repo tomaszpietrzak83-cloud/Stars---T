@@ -10,6 +10,7 @@ const fuelRequestTag = "automatic-fuel-request"
 
 type automaticRoutePolicy struct {
 	Fast             bool // Useful combat pursuit only; ordinary movement weighs fuel against travel time.
+	HighestWarp      bool // Escape: prefer the highest funded safe warp even on equal-ETA legs.
 	EconomicalPatrol bool
 	EmergencyReturn  bool
 	MaxTurns         int
@@ -282,7 +283,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				left[i] = remaining
 				cost += burned
 			}
-			if valid && (direct == nil || cost < direct.Fuel) {
+			if valid && (direct == nil || policy.HighestWarp && speed > direct.Waypoints[1].WarpSpeed || !policy.HighestWarp && cost < direct.Fuel) {
 				direct = &expeditionRoute{Waypoints: []Waypoint{{Position: start}, {Position: position, MapObjectTarget: target, WarpSpeed: speed}}, Turns: minimum, Fuel: cost, ArrivalFuel: left}
 			}
 		}
@@ -398,7 +399,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				if policy.MaxTurns > 0 && turns > policy.MaxTurns {
 					continue
 				}
-				if score(turns, used[at]+costTotal) < score(times[next], used[next]) || score(turns, used[at]+costTotal) == score(times[next], used[next]) && turns < times[next] {
+				if score(turns, used[at]+costTotal) < score(times[next], used[next]) || score(turns, used[at]+costTotal) == score(times[next], used[next]) && (turns < times[next] || policy.HighestWarp && speed > speeds[next]) {
 					times[next], used[next], previous[next], speeds[next] = turns, used[at]+costTotal, at, speed
 					arrival[next] = fuelLeft
 				}

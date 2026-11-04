@@ -59,6 +59,9 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 	if current == nil {
 		return
 	}
+	if p.patrolEvaluator != nil && job.Provisional {
+		return
+	} // bounded cleanup keeps the main rendezvous
 	var best *Fleet
 	bestScore := patrolOpportunityScore(p, f, current)
 	candidates := []*Fleet{}
@@ -71,6 +74,12 @@ func (t *turnGenerator) retargetPatrolOpportunity(p *Player, f *Fleet) {
 	for _, candidate := range p.FleetIntels {
 		if candidate == nil || candidate == current || candidate.Delete || candidate.Starbase || candidate.ReportAge != 0 || candidate.PlayerNum == p.Num || p.IsFriend(candidate.PlayerNum) {
 			continue
+		}
+		if p.patrolEvaluator != nil {
+			bombing, deadline := patrolColonyDeadline(p, current)
+			if (bombing || deadline < 1000) && patrolMissionRank(p, candidate) >= patrolMissionRank(p, current) {
+				continue
+			}
 		}
 		priority := priorityFleet(p, candidate) || slowPreySupport(p, candidate) != nil
 		if !priority && enemyApproachingColony(p, current) && patrolReportedBomber(p, current) && !nearbyLandingThreat(p, f) {

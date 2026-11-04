@@ -48,6 +48,15 @@ func (t *turnGenerator) provisionalPatrolGather(p *Player, leader, enemy *Fleet,
 	}
 	job.Status = reason
 	savePatrolJob(leader, *job)
+	if p.patrolEvaluator != nil {
+		var group []*Fleet
+		for _, f := range t.game.getFleets(p.Num) {
+			if !f.Delete && readPatrolJob(f).Leader == leader.Num && patrolAvailable(p, f) {
+				group = append(group, f)
+			}
+		}
+		t.patrolGatheringCleanup(p, leader, enemy, job, group)
+	}
 }
 
 func provisionalPatrolLeg(p *Player, f *Fleet) bool {

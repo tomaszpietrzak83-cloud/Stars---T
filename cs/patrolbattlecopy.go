@@ -26,9 +26,33 @@ type patrolBattleCopy struct {
 
 type patrolBattleOutcome struct {
 	Wiped, Unfinished                 bool
+	MissionSucceeded                  bool
 	LostValue, DamageValue, MaxDamage float64
 	RepairTurns                       int
 	OwnSurvivors, EnemySurvivors      int
+	LostShips                         int
+	DangerBefore, DangerAfter         float64
+	BombersBefore, BombersAfter       int
+}
+
+// Combat and bombardment capability are mission threats. Escaping scouts and
+// unarmed tankers are follow-up targets, not a veto on rescuing a colony.
+func patrolTokenDanger(token ShipToken) float64 {
+	if !token.design.Spec.HasWeapons {
+		return 0
+	}
+	remaining := float64(token.Quantity)
+	remaining -= float64(token.QuantityDamaged) * Clamp(token.Damage/float64(max(1, token.design.Spec.Armor)), 0.0, 1.0)
+	return float64(max(1, shipCombatPower(token.design.Spec))) * remaining
+}
+
+func patrolTokenBomber(token ShipToken) bool {
+	s := token.design.Spec
+	return len(s.Bombs)+len(s.SmartBombs)+len(s.RetroBombs) > 0
+}
+
+func (o patrolBattleOutcome) safe(ownShips int, ownValue float64) bool {
+	return !o.Wiped && o.MissionSucceeded && float64(o.LostShips) <= float64(ownShips)*.05+1e-9 && o.LostValue <= ownValue*.05+1e-9
 }
 
 func patrolDeepCopy[T any](value *T) (*T, error) {
@@ -217,6 +241,10 @@ func (m *patrolBattleCopy) run(tactic, enemyTactic BattleTactic, seed int64) pat
 		for _, token := range fleet.Tokens {
 			if fleet.PlayerNum != m.owner {
 				result.EnemySurvivors += token.Quantity
+				result.DangerAfter += patrolTokenDanger(token)
+				if patrolTokenBomber(token) {
+					result.BombersAfter += token.Quantity
+				}
 				continue
 			}
 			result.OwnSurvivors += token.Quantity
@@ -236,6 +264,14 @@ func (m *patrolBattleCopy) run(tactic, enemyTactic BattleTactic, seed int64) pat
 		}
 	}
 	for i, original := range m.fleets {
+		if original.PlayerNum != m.owner {
+			for _, token := range original.Tokens {
+				result.DangerBefore += patrolTokenDanger(token)
+				if patrolTokenBomber(token) {
+					result.BombersBefore += token.Quantity
+				}
+			}
+		}
 		if original.PlayerNum == m.owner {
 			for _, before := range original.Tokens {
 				remaining := 0
@@ -249,6 +285,14 @@ func (m *patrolBattleCopy) run(tactic, enemyTactic BattleTactic, seed int64) pat
 		}
 	}
 	result.Wiped = result.OwnSurvivors == 0
+	result.LostShips = max(0, m.ownShips-result.OwnSurvivors)
 	result.Unfinished = result.EnemySurvivors > 0
+	// At least half of the reported combat capability must be removed, and
+	// actual bombers must be eliminated. Harmless exchanges are not victories.
+	if result.DangerBefore > 0 || result.BombersBefore > 0 {
+		result.MissionSucceeded = result.BombersAfter == 0 && (result.DangerBefore == 0 || result.DangerAfter <= result.DangerBefore*.5)
+	} else {
+		result.MissionSucceeded = result.EnemySurvivors < m.enemyShips
+	}
 	return result
 }

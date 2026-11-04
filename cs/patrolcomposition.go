@@ -19,11 +19,16 @@ func patrolCompositionValue(p *Player, group []*Fleet) float64 {
 // The score prices readiness damage and repair downtime as well as casualties;
 // an extra ship can be worth retaining even when a smaller stack wins.
 func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, job *patrolJob) {
-	group := []*Fleet{leader}
+	job.CleanupEnemy, job.CleanupTarget = 0, 0
+	savePatrolJob(leader, *job)
+	existing := []*Fleet{leader}
 	for _, f := range t.game.getFleets(p.Num) {
 		if f != leader && !f.Delete && readPatrolJob(f).Leader == leader.Num {
 			if patrolAvailable(p, f) && compatiblePatrolPlans(leader, f) {
-				group = append(group, f)
+				next := readPatrolJob(f)
+				next.CleanupEnemy, next.CleanupTarget = 0, 0
+				savePatrolJob(f, next)
+				existing = append(existing, f)
 			} else {
 				delete(f.Tags, patrolTag)
 			}
@@ -31,49 +36,54 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	}
 	point := patrolInterceptPosition(enemy)
 	unknown := patrolNeedsRecon(p, enemy)
-	candidates := []*Fleet{}
+	// An already assembled local subset can launch immediately. Promised
+	// reinforcements are not part of this readiness decision.
+	if !unknown && t.launchLocalPatrol(p, leader, enemy, job, existing) {
+		return
+	}
+	group := []*Fleet{leader}
+	type candidate struct {
+		fleet *Fleet
+		route *expeditionRoute
+	}
+	candidates := []candidate{}
 	for _, f := range t.game.getFleets(p.Num) {
-		if slices.Contains(group, f) || !patrolAvailable(p, f) || !patrolSupportCanLeave(p, f, enemy) || !compatiblePatrolPlans(leader, f) || f.Position.DistanceTo(point) > 400 {
+		if f == leader || !patrolAvailable(p, f) || (!slices.Contains(existing, f) && !patrolSupportCanLeave(p, f, enemy)) || !compatiblePatrolPlans(leader, f) || f.Position.DistanceTo(point) > 400 {
 			continue
 		}
-		candidates = append(candidates, f)
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, leader.Position, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: 8, AllowThreat: knownWithdrawalRoute(p, f.Position, leader.Position)})
+		if route != nil && !route.WaitForFuel {
+			candidates = append(candidates, candidate{f, route})
+		}
 	}
-	slices.SortStableFunc(candidates, func(a, b *Fleet) int {
-		// Proximity to the battle, engine capability, and condition all matter.
-		cost := func(f *Fleet) float64 {
-			return f.Position.DistanceTo(point)/max(1, f.StrategicSpeed(automaticMaxWarp(p, f))) + float64(fleetDamagePercent(f))/10
+	slices.SortStableFunc(candidates, func(a, b candidate) int {
+		if a.route.Turns != b.route.Turns {
+			return a.route.Turns - b.route.Turns
 		}
-		if cost(a) < cost(b) {
-			return -1
+		if fleetDamagePercent(a.fleet) != fleetDamagePercent(b.fleet) {
+			return fleetDamagePercent(a.fleet) - fleetDamagePercent(b.fleet)
 		}
-		if cost(a) > cost(b) {
-			return 1
+		if a.route.Fuel != b.route.Fuel {
+			return a.route.Fuel - b.route.Fuel
 		}
-		return a.Num - b.Num
+		return a.fleet.Num - b.fleet.Num
 	})
 	result := p.patrolEvaluator.assess(p, group, enemy, point, 1)
 	checks := 0
-	for _, support := range candidates {
-		if checks >= 10 || p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
+	reconLimit := t.reconPatrolReservation(p)
+	for _, candidate := range candidates {
+		support, route := candidate.fleet, candidate.route
+		if checks >= 32 || p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
 			break
 		}
-		// Do not reserve support without a real funded gathering route.
-		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{support}, leader.Position, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: 8})
-		if route == nil || route.WaitForFuel {
-			continue
-		}
 		trial := append(slices.Clone(group), support)
-		if prior := readPatrolJob(support); prior.Leader == support.Num {
-			for _, member := range t.game.getFleets(p.Num) {
-				if member != support && !member.Delete && readPatrolJob(member).Leader == support.Num && patrolAvailable(p, member) && compatiblePatrolPlans(leader, member) && !slices.Contains(trial, member) {
-					trial = append(trial, member)
-				}
-			}
-		}
 		if unknown {
 			// Useful surplus can gather while equipment reconnaissance proceeds.
-			if patrolGroupPower(group) >= patrolThreat(p, enemy)*2 && len(group) >= 3 {
+			if patrolFormationShips(group) >= reconLimit || patrolGroupPower(group) >= patrolThreat(p, enemy)*2 && len(group) >= 3 {
 				break
+			}
+			if patrolFormationShips(trial) > reconLimit {
+				continue
 			}
 			group = trial
 			continue
@@ -90,7 +100,7 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	}
 	// Try removing redundant whole formations, preserving useful damage reduction.
 	if result.Ready {
-		for i := len(group) - 1; i > 0 && checks < 12; i-- {
+		for i := len(group) - 1; i > 0 && checks < 36; i-- {
 			trial := append(slices.Clone(group[:i]), group[i+1:]...)
 			checks++
 			next := p.patrolEvaluator.assess(p, trial, enemy, point, 1)
@@ -108,11 +118,17 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 				p.Automation.FleetRoles[f.Num] = "escort"
 				delete(f.Tags, patrolSupportTag)
 			}
-			holdAutomaticFleet(p, f, "Released surplus; available for another patrol mission")
+			if patrolAvailable(p, f) {
+				holdAutomaticFleet(p, f, "Released surplus; available for another patrol mission")
+			}
 		}
 	}
 	for _, f := range group {
 		if f != leader {
+			if prior := readPatrolJob(f); prior.Leader != 0 && prior.Leader != leader.Num {
+				t.detachPatrolMember(p, f)
+				job.Grouped = job.Grouped || prior.Grouped
+			}
 			if p.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(patrolSupportTag) == "" {
 				f.SetTag(patrolSupportTag, "escort")
 				p.Automation.FleetRoles[f.Num] = "patrol"
@@ -124,7 +140,7 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 				}
 			}
 			next := readPatrolJob(f)
-			next.Leader, next.Enemy, next.Target = leader.Num, enemy.PlayerNum, enemy.Num
+			next.Leader, next.Enemy, next.Target, next.LeaderID = leader.Num, enemy.PlayerNum, enemy.Num, leader.ID
 			savePatrolJob(f, next)
 		}
 	}
@@ -132,6 +148,9 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		job.RecruitPower = max(patrolGroupPower(group)+1, job.RecruitPower)
 		job.Status = result.Reason
 		t.provisionalPatrolGather(p, leader, enemy, job)
+		return
+	}
+	if t.launchLocalPatrol(p, leader, enemy, job, group) {
 		return
 	}
 	// The evaluator compared a merged formation. No constituent may attack alone.
@@ -169,6 +188,26 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	if !t.patrolRoute(p, leader, point, true) {
 		t.returnPatrolToFuel(p, leader)
 	}
+}
+
+func patrolFormationShips(group []*Fleet) int {
+	count := 0
+	for _, f := range group {
+		count += f.Spec.TotalShips
+	}
+	return count
+}
+
+func (t *turnGenerator) reconPatrolReservation(p *Player) int {
+	ships := 0
+	for _, f := range t.game.getFleets(p.Num) {
+		if patrolAvailable(p, f) {
+			ships += f.Spec.TotalShips
+		}
+	}
+	// Unknown equipment cannot justify reserving an ever larger fraction of
+	// the empire. The provisional force is bounded until the scout reports.
+	return max(3, min(32, ships/3))
 }
 
 func patrolGroupPower(group []*Fleet) int {

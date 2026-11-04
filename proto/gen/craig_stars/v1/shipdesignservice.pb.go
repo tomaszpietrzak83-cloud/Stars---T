@@ -22,6 +22,110 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type UpdateShipDesignAutoOrdersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GameId        int64                  `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	Num           int32                  `protobuf:"varint,2,opt,name=num,proto3" json:"num,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateShipDesignAutoOrdersRequest) Reset() {
+	*x = UpdateShipDesignAutoOrdersRequest{}
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateShipDesignAutoOrdersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateShipDesignAutoOrdersRequest) ProtoMessage() {}
+
+func (x *UpdateShipDesignAutoOrdersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateShipDesignAutoOrdersRequest.ProtoReflect.Descriptor instead.
+func (*UpdateShipDesignAutoOrdersRequest) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *UpdateShipDesignAutoOrdersRequest) GetGameId() int64 {
+	if x != nil {
+		return x.GameId
+	}
+	return 0
+}
+
+func (x *UpdateShipDesignAutoOrdersRequest) GetNum() int32 {
+	if x != nil {
+		return x.Num
+	}
+	return 0
+}
+
+func (x *UpdateShipDesignAutoOrdersRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+type UpdateShipDesignAutoOrdersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Design        *ShipDesign            `protobuf:"bytes,1,opt,name=design,proto3" json:"design,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateShipDesignAutoOrdersResponse) Reset() {
+	*x = UpdateShipDesignAutoOrdersResponse{}
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateShipDesignAutoOrdersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateShipDesignAutoOrdersResponse) ProtoMessage() {}
+
+func (x *UpdateShipDesignAutoOrdersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateShipDesignAutoOrdersResponse.ProtoReflect.Descriptor instead.
+func (*UpdateShipDesignAutoOrdersResponse) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *UpdateShipDesignAutoOrdersResponse) GetDesign() *ShipDesign {
+	if x != nil {
+		return x.Design
+	}
+	return nil
+}
+
 type GetShipDesignRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GameId        int64                  `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
@@ -32,7 +136,7 @@ type GetShipDesignRequest struct {
 
 func (x *GetShipDesignRequest) Reset() {
 	*x = GetShipDesignRequest{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[0]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +148,7 @@ func (x *GetShipDesignRequest) String() string {
 func (*GetShipDesignRequest) ProtoMessage() {}
 
 func (x *GetShipDesignRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[0]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +161,7 @@ func (x *GetShipDesignRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetShipDesignRequest.ProtoReflect.Descriptor instead.
 func (*GetShipDesignRequest) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{0}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetShipDesignRequest) GetGameId() int64 {
@@ -83,7 +187,7 @@ type GetShipDesignResponse struct {
 
 func (x *GetShipDesignResponse) Reset() {
 	*x = GetShipDesignResponse{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[1]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -95,7 +199,7 @@ func (x *GetShipDesignResponse) String() string {
 func (*GetShipDesignResponse) ProtoMessage() {}
 
 func (x *GetShipDesignResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[1]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -108,7 +212,7 @@ func (x *GetShipDesignResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetShipDesignResponse.ProtoReflect.Descriptor instead.
 func (*GetShipDesignResponse) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{1}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetShipDesignResponse) GetDesign() *ShipDesign {
@@ -127,7 +231,7 @@ type GetShipDesignsRequest struct {
 
 func (x *GetShipDesignsRequest) Reset() {
 	*x = GetShipDesignsRequest{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[2]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +243,7 @@ func (x *GetShipDesignsRequest) String() string {
 func (*GetShipDesignsRequest) ProtoMessage() {}
 
 func (x *GetShipDesignsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[2]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +256,7 @@ func (x *GetShipDesignsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetShipDesignsRequest.ProtoReflect.Descriptor instead.
 func (*GetShipDesignsRequest) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{2}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetShipDesignsRequest) GetGameId() int64 {
@@ -171,7 +275,7 @@ type GetShipDesignsResponse struct {
 
 func (x *GetShipDesignsResponse) Reset() {
 	*x = GetShipDesignsResponse{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[3]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -183,7 +287,7 @@ func (x *GetShipDesignsResponse) String() string {
 func (*GetShipDesignsResponse) ProtoMessage() {}
 
 func (x *GetShipDesignsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[3]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -196,7 +300,7 @@ func (x *GetShipDesignsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetShipDesignsResponse.ProtoReflect.Descriptor instead.
 func (*GetShipDesignsResponse) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{3}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetShipDesignsResponse) GetDesign() []*ShipDesign {
@@ -217,7 +321,7 @@ type CreateShipDesignRequest struct {
 
 func (x *CreateShipDesignRequest) Reset() {
 	*x = CreateShipDesignRequest{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[4]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -229,7 +333,7 @@ func (x *CreateShipDesignRequest) String() string {
 func (*CreateShipDesignRequest) ProtoMessage() {}
 
 func (x *CreateShipDesignRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[4]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -242,7 +346,7 @@ func (x *CreateShipDesignRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateShipDesignRequest.ProtoReflect.Descriptor instead.
 func (*CreateShipDesignRequest) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{4}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateShipDesignRequest) GetUpgradeFromDesignNum() int32 {
@@ -276,7 +380,7 @@ type CreateShipDesignResponse struct {
 
 func (x *CreateShipDesignResponse) Reset() {
 	*x = CreateShipDesignResponse{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[5]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -288,7 +392,7 @@ func (x *CreateShipDesignResponse) String() string {
 func (*CreateShipDesignResponse) ProtoMessage() {}
 
 func (x *CreateShipDesignResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[5]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -301,7 +405,7 @@ func (x *CreateShipDesignResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateShipDesignResponse.ProtoReflect.Descriptor instead.
 func (*CreateShipDesignResponse) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{5}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateShipDesignResponse) GetPlayerOrders() *PlayerOrders {
@@ -328,7 +432,7 @@ type UpdateShipDesignRequest struct {
 
 func (x *UpdateShipDesignRequest) Reset() {
 	*x = UpdateShipDesignRequest{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[6]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -340,7 +444,7 @@ func (x *UpdateShipDesignRequest) String() string {
 func (*UpdateShipDesignRequest) ProtoMessage() {}
 
 func (x *UpdateShipDesignRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[6]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,7 +457,7 @@ func (x *UpdateShipDesignRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateShipDesignRequest.ProtoReflect.Descriptor instead.
 func (*UpdateShipDesignRequest) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{6}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateShipDesignRequest) GetGameId() int64 {
@@ -379,7 +483,7 @@ type UpdateShipDesignResponse struct {
 
 func (x *UpdateShipDesignResponse) Reset() {
 	*x = UpdateShipDesignResponse{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[7]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -391,7 +495,7 @@ func (x *UpdateShipDesignResponse) String() string {
 func (*UpdateShipDesignResponse) ProtoMessage() {}
 
 func (x *UpdateShipDesignResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[7]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -404,7 +508,7 @@ func (x *UpdateShipDesignResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateShipDesignResponse.ProtoReflect.Descriptor instead.
 func (*UpdateShipDesignResponse) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{7}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateShipDesignResponse) GetDesign() *ShipDesign {
@@ -425,7 +529,7 @@ type UpdateShipDesignDescriptionRequest struct {
 
 func (x *UpdateShipDesignDescriptionRequest) Reset() {
 	*x = UpdateShipDesignDescriptionRequest{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[8]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -437,7 +541,7 @@ func (x *UpdateShipDesignDescriptionRequest) String() string {
 func (*UpdateShipDesignDescriptionRequest) ProtoMessage() {}
 
 func (x *UpdateShipDesignDescriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[8]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -450,7 +554,7 @@ func (x *UpdateShipDesignDescriptionRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use UpdateShipDesignDescriptionRequest.ProtoReflect.Descriptor instead.
 func (*UpdateShipDesignDescriptionRequest) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{8}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *UpdateShipDesignDescriptionRequest) GetGameId() int64 {
@@ -483,7 +587,7 @@ type UpdateShipDesignDescriptionResponse struct {
 
 func (x *UpdateShipDesignDescriptionResponse) Reset() {
 	*x = UpdateShipDesignDescriptionResponse{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[9]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -495,7 +599,7 @@ func (x *UpdateShipDesignDescriptionResponse) String() string {
 func (*UpdateShipDesignDescriptionResponse) ProtoMessage() {}
 
 func (x *UpdateShipDesignDescriptionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[9]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -508,7 +612,7 @@ func (x *UpdateShipDesignDescriptionResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use UpdateShipDesignDescriptionResponse.ProtoReflect.Descriptor instead.
 func (*UpdateShipDesignDescriptionResponse) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{9}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UpdateShipDesignDescriptionResponse) GetDesign() *ShipDesign {
@@ -528,7 +632,7 @@ type DeleteShipDesignRequest struct {
 
 func (x *DeleteShipDesignRequest) Reset() {
 	*x = DeleteShipDesignRequest{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[10]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -540,7 +644,7 @@ func (x *DeleteShipDesignRequest) String() string {
 func (*DeleteShipDesignRequest) ProtoMessage() {}
 
 func (x *DeleteShipDesignRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[10]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -553,7 +657,7 @@ func (x *DeleteShipDesignRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteShipDesignRequest.ProtoReflect.Descriptor instead.
 func (*DeleteShipDesignRequest) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{10}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DeleteShipDesignRequest) GetGameId() int64 {
@@ -581,7 +685,7 @@ type DeleteShipDesignResponse struct {
 
 func (x *DeleteShipDesignResponse) Reset() {
 	*x = DeleteShipDesignResponse{}
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[11]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -593,7 +697,7 @@ func (x *DeleteShipDesignResponse) String() string {
 func (*DeleteShipDesignResponse) ProtoMessage() {}
 
 func (x *DeleteShipDesignResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[11]
+	mi := &file_craig_stars_v1_shipdesignservice_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -606,7 +710,7 @@ func (x *DeleteShipDesignResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteShipDesignResponse.ProtoReflect.Descriptor instead.
 func (*DeleteShipDesignResponse) Descriptor() ([]byte, []int) {
-	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{11}
+	return file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DeleteShipDesignResponse) GetFleets() []*Fleet {
@@ -634,7 +738,13 @@ var File_craig_stars_v1_shipdesignservice_proto protoreflect.FileDescriptor
 
 const file_craig_stars_v1_shipdesignservice_proto_rawDesc = "" +
 	"\n" +
-	"&craig_stars/v1/shipdesignservice.proto\x12\x0ecraig_stars.v1\x1a\x1acraig_stars/v1/fleet.proto\x1a\x1bcraig_stars/v1/planet.proto\x1a\x1fcraig_stars/v1/shipdesign.proto\x1a\x1bcraig_stars/v1/player.proto\"A\n" +
+	"&craig_stars/v1/shipdesignservice.proto\x12\x0ecraig_stars.v1\x1a\x1acraig_stars/v1/fleet.proto\x1a\x1bcraig_stars/v1/planet.proto\x1a\x1fcraig_stars/v1/shipdesign.proto\x1a\x1bcraig_stars/v1/player.proto\"b\n" +
+	"!UpdateShipDesignAutoOrdersRequest\x12\x17\n" +
+	"\agame_id\x18\x01 \x01(\x03R\x06gameId\x12\x10\n" +
+	"\x03num\x18\x02 \x01(\x05R\x03num\x12\x12\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\"X\n" +
+	"\"UpdateShipDesignAutoOrdersResponse\x122\n" +
+	"\x06design\x18\x01 \x01(\v2\x1a.craig_stars.v1.ShipDesignR\x06design\"A\n" +
 	"\x14GetShipDesignRequest\x12\x17\n" +
 	"\agame_id\x18\x01 \x01(\x03R\x06gameId\x12\x10\n" +
 	"\x03num\x18\x02 \x01(\x05R\x03num\"K\n" +
@@ -668,14 +778,15 @@ const file_craig_stars_v1_shipdesignservice_proto_rawDesc = "" +
 	"\x18DeleteShipDesignResponse\x12-\n" +
 	"\x06fleets\x18\x01 \x03(\v2\x15.craig_stars.v1.FleetR\x06fleets\x123\n" +
 	"\tstarbases\x18\x02 \x03(\v2\x15.craig_stars.v1.FleetR\tstarbases\x120\n" +
-	"\aplanets\x18\x03 \x03(\v2\x16.craig_stars.v1.PlanetR\aplanets2\xa4\x05\n" +
+	"\aplanets\x18\x03 \x03(\v2\x16.craig_stars.v1.PlanetR\aplanets2\xaf\x06\n" +
 	"\x11ShipDesignService\x12a\n" +
 	"\rGetShipDesign\x12$.craig_stars.v1.GetShipDesignRequest\x1a%.craig_stars.v1.GetShipDesignResponse\"\x03\x90\x02\x01\x12d\n" +
 	"\x0eGetShipDesigns\x12%.craig_stars.v1.GetShipDesignsRequest\x1a&.craig_stars.v1.GetShipDesignsResponse\"\x03\x90\x02\x01\x12e\n" +
 	"\x10CreateShipDesign\x12'.craig_stars.v1.CreateShipDesignRequest\x1a(.craig_stars.v1.CreateShipDesignResponse\x12j\n" +
 	"\x10UpdateShipDesign\x12'.craig_stars.v1.UpdateShipDesignRequest\x1a(.craig_stars.v1.UpdateShipDesignResponse\"\x03\x90\x02\x02\x12\x8b\x01\n" +
 	"\x1bUpdateShipDesignDescription\x122.craig_stars.v1.UpdateShipDesignDescriptionRequest\x1a3.craig_stars.v1.UpdateShipDesignDescriptionResponse\"\x03\x90\x02\x02\x12e\n" +
-	"\x10DeleteShipDesign\x12'.craig_stars.v1.DeleteShipDesignRequest\x1a(.craig_stars.v1.DeleteShipDesignResponseB\xc9\x01\n" +
+	"\x10DeleteShipDesign\x12'.craig_stars.v1.DeleteShipDesignRequest\x1a(.craig_stars.v1.DeleteShipDesignResponse\x12\x88\x01\n" +
+	"\x1aUpdateShipDesignAutoOrders\x121.craig_stars.v1.UpdateShipDesignAutoOrdersRequest\x1a2.craig_stars.v1.UpdateShipDesignAutoOrdersResponse\"\x03\x90\x02\x02B\xc9\x01\n" +
 	"\x12com.craig_stars.v1B\x16ShipdesignserviceProtoP\x01ZFgithub.com/sirgwain/craig-stars/proto/gen/craig_stars/v1;craig_starsv1\xa2\x02\x03CXX\xaa\x02\rCraigStars.V1\xca\x02\rCraigStars\\V1\xe2\x02\x19CraigStars\\V1\\GPBMetadata\xea\x02\x0eCraigStars::V1b\x06proto3"
 
 var (
@@ -690,54 +801,59 @@ func file_craig_stars_v1_shipdesignservice_proto_rawDescGZIP() []byte {
 	return file_craig_stars_v1_shipdesignservice_proto_rawDescData
 }
 
-var file_craig_stars_v1_shipdesignservice_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_craig_stars_v1_shipdesignservice_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_craig_stars_v1_shipdesignservice_proto_goTypes = []any{
-	(*GetShipDesignRequest)(nil),                // 0: craig_stars.v1.GetShipDesignRequest
-	(*GetShipDesignResponse)(nil),               // 1: craig_stars.v1.GetShipDesignResponse
-	(*GetShipDesignsRequest)(nil),               // 2: craig_stars.v1.GetShipDesignsRequest
-	(*GetShipDesignsResponse)(nil),              // 3: craig_stars.v1.GetShipDesignsResponse
-	(*CreateShipDesignRequest)(nil),             // 4: craig_stars.v1.CreateShipDesignRequest
-	(*CreateShipDesignResponse)(nil),            // 5: craig_stars.v1.CreateShipDesignResponse
-	(*UpdateShipDesignRequest)(nil),             // 6: craig_stars.v1.UpdateShipDesignRequest
-	(*UpdateShipDesignResponse)(nil),            // 7: craig_stars.v1.UpdateShipDesignResponse
-	(*UpdateShipDesignDescriptionRequest)(nil),  // 8: craig_stars.v1.UpdateShipDesignDescriptionRequest
-	(*UpdateShipDesignDescriptionResponse)(nil), // 9: craig_stars.v1.UpdateShipDesignDescriptionResponse
-	(*DeleteShipDesignRequest)(nil),             // 10: craig_stars.v1.DeleteShipDesignRequest
-	(*DeleteShipDesignResponse)(nil),            // 11: craig_stars.v1.DeleteShipDesignResponse
-	(*ShipDesign)(nil),                          // 12: craig_stars.v1.ShipDesign
-	(*PlayerOrders)(nil),                        // 13: craig_stars.v1.PlayerOrders
-	(*Fleet)(nil),                               // 14: craig_stars.v1.Fleet
-	(*Planet)(nil),                              // 15: craig_stars.v1.Planet
+	(*UpdateShipDesignAutoOrdersRequest)(nil),   // 0: craig_stars.v1.UpdateShipDesignAutoOrdersRequest
+	(*UpdateShipDesignAutoOrdersResponse)(nil),  // 1: craig_stars.v1.UpdateShipDesignAutoOrdersResponse
+	(*GetShipDesignRequest)(nil),                // 2: craig_stars.v1.GetShipDesignRequest
+	(*GetShipDesignResponse)(nil),               // 3: craig_stars.v1.GetShipDesignResponse
+	(*GetShipDesignsRequest)(nil),               // 4: craig_stars.v1.GetShipDesignsRequest
+	(*GetShipDesignsResponse)(nil),              // 5: craig_stars.v1.GetShipDesignsResponse
+	(*CreateShipDesignRequest)(nil),             // 6: craig_stars.v1.CreateShipDesignRequest
+	(*CreateShipDesignResponse)(nil),            // 7: craig_stars.v1.CreateShipDesignResponse
+	(*UpdateShipDesignRequest)(nil),             // 8: craig_stars.v1.UpdateShipDesignRequest
+	(*UpdateShipDesignResponse)(nil),            // 9: craig_stars.v1.UpdateShipDesignResponse
+	(*UpdateShipDesignDescriptionRequest)(nil),  // 10: craig_stars.v1.UpdateShipDesignDescriptionRequest
+	(*UpdateShipDesignDescriptionResponse)(nil), // 11: craig_stars.v1.UpdateShipDesignDescriptionResponse
+	(*DeleteShipDesignRequest)(nil),             // 12: craig_stars.v1.DeleteShipDesignRequest
+	(*DeleteShipDesignResponse)(nil),            // 13: craig_stars.v1.DeleteShipDesignResponse
+	(*ShipDesign)(nil),                          // 14: craig_stars.v1.ShipDesign
+	(*PlayerOrders)(nil),                        // 15: craig_stars.v1.PlayerOrders
+	(*Fleet)(nil),                               // 16: craig_stars.v1.Fleet
+	(*Planet)(nil),                              // 17: craig_stars.v1.Planet
 }
 var file_craig_stars_v1_shipdesignservice_proto_depIdxs = []int32{
-	12, // 0: craig_stars.v1.GetShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
-	12, // 1: craig_stars.v1.GetShipDesignsResponse.design:type_name -> craig_stars.v1.ShipDesign
-	12, // 2: craig_stars.v1.CreateShipDesignRequest.design:type_name -> craig_stars.v1.ShipDesign
-	13, // 3: craig_stars.v1.CreateShipDesignResponse.player_orders:type_name -> craig_stars.v1.PlayerOrders
-	12, // 4: craig_stars.v1.CreateShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
-	12, // 5: craig_stars.v1.UpdateShipDesignRequest.design:type_name -> craig_stars.v1.ShipDesign
-	12, // 6: craig_stars.v1.UpdateShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
-	12, // 7: craig_stars.v1.UpdateShipDesignDescriptionResponse.design:type_name -> craig_stars.v1.ShipDesign
-	14, // 8: craig_stars.v1.DeleteShipDesignResponse.fleets:type_name -> craig_stars.v1.Fleet
-	14, // 9: craig_stars.v1.DeleteShipDesignResponse.starbases:type_name -> craig_stars.v1.Fleet
-	15, // 10: craig_stars.v1.DeleteShipDesignResponse.planets:type_name -> craig_stars.v1.Planet
-	0,  // 11: craig_stars.v1.ShipDesignService.GetShipDesign:input_type -> craig_stars.v1.GetShipDesignRequest
-	2,  // 12: craig_stars.v1.ShipDesignService.GetShipDesigns:input_type -> craig_stars.v1.GetShipDesignsRequest
-	4,  // 13: craig_stars.v1.ShipDesignService.CreateShipDesign:input_type -> craig_stars.v1.CreateShipDesignRequest
-	6,  // 14: craig_stars.v1.ShipDesignService.UpdateShipDesign:input_type -> craig_stars.v1.UpdateShipDesignRequest
-	8,  // 15: craig_stars.v1.ShipDesignService.UpdateShipDesignDescription:input_type -> craig_stars.v1.UpdateShipDesignDescriptionRequest
-	10, // 16: craig_stars.v1.ShipDesignService.DeleteShipDesign:input_type -> craig_stars.v1.DeleteShipDesignRequest
-	1,  // 17: craig_stars.v1.ShipDesignService.GetShipDesign:output_type -> craig_stars.v1.GetShipDesignResponse
-	3,  // 18: craig_stars.v1.ShipDesignService.GetShipDesigns:output_type -> craig_stars.v1.GetShipDesignsResponse
-	5,  // 19: craig_stars.v1.ShipDesignService.CreateShipDesign:output_type -> craig_stars.v1.CreateShipDesignResponse
-	7,  // 20: craig_stars.v1.ShipDesignService.UpdateShipDesign:output_type -> craig_stars.v1.UpdateShipDesignResponse
-	9,  // 21: craig_stars.v1.ShipDesignService.UpdateShipDesignDescription:output_type -> craig_stars.v1.UpdateShipDesignDescriptionResponse
-	11, // 22: craig_stars.v1.ShipDesignService.DeleteShipDesign:output_type -> craig_stars.v1.DeleteShipDesignResponse
-	17, // [17:23] is the sub-list for method output_type
-	11, // [11:17] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	14, // 0: craig_stars.v1.UpdateShipDesignAutoOrdersResponse.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 1: craig_stars.v1.GetShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 2: craig_stars.v1.GetShipDesignsResponse.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 3: craig_stars.v1.CreateShipDesignRequest.design:type_name -> craig_stars.v1.ShipDesign
+	15, // 4: craig_stars.v1.CreateShipDesignResponse.player_orders:type_name -> craig_stars.v1.PlayerOrders
+	14, // 5: craig_stars.v1.CreateShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 6: craig_stars.v1.UpdateShipDesignRequest.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 7: craig_stars.v1.UpdateShipDesignResponse.design:type_name -> craig_stars.v1.ShipDesign
+	14, // 8: craig_stars.v1.UpdateShipDesignDescriptionResponse.design:type_name -> craig_stars.v1.ShipDesign
+	16, // 9: craig_stars.v1.DeleteShipDesignResponse.fleets:type_name -> craig_stars.v1.Fleet
+	16, // 10: craig_stars.v1.DeleteShipDesignResponse.starbases:type_name -> craig_stars.v1.Fleet
+	17, // 11: craig_stars.v1.DeleteShipDesignResponse.planets:type_name -> craig_stars.v1.Planet
+	2,  // 12: craig_stars.v1.ShipDesignService.GetShipDesign:input_type -> craig_stars.v1.GetShipDesignRequest
+	4,  // 13: craig_stars.v1.ShipDesignService.GetShipDesigns:input_type -> craig_stars.v1.GetShipDesignsRequest
+	6,  // 14: craig_stars.v1.ShipDesignService.CreateShipDesign:input_type -> craig_stars.v1.CreateShipDesignRequest
+	8,  // 15: craig_stars.v1.ShipDesignService.UpdateShipDesign:input_type -> craig_stars.v1.UpdateShipDesignRequest
+	10, // 16: craig_stars.v1.ShipDesignService.UpdateShipDesignDescription:input_type -> craig_stars.v1.UpdateShipDesignDescriptionRequest
+	12, // 17: craig_stars.v1.ShipDesignService.DeleteShipDesign:input_type -> craig_stars.v1.DeleteShipDesignRequest
+	0,  // 18: craig_stars.v1.ShipDesignService.UpdateShipDesignAutoOrders:input_type -> craig_stars.v1.UpdateShipDesignAutoOrdersRequest
+	3,  // 19: craig_stars.v1.ShipDesignService.GetShipDesign:output_type -> craig_stars.v1.GetShipDesignResponse
+	5,  // 20: craig_stars.v1.ShipDesignService.GetShipDesigns:output_type -> craig_stars.v1.GetShipDesignsResponse
+	7,  // 21: craig_stars.v1.ShipDesignService.CreateShipDesign:output_type -> craig_stars.v1.CreateShipDesignResponse
+	9,  // 22: craig_stars.v1.ShipDesignService.UpdateShipDesign:output_type -> craig_stars.v1.UpdateShipDesignResponse
+	11, // 23: craig_stars.v1.ShipDesignService.UpdateShipDesignDescription:output_type -> craig_stars.v1.UpdateShipDesignDescriptionResponse
+	13, // 24: craig_stars.v1.ShipDesignService.DeleteShipDesign:output_type -> craig_stars.v1.DeleteShipDesignResponse
+	1,  // 25: craig_stars.v1.ShipDesignService.UpdateShipDesignAutoOrders:output_type -> craig_stars.v1.UpdateShipDesignAutoOrdersResponse
+	19, // [19:26] is the sub-list for method output_type
+	12, // [12:19] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_craig_stars_v1_shipdesignservice_proto_init() }
@@ -755,7 +871,7 @@ func file_craig_stars_v1_shipdesignservice_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_craig_stars_v1_shipdesignservice_proto_rawDesc), len(file_craig_stars_v1_shipdesignservice_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

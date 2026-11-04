@@ -23,6 +23,18 @@ service ShipDesignService {
     option idempotency_level = IDEMPOTENT;
   }
   rpc DeleteShipDesign(DeleteShipDesignRequest) returns (DeleteShipDesignResponse);
+  rpc UpdateShipDesignAutoOrders(UpdateShipDesignAutoOrdersRequest) returns (UpdateShipDesignAutoOrdersResponse) {
+    option idempotency_level = IDEMPOTENT;
+  }
+}
+
+message UpdateShipDesignAutoOrdersRequest {
+  int64 game_id = 1;
+  int32 num = 2;
+  string role = 3;
+}
+message UpdateShipDesignAutoOrdersResponse {
+  ShipDesign design = 1;
 }
 
 message GetShipDesignRequest {

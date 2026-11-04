@@ -87,7 +87,7 @@ func TestProductionPatrolForecastIndependentCombatAndBudget(t *testing.T) {
 			for seed := int64(50000); seed < 50032; seed++ {
 				outcome := model.run(result.Tactic, ep, seed)
 				require.False(t, outcome.Wiped)
-				require.False(t, outcome.Unfinished)
+				require.True(t, outcome.safe(model.ownShips, model.ownValue), "held-out seeds must meet useful mission success and both 5%% limits")
 			}
 		}
 		battles := p.patrolEvaluator.Battles

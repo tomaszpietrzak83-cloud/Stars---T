@@ -18,7 +18,81 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file craig_stars/v1/shipdesignservice.proto.
  */
 export const file_craig_stars_v1_shipdesignservice: GenFile = /*@__PURE__*/
-  fileDesc("CiZjcmFpZ19zdGFycy92MS9zaGlwZGVzaWduc2VydmljZS5wcm90bxIOY3JhaWdfc3RhcnMudjEiNAoUR2V0U2hpcERlc2lnblJlcXVlc3QSDwoHZ2FtZV9pZBgBIAEoAxILCgNudW0YAiABKAUiQwoVR2V0U2hpcERlc2lnblJlc3BvbnNlEioKBmRlc2lnbhgBIAEoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24iKAoVR2V0U2hpcERlc2lnbnNSZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMiRAoWR2V0U2hpcERlc2lnbnNSZXNwb25zZRIqCgZkZXNpZ24YASADKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduIncKF0NyZWF0ZVNoaXBEZXNpZ25SZXF1ZXN0Eh8KF3VwZ3JhZGVfZnJvbV9kZXNpZ25fbnVtGAMgASgFEg8KB2dhbWVfaWQYASABKAMSKgoGZGVzaWduGAIgASgLMhouY3JhaWdfc3RhcnMudjEuU2hpcERlc2lnbiJ7ChhDcmVhdGVTaGlwRGVzaWduUmVzcG9uc2USMwoNcGxheWVyX29yZGVycxgCIAEoCzIcLmNyYWlnX3N0YXJzLnYxLlBsYXllck9yZGVycxIqCgZkZXNpZ24YASABKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduIlYKF1VwZGF0ZVNoaXBEZXNpZ25SZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMSKgoGZGVzaWduGAIgASgLMhouY3JhaWdfc3RhcnMudjEuU2hpcERlc2lnbiJGChhVcGRhdGVTaGlwRGVzaWduUmVzcG9uc2USKgoGZGVzaWduGAEgASgLMhouY3JhaWdfc3RhcnMudjEuU2hpcERlc2lnbiJXCiJVcGRhdGVTaGlwRGVzaWduRGVzY3JpcHRpb25SZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMSCwoDbnVtGAIgASgFEhMKC2Rlc2NyaXB0aW9uGAMgASgJIlEKI1VwZGF0ZVNoaXBEZXNpZ25EZXNjcmlwdGlvblJlc3BvbnNlEioKBmRlc2lnbhgBIAEoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24iNwoXRGVsZXRlU2hpcERlc2lnblJlcXVlc3QSDwoHZ2FtZV9pZBgBIAEoAxILCgNudW0YAiABKAUilAEKGERlbGV0ZVNoaXBEZXNpZ25SZXNwb25zZRIlCgZmbGVldHMYASADKAsyFS5jcmFpZ19zdGFycy52MS5GbGVldBIoCglzdGFyYmFzZXMYAiADKAsyFS5jcmFpZ19zdGFycy52MS5GbGVldBInCgdwbGFuZXRzGAMgAygLMhYuY3JhaWdfc3RhcnMudjEuUGxhbmV0MqQFChFTaGlwRGVzaWduU2VydmljZRJhCg1HZXRTaGlwRGVzaWduEiQuY3JhaWdfc3RhcnMudjEuR2V0U2hpcERlc2lnblJlcXVlc3QaJS5jcmFpZ19zdGFycy52MS5HZXRTaGlwRGVzaWduUmVzcG9uc2UiA5ACARJkCg5HZXRTaGlwRGVzaWducxIlLmNyYWlnX3N0YXJzLnYxLkdldFNoaXBEZXNpZ25zUmVxdWVzdBomLmNyYWlnX3N0YXJzLnYxLkdldFNoaXBEZXNpZ25zUmVzcG9uc2UiA5ACARJlChBDcmVhdGVTaGlwRGVzaWduEicuY3JhaWdfc3RhcnMudjEuQ3JlYXRlU2hpcERlc2lnblJlcXVlc3QaKC5jcmFpZ19zdGFycy52MS5DcmVhdGVTaGlwRGVzaWduUmVzcG9uc2USagoQVXBkYXRlU2hpcERlc2lnbhInLmNyYWlnX3N0YXJzLnYxLlVwZGF0ZVNoaXBEZXNpZ25SZXF1ZXN0GiguY3JhaWdfc3RhcnMudjEuVXBkYXRlU2hpcERlc2lnblJlc3BvbnNlIgOQAgISiwEKG1VwZGF0ZVNoaXBEZXNpZ25EZXNjcmlwdGlvbhIyLmNyYWlnX3N0YXJzLnYxLlVwZGF0ZVNoaXBEZXNpZ25EZXNjcmlwdGlvblJlcXVlc3QaMy5jcmFpZ19zdGFycy52MS5VcGRhdGVTaGlwRGVzaWduRGVzY3JpcHRpb25SZXNwb25zZSIDkAICEmUKEERlbGV0ZVNoaXBEZXNpZ24SJy5jcmFpZ19zdGFycy52MS5EZWxldGVTaGlwRGVzaWduUmVxdWVzdBooLmNyYWlnX3N0YXJzLnYxLkRlbGV0ZVNoaXBEZXNpZ25SZXNwb25zZWIGcHJvdG8z", [file_craig_stars_v1_fleet, file_craig_stars_v1_planet, file_craig_stars_v1_shipdesign, file_craig_stars_v1_player]);
+  fileDesc("CiZjcmFpZ19zdGFycy92MS9zaGlwZGVzaWduc2VydmljZS5wcm90bxIOY3JhaWdfc3RhcnMudjEiTwohVXBkYXRlU2hpcERlc2lnbkF1dG9PcmRlcnNSZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMSCwoDbnVtGAIgASgFEgwKBHJvbGUYAyABKAkiUAoiVXBkYXRlU2hpcERlc2lnbkF1dG9PcmRlcnNSZXNwb25zZRIqCgZkZXNpZ24YASABKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduIjQKFEdldFNoaXBEZXNpZ25SZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMSCwoDbnVtGAIgASgFIkMKFUdldFNoaXBEZXNpZ25SZXNwb25zZRIqCgZkZXNpZ24YASABKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduIigKFUdldFNoaXBEZXNpZ25zUmVxdWVzdBIPCgdnYW1lX2lkGAEgASgDIkQKFkdldFNoaXBEZXNpZ25zUmVzcG9uc2USKgoGZGVzaWduGAEgAygLMhouY3JhaWdfc3RhcnMudjEuU2hpcERlc2lnbiJ3ChdDcmVhdGVTaGlwRGVzaWduUmVxdWVzdBIfChd1cGdyYWRlX2Zyb21fZGVzaWduX251bRgDIAEoBRIPCgdnYW1lX2lkGAEgASgDEioKBmRlc2lnbhgCIAEoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24iewoYQ3JlYXRlU2hpcERlc2lnblJlc3BvbnNlEjMKDXBsYXllcl9vcmRlcnMYAiABKAsyHC5jcmFpZ19zdGFycy52MS5QbGF5ZXJPcmRlcnMSKgoGZGVzaWduGAEgASgLMhouY3JhaWdfc3RhcnMudjEuU2hpcERlc2lnbiJWChdVcGRhdGVTaGlwRGVzaWduUmVxdWVzdBIPCgdnYW1lX2lkGAEgASgDEioKBmRlc2lnbhgCIAEoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24iRgoYVXBkYXRlU2hpcERlc2lnblJlc3BvbnNlEioKBmRlc2lnbhgBIAEoCzIaLmNyYWlnX3N0YXJzLnYxLlNoaXBEZXNpZ24iVwoiVXBkYXRlU2hpcERlc2lnbkRlc2NyaXB0aW9uUmVxdWVzdBIPCgdnYW1lX2lkGAEgASgDEgsKA251bRgCIAEoBRITCgtkZXNjcmlwdGlvbhgDIAEoCSJRCiNVcGRhdGVTaGlwRGVzaWduRGVzY3JpcHRpb25SZXNwb25zZRIqCgZkZXNpZ24YASABKAsyGi5jcmFpZ19zdGFycy52MS5TaGlwRGVzaWduIjcKF0RlbGV0ZVNoaXBEZXNpZ25SZXF1ZXN0Eg8KB2dhbWVfaWQYASABKAMSCwoDbnVtGAIgASgFIpQBChhEZWxldGVTaGlwRGVzaWduUmVzcG9uc2USJQoGZmxlZXRzGAEgAygLMhUuY3JhaWdfc3RhcnMudjEuRmxlZXQSKAoJc3RhcmJhc2VzGAIgAygLMhUuY3JhaWdfc3RhcnMudjEuRmxlZXQSJwoHcGxhbmV0cxgDIAMoCzIWLmNyYWlnX3N0YXJzLnYxLlBsYW5ldDKvBgoRU2hpcERlc2lnblNlcnZpY2USYQoNR2V0U2hpcERlc2lnbhIkLmNyYWlnX3N0YXJzLnYxLkdldFNoaXBEZXNpZ25SZXF1ZXN0GiUuY3JhaWdfc3RhcnMudjEuR2V0U2hpcERlc2lnblJlc3BvbnNlIgOQAgESZAoOR2V0U2hpcERlc2lnbnMSJS5jcmFpZ19zdGFycy52MS5HZXRTaGlwRGVzaWduc1JlcXVlc3QaJi5jcmFpZ19zdGFycy52MS5HZXRTaGlwRGVzaWduc1Jlc3BvbnNlIgOQAgESZQoQQ3JlYXRlU2hpcERlc2lnbhInLmNyYWlnX3N0YXJzLnYxLkNyZWF0ZVNoaXBEZXNpZ25SZXF1ZXN0GiguY3JhaWdfc3RhcnMudjEuQ3JlYXRlU2hpcERlc2lnblJlc3BvbnNlEmoKEFVwZGF0ZVNoaXBEZXNpZ24SJy5jcmFpZ19zdGFycy52MS5VcGRhdGVTaGlwRGVzaWduUmVxdWVzdBooLmNyYWlnX3N0YXJzLnYxLlVwZGF0ZVNoaXBEZXNpZ25SZXNwb25zZSIDkAICEosBChtVcGRhdGVTaGlwRGVzaWduRGVzY3JpcHRpb24SMi5jcmFpZ19zdGFycy52MS5VcGRhdGVTaGlwRGVzaWduRGVzY3JpcHRpb25SZXF1ZXN0GjMuY3JhaWdfc3RhcnMudjEuVXBkYXRlU2hpcERlc2lnbkRlc2NyaXB0aW9uUmVzcG9uc2UiA5ACAhJlChBEZWxldGVTaGlwRGVzaWduEicuY3JhaWdfc3RhcnMudjEuRGVsZXRlU2hpcERlc2lnblJlcXVlc3QaKC5jcmFpZ19zdGFycy52MS5EZWxldGVTaGlwRGVzaWduUmVzcG9uc2USiAEKGlVwZGF0ZVNoaXBEZXNpZ25BdXRvT3JkZXJzEjEuY3JhaWdfc3RhcnMudjEuVXBkYXRlU2hpcERlc2lnbkF1dG9PcmRlcnNSZXF1ZXN0GjIuY3JhaWdfc3RhcnMudjEuVXBkYXRlU2hpcERlc2lnbkF1dG9PcmRlcnNSZXNwb25zZSIDkAICYgZwcm90bzM", [file_craig_stars_v1_fleet, file_craig_stars_v1_planet, file_craig_stars_v1_shipdesign, file_craig_stars_v1_player]);
+
+/**
+ * @generated from message craig_stars.v1.UpdateShipDesignAutoOrdersRequest
+ */
+export type UpdateShipDesignAutoOrdersRequest = Message<"craig_stars.v1.UpdateShipDesignAutoOrdersRequest"> & {
+  /**
+   * @generated from field: int64 game_id = 1;
+   */
+  gameId: bigint;
+
+  /**
+   * @generated from field: int32 num = 2;
+   */
+  num: number;
+
+  /**
+   * @generated from field: string role = 3;
+   */
+  role: string;
+};
+
+/**
+ * @generated from message craig_stars.v1.UpdateShipDesignAutoOrdersRequest
+ */
+export type UpdateShipDesignAutoOrdersRequestJson = {
+  /**
+   * @generated from field: int64 game_id = 1;
+   */
+  gameId?: string;
+
+  /**
+   * @generated from field: int32 num = 2;
+   */
+  num?: number;
+
+  /**
+   * @generated from field: string role = 3;
+   */
+  role?: string;
+};
+
+/**
+ * Describes the message craig_stars.v1.UpdateShipDesignAutoOrdersRequest.
+ * Use `create(UpdateShipDesignAutoOrdersRequestSchema)` to create a new message.
+ */
+export const UpdateShipDesignAutoOrdersRequestSchema: GenMessage<UpdateShipDesignAutoOrdersRequest, {jsonType: UpdateShipDesignAutoOrdersRequestJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_shipdesignservice, 0);
+
+/**
+ * @generated from message craig_stars.v1.UpdateShipDesignAutoOrdersResponse
+ */
+export type UpdateShipDesignAutoOrdersResponse = Message<"craig_stars.v1.UpdateShipDesignAutoOrdersResponse"> & {
+  /**
+   * @generated from field: craig_stars.v1.ShipDesign design = 1;
+   */
+  design?: ShipDesign | undefined;
+};
+
+/**
+ * @generated from message craig_stars.v1.UpdateShipDesignAutoOrdersResponse
+ */
+export type UpdateShipDesignAutoOrdersResponseJson = {
+  /**
+   * @generated from field: craig_stars.v1.ShipDesign design = 1;
+   */
+  design?: ShipDesignJson;
+};
+
+/**
+ * Describes the message craig_stars.v1.UpdateShipDesignAutoOrdersResponse.
+ * Use `create(UpdateShipDesignAutoOrdersResponseSchema)` to create a new message.
+ */
+export const UpdateShipDesignAutoOrdersResponseSchema: GenMessage<UpdateShipDesignAutoOrdersResponse, {jsonType: UpdateShipDesignAutoOrdersResponseJson}> = /*@__PURE__*/
+  messageDesc(file_craig_stars_v1_shipdesignservice, 1);
 
 /**
  * @generated from message craig_stars.v1.GetShipDesignRequest
@@ -55,7 +129,7 @@ export type GetShipDesignRequestJson = {
  * Use `create(GetShipDesignRequestSchema)` to create a new message.
  */
 export const GetShipDesignRequestSchema: GenMessage<GetShipDesignRequest, {jsonType: GetShipDesignRequestJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 0);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 2);
 
 /**
  * @generated from message craig_stars.v1.GetShipDesignResponse
@@ -82,7 +156,7 @@ export type GetShipDesignResponseJson = {
  * Use `create(GetShipDesignResponseSchema)` to create a new message.
  */
 export const GetShipDesignResponseSchema: GenMessage<GetShipDesignResponse, {jsonType: GetShipDesignResponseJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 1);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 3);
 
 /**
  * @generated from message craig_stars.v1.GetShipDesignsRequest
@@ -109,7 +183,7 @@ export type GetShipDesignsRequestJson = {
  * Use `create(GetShipDesignsRequestSchema)` to create a new message.
  */
 export const GetShipDesignsRequestSchema: GenMessage<GetShipDesignsRequest, {jsonType: GetShipDesignsRequestJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 2);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 4);
 
 /**
  * @generated from message craig_stars.v1.GetShipDesignsResponse
@@ -136,7 +210,7 @@ export type GetShipDesignsResponseJson = {
  * Use `create(GetShipDesignsResponseSchema)` to create a new message.
  */
 export const GetShipDesignsResponseSchema: GenMessage<GetShipDesignsResponse, {jsonType: GetShipDesignsResponseJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 3);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 5);
 
 /**
  * @generated from message craig_stars.v1.CreateShipDesignRequest
@@ -183,7 +257,7 @@ export type CreateShipDesignRequestJson = {
  * Use `create(CreateShipDesignRequestSchema)` to create a new message.
  */
 export const CreateShipDesignRequestSchema: GenMessage<CreateShipDesignRequest, {jsonType: CreateShipDesignRequestJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 4);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 6);
 
 /**
  * @generated from message craig_stars.v1.CreateShipDesignResponse
@@ -220,7 +294,7 @@ export type CreateShipDesignResponseJson = {
  * Use `create(CreateShipDesignResponseSchema)` to create a new message.
  */
 export const CreateShipDesignResponseSchema: GenMessage<CreateShipDesignResponse, {jsonType: CreateShipDesignResponseJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 5);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 7);
 
 /**
  * @generated from message craig_stars.v1.UpdateShipDesignRequest
@@ -257,7 +331,7 @@ export type UpdateShipDesignRequestJson = {
  * Use `create(UpdateShipDesignRequestSchema)` to create a new message.
  */
 export const UpdateShipDesignRequestSchema: GenMessage<UpdateShipDesignRequest, {jsonType: UpdateShipDesignRequestJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 6);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 8);
 
 /**
  * @generated from message craig_stars.v1.UpdateShipDesignResponse
@@ -284,7 +358,7 @@ export type UpdateShipDesignResponseJson = {
  * Use `create(UpdateShipDesignResponseSchema)` to create a new message.
  */
 export const UpdateShipDesignResponseSchema: GenMessage<UpdateShipDesignResponse, {jsonType: UpdateShipDesignResponseJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 7);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 9);
 
 /**
  * @generated from message craig_stars.v1.UpdateShipDesignDescriptionRequest
@@ -331,7 +405,7 @@ export type UpdateShipDesignDescriptionRequestJson = {
  * Use `create(UpdateShipDesignDescriptionRequestSchema)` to create a new message.
  */
 export const UpdateShipDesignDescriptionRequestSchema: GenMessage<UpdateShipDesignDescriptionRequest, {jsonType: UpdateShipDesignDescriptionRequestJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 8);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 10);
 
 /**
  * @generated from message craig_stars.v1.UpdateShipDesignDescriptionResponse
@@ -358,7 +432,7 @@ export type UpdateShipDesignDescriptionResponseJson = {
  * Use `create(UpdateShipDesignDescriptionResponseSchema)` to create a new message.
  */
 export const UpdateShipDesignDescriptionResponseSchema: GenMessage<UpdateShipDesignDescriptionResponse, {jsonType: UpdateShipDesignDescriptionResponseJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 9);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 11);
 
 /**
  * @generated from message craig_stars.v1.DeleteShipDesignRequest
@@ -395,7 +469,7 @@ export type DeleteShipDesignRequestJson = {
  * Use `create(DeleteShipDesignRequestSchema)` to create a new message.
  */
 export const DeleteShipDesignRequestSchema: GenMessage<DeleteShipDesignRequest, {jsonType: DeleteShipDesignRequestJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 10);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 12);
 
 /**
  * @generated from message craig_stars.v1.DeleteShipDesignResponse
@@ -442,7 +516,7 @@ export type DeleteShipDesignResponseJson = {
  * Use `create(DeleteShipDesignResponseSchema)` to create a new message.
  */
 export const DeleteShipDesignResponseSchema: GenMessage<DeleteShipDesignResponse, {jsonType: DeleteShipDesignResponseJson}> = /*@__PURE__*/
-  messageDesc(file_craig_stars_v1_shipdesignservice, 11);
+  messageDesc(file_craig_stars_v1_shipdesignservice, 13);
 
 /**
  * @generated from service craig_stars.v1.ShipDesignService
@@ -497,6 +571,14 @@ export const ShipDesignService: GenService<{
     methodKind: "unary";
     input: typeof DeleteShipDesignRequestSchema;
     output: typeof DeleteShipDesignResponseSchema;
+  },
+  /**
+   * @generated from rpc craig_stars.v1.ShipDesignService.UpdateShipDesignAutoOrders
+   */
+  updateShipDesignAutoOrders: {
+    methodKind: "unary";
+    input: typeof UpdateShipDesignAutoOrdersRequestSchema;
+    output: typeof UpdateShipDesignAutoOrdersResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_craig_stars_v1_shipdesignservice, 0);

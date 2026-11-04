@@ -1,0 +1,95 @@
+tomek-stars 0.6.11 - local patrol packs, bomber protection and design Auto orders
+2026-11-04
+
+Behavior
+- Native combat forecasts no longer reject a useful victory merely because
+  unarmed auxiliaries survive. Bombers must be eliminated and at least half
+  the modeled combat capability removed; an unarmed-only interception must
+  destroy at least one enemy. Survivor damage and repair downtime stay separate.
+- Every sampled outcome must lose at most 5% of both own ship count and weighted
+  replacement value. Explicit player fleet/design battle plans remain binding.
+  Unknown encounters of eight or more reported ships still require scouting;
+  the existing conservative small-unknown-contact permission is preserved.
+- Reconcile reservations before filtering unavailable leaders. Refit/pending
+  refit releases or transfers command without rewriting the refit order. Check
+  leader identity, target and operational members; retain merged retreat stacks.
+- Physically co-located sufficient subsets merge through native orders, recheck
+  the exact result and launch, even when the previous commander is elsewhere.
+  Useful late support follows without vetoing launch; excess returns to work.
+  Reinforcement candidates are ordered by actual funded gathering ETA/condition.
+- Recon gathering is bounded to a fraction of available ships (up to 32);
+  repeated missing scans do not grow reservations without limit. A gathering
+  ship may take one funded local kill when it still meets the existing rally
+  deadline. No detours for imminent colony defense or repeated deadline resets.
+- Production slow-prey screening uses the same patrol controller instead of
+  locking combat units under an independent containment tag. Observer selection
+  scales with operational capacity up to eight targets. Existing real-debris,
+  defensive collector, pickup/delivery, fuel and lost-contact rules remain.
+- Bombardment protection evaluates actually funded one-turn DD arrivals with
+  separate native fleet formations. Colony defense/assemblies/refit stay
+  protected. A separate deterministic 2048-work defense reserve cannot be spent
+  by the 4096-work offensive planner. Neither budget authorizes unsafe combat.
+- One-year advance withdrawal applies to remote bombardment (outside 150 ly of
+  current own colonies). Warning uses public engine components and reported
+  motion, not hidden fuel/orders. Local groups seek DD protection first; normal
+  imminent-danger safety still applies. Escape favors the highest funded safe
+  warp and rejects endpoints interceptable by another reported stationary pack.
+  Per the user's final clarification, a fresh stationary bomber formation over
+  an own colony remains committed to its siege: its occupied orbit is dangerous,
+  but no hypothetical maximum-speed pursuit is invented. Reported departure
+  immediately restores the mobile interception envelope.
+- Designs expose Auto orders in creation/editing and on in-use blueprints.
+  New ships get the role at construction; successors inherit it. Changing the
+  default does not alter existing ships, components, creation year or orders.
+  Replacements preserve their actual prior manual/automatic role and mission.
+  Equipment validation and persistence use the existing JSON spec: no migration.
+
+Verification
+- Full cs/AI/db/server/proto-converter suites PASS, respectively 96.980 / 2.774 /
+  3.307 / 111.911 / 1.404 s. Earlier complete runs also pass. Final focused tests
+  cover the assembly-eligibility filter and independent defensive work reserve.
+- Native mission test: 32 held-out seeds retain auxiliary scouts while meeting
+  the mission and both 5% limits. Count/value boundary tests are independent.
+- Native tests cover three-pass refit leadership transfer, physically merged
+  local launch without distant command/support, bounded repeated recon gathering,
+  funded cleanup preserving the original deadline and rejection during urgent
+  defense. Existing hidden-input/RNG isolation, fuel, pursuit and manual-plan
+  checks pass in the full suite.
+- Six synthetic twelve-turn campaigns, including save/reload and native enemy
+  split/merge, destroy all 13 enemy ships each with zero own warship/collector
+  losses. Actual debris delivered: 159 / 208 / 26 kT for native / reload /
+  reload-split, for each of two seeds. Contact scouts can be lost intentionally.
+  Physical travel still allows initial bombardment; these are bounded scenarios,
+  not a universal campaign guarantee or complete debris recovery claim.
+- Private copied-archive checks confirm the previously rejected mixed pack now
+  receives Ready with zero sampled losses and no personal turn advancement.
+  The copied bomber case has a funded withdrawal after applying the final
+  committed-siege doctrine. Separate tests distinguish that siege from a free
+  stationary armed formation, whose possible interception still blocks an exit.
+  Unconfirmed routes request protection/recon and assistance, not a safe label.
+  Private identities, locations, archives and reports are not distributed.
+- Design native/API tests verify in-use blueprint updates, durable reload,
+  default construction role, successor inheritance, equipment rejection and
+  priority of each rebuilt fleet's previous manual/automatic role.
+- Four Chrome component tests pass for Auto orders selection, inherited value,
+  explicit Manual, failed-save retry and station exclusion. Svelte check: zero
+  errors and zero warnings. Compiled browser smoke validates in-use save,
+  successor creation/inheritance, reload, R view and phone access without turns.
+
+Limits
+- Forecast samples estimate risk; new enemy orders/reinforcements can change a
+  real battle. Reassessment at departure/pursuit remains mandatory. Small
+  unknown contacts use the explicitly retained strength rule, not an invented
+  native equipment forecast. No safe route or reinforcement is invented when
+  fuel, timing, missing equipment or observed threat envelopes cannot confirm it.
+- Pending refit and other protected duties reduce actual available DD numbers;
+  total empire destroyer count alone cannot certify a local defense.
+
+Release verification
+- Final native/WASM/static UI smoke PASS on isolated ports 18102/18788 with a
+  new database: design Auto orders save on an in-use design, successor creation,
+  inherited value after reload, R/map/phone, matching embedded WASM. No test turn
+  submitted; year remains 2400. Desktop design page inspected visually.
+- Installed Windows 0.6.11 after tests while personal game was WaitingForPlayers.
+  Year/state unchanged across replacement; HTTP 200, schema 30/no migration and
+  current native/WASM SHA256SUMS verified. Personal saves/orders not replaced.

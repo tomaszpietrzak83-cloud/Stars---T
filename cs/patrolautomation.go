@@ -18,6 +18,11 @@ type patrolJob struct {
 	GatheringSince int         `json:"gatheringSince,omitempty"`
 	SupportDesigns map[int]int `json:"supportDesigns,omitempty"`
 	Leader         int         `json:"leader,omitempty"`
+	LeaderID       int64       `json:"leaderId,omitempty"`
+	RendezvousBy   int         `json:"rendezvousBy,omitempty"`
+	CleanupEnemy   int         `json:"cleanupEnemy,omitempty"`
+	CleanupTarget  int         `json:"cleanupTarget,omitempty"`
+	CleanupUsed    bool        `json:"cleanupUsed,omitempty"`
 	Enemy          int         `json:"enemy,omitempty"`
 	Target         int         `json:"target,omitempty"`
 	Grouped        bool        `json:"grouped,omitempty"`
@@ -31,6 +36,9 @@ func readPatrolJob(f *Fleet) patrolJob {
 	return job
 }
 func savePatrolJob(f *Fleet, job patrolJob) {
+	if job.Leader == f.Num {
+		job.LeaderID = f.ID
+	}
 	raw, _ := json.Marshal(job)
 	f.SetTag(patrolTag, string(raw))
 }
@@ -148,7 +156,10 @@ func patrolReportedCombatant(player *Player, enemy *Fleet) bool {
 }
 func patrolCanAttack(player *Player, fleet *Fleet) bool {
 	job := readPatrolJob(fleet)
-	enemy := patrolEnemy(player, job)
+	enemy := patrolTacticalEnemy(player, fleet)
+	if job.CleanupTarget != 0 && player.patrolEvaluator != nil && enemy != nil {
+		return player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, patrolInterceptPosition(enemy), 1).Ready
+	}
 	if player.patrolEvaluator != nil && job.Leader == fleet.Num && enemy != nil && !patrolNeedsRecon(player, enemy) && fleet.Spec.TotalShips >= job.RequiredShips {
 		result := player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, patrolInterceptPosition(enemy), 1)
 		if result.Ready {
@@ -180,7 +191,7 @@ func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 			player.Automation.FleetRoles[member.Num] = "escort"
 			delete(member.Tags, patrolSupportTag)
 		}
-		if !member.InDesignMaintenance() && !member.InAutomaticSafety() {
+		if patrolOperational(player, member) {
 			holdAutomaticFleet(player, member, "Wolf pack mission finished")
 		}
 	}
@@ -253,7 +264,7 @@ func (t *turnGenerator) preparePatrolPursuits() {
 			if !patrolAvailable(player, fleet) || !patrolCanAttack(player, fleet) || len(fleet.Waypoints) != 2 {
 				continue
 			}
-			enemy := patrolEnemy(player, readPatrolJob(fleet))
+			enemy := patrolTacticalEnemy(player, fleet)
 			if fleet.Position.DistanceTo(enemy.Position) > 150 {
 				continue
 			}
@@ -281,7 +292,7 @@ func (t *turnGenerator) preparePatrolPursuits() {
 func (t *turnGenerator) patrolPursuitSafe(fleet *Fleet, position Vector, remaining float64) bool {
 	player := t.game.getPlayer(fleet.PlayerNum)
 	if player.Automation.FleetRoles[fleet.Num] == "patrol" && player.patrolEvaluator != nil {
-		if enemy := patrolEnemy(player, readPatrolJob(fleet)); enemy != nil {
+		if enemy := patrolTacticalEnemy(player, fleet); enemy != nil {
 			result := player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, position, 1)
 			if !result.Ready {
 				return false
@@ -457,6 +468,7 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 }
 func (t *turnGenerator) planPatrolAutomation() {
 	for _, player := range t.game.Players {
+		t.reconcilePatrolJobs(player)
 		fleets := []*Fleet{}
 		for _, fleet := range t.game.getFleets(player.Num) {
 			delete(fleet.Tags, patrolMineSweepTag)
@@ -536,7 +548,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 			enemies := sortedPatrolTargets(player, fleet)
 			assigned := false
 			for _, enemy := range enemies {
-				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || (!priorityFleet(player, enemy) && slowPreySupport(player, enemy) == nil && fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
+				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || (!priorityFleet(player, enemy) && slowPreySupport(player, enemy) == nil && !(player.patrolEvaluator != nil && slowPatrolPrey(player, enemy) && fleet.Position.DistanceTo(enemy.Position) <= 300) && fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
 					continue
 				}
 				if patrolShouldAdvanceInstead(player, fleet, enemy) {
@@ -610,7 +622,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 					player.Automation.FleetRoles[e.Num] = "patrol"
 				}
 				for _, member := range members {
-					job := patrolJob{RequiredShips: min(wanted, ships), GatheringSince: t.game.Year, Leader: fleet.Num, Enemy: enemy.PlayerNum, Target: enemy.Num, Status: "Wolf pack gathering before coordinated interception"}
+					job := patrolJob{Grouped: readPatrolJob(member).Grouped, RequiredShips: min(wanted, ships), GatheringSince: t.game.Year, Leader: fleet.Num, Enemy: enemy.PlayerNum, Target: enemy.Num, Status: "Wolf pack gathering before coordinated interception"}
 					if member == fleet {
 						job.SupportDesigns = support
 					}

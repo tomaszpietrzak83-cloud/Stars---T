@@ -127,6 +127,8 @@ message ShipDesignSlot {
 }
 
 message ShipDesignSpec {
+	// Default fleet automation for newly built ships; inherited by upgrades.
+	string default_auto_role = 70;
   // Server-owned game-year history, exposed for display and local cost forecasts.
   int32 version_created_year = 68;
   int32 previous_version_num = 69;

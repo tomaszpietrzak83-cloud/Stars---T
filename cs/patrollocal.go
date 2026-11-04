@@ -1,0 +1,101 @@
+package cs
+
+import "slices"
+
+// Test physical clusters, never a hypothetical stack of ships still in transit.
+// A ready cluster may take command even if the old leader is elsewhere.
+func (t *turnGenerator) launchLocalPatrol(p *Player, oldLeader, enemy *Fleet, job *patrolJob, members []*Fleet) bool {
+	clusters := map[Vector][]*Fleet{}
+	for _, f := range members {
+		clusters[f.Position] = append(clusters[f.Position], f)
+	}
+	groups := make([][]*Fleet, 0, len(clusters))
+	for _, group := range clusters {
+		groups = append(groups, group)
+	}
+	slices.SortStableFunc(groups, func(a, b []*Fleet) int {
+		if patrolFormationShips(a) != patrolFormationShips(b) {
+			return patrolFormationShips(b) - patrolFormationShips(a)
+		}
+		return a[0].Num - b[0].Num
+	})
+	for _, group := range groups[:min(8, len(groups))] {
+		point := patrolInterceptPosition(enemy)
+		result := p.patrolEvaluator.assess(p, group, enemy, point, 1)
+		if !result.Ready {
+			continue
+		}
+		merged := patrolMergedFormation(&t.game.Rules, p, group)
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{merged}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, AllowThreat: true, MaxTurns: 20, MinWarp: automaticCruiseWarp(p, merged)})
+		if route == nil || route.WaitForFuel {
+			continue
+		}
+		leader := group[0]
+		for _, f := range group {
+			if f == oldLeader {
+				leader = oldLeader
+				break
+			}
+		}
+		t.transferPatrolCommand(p, leader, job, members)
+		for _, f := range group {
+			if f == leader {
+				continue
+			}
+			if _, err := NewOrderer().Merge(&t.game.Rules, p, []*Fleet{leader, f}); err != nil {
+				return false
+			}
+			t.game.deleteFleet(f)
+			job.Grouped = true
+		}
+		// Recheck native merged tokens, fuel and plan before assigning departure.
+		result = p.patrolEvaluator.assess(p, []*Fleet{leader}, enemy, point, 1)
+		if !result.Ready {
+			return false
+		}
+		t.releaseExcessPatrolShips(p, leader, enemy, job)
+		result = p.patrolEvaluator.assess(p, []*Fleet{leader}, enemy, point, 1)
+		if !result.Ready {
+			return false
+		}
+		applyPatrolBattlePlan(p, leader, result.Tactic)
+		job.Provisional, job.RecruitPower, job.RequiredShips = false, 0, 1
+		job.CleanupEnemy, job.CleanupTarget = 0, 0
+		job.Status = "Intercepting " + enemy.Name + " with local wolf pack; <=5% sampled count/value losses"
+		savePatrolJob(leader, *job)
+		if !t.patrolRoute(p, leader, point, true) {
+			return true
+		}
+		// Useful surplus travels behind the launched pack. A distant ship can
+		// neither postpone launch nor independently enter the main enemy stack.
+		remaining := max(1, leader.Spec.TotalShips/3)
+		for _, f := range members {
+			if f == leader || f.Delete {
+				continue
+			}
+			if f.Spec.TotalShips > remaining {
+				delete(f.Tags, patrolTag)
+				restorePatrolBattlePlan(p, f)
+				if f.GetTag(patrolSupportTag) == "escort" {
+					p.Automation.FleetRoles[f.Num] = "escort"
+					delete(f.Tags, patrolSupportTag)
+				}
+				holdAutomaticFleet(p, f, "Local pack launched; surplus released for colony defense")
+				continue
+			}
+			remaining -= f.Spec.TotalShips
+			next := *job
+			next.Provisional = true
+			next.Rally = leader.Position
+			next.Status = "Reinforcing launched local pack; attack does not wait for this ship"
+			savePatrolJob(f, next)
+			if r := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, leader.Position, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: 8}); r != nil && !r.WaitForFuel {
+				applyExpeditionRoute(p, f, r)
+			} else {
+				holdAutomaticFleet(p, f, next.Status)
+			}
+		}
+		return true
+	}
+	return false
+}

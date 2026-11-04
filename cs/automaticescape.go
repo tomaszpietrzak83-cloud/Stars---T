@@ -11,6 +11,12 @@ func reportedEscapeSeparation(player *Player, fleet *Fleet, position Vector) (cl
 			continue
 		}
 		ev := enemy.Heading.Scale(enemy.observedStrategicSpeed())
+		if player.Automation.FleetRoles[fleet.Num] == "bomber" && player.patrolEvaluator != nil && !stationaryBombardmentGuard(player, enemy) {
+			// Escape must not lead into another stationary armed pack. Budget a
+			// possible interception of this endpoint at publicly known max speed.
+			distance := enemy.Position.DistanceTo(position)
+			ev = position.Subtract(enemy.Position).Normalized().Scale(min(distance, reportedMaximumSpeed(player, enemy)))
+		}
 		dx, dy := float64(enemy.Position.X-fleet.Position.X), float64(enemy.Position.Y-fleet.Position.Y)
 		starting = min(starting, math.Hypot(dx, dy))
 		vx, vy := ev.X-float64(ours.X), ev.Y-float64(ours.Y)

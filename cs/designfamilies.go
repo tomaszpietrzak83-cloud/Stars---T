@@ -70,6 +70,9 @@ func (p *Player) RegisterDesignUpgrade(source, next *ShipDesign) error {
 		}
 	}
 	next.Spec.PreviousVersionNum = previous.Num
+	if next.Spec.DefaultAutoRole == "" {
+		next.Spec.DefaultAutoRole = source.Spec.DefaultAutoRole
+	}
 	p.Automation.DesignFamilies[next.Num] = family
 	if p.DesignMaintenance == nil {
 		p.DesignMaintenance = DesignMaintenance{}

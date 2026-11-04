@@ -66,7 +66,14 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 	if chosen == nil {
 		return false
 	}
-	return applyPatrolRally(p, leader, job, group, chosen.Routes)
+	if job.RendezvousBy == 0 {
+		job.RendezvousBy = t.game.Year + chosen.Turns
+	}
+	ok := applyPatrolRally(p, leader, job, group, chosen.Routes)
+	if ok {
+		t.patrolGatheringCleanup(p, leader, enemy, job, group)
+	}
+	return ok
 }
 
 func (t *turnGenerator) applyLegacyPatrolRally(p *Player, leader *Fleet, job *patrolJob, group []*Fleet, point Vector) bool {

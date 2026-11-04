@@ -72,9 +72,21 @@ func (t *turnGenerator) planAutomaticSafety() {
 			active := json.Unmarshal([]byte(fleet.GetTag(safetyTag)), &job) == nil
 			damage := fleetDamagePercent(fleet)
 			threat := interceptionThreat(player, fleet)
+			defenseReady, controlledBombardment := false, false
+			if player.Automation.FleetRoles[fleet.Num] == "bomber" && player.patrolEvaluator != nil && len(bomberWarningReports(player, fleet)) > 0 {
+				controlledBombardment = true
+				var remoteWarning bool
+				defenseReady, remoteWarning = t.prepareBombardmentProtection(player, fleet)
+				threat = max(threat, bomberImmediateMaximumThreat(player, fleet))
+				if remoteWarning {
+					for _, e := range bomberWarningReports(player, fleet) {
+						threat = min(1_000_000_000, threat+patrolReportedPower(player, e))
+					}
+				}
+			}
 			if player.Automation.FleetRoles[fleet.Num] == "bomber" || player.Automation.FleetRoles[fleet.Num] == "tanker" {
 				threat = max(threat, bomberChaseThreat(player, fleet))
-				if threat > 0 {
+				if threat > 0 && !controlledBombardment {
 					t.assignBomberProtection(player, fleet, fleet.Position, true)
 				}
 			}
@@ -87,6 +99,9 @@ func (t *turnGenerator) planAutomaticSafety() {
 			}
 			role := player.Automation.FleetRoles[fleet.Num]
 			canStand := role != "scout" && colonizationMode(role) == "" && defenders > threat*3/2
+			if controlledBombardment {
+				canStand = defenseReady
+			}
 			contactRecon := scoutReconActive(player, fleet) && !readScoutRecon(fleet).Watching
 			intercepted := !contactRecon && !player.Automation.DisableInterceptionEvasion && threat > 0 && !canStand
 			needsRepair := !contactRecon && !player.Automation.DisableAutomaticRepair && damage >= player.Automation.repairThreshold()
@@ -102,6 +117,9 @@ func (t *turnGenerator) planAutomaticSafety() {
 				fleet.FleetOrders = orders
 				fleet.ComputeFuelUsage(player)
 				active = false
+				if defenseReady {
+					holdAutomaticFleet(player, fleet, "Local DD protection assembled or arriving this turn")
+				}
 			}
 			if !active && !needsRepair && !intercepted {
 				continue
@@ -138,13 +156,24 @@ func (t *turnGenerator) planAutomaticSafety() {
 				if knownRouteThreat(player, planet.Position, planet.Position) > 0 {
 					continue
 				}
-				candidate := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{AllowThreat: true})
+				candidate := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{AllowThreat: true, Fast: intercepted && role == "bomber", HighestWarp: intercepted && role == "bomber"})
 				if candidate == nil {
 					continue
 				}
 				if intercepted && len(candidate.Waypoints) > 1 {
 					probe := *fleet
 					probe.Waypoints = candidate.Waypoints
+					if role == "bomber" && player.patrolEvaluator != nil {
+						wp := candidate.Waypoints[1]
+						point := wp.Position
+						if distance := fleet.Position.DistanceTo(point); distance > fleet.StrategicSpeed(wp.WarpSpeed) {
+							point = fleet.Position.ToFloat64().Add(point.Subtract(fleet.Position).Normalized().Scale(fleet.StrategicSpeed(wp.WarpSpeed))).ToInt(true)
+						}
+						closest, ending, _ := reportedEscapeSeparation(player, fleet, point)
+						if closest <= 3 || ending <= 3 {
+							continue
+						}
+					}
 					if interceptionThreat(player, &probe) > 0 || knownRouteThreat(player, fleet.Position, fleet.Position) > 0 && !knownWithdrawalRoute(player, fleet.Position, candidate.Waypoints[1].Position) {
 						continue
 					}
@@ -182,6 +211,9 @@ func (t *turnGenerator) planAutomaticSafety() {
 				holdAutomaticFleet(player, fleet, "Retreat waiting for a reachable repair dock")
 				requestAutomaticRescue(player, fleet, true)
 				job.Status = "Retreat needs tanker assistance"
+				if role == "bomber" && player.patrolEvaluator != nil {
+					job.Status = "No confirmed funded escape corridor; DD protection/reconnaissance and fuel assistance required"
+				}
 			} else {
 				applyExpeditionRoute(player, fleet, route)
 				t.protectEvadingBomber(player, fleet)

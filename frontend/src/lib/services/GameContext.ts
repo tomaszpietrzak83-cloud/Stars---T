@@ -76,8 +76,8 @@ import { setReadOnly } from './asPlayerInterceptor';
 import { addError } from './Errors';
 import { FullGame } from './FullGame';
 import { recalledScannerViewport, rememberScannerViewport } from './scannerViewport.js';
- import { rollover } from './Math';
- import { automationRoles } from '#lib/types/automationRoles.js';
+import { rollover } from './Math';
+import { automationRoles } from '#lib/types/automationRoles.js';
 import { Universe } from './Universe';
 
 export const playerFinderKey = Symbol();
@@ -117,7 +117,7 @@ export type GameContext = {
 	previousMapObject: () => void;
 	nextMapObject: () => void;
 	highlightMapObject: (mo: MapObjectLike | undefined) => void;
-	zoomToMapObject: (mo: MapObjectLike, preserveViewport?:boolean) => void;
+	zoomToMapObject: (mo: MapObjectLike, preserveViewport?: boolean) => void;
 
 	// message
 	gotoTarget: (
@@ -150,9 +150,10 @@ export type GameContext = {
 	updateTransportPlan: (plan: TransportPlan) => Promise<TransportPlan>;
 	deleteTransportPlan: (num: number) => Promise<void>;
 
-	createDesign: (design: ShipDesign, upgradeFrom?:number) => Promise<ShipDesign>;
+	createDesign: (design: ShipDesign, upgradeFrom?: number) => Promise<ShipDesign>;
 	updateDesign: (design: ShipDesign) => Promise<ShipDesign>;
 	updateDesignDescription: (num: number, description: string) => Promise<ShipDesign>;
+	updateDesignAutoOrders: (num: number, role: string) => Promise<ShipDesign>;
 	deleteDesign: (num: number) => Promise<void>;
 
 	// fleet waypoint updates
@@ -270,9 +271,9 @@ export async function createGameContext(
 	// reset the GameContext for a new game
 	// this is called after a new game is loaded from the server while waiting for a turn to generate
 	async function resetContext(fg: FullGame, p: CommandedPlayer, u: Universe) {
-  const samePlayer=p.num===get(player).num;
-  const previousCommand=get(commandedMapObject)?.mapObject;
-  const previousSelection=get(selectedMapObject)?.mapObject;
+		const samePlayer = p.num === get(player).num;
+		const previousCommand = get(commandedMapObject)?.mapObject;
+		const previousSelection = get(selectedMapObject)?.mapObject;
 		// Responses from the old turn/player must not update the new context.
 		contextVersion++;
 		fleetOrderSaves.clear();
@@ -305,14 +306,22 @@ export async function createGameContext(
 		editingNote.set(undefined);
 		mailTo.set(undefined);
 
-		if(samePlayer) {
-   const find=(mo:typeof previousCommand)=>mo?u.getMapObject({targetNum:mo.num,targetPlayerNum:mo.playerNum,targetType:mo.type}):undefined;
-   const command=find(previousCommand), selected=find(previousSelection);
-   if(command) commandMapObject(command);
-   if(selected) selectMapObject(selected);
-  }
-  const s = get(settings);
-  messageNum.set(getNextVisibleMessageNum(-1, false, p.messages, s));
+		if (samePlayer) {
+			const find = (mo: typeof previousCommand) =>
+				mo
+					? u.getMapObject({
+							targetNum: mo.num,
+							targetPlayerNum: mo.playerNum,
+							targetType: mo.type
+						})
+					: undefined;
+			const command = find(previousCommand),
+				selected = find(previousSelection);
+			if (command) commandMapObject(command);
+			if (selected) selectMapObject(selected);
+		}
+		const s = get(settings);
+		messageNum.set(getNextVisibleMessageNum(-1, false, p.messages, s));
 	}
 
 	function setFullyLoaded(value: boolean) {
@@ -727,7 +736,7 @@ export async function createGameContext(
 		if (homeworld) {
 			commandMapObject(homeworld);
 			selectMapObject(homeworld);
-			zoomToMapObject(homeworld,true);
+			zoomToMapObject(homeworld, true);
 		} else {
 			// command our first planet
 			const planets = u.getMyPlanets(s.sortPlanetsKey, s.sortPlanetsDescending);
@@ -735,16 +744,16 @@ export async function createGameContext(
 			if (planets.length > 0) {
 				commandMapObject(planets[0]);
 				selectMapObject(planets[0]);
-				zoomToMapObject(planets[0],true);
+				zoomToMapObject(planets[0], true);
 			} else if (fleets.length > 0) {
 				commandMapObject(fleets[0]);
 				selectMapObject(fleets[0]);
-				zoomToMapObject(fleets[0],true);
+				zoomToMapObject(fleets[0], true);
 			} else {
 				const planet = u.getPlanet(1);
 				if (planet) {
 					selectMapObject(planet);
-					zoomToMapObject(planet,true);
+					zoomToMapObject(planet, true);
 				}
 			}
 		}
@@ -754,7 +763,7 @@ export async function createGameContext(
 		highlightedMapObject.update(() => mo);
 	}
 
-	function zoomToMapObject(mo: MapObjectLike, preserveViewport=false) {
+	function zoomToMapObject(mo: MapObjectLike, preserveViewport = false) {
 		if (!preserveViewport) {
 			const key = `${gameId}:${get(player).num}`;
 			const view = recalledScannerViewport(key);
@@ -1037,10 +1046,19 @@ export async function createGameContext(
 		await updatePlayer(p);
 	}
 
-	async function createDesign(design: ShipDesign, upgradeFrom=0): Promise<ShipDesign> {
+	async function createDesign(design: ShipDesign, upgradeFrom = 0): Promise<ShipDesign> {
 		// update this design
-		const { design: created, playerOrders } = await shipDesignClient.createShipDesign({ gameId, design, upgradeFromDesignNum:upgradeFrom });
-  if(playerOrders) {const current=get(player);current.playerOrders=playerOrders;player.set(current);await cs.wasmService.setPlayer({player:current});}
+		const { design: created, playerOrders } = await shipDesignClient.createShipDesign({
+			gameId,
+			design,
+			upgradeFromDesignNum: upgradeFrom
+		});
+		if (playerOrders) {
+			const current = get(player);
+			current.playerOrders = playerOrders;
+			player.set(current);
+			await cs.wasmService.setPlayer({ player: current });
+		}
 		const u = get(universe);
 		u.addDesign(created!);
 		await cs.wasmService.setDesigns({ designs: u.getMyDesigns() });
@@ -1074,13 +1092,26 @@ export async function createGameContext(
 		return updated!;
 	}
 
+	async function updateDesignAutoOrders(num: number, role: string): Promise<ShipDesign> {
+		const { design: updated } = await shipDesignClient.updateShipDesignAutoOrders({
+			gameId,
+			num,
+			role
+		});
+		const u = get(universe);
+		u.updateDesign(updated!);
+		await cs.wasmService.setDesigns({ designs: u.getMyDesigns() });
+		universe.set(u);
+		return updated!;
+	}
+
 	async function deleteDesign(num: number): Promise<void> {
 		const { planets, fleets, starbases } = await shipDesignClient.deleteShipDesign({ gameId, num });
 		const current = get(player);
 		delete current.playerOrders.designMaintenance[num];
 		if (current.playerOrders.automation) delete current.playerOrders.automation.designFamilies[num];
 		player.set(current);
-		await cs.wasmService.setPlayer({player: current});
+		await cs.wasmService.setPlayer({ player: current });
 		const u = get(universe);
 		// replace our fleets and starbases (but keep intel issue #146)
 		u.fleets = fleets;
@@ -1621,19 +1652,24 @@ export async function createGameContext(
 	}
 
 	async function splitAll(fleet: CommandedFleet): Promise<void> {
-  await flushFleetOrders();
-  const inheritedRole=get(player).playerOrders.automation?.fleetRoles[fleet.mapObject.num];
+		await flushFleetOrders();
+		const inheritedRole = get(player).playerOrders.automation?.fleetRoles[fleet.mapObject.num];
 		const { fleets, cargoTransfers } = await fleetClient.splitAllFleets({
 			gameId,
 			fleetNum: fleet.mapObject?.num ?? 0
 		});
 
-		if(inheritedRole) {
-   const p=get(player),u=get(universe);
-   for(const child of fleets) if(automationRoles(child,u.getMyDesigns()).some(option=>option.value===inheritedRole)) p.playerOrders.automation!.fleetRoles[child.mapObject!.num]=inheritedRole;
-   player.set(p);
-  }
-  const sourceFleet = fleets.find((f) => f.mapObject?.num == fleet.mapObject?.num);
+		if (inheritedRole) {
+			const p = get(player),
+				u = get(universe);
+			for (const child of fleets)
+				if (
+					automationRoles(child, u.getMyDesigns()).some((option) => option.value === inheritedRole)
+				)
+					p.playerOrders.automation!.fleetRoles[child.mapObject!.num] = inheritedRole;
+			player.set(p);
+		}
+		const sourceFleet = fleets.find((f) => f.mapObject?.num == fleet.mapObject?.num);
 		if (sourceFleet) {
 			fleet = Object.assign(fleet, sourceFleet);
 			commandWithoutSelecting(fleet);
@@ -1663,9 +1699,14 @@ export async function createGameContext(
 			fleetNums
 		});
 
-        const current=get(player);
-        for(const num of fleetNums){if(current.playerOrders.automation){delete current.playerOrders.automation.fleetRoles[num];delete current.playerOrders.automation.rebuildFleets[num];}}
-        player.set(current);
+		const current = get(player);
+		for (const num of fleetNums) {
+			if (current.playerOrders.automation) {
+				delete current.playerOrders.automation.fleetRoles[num];
+				delete current.playerOrders.automation.rebuildFleets[num];
+			}
+		}
+		player.set(current);
 		get(universe).removeFleets(fleetNums);
 		updateFleet(fleet, updatedFleet);
 		await updateCargoTransfers(cargoTransfers);
@@ -1733,6 +1774,7 @@ export async function createGameContext(
 		createDesign,
 		updateDesign,
 		updateDesignDescription,
+		updateDesignAutoOrders,
 		deleteDesign,
 
 		addWaypoint,

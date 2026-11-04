@@ -33,7 +33,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 					continue
 				}
 				job := readPatrolJob(fleet)
-				if enemy := patrolEnemy(player, job); job.Leader != 0 && enemy != nil && patrolNeedsRecon(player, enemy) && !provisionalPatrolLeg(player, fleet) && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() && !fundedEmergencyReturn(&t.game.Rules, player, fleet) && !knownWithdrawalRoute(player, fleet.Position, wp.Position) {
+				if enemy := patrolEnemy(player, job); job.Leader != 0 && enemy != nil && patrolNeedsRecon(player, enemy) && !provisionalPatrolLeg(player, fleet) && !(job.CleanupTarget != 0 && patrolCanAttack(player, fleet)) && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() && !fundedEmergencyReturn(&t.game.Rules, player, fleet) && !knownWithdrawalRoute(player, fleet.Position, wp.Position) {
 					holdAutomaticFleet(player, fleet, "Waiting for scout equipment reconnaissance")
 					continue
 				}

@@ -103,8 +103,18 @@ func (t *turnGenerator) slowPreyTargets(p *Player) []*Fleet {
 		}
 		return a.fleet.Num < b.fleet.Num
 	})
-	result := make([]*Fleet, 0, min(2, len(candidates)))
-	for _, c := range candidates[:min(2, len(candidates))] {
+	limit := 2
+	if p.patrolEvaluator != nil {
+		ships := 0
+		for _, f := range t.game.getFleets(p.Num) {
+			if patrolOperational(p, f) {
+				ships += f.Spec.TotalShips
+			}
+		}
+		limit = max(1, min(8, ships/8))
+	}
+	result := make([]*Fleet, 0, min(limit, len(candidates)))
+	for _, c := range candidates[:min(limit, len(candidates))] {
 		result = append(result, c.fleet)
 	}
 	return result
@@ -238,6 +248,16 @@ func (t *turnGenerator) planSlowPreyObservers() {
 
 func (t *turnGenerator) planSlowPreyContainment() {
 	for _, p := range t.automaticPlayers() {
+		if p.patrolEvaluator != nil {
+			// Combat screening shares the patrol mission queue and reservations.
+			// A second containment controller must not immobilize ready fighters.
+			for _, f := range t.game.getFleets(p.Num) {
+				if j := readContainment(f); j != nil && j.Kind == "screen" {
+					delete(f.Tags, containmentTag)
+				}
+			}
+			continue
+		}
 		targets := t.slowPreyTargets(p)
 		if len(targets) == 0 {
 			continue

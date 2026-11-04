@@ -36,6 +36,7 @@ type ShipDesignSlot struct {
 }
 
 type ShipDesignSpec struct {
+	DefaultAutoRole string `json:"defaultAutoRole,omitempty"`
 	// Server-owned history, persisted in spec JSON without changing the wire API.
 	VersionCreatedYear int `json:"versionCreatedYear,omitempty"`
 	PreviousVersionNum int `json:"previousVersionNum,omitempty"`
@@ -295,7 +296,11 @@ func (sd *ShipDesign) Validate(rules *Rules, player *Player) error {
 		}
 	}
 
-	return nil
+	computed, err := ComputeShipDesignSpec(rules, player.TechLevels, player.Race.Spec, sd)
+	if err != nil {
+		return err
+	}
+	return ValidateDesignAutoRole(sd.Spec.DefaultAutoRole, computed)
 }
 
 // compare two ship design's slots and return true if they are equal
@@ -366,6 +371,7 @@ func ComputeShipDesignSpec(rules *Rules, techLevels TechLevel, raceSpec RaceSpec
 	}
 	c := NewCostCalculator()
 	spec := ShipDesignSpec{
+		DefaultAutoRole:          design.Spec.DefaultAutoRole,
 		VersionCreatedYear:       design.Spec.VersionCreatedYear,
 		PreviousVersionNum:       design.Spec.PreviousVersionNum,
 		DefaultBattlePlan:        design.Spec.DefaultBattlePlan,

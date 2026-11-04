@@ -39,8 +39,12 @@ func (t *turnGenerator) markSurvivingPatrolTarget(record *BattleRecord) {
 				survivors += token.Quantity
 			}
 			if survivors > 0 {
-				job.RecruitPower = min(1_000_000_000, max(job.RecruitPower+patrolPower(f), patrolPower(f)*2))
-				job.Status = "Enemy survived interception; nearby patrols requested as reinforcements"
+				if p.patrolEvaluator == nil {
+					job.RecruitPower = min(1_000_000_000, max(job.RecruitPower+patrolPower(f), patrolPower(f)*2))
+				} else {
+					job.RecruitPower = 0
+				}
+				job.Status = "Enemy survivors: retain pack, refresh reports and reassess before continuing"
 				savePatrolJob(f, job)
 			}
 		}

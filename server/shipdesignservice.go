@@ -24,6 +24,36 @@ type shipDesignService struct {
 	db DBConnection
 }
 
+// Auto orders are construction defaults, so they can change on an in-use
+// blueprint without changing existing ships, orders, components or history.
+func (s *shipDesignService) UpdateShipDesignAutoOrders(ctx context.Context, req *connect.Request[craig_starsv1.UpdateShipDesignAutoOrdersRequest]) (*connect.Response[craig_starsv1.UpdateShipDesignAutoOrdersResponse], error) {
+	game, owner := contextGame(ctx), contextGamePlayer(ctx)
+	design, err := contextDb(ctx).GetShipDesignByNum(ctx, game.ID, owner.Num, int(req.Msg.Num))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if design == nil {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("design not found"))
+	}
+	player, err := contextDb(ctx).GetLightPlayerForGame(ctx, game.ID, db.GetPlayerParams{PlayerNum: owner.Num})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	player.Race.Spec = cs.ComputeRaceSpec(&player.Race, &game.Rules)
+	spec, err := cs.ComputeShipDesignSpec(&game.Rules, player.TechLevels, player.Race.Spec, design)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err = cs.ValidateDesignAutoRole(req.Msg.Role, spec); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	design.Spec.DefaultAutoRole = req.Msg.Role
+	if err = contextDbWrite(ctx).SaveShipDesign(ctx, design); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&craig_starsv1.UpdateShipDesignAutoOrdersResponse{Design: converter.C.ConvertCSShipDesign(design)}), nil
+}
+
 // GetShipDesign returns a single design by num for the current player.
 func (s *shipDesignService) GetShipDesign(ctx context.Context, req *connect.Request[craig_starsv1.GetShipDesignRequest]) (*connect.Response[craig_starsv1.GetShipDesignResponse], error) {
 	dbClient := contextDb(ctx)

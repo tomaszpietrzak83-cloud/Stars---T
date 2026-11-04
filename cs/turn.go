@@ -14,14 +14,15 @@ import (
 
 // Generate a turn after all players submit their orders.
 type turnGenerator struct {
-	maintenanceReports map[int]*maintenanceReport
-	statisticsBefore   map[int]StatisticsCounters
-	ordersOnly         bool
-	ordersPlayerNum    int
-	game               *FullGame
-	log                *slog.Logger
-	scorePopulations   map[*Planet]planetScorePopulation
-	colonistDrops      invader // colonists dropped on planets this phase, resolved together
+	bombardmentEvaluation map[int]*patrolEvaluator
+	maintenanceReports    map[int]*maintenanceReport
+	statisticsBefore      map[int]StatisticsCounters
+	ordersOnly            bool
+	ordersPlayerNum       int
+	game                  *FullGame
+	log                   *slog.Logger
+	scorePopulations      map[*Planet]planetScorePopulation
+	colonistDrops         invader // colonists dropped on planets this phase, resolved together
 }
 
 type planetScorePopulation struct {
@@ -2142,6 +2143,12 @@ func (t *turnGenerator) buildFleet(player *Player, planet *Planet, token ShipTok
 		return nil, err
 	}
 	fleet.OrbitingPlanetNum = planet.Num
+	if role := token.design.Spec.DefaultAutoRole; role != "" && role != "manual" && !token.design.Spec.Starbase {
+		if player.Automation.FleetRoles == nil {
+			player.Automation.FleetRoles = map[int]string{}
+		}
+		player.Automation.FleetRoles[fleet.Num] = role
+	}
 
 	fleet.Waypoints[0] = NewPlanetWaypoint(planet.Position, planet.Num, planet.Name, token.design.Spec.Engine.IdealSpeed)
 	var route string

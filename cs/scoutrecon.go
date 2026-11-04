@@ -196,7 +196,7 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 		claimed := false
 		for _, other := range t.game.getFleets(p.Num) {
 			job := readScoutRecon(other)
-			if other != f && !other.Delete && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && (job.Target == enemy.Num || unknownDesignOverlap(p, enemy, p.GetFleetIntel(job.Enemy, job.Target))) {
+			if other != f && scoutReconActive(p, other) && !other.Delete && !other.InDesignMaintenance() && !other.InAutomaticSafety() && other.GetTag("maintenance-pending") == "" && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && (job.Target == enemy.Num || unknownDesignOverlap(p, enemy, p.GetFleetIntel(job.Enemy, job.Target))) {
 				claimed = true
 				break
 			}

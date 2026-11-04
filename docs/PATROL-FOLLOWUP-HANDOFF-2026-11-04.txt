@@ -1,0 +1,92 @@
+PATROL FOLLOW-UP IMPLEMENTATION: LOCAL CRITICAL MASS AND USEFUL VICTORIES
+2026-11-04. This extends, rather than replaces, PATROL-HANDOFF-2026-11-03.txt.
+All previous user requirements, small-unknown-contact permission, free warp 6,
+course-based reinforcements, collectors, reconnaissance and manual orders remain.
+
+The user reports that destroyers rarely fight while colonies are bombed/captured.
+A new private archive audit confirms operational deadlocks and a combat forecast
+which rejects successful elimination of armed escorts/bombers if auxiliaries escape.
+Read audit-results/patrol-2466/RAPORT-2466-2026-11-04.txt and the earlier
+audit-results/patrol-ten-turns/RAPORT-2455-2464.txt locally. Do not publish private
+archives, reports, layouts, database copies or raw evidence from audit-results.
+
+Latest direct user requirements:
+- Own losses above 5% can reject a battle. A victory need not kill every enemy;
+  complete destruction can continue in later turns. Current 25% allowance and
+  unconditional Unfinished rejection require correction. Record both own count
+  and value loss, distinguish survivor damage; expose uncertainty honestly.
+- Destroyers in or waiting for refit must not reserve or block operational peers.
+- Build formations first from local operational destroyers.
+- During gathering, kill smaller local targets instead of idling when this is
+  safe and does not delay the main mission or undermine colony defense.
+- Send more reinforcements toward large dangerous groups than the estimated
+  minimum if useful. Once critical mass has physically arrived, merge into one
+  fleet/wolf pack and attack; do not wait for every promised reinforcement.
+- Latest user metaphor: a swarm of bees. Distributed ACTIVE patrols clear small
+  local contacts, converge when sufficient nearby force exists, attack as one
+  pack, then resume useful local work/follow-up. This is opportunistic local
+  coordination, not random movement or permission to feed single ships to a pack.
+- Hunt observed large slow formations departing at warp 2; prepare cargo
+  collectors with the combat operation, protect/withdraw them during battle,
+  collect actual debris after victory and return with minerals. Keep fresh
+  contact or search memory; observed warp 2 does not prove zero enemy fuel.
+
+Required operational design:
+1. Reconcile availability and assignment ownership before reserving combat units.
+   On leader refit/unavailability, transfer command to a real eligible survivor
+   or release the reservation. Remove invalid members from readiness and ETA.
+   Keep manual refit requests intact. Handle split/merge/death/number reuse.
+2. Rank urgent threats, then choose local forces by funded route ETA, composition,
+   condition and battle forecast. Separate ready local group from en-route support.
+   The common target has a deadline/rendezvous; a distant member cannot veto launch.
+3. Define mission success using dangerous survivors: stop bombing, defeat or
+   sufficiently neutralize combatants under the 5% own-loss constraint. An escaped
+   unarmed auxiliary or scout must not veto a useful defensive victory. Avoid
+   approving a mere harmless skirmish that leaves bombardment essentially intact.
+4. When the co-located subset already satisfies the mission forecast, merge it
+   through native orders, recompute exact fleet specs/fuel/plan, validate departure
+   and bounded pursuit, then attack. Treat late units as reinforcement/follow-up.
+5. Permit bounded local cleanup while gathering: actual local target forecast,
+   route fuel and threat checks, updated return-to-rendezvous ETA, main objective
+   deadline. Recompute after any battle. No repeated diversion that resets the
+   main gathering clock; never independently feed fragments to the main enemy.
+6. Provision useful surplus in parallel with recon. Stop growing a reservation
+   merely because a missing scan or an escaping auxiliary prevents Ready=true.
+   After fresh intelligence retain useful damage reduction or release excess.
+7. Preserve successful pack across follow-up turns. Refresh reports, damage,
+   fuel and actual course-directed reinforcements. Do not assume another encounter
+   is guaranteed next turn. Apply scouts and collector logistics to the mission.
+8. Integrate slow-prey observation/containment with the same active local swarm
+   and mission queue, so another containment tag does not immobilize a fighter.
+   Existing slowPreyTargets truncates to two targets per player: review this
+   bounded concurrency against actual ready combat/scout/collector resources.
+   Do not remove all bounds or divert urgent defenders merely for salvage.
+   Cargo capacity, survivable combat presence, real pickup/delivery and fuel
+   routes are part of the mission. Planet-orbit debris already goes to planet.
+
+Evidence available as optional private-copy tests:
+- cs/localpatrolstateaudit_test.go, STARS_LATEST_PATROL_AUDIT points to copied
+  native-input directory. Includes exact current mixed group and survivor identity.
+- cs/localtenturnaudit_test.go, STARS_TEN_TURN_AUDIT points to its copied inputs.
+  Includes state preservation and conditional second encounter with survivors.
+These are audit tests, not production fixes. Do not mark implementation done from
+their diagnostic PASS. Current sources also contain concurrent performance work;
+preserve it and avoid duplicate or competing edits.
+
+Acceptance tests for the correction:
+- Native mission assessment approves elimination of escorted bombers below 5%
+  own loss even if fuel transports/scout escape; rejects damaging/unsafe attacks.
+- A refitting leader cannot keep a ready pack hostage over multiple turns.
+- A ready local subset merges and departs while distant reinforcements continue.
+- Gathering units execute a funded safe local kill and still meet the main ETA;
+  reject diversions that delay emergency defense, then resume the pack mission.
+- Unknown large contact gets effective reconnaissance without unbounded hoarding.
+- Several isolated native turns with reload, split/merge and changing reports:
+  stop actual bombing, destroy armed threats, retain <=5% own losses and deliver
+  real debris. Test both outcome and route availability; no personal turn testing.
+- Existing cs/ai/db/converter/server and native/WASM/UI requirements in AGENTS.md.
+
+Rebuild/test/deploy completed corrections according to the existing user
+authorization and AGENTS.md. Do not interrupt an active personal turn, silently
+change personal orders, weaken hidden-information isolation, or publish test saves.
+Report findings and measured behavior to the user in the implementation chat.
