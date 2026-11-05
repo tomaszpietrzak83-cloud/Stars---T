@@ -34,6 +34,14 @@ type routeThreatIndex struct {
 	margin        int
 	threats       []indexedRouteThreat
 	hostileOrbits map[Vector]*Planet
+	routes        map[routeThreatKey]int
+}
+
+// The report index is already scoped to an immutable planning snapshot. Warp
+// and fuel searches repeatedly ask about the same geometric corridor.
+type routeThreatKey struct {
+	from, to Vector
+	civilian bool
 }
 
 func hostileOrbitalBase(p *Player, point Vector) bool {
