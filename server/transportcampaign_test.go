@@ -53,8 +53,13 @@ func TestCopiedTransportCampaign(t *testing.T) {
 	conn := db.NewConn()
 	require.NoError(t, conn.Connect(context.Background(), &cfg))
 	defer conn.Close()
+	gameID := int64(3)
+	if value := os.Getenv("STARS_TRANSPORT_CAMPAIGN_GAME"); value != "" {
+		gameID, err = strconv.ParseInt(value, 10, 64)
+		require.NoError(t, err)
+	}
 	runner := NewGameRunner(conn, cfg)
-	g, err := conn.NewReadClient().GetFullGame(t.Context(), 3)
+	g, err := conn.NewReadClient().GetFullGame(t.Context(), gameID)
 	require.NoError(t, err)
 	year := g.Year
 	owners := map[int]int{}
@@ -64,9 +69,9 @@ func TestCopiedTransportCampaign(t *testing.T) {
 	captures := 0
 	for step := 0; step <= turns; step++ {
 		if step > 0 {
-			_, err = runner.GenerateTurn(3)
+			_, err = runner.GenerateTurn(gameID)
 			require.NoError(t, err)
-			g, err = conn.NewReadClient().GetFullGame(t.Context(), 3)
+			g, err = conn.NewReadClient().GetFullGame(t.Context(), gameID)
 			require.NoError(t, err)
 			for _, planet := range g.Planets {
 				if planet.PlayerNum == 1 && owners[planet.Num] != 0 && owners[planet.Num] != 1 {

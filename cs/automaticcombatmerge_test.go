@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCompatibleCombatFleetsTravelTogether(t *testing.T) {
+func TestCompatibleEscortsTravelTogether(t *testing.T) {
 	position := Vector{50, 50}
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{
 		Designs: Designs(DesignDestroyerDelta),
@@ -29,7 +29,7 @@ func TestCompatibleCombatFleetsTravelTogether(t *testing.T) {
 		fleet.Waypoints = []Waypoint{{Position: position}, destination}
 		fleet.Fuel = fleet.Spec.FuelCapacity
 		if fleet != manual {
-			p.Automation.FleetRoles[fleet.Num] = "patrol"
+			p.Automation.FleetRoles[fleet.Num] = "escort"
 		}
 	}
 	other.Waypoints[1].Position = Vector{100, 50} // Parallel heading, different destination.

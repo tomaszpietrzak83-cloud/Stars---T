@@ -626,6 +626,9 @@ func (t *turnGenerator) planLogisticsAutomation() {
 						break
 					}
 					key := fmt.Sprintf("salvage:%d", salvage.Num)
+					if fleet.Position != salvage.Position && fleet.Spec.CargoCapacity > t.salvageCollectorCapacityLimit(player, salvage.Cargo.ToMineral().Total()) {
+						continue
+					}
 					if salvage.Cargo.ToMineral().Total() == 0 || claimed[key] || fleet.GetTag("empty-salvage") == strconv.Itoa(salvage.Num) {
 						continue
 					}

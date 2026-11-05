@@ -344,6 +344,10 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 		t.releasePatrol(player, leader)
 		return
 	}
+	if declinedPatrolTarget(leader, enemy, t.game.Year) {
+		t.releasePatrol(player, leader)
+		return
+	}
 	if player.patrolEvaluator != nil {
 		t.advanceAssessedPatrol(player, leader, enemy, &job)
 		return
@@ -560,6 +564,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 			enemies := sortedPatrolTargets(player, fleet)
 			assigned := false
 			for _, enemy := range enemies {
+				if player.patrolEvaluator != nil && enemy != nil && player.patrolEvaluator.Deferred[priorityFleetKey(enemy.PlayerNum, enemy.Num)] {
+					continue
+				}
 				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || (!priorityFleet(player, enemy) && slowPreySupport(player, enemy) == nil && !(player.patrolEvaluator != nil && slowPatrolPrey(player, enemy) && fleet.Position.DistanceTo(enemy.Position) <= 300) && fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
 					continue
 				}
@@ -641,6 +648,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 					savePatrolJob(member, job)
 				}
 				t.advancePatrol(player, fleet)
+				if readPatrolJob(fleet).Leader == 0 {
+					continue
+				}
 				assigned = true
 				break
 			}
@@ -744,6 +754,10 @@ func reportedScoutsOnly(p *Player, enemy *Fleet) bool {
 // battle as one token stack rather than several independent single-ship fleets.
 func (t *turnGenerator) mergePatrolRendezvous() {
 	for _, p := range t.automaticPlayers() {
+		if p.patrolEvaluator != nil {
+			// Only the launch planner may merge a combat-ready local formation.
+			continue
+		}
 		fleets := slices.Clone(t.game.getFleets(p.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
 		for _, a := range fleets {

@@ -1,5 +1,7 @@
 package cs
 
+import "fmt"
+
 // This is deliberately independent of mission labels: a rendezvous, old order,
 // pursuit or routine transit can end at the same position as a hostile fleet.
 func (t *turnGenerator) patrolDepartureConfirmed(p *Player, f *Fleet) bool {
@@ -33,4 +35,22 @@ func (t *turnGenerator) patrolDepartureConfirmed(p *Player, f *Fleet) bool {
 		applyPatrolBattlePlan(p, f, result.Tactic)
 	}
 	return true
+}
+
+// The final departure guard sees the actual first leg, after cargo/fuel orders.
+// Feed its rejection back to next turn's planner; otherwise it can propose the
+// same apparently good interception forever and be stopped here every year.
+func (t *turnGenerator) rememberBlockedPatrolDeparture(p *Player, f *Fleet) {
+	j := readPatrolJob(f)
+	if j.Leader == 0 || j.Target == 0 {
+		return
+	}
+	declined := fmt.Sprintf("%d:%d:%d", j.Enemy, j.Target, t.game.Year+2)
+	f.SetTag(declinedPatrolTag, declined)
+	for _, member := range t.game.getFleets(p.Num) {
+		m := readPatrolJob(member)
+		if !member.Delete && m.Leader == j.Leader && m.Enemy == j.Enemy && m.Target == j.Target {
+			member.SetTag(declinedPatrolTag, declined)
+		}
+	}
 }

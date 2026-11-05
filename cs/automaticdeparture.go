@@ -50,6 +50,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 			}
 			if player.Automation.FleetRoles[fleet.Num] == "patrol" {
 				if !t.patrolDepartureConfirmed(player, fleet) {
+					t.rememberBlockedPatrolDeparture(player, fleet)
 					holdAutomaticFleet(player, fleet, "Departure cancelled: reported encounter exceeds the confirmed combat force")
 					continue
 				}

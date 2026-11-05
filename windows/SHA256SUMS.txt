@@ -1,2 +1,2 @@
-8012b2df513825937de5f0baf56cb4bdee9ccf0cb0b9e79f2bb15c0ed5f5f8da  windows/stars-local.exe
-433be6f048b276b042f39d1fe453d356af81cd0eb75b6768d9775856fe360acd  frontend/src/lib/wasm/cs.wasm
+75b505a2e48084908ca955604f5c075173f30a62640b05c9ad7f0175b328f544  windows/stars-local.exe
+1548e98fe292cc72926f3c41e1749679b2e19d639ce66e2fef4d7f7be4a7c29c  frontend/src/lib/wasm/cs.wasm

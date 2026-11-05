@@ -66,33 +66,22 @@ func (t *turnGenerator) launchLocalPatrol(p *Player, oldLeader, enemy *Fleet, jo
 		if !t.patrolRoute(p, leader, point, true) {
 			return true
 		}
-		// Useful surplus travels behind the launched pack. A distant ship can
-		// neither postpone launch nor independently enter the main enemy stack.
-		remaining := max(1, leader.Spec.TotalShips/3)
+		// A launched force owns no remote reinforcements. They keep hunting;
+		// a stronger future contact will trigger a fresh composition search.
 		for _, f := range members {
 			if f == leader || f.Delete {
 				continue
 			}
-			if f.Spec.TotalShips > remaining {
-				delete(f.Tags, patrolTag)
-				restorePatrolBattlePlan(p, f)
-				if f.GetTag(patrolSupportTag) == "escort" {
-					p.Automation.FleetRoles[f.Num] = "escort"
-					delete(f.Tags, patrolSupportTag)
-				}
-				holdAutomaticFleet(p, f, "Local pack launched; surplus released for colony defense")
-				continue
-			}
-			remaining -= f.Spec.TotalShips
-			next := *job
-			next.Provisional = true
-			next.Rally = leader.Position
-			next.Status = "Reinforcing launched local pack; attack does not wait for this ship"
+			next := readPatrolJob(f)
+			next.Leader, next.LeaderID, next.Grouped = f.Num, f.ID, !t.ordersOnly
 			savePatrolJob(f, next)
-			if r := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, leader.Position, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: 8}); r != nil && !r.WaitForFuel {
-				applyExpeditionRoute(p, f, r)
-			} else {
-				holdAutomaticFleet(p, f, next.Status)
+			t.releasePatrol(p, f)
+		}
+		for _, f := range slices.Clone(t.game.getFleets(p.Num)) {
+			if patrolAvailable(p, f) && readPatrolJob(f).Leader == 0 && f.Idle() {
+				if !t.assignSoloPatrol(p, f) {
+					t.patrolFrontier(p, f)
+				}
 			}
 		}
 		return true
