@@ -29,6 +29,44 @@ func TestCopiedPatrolDefencePlanning(t *testing.T) {
 	}
 	tg := newTurnGenerator(&g)
 	require.NoError(t, g.computeSpecs())
+	if os.Getenv("STARS_DEFENCE_RENEW") == "1" {
+		tg.startPatrolEvaluation()
+		p := g.getPlayer(1)
+		leader := g.getFleet(1, 475)
+		job := readPatrolJob(leader)
+		tg.advanceAssessedPatrol(p, leader, patrolEnemy(p, job), &job)
+		members := 0
+		for _, f := range g.getFleets(1) {
+			j := readPatrolJob(f)
+			if !f.Delete && j.Leader == leader.Num {
+				members += f.Spec.TotalShips
+				t.Logf("RENEW fleet=%d ships=%d job=%+v route=%+v", f.Num, f.Spec.TotalShips, j, f.Waypoints)
+			}
+		}
+		require.GreaterOrEqual(t, members, 60)
+		require.Greater(t, readPatrolJob(leader).RendezvousBy, g.Year)
+		return
+	}
+	if os.Getenv("STARS_DEFENCE_ENCOUNTER") == "1" {
+		p := g.getPlayer(1)
+		leader := g.getFleet(1, 475)
+		enemy := p.GetFleetIntel(16, 9)
+		group := []*Fleet{leader}
+		for _, f := range g.getFleets(1) {
+			if f != leader && readPatrolJob(f).Leader == leader.Num {
+				group = append(group, f)
+			}
+		}
+		for _, report := range patrolEncounterReports(p, enemy, enemy.Position, 1) {
+			t.Logf("ENCOUNTER owner=%d fleet=%d position=%v tokens=%+v", report.PlayerNum, report.Num, report.Position, report.Tokens)
+		}
+		e := &patrolEvaluator{rules: &g.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 4096}
+		t.Logf("ASSESS ships=%d result=%+v", patrolFormationShips(group), e.assess(p, group, enemy, enemy.Position, 1))
+		p.FleetIntels = []*Fleet{enemy}
+		e = &patrolEvaluator{rules: &g.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 4096}
+		t.Logf("TARGET ONLY %+v", e.assess(p, group, enemy, enemy.Position, 1))
+		return
+	}
 	if os.Getenv("STARS_DEFENCE_RALLY") == "1" {
 		p := g.getPlayer(1)
 		leader := g.getFleet(1, 475)
