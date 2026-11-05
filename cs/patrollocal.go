@@ -77,11 +77,17 @@ func (t *turnGenerator) launchLocalPatrol(p *Player, oldLeader, enemy *Fleet, jo
 		}
 		// A launched force owns no remote reinforcements. They keep hunting;
 		// a stronger future contact will trigger a fresh composition search.
+		existing := map[int]bool{}
+		released := map[int]bool{}
+		for _, f := range t.game.getFleets(p.Num) {
+			existing[f.Num] = true
+		}
 		for _, f := range members {
 			if f == leader || f.Delete {
 				continue
 			}
 			next := readPatrolJob(f)
+			released[f.Num] = true
 			next.Leader, next.LeaderID, next.Grouped = f.Num, f.ID, !t.ordersOnly
 			savePatrolJob(f, next)
 			t.releasePatrol(p, f)
@@ -89,6 +95,9 @@ func (t *turnGenerator) launchLocalPatrol(p *Player, oldLeader, enemy *Fleet, jo
 		for _, f := range slices.Clone(t.game.getFleets(p.Num)) {
 			if p.patrolEvaluator.PlanningDefence {
 				break
+			}
+			if existing[f.Num] && !released[f.Num] {
+				continue
 			}
 			if patrolAvailable(p, f) && readPatrolJob(f).Leader == 0 && f.Idle() {
 				if !t.assignSoloPatrol(p, f) {
