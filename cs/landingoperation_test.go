@@ -144,8 +144,9 @@ func TestTransportCrossingCourseDoesNotEvadeButMeetingDoes(t *testing.T) {
 
 func TestLandingOperationCompletesInFullNativeTurns(t *testing.T) {
 	u := landingOperationUniverse(t)
+	startYear := u.Game.Year
 	seenGather, seenScan, landed := false, false, false
-	for range 14 {
+	for range 30 {
 		u.GenerateTurn()
 		for _, f := range u.Game.getFleets(1) {
 			if op := readLandingOperation(f); op != nil {
@@ -154,14 +155,15 @@ func TestLandingOperationCompletesInFullNativeTurns(t *testing.T) {
 				landed = landed || op.Phase == "landed"
 			}
 		}
-		if u.Planet("Target").PlayerNum == 1 {
-			break
-		}
 	}
+	require.Equal(t, startYear+30, u.Game.Year)
 	require.True(t, seenGather)
 	require.True(t, seenScan)
 	require.True(t, landed)
 	require.Equal(t, 1, u.Planet("Target").PlayerNum)
+	for _, f := range u.Game.getFleets(1) {
+		require.False(t, landingManaged(f), "completed landing must release its ships")
+	}
 }
 
 func TestLegacyLandingWaitsForScoutAndProtectors(t *testing.T) {
