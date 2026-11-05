@@ -196,7 +196,7 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 					if !automaticLegSafe(rules, player, to.position, to.position, 1, policy.AllowThreat) {
 						continue
 					}
-				} else if !automaticLegSafe(rules, player, from.position, to.position, warp, policy.AllowThreat, fleets[0].StrategicSpeed(warp)) {
+				} else if !automaticFleetLegSafe(rules, player, fleets[0], from.position, to.position, warp, policy.AllowThreat) {
 					continue
 				}
 				turns := 1

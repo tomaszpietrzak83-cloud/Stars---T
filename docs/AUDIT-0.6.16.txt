@@ -1,0 +1,28 @@
+Windows 0.6.16 civilian traffic
+2026-11-05
+
+Observed civilian losses in the player's archived battles prompted a change
+to strategic route evaluation. Ordinary automatic transport and scout legs
+can use a corridor when a fresh mobile enemy report points away from both
+ends and the enemy is outside the contact margin. The same rule applies to
+escort allocation, return fuel, scout itineraries and departure checks.
+Reports of converging or stationary armed formations retain their protection
+checks. Confirmed armed scouts count as combatants. Tactical targeting,
+mandatory escort settings, mines, fuel and deliberate reconnaissance remain
+under their existing rules.
+
+The regression scenario releases an assigned escort and completes an actual
+100 kT debris delivery. Reversing the reported heading before departure stops
+the previously approved route. A mandatory escort still blocks the unescorted
+departure. Scout tests cover a clear departing course, a closing course and a
+detonating minefield. Tests also distinguish a reported armed scout from an
+unarmed one.
+
+Native cs, AI and proto converter suites pass. Windows native, WASM and static
+UI rebuilt. Browser smoke on 18120 and 18806 passes with a synthetic game at
+year 2400. The embedded WASM matches the rebuilt file. Private archive evidence
+is kept in audit-results/civilian-2482 and is excluded from release files.
+
+Installed after normal turn generation completed. The live game was at year
+2483, WaitingForPlayers, immediately before and after replacement. Local
+readiness returned HTTP 200. Native and WASM hashes are in windows/SHA256SUMS.txt.

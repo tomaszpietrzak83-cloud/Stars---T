@@ -223,6 +223,19 @@ func takeMinerals(fleet *Fleet, cargo *Cargo) int {
 // The configured corridor is capped by a reported enemy's one-turn reach;
 // distant ships must not freeze otherwise useful civilian routes.
 func knownRouteThreat(player *Player, from, to Vector) int {
+	return routeThreat(player, from, to, false)
+}
+
+func civilianTraffic(player *Player, fleet *Fleet) bool {
+	role := player.Automation.FleetRoles[fleet.Num]
+	return (role == "freighter" || role == "scout") && !fleet.InDesignMaintenance() && !fleet.InAutomaticSafety()
+}
+
+func transitRouteThreat(player *Player, fleet *Fleet, from, to Vector) int {
+	return routeThreat(player, from, to, civilianTraffic(player, fleet))
+}
+
+func routeThreat(player *Player, from, to Vector, civilian bool) int {
 	if index := player.routeThreatIndex; index != nil {
 		if !index.built || index.margin != player.Automation.escortMargin() {
 			index.built = true
@@ -232,34 +245,33 @@ func knownRouteThreat(player *Player, from, to Vector) int {
 				if intel == nil || intel.Delete || intel.ReportAge != 0 || intel.PlayerNum == player.Num || player.IsFriend(intel.PlayerNum) || !patrolReportedCombatant(player, intel) {
 					continue
 				}
-				reach := math.Min(float64(index.margin), max(20, intel.observedStrategicSpeed()+5))
-				if observedBombardmentGuard(player, intel) {
-					reach = math.Min(reach, 3)
-				}
-				index.threats = append(index.threats, indexedRouteThreat{position: intel.Position, end: observedGuardEndpoint(player, intel), reach: reach, power: patrolReportedPower(player, intel)})
+				threat := routeThreatReport(player, intel, float64(index.margin))
+				threat.power = patrolReportedPower(player, intel)
+				index.threats = append(index.threats, threat)
 			}
 		}
 		total := 0
 		for _, threat := range index.threats {
-			if segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach {
+			if segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach && (!civilian || !threat.leavesCivilianCorridor(from, to)) {
 				total = min(1_000_000_000, total+threat.power)
 			}
 		}
 		return total
 	}
-	return originalKnownRouteThreat(player, from, to)
+	return uncachedRouteThreat(player, from, to, civilian)
 }
 func originalKnownRouteThreat(player *Player, from, to Vector) int {
+	return uncachedRouteThreat(player, from, to, false)
+}
+
+func uncachedRouteThreat(player *Player, from, to Vector, civilian bool) int {
 	threat := 0
 	for _, intel := range player.FleetIntels {
 		if intel == nil || intel.Delete || intel.ReportAge != 0 || intel.PlayerNum == player.Num || player.IsFriend(intel.PlayerNum) || !patrolReportedCombatant(player, intel) {
 			continue
 		}
-		reach := math.Min(float64(player.Automation.escortMargin()), max(20, intel.observedStrategicSpeed()+5))
-		if observedBombardmentGuard(player, intel) {
-			reach = math.Min(reach, 3)
-		}
-		if segmentSegmentDistance(intel.Position, observedGuardEndpoint(player, intel), from, to) <= reach {
+		report := routeThreatReport(player, intel, player.Automation.escortMarginAsFloat())
+		if segmentSegmentDistance(report.position, report.end, from, to) <= report.reach && (!civilian || !report.leavesCivilianCorridor(from, to)) {
 			threat = min(1_000_000_000, threat+patrolReportedPower(player, intel))
 		}
 	}
@@ -316,13 +328,13 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		return
 	}
 
-	threat := int(math.Ceil(float64(knownRouteThreat(player, fleet.Position, job.Position)) * float64(player.Automation.escortStrength()) / 100))
+	threat := int(math.Ceil(float64(transitRouteThreat(player, fleet, fleet.Position, job.Position)) * float64(player.Automation.escortStrength()) / 100))
 	if knownWithdrawalRoute(player, fleet.Position, job.Position) {
 		threat = 0
 	}
 	if (job.Kind == "planet" || job.Kind == "passengers" || job.Kind == "invade-load") && fleet.Position == job.Position && job.DeliveryNum != 0 {
 		if dest := t.game.getPlanet(job.DeliveryNum); dest != nil {
-			threat = max(threat, int(math.Ceil(float64(knownRouteThreat(player, fleet.Position, dest.Position))*float64(player.Automation.escortStrength())/100)))
+			threat = max(threat, int(math.Ceil(float64(transitRouteThreat(player, fleet, fleet.Position, dest.Position))*float64(player.Automation.escortStrength())/100)))
 		}
 	}
 	threat = max(threat, minimum)
@@ -823,7 +835,7 @@ func (t *turnGenerator) dispatchReadyLogistics() {
 // Pickups may request their delivery escort before loading. Loading and physical
 // departure must agree on the same threat and co-located protection budget.
 func (t *turnGenerator) deliveryEscortReady(p *Player, f *Fleet, to Vector) bool {
-	need := int(math.Ceil(float64(knownRouteThreat(p, f.Position, to)) * float64(p.Automation.escortStrength()) / 100))
+	need := int(math.Ceil(float64(transitRouteThreat(p, f, f.Position, to)) * float64(p.Automation.escortStrength()) / 100))
 	if knownWithdrawalRoute(p, f.Position, to) {
 		need = 0
 	}
@@ -867,12 +879,6 @@ func observedBombardmentGuard(p *Player, f *Fleet) bool {
 		}
 	}
 	return false
-}
-func observedGuardEndpoint(p *Player, f *Fleet) Vector {
-	if observedBombardmentGuard(p, f) {
-		return patrolInterceptPosition(f)
-	}
-	return f.Position
 }
 func segmentSegmentDistance(a, b, c, d Vector) float64 {
 	if a == b {

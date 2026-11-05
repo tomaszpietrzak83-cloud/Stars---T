@@ -28,7 +28,7 @@ func optimizeScoutItinerary(rules *Rules, p *Player, f *Fleet, m *scoutMission) 
 				if years > p.Automation.scoutReturnTurns() || warp < 4 && years > 2 || label.years+years > max(60, 3*p.Automation.scoutReturnTurns()) {
 					continue
 				}
-				if !automaticLegSafe(rules, p, from, planet.Position, warp, false, f.StrategicSpeed(warp)) {
+				if !automaticFleetLegSafe(rules, p, f, from, planet.Position, warp, false) {
 					continue
 				}
 				_, fuel, _, ok := automaticLegFuel(p, f, warp, distance, label.fuel, 0)
@@ -77,7 +77,7 @@ func scoutEconomicalLeg(rules *Rules, p *Player, f *Fleet, dest *Planet) *expedi
 		if years > p.Automation.scoutReturnTurns() || warp < 4 && years > 2 {
 			continue
 		}
-		if !automaticLegSafe(rules, p, f.Position, dest.Position, warp, false, f.StrategicSpeed(warp)) {
+		if !automaticFleetLegSafe(rules, p, f, f.Position, dest.Position, warp, false) {
 			continue
 		}
 		_, left, burned, ok := automaticLegFuel(p, f, warp, distance, f.Fuel, 0)
@@ -105,7 +105,7 @@ func fundedScoutWaypoints(rules *Rules, p *Player, f *Fleet) bool {
 	from := f.Position
 	years := 0
 	for _, wp := range f.Waypoints[1:] {
-		if wp.WarpSpeed <= 0 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticLegSafe(rules, p, from, wp.Position, wp.WarpSpeed, false, f.StrategicSpeed(wp.WarpSpeed)) {
+		if wp.WarpSpeed <= 0 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticFleetLegSafe(rules, p, f, from, wp.Position, wp.WarpSpeed, false) {
 			return false
 		}
 		distance := from.DistanceTo(wp.Position)

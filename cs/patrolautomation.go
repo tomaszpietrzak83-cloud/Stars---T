@@ -715,12 +715,15 @@ func reportedWeaponUnit(p *Player) int {
 	return unit
 }
 func reportedScoutsOnly(p *Player, enemy *Fleet) bool {
+	if enemy.Spec.HasWeapons {
+		return false
+	}
 	if len(enemy.Tokens) == 0 {
 		return enemy.Spec.ShipClass == ShipClassScout && !enemy.Spec.HasWeapons && enemy.Spec.PowerRating == 0
 	}
 	for _, token := range enemy.Tokens {
 		d := p.GetShipDesignIntel(enemy.PlayerNum, token.DesignNum)
-		if d == nil {
+		if d == nil || d.Spec.HasWeapons {
 			return false
 		}
 		// The native broad Scout class also includes Frigate/Destroyer.

@@ -42,11 +42,19 @@ func automaticMaxWarp(player *Player, fleet *Fleet) int {
 // Collision rules use the field owner's friendship, which is not guaranteed by
 // our own diplomatic setting. Non-owned fields are therefore treated conservatively.
 func automaticLegSafe(rules *Rules, player *Player, from, to Vector, warp int, allowThreat bool, strategicSpeed ...float64) bool {
+	return automaticRouteLegSafe(rules, player, from, to, warp, allowThreat, false, strategicSpeed...)
+}
+
+func automaticFleetLegSafe(rules *Rules, player *Player, fleet *Fleet, from, to Vector, warp int, allowThreat bool) bool {
+	return automaticRouteLegSafe(rules, player, from, to, warp, allowThreat, civilianTraffic(player, fleet), fleet.StrategicSpeed(warp))
+}
+
+func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp int, allowThreat, civilian bool, strategicSpeed ...float64) bool {
 	step := float64(warp * warp)
 	if len(strategicSpeed) > 0 {
 		step = strategicSpeed[0]
 	}
-	if !allowThreat && knownRouteThreat(player, from, to) > 0 && !knownWithdrawalRoute(player, from, to) {
+	if !allowThreat && routeThreat(player, from, to, civilian) > 0 && !knownWithdrawalRoute(player, from, to) {
 		return false
 	}
 	for _, field := range player.MinefieldIntels {
@@ -152,7 +160,7 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 		}
 		cruiseSafe := false
 		for speed := automaticCruiseWarp(player, fleet); speed <= automaticMaxWarp(player, fleet); speed++ {
-			if automaticLegSafe(rules, player, position, station.Position, speed, allowThreat, fleet.StrategicSpeed(speed)) {
+			if automaticFleetLegSafe(rules, player, fleet, position, station.Position, speed, allowThreat) {
 				cruiseSafe = true
 				break
 			}
@@ -164,7 +172,7 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 			if (player.Automation.FleetRoles[fleet.Num] == "scout" || player.Automation.FleetRoles[fleet.Num] == "patrol" || passengerCruiseFleet(fleet) || isAutomaticFleet(player, fleet) && cruiseSafe) && speed < automaticCruiseWarp(player, fleet) && position.DistanceTo(station.Position) > fleet.StrategicSpeed(speed) && !(usefulFreePatrolMovement(player, fleet) && speed <= fleet.Spec.Engine.FreeSpeed) {
 				continue
 			}
-			if automaticLegSafe(rules, player, position, station.Position, speed, allowThreat, fleet.StrategicSpeed(speed)) {
+			if automaticFleetLegSafe(rules, player, fleet, position, station.Position, speed, allowThreat) {
 				if required, _, _, ok := automaticLegFuel(player, loaded, speed, position.DistanceTo(station.Position), fleet.Spec.FuelCapacity, 0); ok {
 					best = min(best, required)
 				}
@@ -268,7 +276,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 			if speed < policy.MinWarp && distance > fleets[0].StrategicSpeed(speed) {
 				continue
 			}
-			if int(math.Ceil(distance/fleets[0].StrategicSpeed(speed))) != minimum || !automaticLegSafe(rules, player, start, position, speed, policy.AllowThreat, fleets[0].StrategicSpeed(speed)) {
+			if int(math.Ceil(distance/fleets[0].StrategicSpeed(speed))) != minimum || !automaticFleetLegSafe(rules, player, fleets[0], start, position, speed, policy.AllowThreat) {
 				continue
 			}
 			left := make([]int, len(fleets))
@@ -362,7 +370,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				choices = append(choices, StargateWarpSpeed)
 			}
 			for _, speed := range choices {
-				safe := automaticLegSafe(rules, player, positions[at], positions[next], speed, policy.AllowThreat, fleets[0].StrategicSpeed(speed))
+				safe := automaticFleetLegSafe(rules, player, fleets[0], positions[at], positions[next], speed, policy.AllowThreat)
 				if speed == StargateWarpSpeed {
 					safe = automaticLegSafe(rules, player, positions[next], positions[next], 1, policy.AllowThreat)
 				}

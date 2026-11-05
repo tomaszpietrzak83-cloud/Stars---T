@@ -71,7 +71,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 			if wp.WarpSpeed == StargateWarpSpeed {
 				valid = fleet.CanJump(player, fleet.Position.DistanceTo(wp.Position), player.GetPlanetIntel(fleet.OrbitingPlanetNum), player.GetPlanetIntel(wp.TargetNum))
 			} else {
-				valid = wp.WarpSpeed > 0 && wp.WarpSpeed <= automaticMaxWarp(player, fleet) && automaticLegSafe(&t.game.Rules, player, fleet.Position, wp.Position, wp.WarpSpeed, allowThreat, fleet.StrategicSpeed(wp.WarpSpeed))
+				valid = wp.WarpSpeed > 0 && wp.WarpSpeed <= automaticMaxWarp(player, fleet) && automaticFleetLegSafe(&t.game.Rules, player, fleet, fleet.Position, wp.Position, wp.WarpSpeed, allowThreat)
 				reserve := automaticReturnFuel(&t.game.Rules, player, fleet, wp.Position, expeditionStations(player, fleet), allowThreat, automaticReturnLimit(player, fleet, wp.MapObjectTarget))
 				if networkReserve, managed := t.fuelNetworkDepartureReserve(player, fleet); managed {
 					reserve = networkReserve

@@ -70,7 +70,7 @@ func fundedLogisticsWaypoints(rules *Rules, p *Player, f *Fleet) bool {
 	fuel, from := f.Fuel, f.Position
 	for _, wp := range f.Waypoints[1:] {
 		years := max(1, int(math.Ceil(from.DistanceTo(wp.Position)/max(1, f.StrategicSpeed(wp.WarpSpeed)))))
-		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || years > 20 || wp.WarpSpeed < 4 && years > 2 || !automaticLegSafe(rules, p, from, wp.Position, wp.WarpSpeed, false, f.StrategicSpeed(wp.WarpSpeed)) {
+		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || years > 20 || wp.WarpSpeed < 4 && years > 2 || !automaticFleetLegSafe(rules, p, f, from, wp.Position, wp.WarpSpeed, false) {
 			return false
 		}
 		_, left, _, ok := automaticLegFuel(p, &budget, wp.WarpSpeed, from.DistanceTo(wp.Position), fuel, 0)
