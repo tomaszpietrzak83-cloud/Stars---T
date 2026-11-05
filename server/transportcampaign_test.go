@@ -123,6 +123,10 @@ func TestCopiedTransportCampaign(t *testing.T) {
 		}
 		for _, f := range g.Fleets {
 			if f.PlayerNum == 1 && !f.Delete {
+				if os.Getenv("STARS_REQUIRE_EXCLUSIVE_LANDING") == "1" && f.GetTag("automatic-landing-member") != "" {
+					require.Empty(t, f.GetTag("automatic-tanker"), "year %d fleet %d: landing member borrowed as tanker", g.Year, f.Num)
+					require.Empty(t, f.GetTag("bomber-protection-borrow"), "year %d fleet %d: landing member borrowed as escort", g.Year, f.Num)
+				}
 				aboard += f.Cargo.Colonists * 100
 				for _, p := range g.Players {
 					if p.Num == 1 && p.Automation.FleetRoles[f.Num] == "freighter" {
