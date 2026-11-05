@@ -199,7 +199,7 @@ func (t *turnGenerator) landingPickups(p *Player, target *Planet, rally Vector, 
 	return choices
 }
 
-func (t *turnGenerator) startLandingOperation(p *Player) *Fleet {
+func (t *turnGenerator) startLandingOperation(p *Player, handled map[int]bool) *Fleet {
 	if p.Automation.DisablePassengerTransport || p.Race.Spec.LivesOnStarbases {
 		return nil
 	}
@@ -227,7 +227,7 @@ func (t *turnGenerator) startLandingOperation(p *Player) *Fleet {
 	}
 	targets := []*Planet{}
 	for _, target := range p.PlanetIntels {
-		if invasionCandidate(p, target) && !t.landingTargetClaimed(p, target.Num) {
+		if invasionCandidate(p, target) && !handled[target.Num] && !t.landingTargetClaimed(p, target.Num) {
 			targets = append(targets, target)
 		}
 	}
@@ -456,20 +456,15 @@ func (t *turnGenerator) planLandingOperations() {
 				delete(f.Tags, "automatic-landing-screen")
 			}
 		}
-		// Cargo preparation does not wait for a free scout or patrol. Start
-		// several independent armies while other operations are travelling.
-		for range 3 {
-			if t.startLandingOperation(p) == nil {
-				break
-			}
-		}
 		leaders := slices.Clone(t.game.getFleets(p.Num))
+		handled := map[int]bool{}
 		slices.SortFunc(leaders, func(a, b *Fleet) int { return a.Num - b.Num })
 		for _, leader := range leaders {
 			op := readLandingOperation(leader)
 			if op == nil || leader.Delete {
 				continue
 			}
+			handled[op.Target] = true
 			target := p.GetPlanetIntel(op.Target)
 			if p.Automation.FleetRoles[leader.Num] != "freighter" || p.Automation.DisablePassengerTransport || target == nil || target.PlayerNum != op.Owner || p.IsFriend(target.PlayerNum) || op.Phase == "landed" || op.Phase == "cancelled" || t.game.Year-op.Started > 30 {
 				t.finishLandingOperation(p, leader, op)
@@ -481,6 +476,20 @@ func (t *turnGenerator) planLandingOperations() {
 			t.reinforceLandingOperation(p, leader, op, target)
 			t.recruitLandingProtection(p, leader, op)
 			t.advanceLandingOperation(p, leader, op, target)
+			if op.Phase != "cancelled" {
+				saveLandingOperation(leader, op)
+			}
+		}
+		// Complete existing armies before assigning scarce free holds to new
+		// targets. Otherwise each turn creates another undersized landing.
+		// Loading still starts immediately, before a scout or patrol is free.
+		for range 3 {
+			leader := t.startLandingOperation(p, handled)
+			if leader == nil {
+				break
+			}
+			op := readLandingOperation(leader)
+			t.advanceLandingOperation(p, leader, op, p.GetPlanetIntel(op.Target))
 			if op.Phase != "cancelled" {
 				saveLandingOperation(leader, op)
 			}

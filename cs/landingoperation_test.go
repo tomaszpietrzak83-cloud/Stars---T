@@ -264,6 +264,31 @@ func TestCompletedTransportRebuildImmediatelyJoinsLandingPreparation(t *testing.
 	require.Positive(t, f.Cargo.Colonists)
 }
 
+func TestLandingReinforcementsFinishExistingArmyBeforeStartingAnother(t *testing.T) {
+	u := landingOperationUniverse(t)
+	p := u.Player(1)
+	for _, f := range u.Game.getFleets(1) {
+		if p.Automation.FleetRoles[f.Num] == "freighter" && f != u.Fleet("Transport0") {
+			delete(p.Automation.FleetRoles, f.Num)
+		}
+	}
+	u.Run((*turnGenerator).planLandingOperations)
+	leader := landingLeader(u)
+	require.NotNil(t, leader)
+	// Another reported target and newly available transports must not steal
+	// the reinforcements needed by the first, still incomplete army.
+	other := *p.GetPlanetIntel(u.Planet("Target").Num)
+	other.Num += 1000
+	other.Position.X += 10
+	p.PlanetIntels = append(p.PlanetIntels, &other)
+	p.Automation.FleetRoles[u.Fleet("Transport1").Num] = "freighter"
+	u.Run((*turnGenerator).planLandingOperations)
+	member := u.Fleet("Transport1")
+	require.Nil(t, readLandingOperation(member))
+	require.Equal(t, fmt.Sprint(leader.Num), member.GetTag(landingMemberTag))
+	require.Positive(t, member.Cargo.Colonists)
+}
+
 func TestLandingReservationsUseAlternativePopulationSources(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignTeamster, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "A", Design: DesignTeamster.Name, At: "Home"}, {Name: "B", Design: DesignTeamster.Name, At: "Home"}}}, {}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}, {Name: "Other", Owner: 1, Position: Vector{10, 0}, Starbase: DesignSpaceStation.Name}, {Name: "Enemy", Owner: 2, Position: Vector{50, 0}, Cargo: Cargo{Colonists: 1000}}}})
 	p := u.Player(1)
