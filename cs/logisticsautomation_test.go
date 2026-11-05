@@ -4,8 +4,10 @@ package cs
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
+	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func logisticsUniverse(t *testing.T) *testUniverse {
@@ -73,9 +75,11 @@ func TestLogisticsBattlePickupAndCombatOffload(t *testing.T) {
 	p, combat, transport := u.Player(1), u.Fleet("Combat"), u.Fleet("Transport")
 	p.Automation.BattleSalvage = true
 	p.Automation.OffloadCombatCargo = true
-	p.BattleRecords = []BattleRecord{{Position: combat.Position, Stats: BattleRecordStats{ShipsDestroyedByPlayer: map[int]int{2: 1}}}}
+	p.BattleRecords = []BattleRecord{{Position: combat.Position, fleets: []*Fleet{combat}, Stats: BattleRecordStats{ShipsDestroyedByPlayer: map[int]int{1: 1}}}}
+	orders := slices.Clone(combat.Waypoints)
 	u.Run((*turnGenerator).collectBattleSalvage)
 	require.Equal(t, 100, combat.Cargo.Ironium)
+	require.Equal(t, orders, combat.Waypoints, "pickup must not order the warship to return")
 	p.SalvageIntels = nil
 	for range 2 {
 		u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).fleetMove, (*turnGenerator).resolveLogisticsAutomation)
@@ -138,6 +142,37 @@ func TestLogisticsCollectsAfterRealBattle(t *testing.T) {
 	require.NotEmpty(t, u.Player(1).BattleRecords)
 	u.Run((*turnGenerator).collectBattleSalvage)
 	require.Positive(t, u.Fleet("Winner").Cargo.ToMineral().Total())
+}
+
+func TestArmedCargoHullUsesOnlyFreeSpaceAfterBattle(t *testing.T) {
+	galleon, privateer := DesignGalleon, DesignPrivateer
+	galleon.Slots = append(slices.Clone(galleon.Slots), ShipDesignSlot{HullComponent: Laser.Name, HullSlotIndex: 4, Quantity: 1})
+	privateer.Slots = slices.Clone(privateer.Slots)
+	privateer.Slots[3].HullComponent = Laser.Name
+	for _, design := range []ShipDesign{galleon, privateer} {
+		t.Run(design.Hull, func(t *testing.T) {
+			position := Vector{50, 50}
+			u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{
+				{Designs: Designs(design), Fleets: []ScenarioFleet{{Name: "Collector", Position: position, Design: design.Name}},
+					Salvages: []Salvage{{MapObject: MapObject{Position: position}, Cargo: Cargo{Ironium: 100}}}},
+				{Designs: Designs(DesignDestroyerDelta), Fleets: []ScenarioFleet{{Name: "Enemy", Position: position, Design: DesignDestroyerDelta.Name}}},
+			}})
+			p, f := u.Player(1), u.Fleet("Collector")
+			p.Automation.BattleSalvage = true
+			p.Relations[1].Relation = PlayerRelationEnemy
+			require.True(t, f.Spec.HasWeapons)
+			f.Cargo.Boranium = f.Spec.CargoCapacity - 15
+			f.Waypoints = append(f.Waypoints, NewPositionWaypoint(Vector{140, 50}, 6))
+			p.BattleRecords = []BattleRecord{{Position: position, fleets: []*Fleet{f}}}
+			u.Run((*turnGenerator).collectBattleSalvage)
+			require.Zero(t, f.Cargo.Ironium, "a surviving armed enemy prevents pickup")
+			u.Game.deleteFleet(u.Fleet("Enemy"))
+			u.Run((*turnGenerator).collectBattleSalvage)
+			require.Equal(t, 15, f.Cargo.Ironium)
+			require.Equal(t, 85, u.Game.Salvages[0].Cargo.Ironium)
+			require.Equal(t, Vector{140, 50}, f.Waypoints[1].Position)
+		})
+	}
 }
 
 func TestMineralPickupRequestsDeliveryEscortBeforeLoading(t *testing.T) {

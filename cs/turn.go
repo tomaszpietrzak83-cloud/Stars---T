@@ -142,6 +142,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.fleetRoute()
 	t.advanceFuelNetworks()
 	t.preparePatrolPursuits()
+	t.mergeCompatibleCombatFleets()
 	t.enforceAutomaticDeparture()
 	t.fleetMarkWaypointsProcessed()
 
@@ -179,6 +180,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.captureScorePopulations()
 	t.scanScoutReconContacts()
 	t.mergePatrolRendezvous()
+	t.mergeCompatibleCombatFleets()
 	t.fleetBattle()
 	t.advanceFuelNetworks()
 	t.collectBattleSalvage()

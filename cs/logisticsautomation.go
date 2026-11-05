@@ -666,21 +666,14 @@ func (t *turnGenerator) collectBattleSalvage() {
 			continue
 		}
 		for _, record := range player.BattleRecords {
-			enemyLosses := 0
-			for owner, lost := range record.Stats.ShipsDestroyedByPlayer {
-				if owner != player.Num && !player.IsFriend(owner) {
-					enemyLosses += lost
-				}
-			}
-			if enemyLosses == 0 || t.armedEnemyAt(player, record.Position) {
-				continue
-			}
 			salvage := t.game.salvagesByPosition[record.Position]
-			if salvage == nil || salvage.Delete {
+			if salvage == nil || salvage.Delete || t.armedEnemyAt(player, record.Position) {
 				continue
 			}
-			for _, fleet := range t.game.getFleets(player.Num) {
-				if !fleet.Delete && fleet.Position == record.Position && fleet.Spec.HasWeapons && !fleet.InDesignMaintenance() {
+			// Collect from the actual battle site, even if only our side took
+			// losses. Leave navigation and the fleet's role to its existing orders.
+			for _, fleet := range record.fleets {
+				if fleet.PlayerNum == player.Num && !fleet.Delete && !fleet.Starbase && fleet.Position == record.Position && fleet.Spec.HasWeapons && fleet.CargoMass() < fleet.Spec.CargoCapacity && !fleet.InDesignMaintenance() {
 					player.accounting(t.game.Year).MineralsSalvaged += int64(takeMinerals(fleet, &salvage.Cargo))
 				}
 			}
