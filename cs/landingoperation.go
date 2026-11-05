@@ -386,7 +386,7 @@ func (t *turnGenerator) routeLanding(p *Player, f *Fleet, point Vector, target M
 	}
 	route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, point, target, automaticRoutePolicy{AllowThreat: threat, Fast: true, MaxTurns: maxTurns})
 	if route == nil || route.WaitForFuel {
-		holdAutomaticFleet(p, f, "Landing operation awaiting a funded route")
+		holdAutomaticFleet(p, f, "Landing operation awaiting a safe route with sufficient fuel")
 		requestAutomaticRescue(p, f)
 		return false
 	}
@@ -611,6 +611,64 @@ func (t *turnGenerator) recruitLandingProtection(p *Player, leader *Fleet, op *l
 	}
 }
 
+// A pickup can become inaccessible after it was reserved (for example, a bomber
+// arrives at the source). Empty transports may use another surplus colony; the
+// reservation and both funded legs must change together, without borrowing the
+// same people twice or assuming fuel at a colony without a dock.
+func (t *turnGenerator) retargetLandingPickup(p *Player, f *Fleet, op *landingOperation, job *logisticsJob) bool {
+	if f.CargoMass() != 0 || fuelNetworkManaged(f) {
+		return false
+	}
+	load := f.availableColonistSpace()
+	if load <= 0 {
+		return false
+	}
+	reserved := t.landingReservations(p)
+	candidates := []landingPickup{}
+	for _, source := range t.game.getPlanets(p.Num) {
+		if source.Num == job.TargetNum || source.Cargo.Colonists-sourcePopulationReserve(p, source)-reserved[source.Num] < load {
+			continue
+		}
+		score := f.Position.DistanceTo(source.Position) + source.Position.DistanceTo(op.Rally)
+		if source.Spec.MaxPopulation > 0 && source.Cargo.Colonists >= populationTarget(source, 95) {
+			score -= 1000000
+		}
+		candidates = append(candidates, landingPickup{fleet: f, source: source, load: load, score: score})
+	}
+	slices.SortFunc(candidates, func(a, b landingPickup) int {
+		if a.score < b.score {
+			return -1
+		}
+		if a.score > b.score {
+			return 1
+		}
+		return a.source.Num - b.source.Num
+	})
+	for _, c := range candidates[:min(4, len(candidates))] {
+		pickup := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, c.source.Position, c.source.ToTarget(), automaticRoutePolicy{MaxTurns: 12})
+		if pickup == nil || pickup.WaitForFuel || len(pickup.ArrivalFuel) == 0 {
+			continue
+		}
+		probe := *f
+		probe.Position, probe.Fuel = c.source.Position, pickup.ArrivalFuel[0]
+		if probe.CanFuel(p, c.source) {
+			probe.Fuel = probe.Spec.FuelCapacity
+		}
+		probe.Cargo.Colonists += load
+		out := planAutomaticRoute(&t.game.Rules, p, []*Fleet{&probe}, op.Rally, MapObjectTarget{}, automaticRoutePolicy{MaxTurns: 12})
+		if out == nil || out.WaitForFuel {
+			continue
+		}
+		job.TargetNum, job.Position, job.Passengers = c.source.Num, c.source.Position, load
+		job.Status = "Retargeting blocked landing pickup to an accessible surplus colony"
+		saveLogisticsWork(f, job)
+		delete(f.Tags, fuelRequestTag) // the old failed voyage no longer needs rescue
+		applyExpeditionRoute(p, f, pickup)
+		return true
+	}
+	return false
+}
+
 func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *landingOperation, target *Planet) {
 	// A fresh ordinary scan or an allied orbital patrol can confirm that the
 	// base is gone. Clear the remembered warning, then require the scout again.
@@ -648,13 +706,17 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 					return
 				}
 				if f.Position != source.Position {
-					t.routeLanding(p, f, source.Position, source.ToTarget(), false, 0)
+					if !t.routeLanding(p, f, source.Position, source.ToTarget(), false, 0) {
+						t.retargetLandingPickup(p, f, op, job)
+					}
 					ready = false
 					continue
 				}
 				load := f.availableColonistSpace()
 				if source.Cargo.Colonists-sourcePopulationReserve(p, source) < load || t.armedEnemyAt(p, source.Position) {
-					holdAutomaticFleet(p, f, "Landing army awaits a full safe load at source")
+					if !t.retargetLandingPickup(p, f, op, job) {
+						holdAutomaticFleet(p, f, "Landing army awaits a full safe load at source")
+					}
 					ready = false
 					continue
 				}
@@ -662,7 +724,9 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 				probe.Cargo.Colonists += load
 				route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{&probe}, op.Rally, MapObjectTarget{}, automaticRoutePolicy{})
 				if route == nil || route.WaitForFuel {
-					holdAutomaticFleet(p, f, "Landing pickup awaits fuel for its loaded voyage")
+					if !t.retargetLandingPickup(p, f, op, job) {
+						holdAutomaticFleet(p, f, "Landing pickup awaits fuel for its loaded voyage")
+					}
 					ready = false
 					continue
 				}

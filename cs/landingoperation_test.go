@@ -167,6 +167,50 @@ func TestLandingOperationCompletesInFullNativeTurns(t *testing.T) {
 	}
 }
 
+func TestLandingRetargetsBlockedEmptyPickupWithoutDoubleReservingPeople(t *testing.T) {
+	u := landingOperationUniverse(t)
+	p, home, target := u.Player(1), u.Planet("Home"), u.Planet("Target")
+	f, second, loaded := u.Fleet("Transport0"), u.Fleet("Transport1"), u.Fleet("Transport2")
+	blocked := *home
+	blocked.Num, blocked.Name, blocked.Position = len(u.Game.Planets)+1, "Blocked source", Vector{80, 0}
+	blocked.Starbase, blocked.Spec.HasStarbase = nil, false
+	u.Game.Planets = append(u.Game.Planets, &blocked)
+	p.PlanetIntels = append(p.PlanetIntels, &blocked)
+	enemy := u.Fleet("Enemy")
+	enemy.Position = blocked.Position
+	report := *enemy
+	p.FleetIntels = []*Fleet{&report}
+	load := f.availableColonistSpace()
+	reserve := sourcePopulationReserve(p, home)
+	home.Cargo.Colonists = reserve + load // exactly one full alternative pickup
+	op := &landingOperation{Target: target.Num, Owner: target.PlayerNum, Need: load * 2, Started: u.Game.Year, Rally: Vector{35, 0}, Phase: "gather", EscortDesigns: map[int]bool{}}
+	saveLandingOperation(f, op)
+	for _, member := range []*Fleet{f, second} {
+		member.Position = Vector{-20, 0}
+		member.SetTag(landingMemberTag, fmt.Sprint(f.Num))
+		saveLogisticsWork(member, &logisticsJob{Kind: "landing-load", TargetNum: blocked.Num, DeliveryNum: target.Num, Position: blocked.Position, Passengers: load})
+	}
+	loaded.Cargo.Colonists = 1
+	saveAutomaticFuelRequest(f, automaticFuelRequest{Destination: f.Position, Members: []int{f.Num}, Urgent: true})
+	loadedJob := &logisticsJob{Kind: "landing-load", TargetNum: blocked.Num, DeliveryNum: target.Num, Position: blocked.Position}
+	u.Run(func(tg *turnGenerator) {
+		require.False(t, tg.retargetLandingPickup(p, loaded, op, loadedJob), "existing passengers are not commandeered")
+		tg.advanceLandingOperation(p, f, op, target)
+	})
+	require.Equal(t, home.Num, logisticsWork(f).TargetNum)
+	require.Empty(t, f.GetTag(fuelRequestTag), "the newly funded pickup replaces its obsolete rescue request")
+	require.Equal(t, blocked.Num, logisticsWork(second).TargetNum, "the alternative surplus is already reserved")
+	require.Greater(t, len(f.Waypoints), 1)
+	require.Equal(t, home.Position, f.Waypoints[len(f.Waypoints)-1].Position)
+	u.Run((*turnGenerator).fleetMove, (*turnGenerator).fleetRefuel, func(tg *turnGenerator) {
+		tg.advanceLandingOperation(p, f, op, target)
+	})
+	require.Equal(t, load, f.Cargo.Colonists, "the retargeted ship physically loads at the safe colony")
+	require.Equal(t, reserve, home.Cargo.Colonists)
+	require.Zero(t, second.Cargo.Colonists)
+	require.Equal(t, 1, loaded.Cargo.Colonists)
+}
+
 func TestLandingLeavesRealDebrisCollectorToFinishPickup(t *testing.T) {
 	u := landingOperationUniverse(t)
 	p, f := u.Player(1), u.Fleet("Transport0")
