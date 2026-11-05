@@ -328,6 +328,17 @@ func TestLandingProtectionCannotBeReassignedByOtherPlanners(t *testing.T) {
 	}
 }
 
+func TestLandingScoutSelectionPrefersNearbyFundedScoutOverFleetNumber(t *testing.T) {
+	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignLongRangeScout, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Far", Design: DesignLongRangeScout.Name, Position: Vector{400, 0}}, {Name: "Near", Design: DesignLongRangeScout.Name, Position: Vector{50, 0}}}}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}}})
+	p, far, near := u.Player(1), u.Fleet("Far"), u.Fleet("Near")
+	p.Automation.FleetRoles = map[int]string{far.Num: "scout", near.Num: "scout"}
+	p.PlanetIntels = []*Planet{u.Planet("Home")}
+	require.Less(t, far.Num, near.Num)
+	require.Same(t, near, u.turn.pickLandingScout(p, Vector{35, 0}))
+	near.SetTag(landingMemberTag, "another-operation")
+	require.NotSame(t, near, u.turn.pickLandingScout(p, Vector{35, 0}), "do not steal another army's scout")
+}
+
 func TestLandingReservationsUseAlternativePopulationSources(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignTeamster, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "A", Design: DesignTeamster.Name, At: "Home"}, {Name: "B", Design: DesignTeamster.Name, At: "Home"}}}, {}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}, {Name: "Other", Owner: 1, Position: Vector{10, 0}, Starbase: DesignSpaceStation.Name}, {Name: "Enemy", Owner: 2, Position: Vector{50, 0}, Cargo: Cargo{Colonists: 1000}}}})
 	p := u.Player(1)

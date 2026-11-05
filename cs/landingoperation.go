@@ -204,7 +204,6 @@ func (t *turnGenerator) startLandingOperation(p *Player, handled map[int]bool) *
 		return nil
 	}
 	var anchor *Fleet
-	var scout *Fleet
 	guards := []*Fleet{}
 	for _, f := range t.game.getFleets(p.Num) {
 		if !landingAvailable(p, f) {
@@ -214,9 +213,6 @@ func (t *turnGenerator) startLandingOperation(p *Player, handled map[int]bool) *
 		legacyLoaded := logisticsWork(f) != nil && logisticsWork(f).Kind == "landing-reserve" && f.Cargo.Colonists > 0
 		if role == "freighter" && automaticPassengersAllowed(p, f) && (f.CargoMass() == 0 || legacyLoaded) && f.Spec.CargoCapacity > 0 && (anchor == nil || f.Num < anchor.Num) {
 			anchor = f
-		}
-		if role == "scout" && scoutReconEligible(p, f) && f.GetTag(preyWatchTag) == "" && (scout == nil || f.Num < scout.Num) {
-			scout = f
 		}
 		if (role == "patrol" || role == "escort") && patrolAvailable(p, f) && readPatrolJob(f).Leader == 0 {
 			guards = append(guards, f)
@@ -262,12 +258,7 @@ func (t *turnGenerator) startLandingOperation(p *Player, handled map[int]bool) *
 		if rally == target.Position || hostileOrbitalBase(p, rally) {
 			continue
 		}
-		if scout != nil {
-			scoutRoute := planAutomaticRoute(&t.game.Rules, p, []*Fleet{scout}, rally, MapObjectTarget{}, automaticRoutePolicy{MaxTurns: 12})
-			if scoutRoute == nil || scoutRoute.WaitForFuel {
-				scout = nil
-			}
-		}
+		scout := t.pickLandingScout(p, rally)
 		cover := []*Fleet{}
 		ships := 0
 		slices.SortFunc(guards, func(a, b *Fleet) int {
@@ -338,6 +329,32 @@ func (t *turnGenerator) startLandingOperation(p *Player, handled map[int]bool) *
 		}
 		saveLandingOperation(leader, op)
 		return leader
+	}
+	return nil
+}
+
+func (t *turnGenerator) pickLandingScout(p *Player, rally Vector) *Fleet {
+	candidates := []*Fleet{}
+	for _, f := range t.game.getFleets(p.Num) {
+		if landingAvailable(p, f) && p.Automation.FleetRoles[f.Num] == "scout" && scoutReconEligible(p, f) && f.GetTag(preyWatchTag) == "" {
+			candidates = append(candidates, f)
+		}
+	}
+	slices.SortFunc(candidates, func(a, b *Fleet) int {
+		da, db := a.Position.DistanceTo(rally), b.Position.DistanceTo(rally)
+		if da < db {
+			return -1
+		}
+		if da > db {
+			return 1
+		}
+		return a.Num - b.Num
+	})
+	for _, scout := range candidates {
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{scout}, rally, MapObjectTarget{}, automaticRoutePolicy{MaxTurns: 12})
+		if route != nil && !route.WaitForFuel {
+			return scout
+		}
 	}
 	return nil
 }
@@ -586,13 +603,10 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 	scout := t.game.getFleet(p.Num, op.Scout)
 	if scout == nil || scout.Delete || p.Automation.FleetRoles[scout.Num] != "scout" {
 		op.Scout = 0
-		for _, f := range t.game.getFleets(p.Num) {
-			if landingAvailable(p, f) && p.Automation.FleetRoles[f.Num] == "scout" && scoutReconEligible(p, f) {
-				scout = f
-				op.Scout = f.Num
-				f.SetTag(landingMemberTag, strconv.Itoa(leader.Num))
-				break
-			}
+		scout = t.pickLandingScout(p, op.Rally)
+		if scout != nil {
+			op.Scout = scout.Num
+			scout.SetTag(landingMemberTag, strconv.Itoa(leader.Num))
 		}
 	}
 	ready := true
