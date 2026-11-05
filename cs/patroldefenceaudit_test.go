@@ -29,6 +29,24 @@ func TestCopiedPatrolDefencePlanning(t *testing.T) {
 	}
 	tg := newTurnGenerator(&g)
 	require.NoError(t, g.computeSpecs())
+	if os.Getenv("STARS_DEFENCE_RALLY") == "1" {
+		p := g.getPlayer(1)
+		leader := g.getFleet(1, 475)
+		job := readPatrolJob(leader)
+		group := []*Fleet{leader}
+		for _, f := range g.getFleets(1) {
+			if f != leader && readPatrolJob(f).Leader == leader.Num {
+				group = append(group, f)
+			}
+		}
+		policies := make([]automaticRoutePolicy, len(group))
+		for i := range policies {
+			policies[i] = automaticRoutePolicy{Fast: true, MaxTurns: 20}
+		}
+		chosen := choosePatrolRally(&g.Rules, p, group, patrolInterceptPosition(patrolEnemy(p, job)), []Vector{job.Rally}, policies, true)
+		t.Logf("RALLY threat=%d chosen=%+v alreadyHere=%d remaining=%d", knownRouteThreat(p, job.Rally, job.Rally), chosen, len(slices.DeleteFunc(slices.Clone(group), func(f *Fleet) bool { return f.Position != job.Rally })), job.RendezvousBy-g.Year)
+		return
+	}
 	if os.Getenv("STARS_DEFENCE_COMPARE") == "1" {
 		p := g.getPlayer(1)
 		group := []*Fleet{}
