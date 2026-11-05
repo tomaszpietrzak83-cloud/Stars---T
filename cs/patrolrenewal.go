@@ -96,6 +96,9 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 	if chosen.GatherTurns > 2 {
 		return false
 	}
+	if !synchronizePatrolRally(&t.game.Rules, p, group, target, chosen) {
+		return false
+	}
 	if job.RendezvousBy == 0 {
 		job.RendezvousBy = t.game.Year + chosen.GatherTurns
 	} else if t.game.Year+chosen.GatherTurns > job.RendezvousBy {
