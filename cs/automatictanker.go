@@ -159,6 +159,9 @@ func convoyMembers(player *Player, fleet *Fleet, all []*Fleet) []*Fleet {
 func (t *turnGenerator) guardAutomaticFuel() {
 	for _, player := range t.automaticPlayers() {
 		for _, fleet := range t.game.getFleets(player.Num) {
+			if fundedPatrolRallyWaypoints(&t.game.Rules, player, fleet, t.game.Year) {
+				continue
+			}
 			if fundedTraderWaypoints(&t.game.Rules, player, fleet) || (readTankerJob(fleet) != nil && readTankerJob(fleet).TargetNum > 0) || (fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet)) || fuelNetworkManaged(fleet) || !isAutomaticFleet(player, fleet) || player.Automation.FleetRoles[fleet.Num] == "tanker" || fleet.GetTag(escortTag) != "" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
