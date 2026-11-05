@@ -29,6 +29,26 @@ func TestCopiedPatrolDefencePlanning(t *testing.T) {
 	}
 	tg := newTurnGenerator(&g)
 	require.NoError(t, g.computeSpecs())
+	if os.Getenv("STARS_DEFENCE_CAPACITY") == "1" {
+		tg.startPatrolEvaluation()
+		if os.Getenv("STARS_DEFENCE_RECLAIM") == "1" {
+			tg.releaseUnreachablePatrolSupport()
+		}
+		p := g.getPlayer(1)
+		enemy := p.GetFleetIntel(27, 14)
+		require.NotNil(t, enemy)
+		for _, radius := range []float64{150, 400, 10000} {
+			group := []*Fleet{}
+			for _, f := range g.getFleets(1) {
+				if patrolAvailable(p, f) && f.Position.DistanceTo(enemy.Position) <= radius && (len(group) == 0 || compatiblePatrolPlans(group[0], f)) {
+					group = append(group, f)
+				}
+			}
+			e := &patrolEvaluator{rules: &g.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 4096}
+			t.Logf("CAPACITY radius=%.0f ships=%d result=%+v", radius, patrolFormationShips(group), e.assess(p, group, enemy, enemy.Position, 1))
+		}
+		return
+	}
 	if os.Getenv("STARS_DEFENCE_RENEW") == "1" {
 		tg.startPatrolEvaluation()
 		p := g.getPlayer(1)

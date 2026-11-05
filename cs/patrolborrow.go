@@ -6,6 +6,32 @@ import (
 	"strconv"
 )
 
+// Nearby colony relief has priority over lending hunters to civilian escorts.
+// Dedicated escorts and fleets already travelling in a fuel network retain
+// their existing responsibilities; this only reserves the borrowed patrol pool.
+func patrolNeededForColony(p *Player, f *Fleet) bool {
+	if p.Automation.FleetRoles[f.Num] != "patrol" {
+		var old bomberBorrow
+		if json.Unmarshal([]byte(f.GetTag(bomberBorrowTag)), &old) != nil || old.Role != "patrol" {
+			return false
+		}
+	}
+	queue := p.patrolQueue
+	if queue == nil {
+		queue = makePatrolMissionQueue(p, 0)
+	}
+	for _, mission := range queue {
+		if mission.Kind != "attack" || mission.Tier > 1 || mission.Deadline > 1 {
+			continue
+		}
+		enemy := p.GetFleetIntel(mission.Enemy, mission.Target)
+		if enemy != nil && f.Position.DistanceTo(enemy.Position) <= 2*f.StrategicSpeed(automaticMaxWarp(p, f))+3 && (patrolReportedBomber(p, enemy) || patrolReportedCombatant(p, enemy) || defenceReportedTransport(p, enemy)) {
+			return true
+		}
+	}
+	return false
+}
+
 func (t *turnGenerator) fundedPatrolSupport(p *Player, f, target *Fleet) bool {
 	if f.Position == target.Position {
 		return true
@@ -37,6 +63,9 @@ func (t *turnGenerator) releaseUnreachablePatrolSupport() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
 			if f.Delete || landingManaged(f) || f.GetTag(bomberBorrowTag) == "" || fuelNetworkManaged(f) || readTankerJob(f) != nil {
+				continue
+			}
+			if patrolNeededForColony(p, f) && releaseBorrowedHunter(p, f) {
 				continue
 			}
 			num, _ := strconv.Atoi(f.GetTag(escortTag))
