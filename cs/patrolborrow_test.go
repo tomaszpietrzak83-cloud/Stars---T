@@ -43,3 +43,16 @@ func TestUnreachableBorrowedPatrolReturnsToHunting(t *testing.T) {
 	require.Empty(t, f.GetTag(bomberBorrowTag))
 	require.Nil(t, readAutomaticFuelRequest(f))
 }
+
+func TestBorrowedPatrolNotInDepartingConvoyGetsNewOrders(t *testing.T) {
+	u := automaticBomberUniverse(t)
+	p, bomber, f := u.Player(1), u.Fleet("Bomber"), u.Fleet("Cover")
+	p.Automation.FleetRoles[f.Num] = "patrol"
+	borrowBomberProtection(p, f, bomber)
+	saveFuelNetworkPlan(bomber, &fuelNetworkPlan{Leader: bomber.Num, Members: []int{bomber.Num}})
+	bomber.Waypoints = []Waypoint{{Position: bomber.Position}, NewPositionWaypoint(Vector{30, 0}, 5)}
+	u.Run((*turnGenerator).startPatrolEvaluation, (*turnGenerator).releaseDepartedPatrolSupport)
+	require.Equal(t, "patrol", p.Automation.FleetRoles[f.Num])
+	require.Empty(t, f.GetTag(escortTag))
+	require.Greater(t, len(f.Waypoints), 1, "excluded guard must resume movement in this same turn")
+}

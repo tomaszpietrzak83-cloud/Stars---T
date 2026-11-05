@@ -2,6 +2,7 @@ package cs
 
 import (
 	"encoding/json"
+	"slices"
 	"strconv"
 )
 
@@ -40,8 +41,38 @@ func (t *turnGenerator) releaseUnreachablePatrolSupport() {
 			}
 			num, _ := strconv.Atoi(f.GetTag(escortTag))
 			target := t.game.getFleet(p.Num, num)
-			if target == nil || target.Delete || !t.fundedPatrolSupport(p, f, target) {
+			excluded := false
+			if target != nil {
+				if plan := readFuelNetworkPlan(target); plan != nil {
+					excluded = !slices.Contains(plan.Members, f.Num)
+				}
+			}
+			if target == nil || target.Delete || excluded || !t.fundedPatrolSupport(p, f, target) {
 				releaseBorrowedHunter(p, f)
+			}
+		}
+	}
+}
+
+// A route can leave with a smaller convoy than the earlier escort reservation.
+// Release excluded hunters in the same orders phase, before ships move apart.
+func (t *turnGenerator) releaseDepartedPatrolSupport() {
+	for _, p := range t.automaticPlayers() {
+		for _, f := range slices.Clone(t.game.getFleets(p.Num)) {
+			if f.Delete || landingManaged(f) || f.GetTag(bomberBorrowTag) == "" || fuelNetworkManaged(f) || readTankerJob(f) != nil {
+				continue
+			}
+			num, _ := strconv.Atoi(f.GetTag(escortTag))
+			target := t.game.getFleet(p.Num, num)
+			if target == nil || len(target.Waypoints) < 2 {
+				continue
+			}
+			plan := readFuelNetworkPlan(target)
+			if plan == nil || slices.Contains(plan.Members, f.Num) || !releaseBorrowedHunter(p, f) {
+				continue
+			}
+			if patrolAvailable(p, f) && !t.assignSoloPatrol(p, f) {
+				t.patrolFrontier(p, f)
 			}
 		}
 	}
