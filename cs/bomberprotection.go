@@ -79,7 +79,7 @@ func (t *turnGenerator) prepareBombardmentProtection(p *Player, bomber *Fleet) (
 	}
 	var candidates []support
 	for _, f := range t.game.getFleets(p.Num) {
-		if f.Starbase || p.FleetInActiveAssembly(f) || fleetHasDedicatedMinesweeper(p, f) {
+		if landingManaged(f) || f.Starbase || p.FleetInActiveAssembly(f) || fleetHasDedicatedMinesweeper(p, f) {
 			continue
 		}
 		if f == bomber || !patrolOperational(p, f) && !(p.Automation.FleetRoles[f.Num] == "escort" && f.GetTag(escortTag) == strconv.Itoa(bomber.Num) && !f.Delete && !f.InDesignMaintenance() && !f.InAutomaticSafety() && f.GetTag("maintenance-pending") == "" && !fuelNetworkManaged(f) && readTankerJob(f) == nil && f.GetTag(tankerAwaitTag) == "") {

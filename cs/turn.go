@@ -92,6 +92,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.refreshAutomaticFuelIntel()
 	t.releaseColonizerFuelDetours()
 	t.releaseCombatCruiseNetworks()
+	t.releaseUnreachablePatrolSupport()
 	t.prepareRadiatingTransports()
 	t.advanceFuelNetworks()
 	t.resolveAutomaticTankers()
