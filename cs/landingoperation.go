@@ -102,6 +102,14 @@ func (t *turnGenerator) landingMembers(p *Player, leader *Fleet) []*Fleet {
 }
 
 func landingAvailable(p *Player, f *Fleet) bool {
+	// An empty collector is working, not idle. Let a known, still valid debris
+	// pickup finish before assigning its hold to an army. Stale jobs must not
+	// reserve ships forever, and a reused salvage number is a different target.
+	if j := logisticsWork(f); !p.Automation.DisableSalvage && j != nil && j.Kind == "salvage" {
+		if salvage := p.GetSalvageIntel(j.TargetNum); salvage != nil && !salvage.Delete && salvage.Position == j.Position && salvage.Cargo.ToMineral().Total() > 0 {
+			return false
+		}
+	}
 	return !f.Delete && !f.Starbase && !landingManaged(f) && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !fuelNetworkReserved(f) && readTankerJob(f) == nil && f.GetTag(tankerAwaitTag) == "" && !p.FleetInActiveAssembly(f) && f.GetTag("maintenance-pending") == "" && f.GetTag(containmentTag) == "" && f.GetTag(anticipatedSalvageTag) == "" && f.GetTag(escortTag) == ""
 }
 
