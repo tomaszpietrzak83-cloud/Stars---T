@@ -3,44 +3,66 @@ package cs
 // Only armed, fresh reports participate in corridor checks. Thousands of
 // harmless scout/cargo reports are classified once during an orders phase.
 type indexedRouteThreat struct {
-	position  Vector
-	end       Vector
-	reach     float64
-	power     int
-	departure VectorFloat64
+	position Vector
+	end      Vector
+	next     Vector
+	reach    float64
+	power    int
 }
 
-// Reports of a fleet leaving the entire corridor need no escort on an ordinary
-// civilian leg. Keep the contact margin, including at the origin and destination.
-func (threat indexedRouteThreat) leavesCivilianCorridor(from, to Vector) bool {
-	if from == to || threat.departure.LengthSquared() == 0 || segmentDistance(threat.position, from, to) <= 3 {
-		return false
+func (threat indexedRouteThreat) threatensRoute(from, to Vector, civilian bool) bool {
+	if civilian {
+		// Passing a fleet in space does not initiate orbital combat. A stop on
+		// its reported position or course can still bring the ships together.
+		return segmentDistance(to, threat.position, threat.next) <= 3
 	}
-	behind := func(point Vector) bool {
-		offset := point.Subtract(threat.position)
-		return threat.departure.X*float64(offset.X)+threat.departure.Y*float64(offset.Y) < 0
-	}
-	return behind(from) && behind(to)
+	return segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach
 }
 
 func routeThreatReport(p *Player, intel *Fleet, margin float64) indexedRouteThreat {
 	reach := min(margin, max(20, intel.observedStrategicSpeed()+5))
-	end := intel.Position
+	end, next := intel.Position, patrolInterceptPosition(intel)
 	if observedBombardmentGuard(p, intel) {
 		reach = min(reach, 3)
-		end = patrolInterceptPosition(intel)
+		end = next
 	}
-	report := indexedRouteThreat{position: intel.Position, end: end, reach: reach}
-	if !intel.Starbase && intel.WarpSpeed > 0 && intel.WarpSpeed <= 10 {
-		report.departure = intel.Heading
-	}
-	return report
+	return indexedRouteThreat{position: intel.Position, end: end, next: next, reach: reach}
 }
 
 type routeThreatIndex struct {
-	built   bool
-	margin  int
-	threats []indexedRouteThreat
+	built         bool
+	margin        int
+	threats       []indexedRouteThreat
+	hostileOrbits map[Vector]*Planet
+}
+
+func hostileOrbitalBase(p *Player, point Vector) bool {
+	planet := reportedHostileOrbit(p, point)
+	return planet != nil && planet.Spec.HasStarbase
+}
+
+func reportedHostileOrbit(p *Player, point Vector) *Planet {
+	if index := p.routeThreatIndex; index != nil {
+		if index.hostileOrbits == nil {
+			index.hostileOrbits = map[Vector]*Planet{}
+			for _, planet := range p.PlanetIntels {
+				if hostileOrbit(p, planet) {
+					index.hostileOrbits[planet.Position] = planet
+				}
+			}
+		}
+		return index.hostileOrbits[point]
+	}
+	for _, planet := range p.PlanetIntels {
+		if planet != nil && planet.Position == point && hostileOrbit(p, planet) {
+			return planet
+		}
+	}
+	return nil
+}
+
+func hostileOrbit(p *Player, planet *Planet) bool {
+	return planet != nil && planet.Owned() && !planet.OwnedBy(p.Num) && !p.IsFriend(planet.PlayerNum)
 }
 
 func (t *turnGenerator) enablePlanningThreatIndex() {

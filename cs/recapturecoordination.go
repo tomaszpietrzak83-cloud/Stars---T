@@ -13,7 +13,7 @@ func recaptureEquipmentMissing(p *Player, planet *Planet) bool {
 	return d == nil || len(d.Slots) == 0
 }
 
-// Reserve a bounded part of the scout force for marked colonies before routine
+// Reserve a bounded part of the scout force for landing sites and marked colonies before routine
 // equipment contacts consume every scout. All targets come from our reports;
 // an old unowned report is precisely why a marked colony needs another look.
 func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) map[int]bool {
@@ -31,8 +31,14 @@ func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) 
 		return assigned
 	}
 	targets := []*Planet{}
+	landingScans := map[int]bool{}
+	for _, f := range fleets {
+		if job := logisticsWork(f); job != nil && !f.Delete && !f.InDesignMaintenance() && p.Automation.FleetRoles[f.Num] == "freighter" && galleonLandingNeedsScan(f, job, p.GetPlanetIntel(job.DeliveryNum)) {
+			landingScans[job.DeliveryNum] = true
+		}
+	}
 	for _, i := range p.PlanetIntels {
-		if i != nil && p.Automation.PriorityPlanets[i.Num] && i.PlayerNum != p.Num && (!i.Owned() || !p.IsFriend(i.PlayerNum)) && (i.ReportAge > 2 || recaptureEquipmentMissing(p, i)) && !i.Unexplored() {
+		if i != nil && (p.Automation.PriorityPlanets[i.Num] || landingScans[i.Num]) && i.PlayerNum != p.Num && (!i.Owned() || !p.IsFriend(i.PlayerNum)) && (i.ReportAge > 2 || recaptureEquipmentMissing(p, i)) && !i.Unexplored() {
 			targets = append(targets, i)
 		}
 	}
@@ -106,7 +112,7 @@ func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) 
 			}
 			delete(f.Tags, scoutReconTag)
 			f.SetTag(priorityReconTag, strconv.Itoa(target.Num))
-			f.SetTag(scoutTag, "Refreshing marked colony for bombardment and landing: "+target.Name)
+			f.SetTag(scoutTag, "Refreshing colony intelligence for landing or bombardment: "+target.Name)
 			applyExpeditionRoute(p, f, route)
 			assigned[f.Num] = true
 			break

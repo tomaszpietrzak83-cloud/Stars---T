@@ -90,7 +90,7 @@ func (t *turnGenerator) findInvasionTransfer(player *Player, fleet *Fleet, prior
 			virtual.Position = source.Position
 			virtual.Fuel = fleet.Spec.FuelCapacity
 			virtual.Cargo.Colonists = troops
-			route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&virtual}, target.Position, target.MapObject.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet), MaxTurns: 8})
+			route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&virtual}, target.Position, target.MapObject.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet), MaxTurns: 8, AllowThreat: !staging && carriesGalleon(fleet)})
 			if route == nil {
 				continue
 			}
@@ -139,6 +139,12 @@ func (t *turnGenerator) loadAutomaticInvaders(player *Player, fleet *Fleet, job 
 			return
 		}
 		job.Status = "Waiting empty for bombardment or fresh reconnaissance of the priority target"
+		holdAutomaticFleet(player, fleet, job.Status)
+		saveLogisticsWork(fleet, job)
+		return
+	}
+	if !t.deliveryEscortReady(player, fleet, target.Position) {
+		job.Status = "Waiting empty for enough landing escort strength"
 		holdAutomaticFleet(player, fleet, job.Status)
 		saveLogisticsWork(fleet, job)
 		return

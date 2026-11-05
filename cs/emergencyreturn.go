@@ -86,7 +86,7 @@ func fundedEmergencyReturn(rules *Rules, p *Player, f *Fleet) bool {
 	}
 	fuel, from := f.Fuel, f.Position
 	for _, wp := range f.Waypoints[1:] {
-		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticLegSafe(rules, p, from, wp.Position, wp.WarpSpeed, f.GetTag(emergencyRiskTag) != "", f.StrategicSpeed(wp.WarpSpeed)) {
+		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticFleetLegSafe(rules, p, f, from, wp.Position, wp.WarpSpeed, f.GetTag(emergencyRiskTag) != "") {
 			return false
 		}
 		_, left, _, ok := automaticLegFuel(p, f, wp.WarpSpeed, from.DistanceTo(wp.Position), fuel, 0)

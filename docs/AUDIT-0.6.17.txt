@@ -1,0 +1,37 @@
+Windows 0.6.17 civilian transit and Galleon landings
+2026-11-05
+
+Automatic freighters and scouts can pass stationary or moving armed contacts
+between stops. Route planning and departure check the actual first movement
+stop and the destination against the reported course. Evasion still reacts to
+a simultaneous converging course. Ordinary civilian jobs release escorts and
+wait or withdraw if their destination is occupied. Missions with a mandatory
+escort retain that requirement. Conventional scouts avoid threatened stops and
+minefields. Deliberate contact reconnaissance retains permission to enter combat
+and scouts can still be destroyed by enemy fire.
+
+A Galleon in the Transport role can carry a landing force. An unverified landing
+with a report older than two game years stages outside orbit and requests a scout
+through the existing reconnaissance allocation. A matching clearance survives
+ordinary report ageing while the fleet travels. A reported orbital base blocks
+transport entry until its destruction is confirmed. At an unfortified target
+with reported armed ships, the convoy must have sufficient combat strength and
+depart together. Native orbital combat and ground-defense checks apply before
+the landing resolves.
+
+Native regressions cover 100 kT of debris delivered past a stationary armed
+contact, rechecking a changing course before movement, protection of actual
+stops, delayed mineral loading, safe minefield detours and continued fuel recovery.
+The Galleon scenario blocks a saved approach with an old report, obtains a real
+scanner report, assembles a synchronized escort against a reported orbital guard
+and captures the colony after the guard withdraws. It tests convoy assembly and
+landing as separate steps. Native cs, AI and proto converter suites passed.
+
+Windows native, WASM and static UI rebuilt. Browser smoke on isolated ports
+18121 and 18807 passed at year 2400 with a new test database. The bundled WASM
+hash matches the rebuilt source WASM. No turn was submitted in the active game.
+
+Installed between turns. The active game was at 2484, WaitingForPlayers,
+immediately before and after replacement. Local readiness returned HTTP 200.
+The active database remained on schema 30. Native and WASM hashes are recorded
+in windows/SHA256SUMS.txt.

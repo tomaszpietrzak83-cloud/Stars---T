@@ -2,6 +2,23 @@ package cs
 
 import "math"
 
+func galleonLandingNeedsScan(f *Fleet, job *logisticsJob, target *Planet) bool {
+	if job.Kind != "invade" || target == nil || target.ReportAge <= 2 ||
+		job.LandingCleared && job.LandingTarget == target.Num && job.LandingOwner == target.PlayerNum {
+		return false
+	}
+	return carriesGalleon(f)
+}
+
+func carriesGalleon(f *Fleet) bool {
+	for _, token := range f.Tokens {
+		if token.design != nil && token.design.Hull == Galleon.Name {
+			return true
+		}
+	}
+	return false
+}
+
 // Predict colonist casualties from published defenses and our own bombs only.
 // Round kills down, leaving one extra cargo unit; forecasts never consume RNG.
 func (t *turnGenerator) forecastLandingAfterBombing(p *Player, target *Planet) *Planet {
@@ -60,7 +77,7 @@ func (t *turnGenerator) invasionDestination(p *Player, f *Fleet, job *logisticsJ
 	// must not reverse loaded transports every third year; new hostile evidence
 	// still cancels that clearance, and native arrival checks remain mandatory.
 	blocked := target.Spec.HasStarbase || reportedGroundDefenses(target) || target.ReportAge <= 2 && target.Cargo.Colonists > 1000
-	if p.Automation.PriorityPlanets[target.Num] && (blocked || target.ReportAge > 2 && !job.LandingCleared) {
+	if galleonLandingNeedsScan(f, job, target) || p.Automation.PriorityPlanets[target.Num] && (blocked || target.ReportAge > 2 && !job.LandingCleared) {
 		job.BombingStage = true
 		job.LandingCleared = false
 	}
@@ -87,7 +104,7 @@ func (t *turnGenerator) invasionDestination(p *Player, f *Fleet, job *logisticsJ
 	}
 	if rally != nil {
 		job.Position = rally.Position
-		job.Status = "Staging at an owned colony for fresh reconnaissance and bombardment"
+		job.Status = "Staging at an owned colony for reconnaissance or bombardment"
 		return rally.ToTarget()
 	}
 	direction := f.Position.Subtract(target.Position).Normalized()

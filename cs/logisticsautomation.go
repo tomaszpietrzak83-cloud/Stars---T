@@ -235,7 +235,25 @@ func transitRouteThreat(player *Player, fleet *Fleet, from, to Vector) int {
 	return routeThreat(player, from, to, civilianTraffic(player, fleet))
 }
 
+func convoyThreat(player *Player, fleet *Fleet, to Vector) int {
+	if civilianTraffic(player, fleet) {
+		if reportedHostileOrbit(player, to) != nil {
+			return transitRouteThreat(player, fleet, fleet.Position, to)
+		}
+		// An occupied pickup point may need a detour or delay. It does not
+		// by itself reserve destroyers to escort ordinary cargo traffic.
+		return 0
+	}
+	if knownWithdrawalRoute(player, fleet.Position, to) {
+		return 0
+	}
+	return knownRouteThreat(player, fleet.Position, to)
+}
+
 func routeThreat(player *Player, from, to Vector, civilian bool) int {
+	if civilian && hostileOrbitalBase(player, to) {
+		return 1_000_000_000
+	}
 	if index := player.routeThreatIndex; index != nil {
 		if !index.built || index.margin != player.Automation.escortMargin() {
 			index.built = true
@@ -252,7 +270,7 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 		}
 		total := 0
 		for _, threat := range index.threats {
-			if segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach && (!civilian || !threat.leavesCivilianCorridor(from, to)) {
+			if threat.threatensRoute(from, to, civilian) {
 				total = min(1_000_000_000, total+threat.power)
 			}
 		}
@@ -271,7 +289,7 @@ func uncachedRouteThreat(player *Player, from, to Vector, civilian bool) int {
 			continue
 		}
 		report := routeThreatReport(player, intel, player.Automation.escortMarginAsFloat())
-		if segmentSegmentDistance(report.position, report.end, from, to) <= report.reach && (!civilian || !report.leavesCivilianCorridor(from, to)) {
+		if report.threatensRoute(from, to, civilian) {
 			threat = min(1_000_000_000, threat+patrolReportedPower(player, intel))
 		}
 	}
@@ -320,6 +338,18 @@ func (t *turnGenerator) prepareConvoy(player *Player, fleet *Fleet, job *logisti
 	t.prepareConvoyWithMinimum(player, fleet, job, target, 0)
 }
 func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, job *logisticsJob, target MapObjectTarget, minimum int) {
+	if civilianTraffic(player, fleet) && hostileOrbitalBase(player, job.Position) {
+		t.releaseEscorts(player, fleet)
+		job.Status = "Waiting for confirmed orbital base destruction"
+		holdAutomaticFleet(player, fleet, job.Status)
+		return
+	}
+	if job.BombingStage && fleet.Position == job.Position && galleonLandingNeedsScan(fleet, job, player.GetPlanetIntel(job.DeliveryNum)) {
+		t.releaseEscorts(player, fleet)
+		job.Status = "Galleon awaits fresh reconnaissance of the landing site"
+		holdAutomaticFleet(player, fleet, job.Status)
+		return
+	}
 	if job.Kind == "salvage" && fleet.Position == job.Position && !t.armedEnemyAt(player, fleet.Position) {
 		// Loading here requires no strategic movement. Evaluate the loaded
 		// departure separately, rather than withdrawing empty while awaiting cover.
@@ -327,14 +357,20 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		holdAutomaticFleet(player, fleet, job.Status)
 		return
 	}
-
-	threat := int(math.Ceil(float64(transitRouteThreat(player, fleet, fleet.Position, job.Position)) * float64(player.Automation.escortStrength()) / 100))
-	if knownWithdrawalRoute(player, fleet.Position, job.Position) {
-		threat = 0
+	if minimum == 0 && civilianTraffic(player, fleet) && reportedHostileOrbit(player, job.Position) == nil && transitRouteThreat(player, fleet, fleet.Position, job.Position) > 0 {
+		t.releaseEscorts(player, fleet)
+		if t.withdrawEmptyFreighter(player, fleet, job) {
+			return
+		}
+		job.Status = "Waiting for the destination to clear"
+		holdAutomaticFleet(player, fleet, job.Status)
+		return
 	}
+
+	threat := int(math.Ceil(float64(convoyThreat(player, fleet, job.Position)) * float64(player.Automation.escortStrength()) / 100))
 	if (job.Kind == "planet" || job.Kind == "passengers" || job.Kind == "invade-load") && fleet.Position == job.Position && job.DeliveryNum != 0 {
 		if dest := t.game.getPlanet(job.DeliveryNum); dest != nil {
-			threat = max(threat, int(math.Ceil(float64(transitRouteThreat(player, fleet, fleet.Position, dest.Position))*float64(player.Automation.escortStrength())/100)))
+			threat = max(threat, int(math.Ceil(float64(convoyThreat(player, fleet, dest.Position))*float64(player.Automation.escortStrength())/100)))
 		}
 	}
 	threat = max(threat, minimum)
@@ -752,7 +788,7 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 					continue
 				}
 				probe, origin := t.previewShipyardPickup(player, fleet, source, dest, job.Load)
-				route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{AllowThreat: true, MinWarp: automaticCruiseWarp(player, fleet)})
+				route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{AllowThreat: !civilianTraffic(player, fleet) || convoyThreat(player, fleet, dest.Position) > 0, MinWarp: automaticCruiseWarp(player, fleet)})
 				if probe.CargoMass() != fleet.Spec.CargoCapacity || route == nil || route.WaitForFuel || !t.deliveryEscortReady(player, fleet, dest.Position) {
 					job.Status = fmt.Sprintf("Waiting empty at source for a full safe load (%d/%d kT available)", probe.CargoMass(), fleet.Spec.CargoCapacity)
 					if probe.CargoMass() == fleet.Spec.CargoCapacity && route != nil && !route.WaitForFuel && !t.deliveryEscortReady(player, fleet, dest.Position) {
@@ -835,10 +871,7 @@ func (t *turnGenerator) dispatchReadyLogistics() {
 // Pickups may request their delivery escort before loading. Loading and physical
 // departure must agree on the same threat and co-located protection budget.
 func (t *turnGenerator) deliveryEscortReady(p *Player, f *Fleet, to Vector) bool {
-	need := int(math.Ceil(float64(transitRouteThreat(p, f, f.Position, to)) * float64(p.Automation.escortStrength()) / 100))
-	if knownWithdrawalRoute(p, f.Position, to) {
-		need = 0
-	}
+	need := int(math.Ceil(float64(convoyThreat(p, f, to)) * float64(p.Automation.escortStrength()) / 100))
 	power := 0
 	if f.Spec.HasWeapons {
 		power = patrolPower(f)

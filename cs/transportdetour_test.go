@@ -24,6 +24,7 @@ func TestLoadedDeliveryUsesSafeDockDetourInsteadOfWaitingForEscort(t *testing.T)
 		enemy := patrolTestEnemy(10)
 		enemy.Position = Vector{50, 0}
 		p.FleetIntels = []*Fleet{enemy}
+		p.MinefieldIntels = []*Minefield{{MapObject: MapObject{PlayerNum: 2, Position: enemy.Position}, MinefieldType: MinefieldTypeStandard, NumMines: 100, Detonate: true}}
 		kind := "settle"
 		if invade {
 			kind = "invade"

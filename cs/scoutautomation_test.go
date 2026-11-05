@@ -74,10 +74,18 @@ func TestScoutsDistributeTargetsAndAvoidKnownThreats(t *testing.T) {
 	require.GreaterOrEqual(t, len(a.Waypoints), 2)
 	require.GreaterOrEqual(t, len(b.Waypoints), 2)
 	require.NotEqual(t, a.Waypoints[1].Position, b.Waypoints[1].Position)
-	p.FleetIntels = []*Fleet{{MapObject: MapObject{PlayerNum: 2, Position: Vector{10, 0}}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true}}}}
+	for i, planet := range p.PlanetIntels[:2] {
+		enemy := patrolTestEnemy(100)
+		enemy.Num += i
+		enemy.Position = planet.Position
+		p.FleetIntels = append(p.FleetIntels, enemy)
+	}
 	u.Run((*turnGenerator).planScoutAutomation)
-	require.Len(t, a.Waypoints, 1)
-	require.Len(t, b.Waypoints, 1)
+	for _, scout := range []*Fleet{a, b} {
+		for _, wp := range scout.Waypoints[1:] {
+			require.Equal(t, Vector{}, wp.Position, "both survey destinations are occupied")
+		}
+	}
 }
 
 func TestScoutRetirementWaitsUntilExpeditionEnds(t *testing.T) {

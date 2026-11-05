@@ -54,8 +54,14 @@ func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp i
 	if len(strategicSpeed) > 0 {
 		step = strategicSpeed[0]
 	}
-	if !allowThreat && routeThreat(player, from, to, civilian) > 0 && !knownWithdrawalRoute(player, from, to) {
+	if !allowThreat && routeThreat(player, from, to, civilian) > 0 && (civilian || !knownWithdrawalRoute(player, from, to)) {
 		return false
+	}
+	if civilian && !allowThreat && from.DistanceTo(to) > step {
+		stop := from.ToFloat64().Add(to.Subtract(from).Normalized().Scale(step)).ToInt(true)
+		if stop != to && routeThreat(player, from, stop, true) > 0 {
+			return false
+		}
 	}
 	for _, field := range player.MinefieldIntels {
 		if field == nil || segmentDistance(field.Position, from, to) > field.Radius()+1 {

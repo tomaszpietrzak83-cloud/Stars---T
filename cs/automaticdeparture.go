@@ -19,6 +19,21 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			wp := fleet.Waypoints[1]
+			if player.Automation.FleetRoles[fleet.Num] == "freighter" && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() {
+				if hostileOrbitalBase(player, wp.Position) {
+					t.releaseEscorts(player, fleet)
+					holdAutomaticFleet(player, fleet, "Freighter awaits confirmed orbital base destruction")
+					continue
+				}
+				if job := logisticsWork(fleet); job != nil && job.Kind == "invade" {
+					intel := player.GetPlanetIntel(job.DeliveryNum)
+					if intel != nil && intel.Position == wp.Position && galleonLandingNeedsScan(fleet, job, intel) {
+						t.releaseEscorts(player, fleet)
+						holdAutomaticFleet(player, fleet, "Galleon awaits fresh reconnaissance of the landing site")
+						continue
+					}
+				}
+			}
 			if player.Automation.FleetRoles[fleet.Num] == "bomber" && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() {
 				if target := player.GetPlanetIntel(wp.TargetNum); wp.TargetType == MapObjectTypePlanet && target != nil && target.Owned() && target.PlayerNum != player.Num && !player.IsFriend(target.PlayerNum) && target.Spec.HasStarbase {
 					holdAutomaticFleet(player, fleet, "Bombardment awaits confirmed orbital base destruction")
@@ -52,6 +67,9 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			if job := logisticsWork(fleet); !allowThreat && job != nil && job.Kind == "invade" && !job.BombingStage && job.Position == wp.Position && convoyThreat(player, fleet, wp.Position) > 0 {
+				allowThreat = t.deliveryEscortReady(player, fleet, wp.Position)
+			}
 			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
 			if provisionalPatrolLeg(player, fleet) && !fleet.InAutomaticSafety() {
 				allowThreat = false

@@ -43,9 +43,12 @@ func TestEscortsKeepStagingRouteAndCanStillAcceptConvoy(t *testing.T) {
 	goal := e.Waypoints[1].Position
 	u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).planEscortStaging)
 	require.Equal(t, goal, e.Waypoints[1].Position)
-	p.FleetIntels = []*Fleet{patrolTestEnemy(1)}
-	job := &logisticsJob{Kind: "salvage", TargetNum: 1, Position: Vector{50, 0}}
-	u.Run(func(tg *turnGenerator) { tg.prepareConvoy(p, f, job, MapObjectTarget{}) })
+	enemy := patrolTestEnemy(1)
+	p.FleetIntels = []*Fleet{enemy}
+	target := &Planet{MapObject: MapObject{Num: 3, PlayerNum: 2, Position: enemy.Position}}
+	p.PlanetIntels = append(p.PlanetIntels, target)
+	job := &logisticsJob{Kind: "invade", TargetNum: target.Num, Position: target.Position}
+	u.Run(func(tg *turnGenerator) { tg.prepareConvoy(p, f, job, target.ToTarget()) })
 	require.NotEmpty(t, e.GetTag(escortTag))
 	require.Empty(t, e.GetTag(escortStagingTag))
 }
@@ -63,7 +66,7 @@ func TestScoutReturnsDespiteSurroundingEnemyReports(t *testing.T) {
 		p.FleetIntels = append(p.FleetIntels, e)
 	}
 	u.Run(func(tg *turnGenerator) { require.True(t, tg.routeEmergencyReturn(p, f)) }, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture)
-	require.NotEmpty(t, f.GetTag(emergencyRiskTag))
+	require.Empty(t, f.GetTag(emergencyRiskTag), "nearby contacts alone do not make a civilian return risky")
 	require.True(t, fundedEmergencyReturn(&u.Game.Rules, p, f))
 	require.Greater(t, len(f.Waypoints), 1)
 	u.Run((*turnGenerator).fleetMove)
@@ -135,8 +138,10 @@ func TestImpossibleSalvageCoverReleasesEscortsAndPassengersPreemptWaitingSalvage
 	u.Run((*turnGenerator).planLogisticsAutomation)
 	require.Equal(t, "passengers", logisticsWork(f).Kind)
 	require.Empty(t, e.GetTag(escortTag))
-	p.FleetIntels = []*Fleet{patrolTestEnemy(100000000)}
 	job := &logisticsJob{Kind: "salvage", TargetNum: 1, Position: Vector{50, 0}}
+	enemy := patrolTestEnemy(100000000)
+	enemy.Position = job.Position
+	p.FleetIntels = []*Fleet{enemy}
 	u.Run(func(tg *turnGenerator) { tg.prepareConvoy(p, f, job, MapObjectTarget{}) })
 	require.Empty(t, e.GetTag(escortTag), "an impossible mission must not reserve all free escorts indefinitely")
 	require.Contains(t, job.Status, "Waiting")

@@ -249,7 +249,7 @@ func (t *turnGenerator) loadAutomaticPassengers(player *Player, fleet *Fleet, jo
 	origin.Cargo.Colonists -= load
 	probe.Cargo.Colonists += load
 	t.topUpLogisticsCargo(player, &probe, &origin, dest)
-	loadedRoute := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{AllowThreat: true, MinWarp: automaticCruiseWarp(player, fleet)})
+	loadedRoute := planAutomaticRoute(&t.game.Rules, player, []*Fleet{&probe}, dest.Position, dest.ToTarget(), automaticRoutePolicy{AllowThreat: !civilianTraffic(player, fleet) || convoyThreat(player, fleet, dest.Position) > 0, MinWarp: automaticCruiseWarp(player, fleet)})
 	safe := t.deliveryEscortReady(player, fleet, dest.Position) && load > 0 && load >= minimumPassengers && loadedRoute != nil && !loadedRoute.WaitForFuel
 	if probe.CargoMass() != fleet.Spec.CargoCapacity || !safe {
 		job.Passengers = initialLoad
@@ -328,7 +328,7 @@ func (t *turnGenerator) passengerTripSafe(player *Player, fleet *Fleet, job *log
 	if source.Spec.HasStarbase && source.Spec.DockCapacity != 0 {
 		virtual.Fuel = fleet.Spec.FuelCapacity
 	}
-	return planAutomaticRoute(&t.game.Rules, player, []*Fleet{&virtual}, dest.Position, dest.MapObject.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet), MaxTurns: 20}) != nil
+	return planAutomaticRoute(&t.game.Rules, player, []*Fleet{&virtual}, dest.Position, dest.MapObject.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet), MaxTurns: 20, AllowThreat: job.Kind == "invade-load" && !job.BombingStage && !dest.Spec.HasStarbase && carriesGalleon(fleet)}) != nil
 }
 
 func passengerCruiseFleet(fleet *Fleet) bool {

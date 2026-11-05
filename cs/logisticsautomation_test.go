@@ -42,11 +42,17 @@ func TestLogisticsWaitsForEscortAndMatchesSpeed(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, transport, escort := u.Player(1), u.Fleet("Transport"), u.Fleet("Escort")
 	p.FleetIntels = []*Fleet{{MapObject: MapObject{PlayerNum: 2, Position: Vector{50, 0}}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true, PowerRating: 1}}}}
-	u.Run((*turnGenerator).planLogisticsAutomation)
+	target := *u.Planet("Home")
+	target.Num, target.PlayerNum, target.Position = 2, 2, Vector{50, 0}
+	target.Spec.HasStarbase = false
+	p.PlanetIntels = []*Planet{u.Planet("Home"), &target}
+	job := &logisticsJob{Kind: "invade", Position: target.Position}
+	prepare := func(tg *turnGenerator) { tg.prepareConvoy(p, transport, job, target.ToTarget()) }
+	u.Run(prepare)
 	require.Len(t, transport.Waypoints, 1)
-	require.Contains(t, logisticsWork(transport).Status, "Waiting")
+	require.Contains(t, job.Status, "Waiting for enough escort strength")
 	p.Automation.FleetRoles[escort.Num] = "escort"
-	u.Run((*turnGenerator).planLogisticsAutomation)
+	u.Run(prepare)
 	require.Len(t, transport.Waypoints, 2)
 	require.Len(t, escort.Waypoints, 2)
 	require.Equal(t, transport.Waypoints[1].WarpSpeed, escort.Waypoints[1].WarpSpeed)
@@ -175,7 +181,7 @@ func TestArmedCargoHullUsesOnlyFreeSpaceAfterBattle(t *testing.T) {
 	}
 }
 
-func TestMineralPickupRequestsDeliveryEscortBeforeLoading(t *testing.T) {
+func TestMineralPickupWaitsOutsideOccupiedOwnOrbitWithoutBorrowingPatrol(t *testing.T) {
 	for _, auto := range []bool{false, true} {
 		t.Run(fmt.Sprint(auto), func(t *testing.T) {
 			u := passengerUniverse(t)
@@ -190,15 +196,12 @@ func TestMineralPickupRequestsDeliveryEscortBeforeLoading(t *testing.T) {
 			}
 			saveLogisticsWork(f, &logisticsJob{Kind: "planet", TargetNum: source.Num, Position: source.Position, DeliveryNum: dest.Num, Load: Mineral{Ironium: f.Spec.CargoCapacity}})
 			u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).resolveLogisticsAutomation, (*turnGenerator).dispatchReadyLogistics)
-			if auto {
-				require.Positive(t, f.Cargo.Ironium)
-				require.Greater(t, len(f.Waypoints), 1)
-				require.Equal(t, "escort", p.Automation.FleetRoles[e.Num])
-			} else {
-				require.Zero(t, f.CargoMass())
-				require.Contains(t, logisticsWork(f).Status, "escort")
-				require.Empty(t, p.Automation.FleetRoles[e.Num])
-			}
+			require.Zero(t, f.CargoMass())
+			require.Empty(t, e.GetTag(escortTag))
+			p.FleetIntels = nil
+			u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).resolveLogisticsAutomation, (*turnGenerator).dispatchReadyLogistics)
+			require.Positive(t, f.Cargo.Ironium)
+			require.Greater(t, len(f.Waypoints), 1)
 		})
 	}
 }

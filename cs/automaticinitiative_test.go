@@ -86,7 +86,9 @@ func TestEmptyOffTerritoryFreighterWithdrawsInsteadOfWaitingForEscort(t *testing
 	p, f := u.Player(1), u.Fleet("Transport")
 	f.Position = Vector{40, 0}
 	f.OrbitingPlanetNum = 0
-	p.FleetIntels = []*Fleet{patrolTestEnemy(10000, p)}
+	enemy := patrolTestEnemy(10000, p)
+	enemy.Position = u.Game.Salvages[0].Position
+	p.FleetIntels = []*Fleet{enemy}
 	u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture)
 	require.Equal(t, "return", logisticsWork(f).Kind)
 	require.Greater(t, len(f.Waypoints), 1)
