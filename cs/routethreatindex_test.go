@@ -24,7 +24,12 @@ func TestPlanningThreatIndexPreservesExactThreatValues(t *testing.T) {
 		p.Automation.EscortMarginLY = margin
 		for n := 0; n < 300; n++ {
 			from, to := Vector{rng.Intn(300), rng.Intn(300)}, Vector{rng.Intn(300), rng.Intn(300)}
-			require.Equal(t, originalKnownRouteThreat(p, from, to), knownRouteThreat(p, from, to))
+			for _, civilian := range []bool{false, true} {
+				expected := uncachedRouteThreat(p, from, to, civilian)
+				for range 2 {
+					require.Equal(t, expected, routeThreat(p, from, to, civilian))
+				}
+			}
 		}
 	}
 	u.Run((*turnGenerator).disablePlanningThreatIndex)

@@ -259,6 +259,7 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 			index.built = true
 			index.margin = player.Automation.escortMargin()
 			index.threats = nil
+			index.routes = make(map[routeThreatKey]int)
 			for _, intel := range player.FleetIntels {
 				if intel == nil || intel.Delete || intel.ReportAge != 0 || intel.PlayerNum == player.Num || player.IsFriend(intel.PlayerNum) || !patrolReportedCombatant(player, intel) {
 					continue
@@ -268,12 +269,24 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 				index.threats = append(index.threats, threat)
 			}
 		}
+		key := routeThreatKey{from: from, to: to, civilian: civilian}
+		if civilian {
+			// Civilian threats depend on the arrival point, not the corridor.
+			key.from = Vector{}
+		}
+		if value, ok := index.routes[key]; ok {
+			return value
+		}
 		total := 0
 		for _, threat := range index.threats {
 			if threat.threatensRoute(from, to, civilian) {
 				total = min(1_000_000_000, total+threat.power)
 			}
 		}
+		if len(index.routes) >= 65536 {
+			clear(index.routes)
+		}
+		index.routes[key] = total
 		return total
 	}
 	return uncachedRouteThreat(player, from, to, civilian)
