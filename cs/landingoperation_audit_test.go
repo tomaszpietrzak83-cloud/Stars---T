@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -40,6 +41,19 @@ func TestLandingPlannerOnCopiedSnapshot(t *testing.T) {
 	tg.refreshAutomaticFuelIntel()
 	tg.resumeCompletedEvades()
 	tg.migrateLegacyLandings()
+	var collector *Fleet
+	var collectorOrders []byte
+	if value := os.Getenv("STARS_LANDING_COLLECTOR"); value != "" {
+		num, err := strconv.Atoi(value)
+		require.NoError(t, err)
+		collector = g.getFleet(1, num)
+		require.NotNil(t, collector)
+		require.Zero(t, collector.CargoMass())
+		require.NotNil(t, logisticsWork(collector))
+		require.Equal(t, "salvage", logisticsWork(collector).Kind)
+		collectorOrders, err = json.Marshal(collector.FleetOrders)
+		require.NoError(t, err)
+	}
 	before := 0
 	for _, f := range g.getFleets(1) {
 		before += f.Cargo.Colonists
@@ -47,6 +61,15 @@ func TestLandingPlannerOnCopiedSnapshot(t *testing.T) {
 	start := time.Now()
 	t.Log("starting landing planner")
 	tg.planLandingOperations()
+	if collector != nil {
+		require.False(t, landingManaged(collector), "a real empty collector must keep its pickup")
+		require.NotNil(t, logisticsWork(collector))
+		require.Equal(t, "salvage", logisticsWork(collector).Kind)
+		orders, err := json.Marshal(collector.FleetOrders)
+		require.NoError(t, err)
+		require.JSONEq(t, string(collectorOrders), string(orders))
+		t.Logf("COLLECTOR preserved fleet=%d target=%d", collector.Num, logisticsWork(collector).TargetNum)
+	}
 	after, ops, members := 0, 0, 0
 	for _, f := range g.getFleets(1) {
 		after += f.Cargo.Colonists
