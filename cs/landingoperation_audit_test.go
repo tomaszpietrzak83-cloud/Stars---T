@@ -43,6 +43,19 @@ func TestLandingPlannerOnCopiedSnapshot(t *testing.T) {
 	tg.migrateLegacyLandings()
 	var collector *Fleet
 	var collectorOrders []byte
+	retargeted := map[int]int{}
+	if values := os.Getenv("STARS_LANDING_RETARGET"); values != "" {
+		for _, value := range strings.Split(values, ",") {
+			num, err := strconv.Atoi(value)
+			require.NoError(t, err)
+			fleet := g.getFleet(1, num)
+			require.NotNil(t, fleet)
+			require.Zero(t, fleet.CargoMass())
+			require.NotNil(t, logisticsWork(fleet))
+			require.Equal(t, "landing-load", logisticsWork(fleet).Kind)
+			retargeted[num] = logisticsWork(fleet).TargetNum
+		}
+	}
 	if value := os.Getenv("STARS_LANDING_COLLECTOR"); value != "" {
 		num, err := strconv.Atoi(value)
 		require.NoError(t, err)
@@ -61,6 +74,20 @@ func TestLandingPlannerOnCopiedSnapshot(t *testing.T) {
 	start := time.Now()
 	t.Log("starting landing planner")
 	tg.planLandingOperations()
+	for num, oldSource := range retargeted {
+		fleet := g.getFleet(1, num)
+		require.NotNil(t, fleet)
+		require.False(t, fleet.Delete)
+		require.True(t, landingManaged(fleet))
+		job := logisticsWork(fleet)
+		require.NotNil(t, job)
+		require.Equal(t, "landing-load", job.Kind)
+		require.NotEqual(t, oldSource, job.TargetNum, "blocked pickup must choose an accessible colony")
+		if fleet.Position != job.Position {
+			require.Greater(t, len(fleet.Waypoints), 1)
+		}
+		t.Logf("RETARGET fleet=%d oldSource=%d newSource=%d", num, oldSource, job.TargetNum)
+	}
 	if collector != nil {
 		require.False(t, landingManaged(collector), "a real empty collector must keep its pickup")
 		require.NotNil(t, logisticsWork(collector))
