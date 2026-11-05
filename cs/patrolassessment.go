@@ -72,7 +72,21 @@ func patrolEncounterReports(p *Player, target *Fleet, point Vector, horizon floa
 }
 
 func (e *patrolEvaluator) assess(p *Player, own []*Fleet, target *Fleet, point Vector, horizon float64) patrolAssessment {
-	return e.assessEncounter(p, own, patrolEncounterReports(p, target, point, horizon), point, horizon)
+	reports := patrolEncounterReports(p, target, point, horizon)
+	// A relief force must remain viable after the enemy repairs during assembly.
+	// Clone reports so this conservative forecast never changes observed intel.
+	if urgentPatrolTarget(p, target) && slices.ContainsFunc(own, func(f *Fleet) bool { return f.Position != point }) {
+		for i, report := range reports {
+			copy := *report
+			copy.Tokens = slices.Clone(report.Tokens)
+			for j := range copy.Tokens {
+				copy.Tokens[j].Damage = 0
+				copy.Tokens[j].QuantityDamaged = 0
+			}
+			reports[i] = &copy
+		}
+	}
+	return e.assessEncounter(p, own, reports, point, horizon)
 }
 
 func (e *patrolEvaluator) assessEncounter(p *Player, own []*Fleet, reports []*Fleet, point Vector, horizon float64) patrolAssessment {

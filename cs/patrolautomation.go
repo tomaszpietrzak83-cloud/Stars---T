@@ -2,6 +2,7 @@ package cs
 
 import (
 	"encoding/json"
+	"maps"
 	"math"
 	"slices"
 	"sort"
@@ -30,11 +31,23 @@ type patrolJob struct {
 	Status         string      `json:"status"`
 }
 
+type cachedPatrolJob struct {
+	raw string
+	job patrolJob
+}
+
 func readPatrolJob(f *Fleet) patrolJob {
-	var job patrolJob
-	if raw := f.GetTag(patrolTag); raw != "" {
-		_ = json.Unmarshal([]byte(raw), &job)
+	raw := f.GetTag(patrolTag)
+	if raw == "" {
+		return patrolJob{}
 	}
+	if f.patrolJobCache == nil || f.patrolJobCache.raw != raw {
+		var job patrolJob
+		_ = json.Unmarshal([]byte(raw), &job)
+		f.patrolJobCache = &cachedPatrolJob{raw: raw, job: job}
+	}
+	job := f.patrolJobCache.job
+	job.SupportDesigns = maps.Clone(job.SupportDesigns)
 	return job
 }
 func savePatrolJob(f *Fleet, job patrolJob) {
