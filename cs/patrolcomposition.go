@@ -54,6 +54,13 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		return
 	}
 	group := []*Fleet{leader}
+	result := p.patrolEvaluator.assess(p, group, enemy, point, 1)
+	// The candidate loop cannot run once its native forecast budget is spent.
+	// Avoid computing hundreds of routes that would immediately be discarded.
+	if !result.Ready && p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
+		t.disperseUnreadyPatrol(p, leader, enemy, job)
+		return
+	}
 	type candidate struct {
 		fleet *Fleet
 		route *expeditionRoute
@@ -80,7 +87,6 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		}
 		return a.fleet.Num - b.fleet.Num
 	})
-	result := p.patrolEvaluator.assess(p, group, enemy, point, 1)
 	checks := 0
 	maxChecks := 32
 	urgent := urgentPatrolTarget(p, enemy)
