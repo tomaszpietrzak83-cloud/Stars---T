@@ -33,6 +33,7 @@ const None = 0
 // in the fleet. Fleets also have orders that can be updated by the player, in the form of waypoints and the battle plan.
 // Fleets are one of the commandable MapObjects in the game.
 type Fleet struct {
+	patrolJobCache *cachedPatrolJob
 	GameDBObject
 	MapObject
 	FleetOrders
