@@ -4,6 +4,7 @@ package cs
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -287,6 +288,44 @@ func TestLandingReinforcementsFinishExistingArmyBeforeStartingAnother(t *testing
 	require.Nil(t, readLandingOperation(member))
 	require.Equal(t, fmt.Sprint(leader.Num), member.GetTag(landingMemberTag))
 	require.Positive(t, member.Cargo.Colonists)
+}
+
+func TestLandingProtectionCannotBeReassignedByOtherPlanners(t *testing.T) {
+	for _, role := range []string{"patrol", "escort"} {
+		t.Run(role, func(t *testing.T) {
+			u := landingOperationUniverse(t)
+			p, guard, client := u.Player(1), u.Fleet("Cover"), u.Fleet("Transport15")
+			p.Automation.FleetRoles[guard.Num] = role
+			p.Automation.FleetRoles[client.Num] = "bomber"
+			u.Run((*turnGenerator).startPatrolEvaluation, (*turnGenerator).planLandingOperations)
+			require.True(t, landingManaged(guard))
+			orders := slices.Clone(guard.Waypoints)
+			assertReserved := func() {
+				t.Helper()
+				require.True(t, landingManaged(guard))
+				require.Equal(t, role, p.Automation.FleetRoles[guard.Num])
+				require.Equal(t, orders, guard.Waypoints)
+				require.Empty(t, guard.GetTag(escortTag))
+				require.Empty(t, guard.GetTag(bomberBorrowTag))
+				require.Nil(t, readTankerJob(guard))
+				require.Zero(t, readPatrolJob(guard).Leader)
+			}
+			u.Run(func(tg *turnGenerator) { tg.assignBomberProtection(p, client, u.Planet("Target").Position, true) })
+			assertReserved()
+			u.Run(func(tg *turnGenerator) {
+				job := &logisticsJob{Kind: "bomber", Position: Vector{10, 0}}
+				tg.prepareConvoyWithMinimum(p, client, job, MapObjectTarget{}, 1)
+			})
+			assertReserved()
+			u.Run((*turnGenerator).planEscortStaging, (*turnGenerator).planPatrolAutomation)
+			assertReserved()
+			client.Position, client.Fuel = Vector{5, 0}, 0
+			saveAutomaticFuelRequest(client, automaticFuelRequest{Destination: Vector{}, Members: []int{client.Num}, Urgent: true})
+			u.Run((*turnGenerator).planAutomaticTankers, (*turnGenerator).releaseCombatCruiseNetworks)
+			assertReserved()
+			require.False(t, automaticFuelDonor(p, guard))
+		})
+	}
 }
 
 func TestLandingReservationsUseAlternativePopulationSources(t *testing.T) {

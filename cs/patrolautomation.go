@@ -528,6 +528,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 			return a < b
 		})
 		for _, fleet := range fleets {
+			if landingManaged(fleet) {
+				continue
+			}
 			job := readPatrolJob(fleet)
 			if defencePatrolCommitted(player, fleet) {
 				continue

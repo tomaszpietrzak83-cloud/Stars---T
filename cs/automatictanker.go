@@ -681,6 +681,9 @@ func (t *turnGenerator) resolveAutomaticTankers() {
 }
 
 func automaticFuelDonor(player *Player, fleet *Fleet) bool {
+	if landingManaged(fleet) {
+		return false
+	}
 	role := player.Automation.FleetRoles[fleet.Num]
 	return role == "tanker" || role == "patrol" || role == "escort" && fleet.GetTag(escortTag) == "" && fleet.GetTag(bomberBorrowTag) == "" && !player.FleetInActiveAssembly(fleet)
 }
