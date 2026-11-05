@@ -169,6 +169,9 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		e.Hits++
 		return result
 	}
+	if e.Work >= e.Limit {
+		return patrolAssessment{Reason: "Native forecast budget exhausted; concentration retained"}
+	}
 	modeled := own
 	if merge {
 		merged := patrolMergedFormation(e.rules, p, own)
