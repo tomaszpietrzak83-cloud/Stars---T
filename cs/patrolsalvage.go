@@ -2,7 +2,6 @@ package cs
 
 import (
 	"encoding/json"
-	"math"
 	"slices"
 	"strconv"
 )
@@ -97,11 +96,14 @@ func (t *turnGenerator) planPatrolSalvage() {
 			}
 		}
 		collectors := func(position Vector, amount, salvageNum int) (*Fleet, *expeditionRoute) {
+			capacityLimit := t.salvageCollectorCapacityLimit(p, amount)
 			var best *Fleet
 			var route *expeditionRoute
-			score := math.Inf(1)
 			for _, f := range t.game.getFleets(p.Num) {
 				role := p.Automation.FleetRoles[f.Num]
+				if f.Spec.CargoCapacity > capacityLimit {
+					continue
+				}
 				work := logisticsWork(f)
 				protectedWork := work != nil && !(salvageNum != 0 && work.Kind == "return" && f.CargoMass() == 0)
 				if salvageNum == 0 && f.GetTag(containmentTag) != "" {
@@ -127,14 +129,8 @@ func (t *turnGenerator) planPatrolSalvage() {
 				if candidate == nil || candidate.WaitForFuel {
 					continue
 				}
-				// Favor the smallest sufficient hold; oversized and undersized collectors
-				// are both penalized. Nearby small patrol holds can beat large freighters.
-				value := float64(candidate.Turns)*10 + math.Abs(math.Log2(float64(f.Spec.CargoCapacity)/float64(max(1, amount))))*20
-				if f.Spec.CargoCapacity < amount {
-					value += 30
-				}
-				if value < score || value == score && (best == nil || f.Num < best.Num) {
-					best, route, score = f, candidate, value
+				if best == nil || betterSalvageCollector(f.Spec.CargoCapacity, candidate.Turns, f.Num, best.Spec.CargoCapacity, route.Turns, best.Num, amount) {
+					best, route = f, candidate
 				}
 			}
 			return best, route
@@ -240,4 +236,49 @@ func (t *turnGenerator) planPatrolSalvage() {
 			f.SetTag(fuelStatusTag, "Approaching a superior patrol interception to collect debris if the battle produces it")
 		}
 	}
+}
+
+// Among funded routes within the pickup horizon, use the smallest hold that
+// carries the debris in one trip. If none suffices, maximize the pickup first.
+func betterSalvageCollector(capacity, turns, num, oldCapacity, oldTurns, oldNum, amount int) bool {
+	enough, oldEnough := capacity >= amount, oldCapacity >= amount
+	if enough != oldEnough {
+		return enough
+	}
+	if capacity != oldCapacity {
+		if enough {
+			return capacity < oldCapacity
+		}
+		return capacity > oldCapacity
+	}
+	if turns != oldTurns {
+		return turns < oldTurns
+	}
+	return num < oldNum
+}
+
+func estimatedPatrolDebris(p *Player, enemy *Fleet) int {
+	amount := 0
+	for _, tok := range enemy.Tokens {
+		if d := p.GetShipDesignIntel(enemy.PlayerNum, tok.DesignNum); d != nil {
+			amount += max(1, d.Spec.Cost.ToMineral().Total()) * tok.Quantity / 3
+		}
+	}
+	return max(1, amount)
+}
+
+// Keep tiny debris for small freighters even while those ships finish another
+// delivery. Otherwise a busy small fleet makes the dispatcher silently waste
+// the empire's large holds on five kilotons of wreckage.
+func (t *turnGenerator) salvageCollectorCapacityLimit(p *Player, amount int) int {
+	smallest := 0
+	for _, f := range t.game.getFleets(p.Num) {
+		if f.Delete || f.Starbase || p.Automation.FleetRoles[f.Num] != "freighter" || f.Spec.CargoCapacity < amount {
+			continue
+		}
+		if smallest == 0 || f.Spec.CargoCapacity < smallest {
+			smallest = f.Spec.CargoCapacity
+		}
+	}
+	return max(amount*2, smallest)
 }

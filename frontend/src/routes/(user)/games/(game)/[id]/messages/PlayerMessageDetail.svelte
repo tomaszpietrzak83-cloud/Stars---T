@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import BattleLosses from '#lib/components/game/battle/BattleLosses.svelte';
  import { getBattleRecordDetails } from '#lib/types/Battle.js';
  import { noteworthyBattle } from '#lib/types/BattleSummary.js';
@@ -8,13 +9,21 @@
  import { techs } from '#lib/services/Stores.js';
 	import FallbackMessageDetail from './FallbackMessageDetail.svelte';
 
-	const { game, player, universe } = getGameContext();
+	const { game, player, universe, gotoBattle } = getGameContext();
 
 	type Props = {
 		message: PlayerMessage;
 	};
 
 	let { message }: Props = $props();
+
+	async function showBattleOnMap(battleNum: number) {
+		const mapPath = `/games/${$game.id}`;
+		if (window.location.pathname !== mapPath) {
+			await goto(mapPath);
+		}
+		gotoBattle(battleNum, false);
+	}
 </script>
 
 {#if message.text}
@@ -95,11 +104,30 @@
 	<FallbackMessageDetail {message} />
 {/if}
 
-{#if message.type===PlayerMessageType.BATTLE_REPORTS}
- {@const minor = $universe.battleRecords.filter(b => !noteworthyBattle(b, $universe)).length}
- {#if minor}<span>{minor} minor {minor === 1 ? 'battle' : 'battles'} without ship losses.</span>{/if}
- {#each $universe.battleRecords.filter(b => noteworthyBattle(b, $universe)) as battle (battle.num)}
-  {@const details = getBattleRecordDetails(battle, $player, $universe)}
-  <a class="btn btn-sm btn-outline m-1" href={`/games/${$game.id}/battles/${battle.num}`} aria-label={`Battle ${battle.num}: enemy losses ${details.theirDead}, our losses ${details.ourDead}`}><BattleLosses ownMass={details?.ourDeadTonnage} enemyMass={details?.theirDeadTonnage} own={details.ourDead} enemy={details.theirDead} /></a>
- {/each}
+{#if message.type === PlayerMessageType.BATTLE_REPORTS}
+	{@const minor = $universe.battleRecords.filter((battle) => !noteworthyBattle(battle, $universe)).length}
+	{#if minor}<span>{minor} minor {minor === 1 ? 'battle' : 'battles'} without ship losses.</span>{/if}
+	{#each $universe.battleRecords.filter((battle) => noteworthyBattle(battle, $universe)) as battle (battle.num)}
+		{@const details = getBattleRecordDetails(battle, $player, $universe)}
+		<span class="m-1 inline-flex items-center gap-1 rounded border border-base-content/30 p-1 align-middle text-xs">
+			<a
+				class="rounded px-1 py-1 hover:bg-base-200"
+				href={`/games/${$game.id}/battles/${battle.num}`}
+				aria-label={`Battle ${battle.num}: enemy losses ${details.theirDead}, our losses ${details.ourDead}`}
+			>
+				<BattleLosses
+					ownMass={details.ourDeadTonnage}
+					enemyMass={details.theirDeadTonnage}
+					own={details.ourDead}
+					enemy={details.theirDead}
+				/>
+			</a>
+			<button
+				type="button"
+				class="btn btn-outline btn-square size-7 min-h-0 shrink-0 text-xs"
+				aria-label={`Go! Show battle ${battle.num} on the map`}
+				onclick={() => showBattleOnMap(battle.num)}>Go!</button
+			>
+		</span>
+	{/each}
 {/if}

@@ -2,7 +2,6 @@ package cs
 
 import (
 	"encoding/json"
-	"math"
 )
 
 // A collector must start approaching before the final one-turn interception.
@@ -19,9 +18,10 @@ func (t *turnGenerator) stagePatrolCollector(p *Player, hunter, enemy *Fleet, ba
 	}
 	var chosen *Fleet
 	var route *expeditionRoute
-	score := math.Inf(1)
+	amount := estimatedPatrolDebris(p, enemy)
+	capacityLimit := t.salvageCollectorCapacityLimit(p, amount)
 	for _, f := range t.game.getFleets(p.Num) {
-		if f.Delete || f.Starbase || p.Automation.FleetRoles[f.Num] != "freighter" || f.CargoMass() != 0 || f.Spec.CargoCapacity <= 0 || f.InDesignMaintenance() || f.InAutomaticSafety() || f.GetTag("maintenance-pending") != "" || fuelNetworkManaged(f) || readTankerJob(f) != nil || f.GetTag(tankerAwaitTag) != "" || p.FleetInActiveAssembly(f) || f.GetTag(traderConvoyTag) != "" || f.GetTag(anticipatedSalvageTag) != "" {
+		if f.Spec.CargoCapacity > capacityLimit || f.Delete || f.Starbase || p.Automation.FleetRoles[f.Num] != "freighter" || f.CargoMass() != 0 || f.Spec.CargoCapacity <= 0 || f.InDesignMaintenance() || f.InAutomaticSafety() || f.GetTag("maintenance-pending") != "" || fuelNetworkManaged(f) || readTankerJob(f) != nil || f.GetTag(tankerAwaitTag) != "" || p.FleetInActiveAssembly(f) || f.GetTag(traderConvoyTag) != "" || f.GetTag(anticipatedSalvageTag) != "" {
 			continue
 		}
 		if work := logisticsWork(f); work != nil && work.Kind != "return" {
@@ -36,9 +36,8 @@ func (t *turnGenerator) stagePatrolCollector(p *Player, hunter, enemy *Fleet, ba
 		if candidate == nil || candidate.WaitForFuel {
 			continue
 		}
-		cost := float64(candidate.Turns)*100 + f.Position.DistanceTo(position)
-		if cost < score {
-			chosen, route, score = f, candidate, cost
+		if chosen == nil || betterSalvageCollector(f.Spec.CargoCapacity, candidate.Turns, f.Num, chosen.Spec.CargoCapacity, route.Turns, chosen.Num, amount) {
+			chosen, route = f, candidate
 		}
 	}
 	if chosen == nil {

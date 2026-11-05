@@ -9,9 +9,12 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/sirgwain/craig-stars/config"
 	"github.com/sirgwain/craig-stars/cs"
@@ -53,8 +56,13 @@ func TestCopiedTransportCampaign(t *testing.T) {
 	conn := db.NewConn()
 	require.NoError(t, conn.Connect(context.Background(), &cfg))
 	defer conn.Close()
+	gameID := int64(3)
+	if value := os.Getenv("STARS_TRANSPORT_CAMPAIGN_GAME"); value != "" {
+		gameID, err = strconv.ParseInt(value, 10, 64)
+		require.NoError(t, err)
+	}
 	runner := NewGameRunner(conn, cfg)
-	g, err := conn.NewReadClient().GetFullGame(t.Context(), 3)
+	g, err := conn.NewReadClient().GetFullGame(t.Context(), gameID)
 	require.NoError(t, err)
 	year := g.Year
 	owners := map[int]int{}
@@ -62,11 +70,22 @@ func TestCopiedTransportCampaign(t *testing.T) {
 		owners[planet.Num] = planet.PlayerNum
 	}
 	captures := 0
+	protectedColonyLost := false
+	if profile := os.Getenv("STARS_CAMPAIGN_CPU_PROFILE"); profile != "" {
+		require.Contains(t, strings.ToLower(filepath.ToSlash(profile)), "/audit-results/")
+		file, err := os.Create(profile)
+		require.NoError(t, err)
+		require.NoError(t, pprof.StartCPUProfile(file))
+		var once sync.Once
+		stop := func() { once.Do(func() { pprof.StopCPUProfile(); file.Close() }) }
+		timer := time.AfterFunc(90*time.Second, stop)
+		defer func() { timer.Stop(); stop() }()
+	}
 	for step := 0; step <= turns; step++ {
 		if step > 0 {
-			_, err = runner.GenerateTurn(3)
+			_, err = runner.GenerateTurn(gameID)
 			require.NoError(t, err)
-			g, err = conn.NewReadClient().GetFullGame(t.Context(), 3)
+			g, err = conn.NewReadClient().GetFullGame(t.Context(), gameID)
 			require.NoError(t, err)
 			for _, planet := range g.Planets {
 				if planet.PlayerNum == 1 && owners[planet.Num] != 0 && owners[planet.Num] != 1 {
@@ -113,8 +132,44 @@ func TestCopiedTransportCampaign(t *testing.T) {
 			}
 		}
 		t.Logf("CAMPAIGN year=%d colonies=%d surfacePopulation=%d aboardAllFleets=%d freighters=%d", g.Year, colonies, pop, aboard, freighters)
+		if value := os.Getenv("STARS_REQUIRE_DEFENDED_PLANET"); value != "" {
+			num, err := strconv.Atoi(value)
+			require.NoError(t, err)
+			for _, planet := range g.Planets {
+				if planet.Num == num {
+					protectedColonyLost = protectedColonyLost || planet.PlayerNum != 1
+					bombing := 0
+					for _, fleet := range g.Fleets {
+						if !fleet.Delete && fleet.PlayerNum != 1 && fleet.Position == planet.Position && fleet.Spec.Bomber {
+							bombing++
+						}
+					}
+					t.Logf("COLONY_DEFENCE year=%d owner=%d population=%d hostileBomberFleets=%d", g.Year, planet.PlayerNum, planet.GetPopulation(), bombing)
+				}
+			}
+		}
 	}
 	after, err := os.ReadFile(absolute)
+	if value := os.Getenv("STARS_REQUIRE_DEFENDED_PLANET"); value != "" {
+		require.False(t, protectedColonyLost, "defence must prevent losing the colony, not merely recolonize it later")
+		num, parseErr := strconv.Atoi(value)
+		require.NoError(t, parseErr)
+		found := false
+		for _, planet := range g.Planets {
+			if planet.Num == num {
+				found = true
+				require.Equal(t, 1, planet.PlayerNum, "defended colony must survive")
+				require.Positive(t, planet.Cargo.Colonists)
+				for _, fleet := range g.Fleets {
+					if !fleet.Delete && fleet.PlayerNum != 1 && fleet.Position == planet.Position {
+						require.False(t, fleet.Spec.Bomber, "bombing fleet still occupies defended colony")
+					}
+				}
+				t.Logf("DEFENDED planet=%s year=%d population=%d", planet.Name, g.Year, planet.GetPopulation())
+			}
+		}
+		require.True(t, found)
+	}
 	require.NoError(t, err)
 	require.Equal(t, beforeHash, sha256.Sum256(after), "audit input must remain unchanged")
 	if os.Getenv("STARS_REQUIRE_RECAPTURES") == "1" {

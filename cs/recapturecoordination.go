@@ -20,6 +20,9 @@ func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) 
 	assigned := map[int]bool{}
 	scouts := []*Fleet{}
 	for _, f := range fleets {
+		if landingManaged(f) {
+			continue
+		}
 		if j := readScoutRecon(f); j != nil && enemyApproachingColony(p, p.GetFleetIntel(j.Enemy, j.Target)) {
 			continue
 		}

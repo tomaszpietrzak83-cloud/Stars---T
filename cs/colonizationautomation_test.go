@@ -40,7 +40,7 @@ func TestClaimAdjusterColonizersRankByMaximumAvailableTerraforming(t *testing.T)
 			a.Hab, a.BaseHab = Hab{70, 50, 50}, Hab{50, 50, 50}
 			b.Hab, b.BaseHab = Hab{50, 50, 50}, Hab{50 + ability + 10, 50, 50}
 			require.Less(t, p.Race.GetPlanetHabitability(a.Hab), p.Race.GetPlanetHabitability(b.Hab))
-			qualityA, qualityB := colonyPlanetQuality(p, a), colonyPlanetQuality(p, b)
+			qualityA, qualityB := prospectivePlanetQuality(p, a), prospectivePlanetQuality(p, b)
 			require.Equal(t, 100, qualityA)
 			require.Positive(t, qualityB)
 			require.Greater(t, qualityA, qualityB)
@@ -152,17 +152,17 @@ func TestAutomaticColonizationLoadsSettlersAndCompletesNormalColonization(t *tes
 	require.Equal(t, p.Num, u.Planet("Near").PlayerNum)
 	require.Positive(t, u.Planet("Near").Cargo.Colonists)
 }
-func TestAutomaticColonizationSkipsUnknownRedAndManualReservedWorlds(t *testing.T) {
+func TestAutomaticColonizationSkipsUnknownAndManualReservedWorlds(t *testing.T) {
 	u := colonizerUniverse(t)
 	p, f := u.Player(1), u.Fleet("Colony Ship")
 	u.Planet("Far").ReportAge = ReportAgeUnexplored
-	u.Planet("Near").Hab = Hab{0, 0, 0}
+	u.Planet("Near").ReportAge = ReportAgeUnexplored
 	u.Run((*turnGenerator).planColonizationAutomation)
 	require.Zero(t, readColonizationJob(f).TargetNum)
 	for _, wp := range f.Waypoints {
 		require.NotEqual(t, WaypointTaskColonize, wp.Task)
 	}
-	u.Planet("Near").Hab = Hab{50, 50, 50}
+	u.Planet("Near").ReportAge = 0
 	u.Planet("Far").ReportAge = 0
 	other, err := u.turn.buildFleet(p, u.Planet("Home"), ShipToken{DesignNum: f.Tokens[0].DesignNum, Quantity: 1, design: f.Tokens[0].design}, nil, nil)
 	require.NoError(t, err)
@@ -267,4 +267,52 @@ func TestColonizerUnloadsAtAlreadyOwnedTargetAndKeepsRole(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAutomaticColonizersUseRedWorldsOnlyAsFallback(t *testing.T) {
+	u := colonizerUniverse(t)
+	p, fleet := u.Player(1), u.Fleet("Colony Ship")
+	red, green := u.Planet("Near"), u.Planet("Far")
+	red.Hab, red.BaseHab = Hab{100, 100, 100}, Hab{100, 100, 100}
+	p.Automation.FleetRoles[fleet.Num] = "colonizer:nearest"
+	p.Automation.PriorityPlanets = map[int]bool{red.Num: true}
+
+	u.Run((*turnGenerator).planColonizationAutomation)
+	require.Equal(t, green.Num, readColonizationJob(fleet).TargetNum)
+
+	green.PlayerNum = 2
+	u.Run((*turnGenerator).planColonizationAutomation)
+	require.Equal(t, red.Num, readColonizationJob(fleet).TargetNum)
+	fleet.Position = red.Position
+	fleet.Waypoints = fleet.Waypoints[len(fleet.Waypoints)-1:]
+	u.Run((*turnGenerator).fleetColonize, (*turnGenerator).resolveColonistDrops)
+	require.True(t, red.OwnedBy(p.Num))
+	require.False(t, suitableColony(p, red))
+	require.Empty(t, red.ProductionQueue)
+}
+
+func TestAutomaticRedColonyStartsPaidTerraforming(t *testing.T) {
+	u := colonizerUniverse(t)
+	p, fleet := u.Player(1), u.Fleet("Colony Ship")
+	p.WithTechLevels(TechLevel{10, 10, 10, 10, 10, 10})
+	red := u.Planet("Near")
+	found := false
+	for grav := 0; grav <= 100; grav++ {
+		red.Hab, red.BaseHab = Hab{grav, 50, 50}, Hab{grav, 50, 50}
+		if p.Race.GetPlanetHabitability(red.Hab) < 0 && terraformedPlanetQuality(p, red) > 0 {
+			found = true
+			break
+		}
+	}
+	require.True(t, found)
+	u.Planet("Far").PlayerNum = 2
+	u.Run((*turnGenerator).planColonizationAutomation)
+	require.Equal(t, red.Num, readColonizationJob(fleet).TargetNum)
+	fleet.Position = red.Position
+	fleet.Waypoints = fleet.Waypoints[len(fleet.Waypoints)-1:]
+	u.Run((*turnGenerator).fleetColonize, (*turnGenerator).resolveColonistDrops)
+	require.True(t, red.OwnedBy(p.Num))
+	require.False(t, suitableColony(p, red))
+	require.NotEmpty(t, red.ProductionQueue)
+	require.Equal(t, QueueItemTypeAutoMinTerraform, red.ProductionQueue[0].Type)
 }

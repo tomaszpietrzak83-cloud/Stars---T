@@ -17,7 +17,7 @@ func (t *turnGenerator) patrolGatheringCleanup(p *Player, leader, main *Fleet, j
 	}
 	for _, f := range group {
 		j := readPatrolJob(f)
-		if j.CleanupUsed || len(f.Waypoints) < 2 || !j.Provisional {
+		if !j.Provisional {
 			continue
 		}
 		rally := j.Rally
@@ -30,7 +30,7 @@ func (t *turnGenerator) patrolGatheringCleanup(p *Player, leader, main *Fleet, j
 			by = t.game.Year + direct.Turns
 		}
 		// Already overdue means return to the pack, not another detour.
-		allowed := min(direct.Turns, by-t.game.Year)
+		allowed := by - t.game.Year
 		if allowed < 1 {
 			continue
 		}

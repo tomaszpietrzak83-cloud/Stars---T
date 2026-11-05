@@ -19,8 +19,12 @@ func (t *turnGenerator) planTerraformingWorlds() {
 				}
 			}
 			if !found {
-				planet.ProductionQueue = append([]ProductionQueueItem{{Type: QueueItemTypeAutoMinTerraform, Quantity: 100, Note: "Automatic minimum terraforming for a designated colony"}}, planet.ProductionQueue...)
+				queueMinimumTerraforming(planet)
 			}
 		}
 	}
+}
+
+func queueMinimumTerraforming(planet *Planet) {
+	planet.ProductionQueue = append([]ProductionQueueItem{{Type: QueueItemTypeAutoMinTerraform, Quantity: 100, Note: "Automatic minimum terraforming for a designated colony"}}, planet.ProductionQueue...)
 }

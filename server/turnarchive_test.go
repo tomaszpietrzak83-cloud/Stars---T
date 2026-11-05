@@ -3,6 +3,7 @@ package server
 import (
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"github.com/sirgwain/craig-stars/cs"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -42,4 +43,18 @@ func TestTurnArchivesPreserveOrdersAndResultsWithoutMutatingGame(t *testing.T) {
 	require.Len(t, saved.Game.Players[0].PlanetIntels, 1)
 	require.Empty(t, saved.Game.Players[1].PlanetIntels)
 	require.Len(t, game.Players[1].PlanetIntels, 1)
+}
+
+func TestHostGameArchivesInitialTurn(t *testing.T) {
+	database, cfg := connectSubmitTestDB(t)
+	cfg.Database.Filename = filepath.Join(t.TempDir(), "data.db")
+	cfg.Game.TurnArchives = true
+	user, err := database.NewReadWriteClient().CreateUser(t.Context(), cs.NewUser("turn-archive", "pw", "", cs.RoleUser))
+	require.NoError(t, err)
+	game, err := NewGameRunner(database, cfg).HostGame(user.ID, cs.NewGameSettings().WithHost(cs.Humanoids()))
+	require.NoError(t, err)
+	pattern := fmt.Sprintf("turn-archives/game-%d/year-%d-result-*.json.gz", game.ID, game.Year)
+	files, err := filepath.Glob(filepath.Join(filepath.Dir(cfg.Database.Filename), pattern))
+	require.NoError(t, err)
+	require.Len(t, files, 1)
 }

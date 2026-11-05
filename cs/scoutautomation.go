@@ -112,7 +112,7 @@ func (t *turnGenerator) planScoutAutomation() {
 		}
 		quota := max(1, min(32, unknown/max(1, active)))
 		for _, fleet := range fleets {
-			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "scout" || fleet.GetTag(tankerAwaitTag) != "" {
+			if landingManaged(fleet) || fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "scout" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
 			if colonyRecon[fleet.Num] {

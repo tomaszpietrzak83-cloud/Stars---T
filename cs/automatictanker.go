@@ -164,6 +164,9 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			}
 			group := convoyMembers(player, fleet, t.game.getFleets(player.Num))
 			if len(fleet.Waypoints) < 2 {
+				if landingManaged(fleet) {
+					continue
+				}
 				if fleet.GetTag(anticipatedSalvageTag) != "" {
 					continue
 				}

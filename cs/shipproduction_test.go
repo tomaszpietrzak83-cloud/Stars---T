@@ -161,3 +161,46 @@ func TestEmpireProductionValidatesRoleAndAvailableDesign(t *testing.T) {
 	require.Error(t, err)
 	require.Error(t, validateProductionAutoRoles(p, []ProductionQueueItem{{Type: QueueItemTypeMine, Tags: Tags{ProductionAutoRoleTag: "scout"}}}))
 }
+
+func TestEmpireProductionBalancesCurrentYearOrder(t *testing.T) {
+	u := shipProductionUniverse(t)
+	p := u.Player(1)
+	plan, err := PlanEmpireShipProduction(&u.Game.Rules, p, u.Game.Planets, p.Designs[0].Num, 5, "manual", false)
+	require.NoError(t, err)
+	require.Equal(t, 5, plan.ThisYear)
+	require.Len(t, plan.Yards, 2)
+	require.Equal(t, 3, plan.Yards[0].ThisYear)
+	require.Equal(t, 2, plan.Yards[1].ThisYear)
+}
+
+func TestBalanceShipProductionRespectsCapacityAndPriorAllocation(t *testing.T) {
+	assigned := []int{4, 0, 0, 0}
+	remaining := balanceShipProduction(assigned, []int{10, 1, 10, 0}, 6)
+	require.Zero(t, remaining)
+	require.Equal(t, []int{5, 1, 4, 0}, assigned)
+}
+
+func TestEmpireProductionReclaimsTemporaryBoostCapacityForNextOrder(t *testing.T) {
+	u := shipProductionUniverse(t)
+	p := u.Player(1)
+	d := p.Designs[0]
+	first, err := PlanEmpireShipProduction(&u.Game.Rules, p, u.Game.Planets, d.Num, 3, "manual", false)
+	require.NoError(t, err)
+	require.Equal(t, 3, first.ThisYear)
+
+	planets := make([]*Planet, 0, len(first.Yards))
+	for _, yard := range first.Yards {
+		planets = append(planets, yard.Planet)
+	}
+	baseline, err := PlanEmpireShipProduction(&u.Game.Rules, p, planets, d.Num, MaxShipProductionOrder, "manual", true)
+	require.NoError(t, err)
+	require.Positive(t, baseline.ThisYear)
+
+	for _, planet := range planets {
+		boost := ProductionQueueItem{Type: QueueItemTypeAutoMineralAlchemy, Quantity: MaxShipProductionOrder, Tags: Tags{starbaseBoostTag: "production"}}
+		planet.ProductionQueue = append([]ProductionQueueItem{boost}, planet.ProductionQueue...)
+	}
+	next, err := PlanEmpireShipProduction(&u.Game.Rules, p, planets, d.Num, MaxShipProductionOrder, "manual", true)
+	require.NoError(t, err)
+	require.Equal(t, baseline.ThisYear, next.ThisYear)
+}

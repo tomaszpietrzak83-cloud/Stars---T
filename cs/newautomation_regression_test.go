@@ -19,9 +19,9 @@ func TestColonizationIncludesRedPlanetMadeGreenByInstaforming(t *testing.T) {
 		}
 	}
 	require.NotNil(t, candidate)
-	require.Greater(t, colonyPlanetQuality(p, candidate), 0)
+	require.Greater(t, prospectivePlanetQuality(p, candidate), 0)
 	p.Race.Spec.Instaforming = false
-	require.Zero(t, colonyPlanetQuality(p, candidate))
+	require.LessOrEqual(t, prospectivePlanetQuality(p, candidate), 0)
 }
 
 func TestPartialPatrolRescueKeepsWaitingForMoreFuel(t *testing.T) {
@@ -85,7 +85,7 @@ func TestLowFuelPatrolReturnsInsteadOfContinuingItsOldRoute(t *testing.T) {
 	require.Equal(t, u.Planet("Home").Position, f.Waypoints[1].Position)
 }
 
-func TestAutomaticTransportCapturesWeakValuableEnemyColony(t *testing.T) {
+func TestLegacyInvasionGroundCombatUsesNativeRules(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{
 		{Designs: Designs(DesignTeamster, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Transport", Design: DesignTeamster.Name, At: "Home"}}},
 		{}}, Planets: []ScenarioPlanet{
@@ -100,7 +100,11 @@ func TestAutomaticTransportCapturesWeakValuableEnemyColony(t *testing.T) {
 	p.Automation.DisableMineralSupply = true
 	intel := *target
 	p.PlanetIntels = []*Planet{u.Planet("Home"), &intel}
-	u.Run((*turnGenerator).refreshAutomaticFuelIntel, (*turnGenerator).planLogisticsAutomation, (*turnGenerator).resolveLogisticsAutomation)
+	u.Run((*turnGenerator).refreshAutomaticFuelIntel, func(tg *turnGenerator) {
+		job := tg.findAutomaticInvasion(p, f)
+		require.NotNil(t, job)
+		tg.loadAutomaticInvaders(p, f, job)
+	})
 	require.NotNil(t, logisticsWork(f))
 	require.Equal(t, "invade", logisticsWork(f).Kind)
 	require.Positive(t, f.Cargo.Colonists)

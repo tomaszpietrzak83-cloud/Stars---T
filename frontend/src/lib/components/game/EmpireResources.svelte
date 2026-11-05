@@ -7,10 +7,14 @@
 			research = 0;
 		for (const planet of planets) {
 			if (playerNum <= 0 || planet.mapObject?.playerNum !== playerNum) continue;
-			resources += planet.spec?.resourcesPerYear ?? 0;
+			const spec = planet.spec;
+			if (!spec) continue;
+			resources += spec.resourcesPerYear;
+			// Empty queues spend nothing. Derive their contribution even for older saved estimates.
 			research +=
-				(planet.spec?.resourcesPerYearResearch ?? 0) +
-				(planet.spec?.resourcesPerYearResearchEstimatedLeftover ?? 0);
+				planet.planetOrders?.productionQueue.length === 0
+					? spec.resourcesPerYear
+					: spec.resourcesPerYearResearch + spec.resourcesPerYearResearchEstimatedLeftover;
 		}
 		return { resources, research };
 	});

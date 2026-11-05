@@ -23,12 +23,13 @@ func runNativeRecaptureCampaign(t *testing.T, pending bool) {
 		{Player: proposalTestPlayer(), Designs: Designs(DesignBattleBeam, DesignLongRangeScout, DesignSpaceStation, bomber, carrier), Fleets: []ScenarioFleet{
 			{Name: "Force", Design: DesignBattleBeam.Name, Quantity: 30, At: "Home"},
 			{Name: "Scout", Design: DesignLongRangeScout.Name, At: "Home"},
+			{Name: "Landing scout", Design: DesignLongRangeScout.Name, At: "Home"},
 			{Name: "Bomber", Design: bomber.Name, Quantity: 3, At: "Home"},
-			{Name: "Carrier", Design: carrier.Name, At: "Home"},
+			{Name: "Carrier", Design: carrier.Name, Quantity: 6, At: "Home"},
 		}},
 		{Designs: Designs(DesignSpaceStation)},
 	}, Planets: []ScenarioPlanet{
-		{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name, Scanner: true, Cargo: Cargo{Colonists: 10000, Ironium: 5000, Boranium: 5000, Germanium: 5000}},
+		{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name, Scanner: true, Cargo: Cargo{Colonists: 20000, Ironium: 5000, Boranium: 5000, Germanium: 5000}},
 		{Name: "Lost colony", Owner: 2, Starbase: DesignSpaceStation.Name, Position: Vector{30, 0}, Cargo: Cargo{Colonists: 1600}},
 	}})
 	p, target := u.Player(1), u.Planet("Lost colony")
@@ -39,6 +40,7 @@ func runNativeRecaptureCampaign(t *testing.T, pending bool) {
 	p.PlanetIntels = []*Planet{u.Planet("Home"), &intel}
 	p.Automation.PriorityPlanets = map[int]bool{target.Num: true}
 	p.Automation.FleetRoles = map[int]string{u.Fleet("Force").Num: "patrol", u.Fleet("Scout").Num: "scout", u.Fleet("Bomber").Num: "bomber", u.Fleet("Carrier").Num: "freighter"}
+	p.Automation.FleetRoles[u.Fleet("Landing scout").Num] = "scout"
 	p.Automation.DisableMineralSupply = true
 	b := u.Fleet("Bomber")
 	if pending {
@@ -60,6 +62,7 @@ func runNativeRecaptureCampaign(t *testing.T, pending bool) {
 			require.Equal(t, target.Num, bomberGoal(b), "arrival must retain the mission identity")
 		}
 		t.Logf("RECAPTURE_NATIVE year=%d owner=%d base=%v population=%d reportAge=%d", u.Game.Year, target.PlayerNum, target.Spec.HasStarbase, target.GetPopulation(), p.GetPlanetIntel(target.Num).ReportAge)
+		t.Logf("LANDING carrier=%v cargo=%v tags=%v",u.Fleet("Carrier").Position,u.Fleet("Carrier").Cargo,u.Fleet("Carrier").Tags)
 	}
 	require.True(t, refreshed)
 	require.True(t, cleared)

@@ -84,6 +84,11 @@ func insertShipProduction(p *Planet, d *ShipDesign, n int, role, window string) 
 // One simulation supplies a cumulative capacity curve; no per-ship forecasting.
 func productionCapacity(r *Rules, p *Player, original *Planet, d *ShipDesign, limit, years int, optimize bool) ([]int, error) {
 	planet := productionPlanetCopy(original)
+	// Adding a manufacturing order replans temporary factory and mine boosts.
+	// A boost calculated for the old queue must not consume the new order's capacity.
+	planet.ProductionQueue = slices.DeleteFunc(planet.ProductionQueue, func(item ProductionQueueItem) bool {
+		return item.Type.IsAuto() && item.GetTag(starbaseBoostTag) != ""
+	})
 	insertShipProduction(planet, d, limit, "manual", "preview")
 	for i := range planet.ProductionQueue {
 		if planet.ProductionQueue[i].GetTag(shipProductionWindowTag) == "preview" {
@@ -128,6 +133,39 @@ func productionCapacity(r *Rules, p *Player, original *Planet, d *ShipDesign, li
 		planet.grow(p)
 	}
 	return profile, nil
+}
+
+// Distribute available ships up to the same total at each yard, subject to
+// its capacity. Give leftover ships to eligible yards in the existing order.
+func balanceShipProduction(assigned, capacity []int, remaining int) int {
+	low, high := 0, MaxShipProductionOrder
+	for low < high {
+		level := (low + high + 1) / 2
+		needed := 0
+		for i, limit := range capacity {
+			needed += max(0, min(limit, level)-assigned[i])
+		}
+		if needed <= remaining {
+			low = level
+		} else {
+			high = level - 1
+		}
+	}
+	for i, limit := range capacity {
+		add := max(0, min(limit, low)-assigned[i])
+		assigned[i] += add
+		remaining -= add
+	}
+	for i, limit := range capacity {
+		if remaining == 0 {
+			break
+		}
+		if assigned[i] == low && assigned[i] < limit {
+			assigned[i]++
+			remaining--
+		}
+	}
+	return remaining
 }
 
 // PlanEmpireShipProduction never changes the supplied player or planets. First
@@ -190,14 +228,18 @@ func PlanEmpireShipProduction(r *Rules, player *Player, planets []*Planet, desig
 		}
 		return a.Planet.Num - b.Planet.Num
 	})
-	remaining := quantity
+	assigned := make([]int, len(result.Yards))
+	capacity := make([]int, len(result.Yards))
+	for i, yard := range result.Yards {
+		capacity[i] = yard.Capacity
+	}
+	remaining := balanceShipProduction(assigned, capacity, quantity)
+	result.ThisYear = quantity - remaining
 	for i := range result.Yards {
 		yard := &result.Yards[i]
-		yard.ThisYear = min(remaining, yard.Capacity)
+		yard.ThisYear = assigned[i]
 		if yard.ThisYear > 0 {
 			insertShipProduction(yard.Planet, d, yard.ThisYear, role, "current")
-			remaining -= yard.ThisYear
-			result.ThisYear += yard.ThisYear
 		}
 	}
 	if remaining > 0 && !fillThisYear {
@@ -216,23 +258,16 @@ func PlanEmpireShipProduction(r *Rules, player *Player, planets []*Planet, desig
 		}
 		for year := 1; year <= 100 && remaining > 0; year++ {
 			for i, profile := range profiles {
-				if len(profile) == 0 {
-					continue
-				}
-				yard := &result.Yards[i]
-				n := min(remaining, max(0, profile[year]-yard.Later))
-				yard.Later += n
-				remaining -= n
-				if n > 0 {
-					yard.Years = year
-				}
-				if remaining == 0 {
-					break
+				capacity[i] = result.Yards[i].ThisYear
+				if len(profile) != 0 {
+					capacity[i] += profile[year]
 				}
 			}
+			remaining = balanceShipProduction(assigned, capacity, remaining)
 		}
 		for i := range result.Yards {
 			yard := &result.Yards[i]
+			yard.Later = assigned[i] - yard.ThisYear
 			if yard.Later > 0 {
 				insertShipProduction(yard.Planet, d, yard.Later, role, "later")
 			}

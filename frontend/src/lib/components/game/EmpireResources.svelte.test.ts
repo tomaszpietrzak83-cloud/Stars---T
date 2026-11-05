@@ -40,3 +40,17 @@ it('shows zero for an empty empire', async () => {
 	await expect.element(page.getByText('Resources 0')).toBeVisible();
 	await expect.element(page.getByRole('link', { name: 'Research 0' })).toBeVisible();
 });
+
+it('counts the output of an idle planet only once with an older leftover estimate', async () => {
+	const planet = create(PlanetSchema, {
+		mapObject: { playerNum: 1 },
+		planetOrders: { productionQueue: [] },
+		spec: {
+			resourcesPerYear: 100,
+			resourcesPerYearResearch: 25,
+			resourcesPerYearResearchEstimatedLeftover: 100
+		}
+	});
+	render(EmpireResources, { planets: [planet], playerNum: 1, researchHref: '/games/1/research' });
+	await expect.element(page.getByRole('link', { name: 'Research 100' })).toBeVisible();
+});

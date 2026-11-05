@@ -1,6 +1,9 @@
 package cs
 
-import "slices"
+import (
+	"log/slog"
+	"slices"
+)
 
 func patrolCompositionValue(p *Player, group []*Fleet) float64 {
 	value := 0.0
@@ -36,6 +39,10 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	}
 	point := patrolInterceptPosition(enemy)
 	unknown := patrolNeedsRecon(p, enemy)
+	if unknown {
+		t.disperseUnreadyPatrol(p, leader, enemy, job)
+		return
+	}
 	// An already assembled local subset can launch immediately. Promised
 	// reinforcements are not part of this readiness decision.
 	if !unknown && t.launchLocalPatrol(p, leader, enemy, job, existing) {
@@ -70,48 +77,52 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	})
 	result := p.patrolEvaluator.assess(p, group, enemy, point, 1)
 	checks := 0
-	reconLimit := t.reconPatrolReservation(p)
+	maxChecks := 32
+	if urgentPatrolTarget(p, enemy) {
+		maxChecks = 96
+	}
 	for _, candidate := range candidates {
 		support, route := candidate.fleet, candidate.route
-		if checks >= 32 || p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
+		if checks >= maxChecks || p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
 			break
 		}
 		trial := append(slices.Clone(group), support)
-		if unknown {
-			// Useful surplus can gather while equipment reconnaissance proceeds.
-			if patrolFormationShips(group) >= reconLimit || patrolGroupPower(group) >= patrolThreat(p, enemy)*2 && len(group) >= 3 {
-				break
-			}
-			if patrolFormationShips(trial) > reconLimit {
-				continue
-			}
-			group = trial
-			continue
-		}
 		checks++
 		next := p.patrolEvaluator.assess(p, trial, enemy, point, 1)
 		opportunity := patrolCompositionValue(p, []*Fleet{support}) * .015 * float64(1+route.Turns)
 		if !result.Ready || next.Ready && next.Score+opportunity < result.Score {
 			group, result = trial, next
 		}
-		if result.Ready && checks >= 3 {
+		if result.Ready {
 			break
 		}
 	}
-	// Try removing redundant whole formations, preserving useful damage reduction.
+	// Retain only a sufficient formation, including releasing a distant leader.
 	if result.Ready {
-		for i := len(group) - 1; i > 0 && checks < 36; i-- {
+		for i := len(group) - 1; i >= 0 && len(group) > 1 && checks < maxChecks+4; i-- {
 			trial := append(slices.Clone(group[:i]), group[i+1:]...)
 			checks++
 			next := p.patrolEvaluator.assess(p, trial, enemy, point, 1)
-			if next.Ready && next.Score+patrolCompositionValue(p, trial)*.015 < result.Score+patrolCompositionValue(p, group)*.015 {
+			if next.Ready {
 				group, result = trial, next
 			}
 		}
 	}
+	if !result.Ready {
+		if p.patrolEvaluator.PlanningDefence {
+			slog.Debug("defence composition rejected", "leader", leader.Num, "enemy", enemy.Num, "ships", patrolFormationShips(group), "checks", checks, "work", p.patrolEvaluator.Work, "reason", result.Reason)
+		}
+		t.disperseUnreadyPatrol(p, leader, enemy, job)
+		return
+	}
+	oldLeaderNum := leader.Num
+	if !slices.Contains(group, leader) {
+		leader = group[0]
+		job.Leader, job.LeaderID = leader.Num, leader.ID
+	}
 	for _, f := range t.game.getFleets(p.Num) {
 		old := readPatrolJob(f)
-		if old.Leader == leader.Num && !slices.Contains(group, f) {
+		if old.Leader == oldLeaderNum && !slices.Contains(group, f) {
 			delete(f.Tags, patrolTag)
 			restorePatrolBattlePlan(p, f)
 			if f.GetTag(patrolSupportTag) == "escort" {
@@ -144,12 +155,7 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 			savePatrolJob(f, next)
 		}
 	}
-	if unknown || !result.Ready {
-		job.RecruitPower = max(patrolGroupPower(group)+1, job.RecruitPower)
-		job.Status = result.Reason
-		t.provisionalPatrolGather(p, leader, enemy, job)
-		return
-	}
+	savePatrolJob(leader, *job)
 	if t.launchLocalPatrol(p, leader, enemy, job, group) {
 		return
 	}
@@ -161,13 +167,16 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	if !allHere {
 		job.Provisional = false
 		if !t.movingPatrolRally(p, leader, job) {
-			t.provisionalPatrolGather(p, leader, enemy, job)
+			if p.patrolEvaluator.PlanningDefence {
+				slog.Debug("defence rendezvous rejected", "leader", leader.Num, "enemy", enemy.Num, "ships", patrolFormationShips(group), "deadline", job.RendezvousBy, "year", t.game.Year)
+			}
+			t.disperseUnreadyPatrol(p, leader, enemy, job)
 		}
 		return
 	}
 	for _, f := range group[1:] {
 		if _, err := NewOrderer().Merge(&t.game.Rules, p, []*Fleet{leader, f}); err != nil {
-			t.provisionalPatrolGather(p, leader, enemy, job)
+			t.disperseUnreadyPatrol(p, leader, enemy, job)
 			return
 		}
 		t.game.deleteFleet(f)
@@ -179,7 +188,7 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	// Splitting changes the exact stack and fuel. Confirm the final native group.
 	result = p.patrolEvaluator.assess(p, []*Fleet{leader}, enemy, point, 1)
 	if !result.Ready {
-		t.provisionalPatrolGather(p, leader, enemy, job)
+		t.disperseUnreadyPatrol(p, leader, enemy, job)
 		return
 	}
 	applyPatrolBattlePlan(p, leader, result.Tactic)
@@ -220,6 +229,21 @@ func patrolGroupPower(group []*Fleet) int {
 
 func patrolSupportCanLeave(p *Player, f, enemy *Fleet) bool {
 	job := readPatrolJob(f)
+	if defencePatrolCommitted(p, f) {
+		return job.Enemy == enemy.PlayerNum && job.Target == enemy.Num
+	}
+	if f.GetTag(bomberBorrowTag) != "" {
+		return false
+	}
+	if job.Enemy == enemy.PlayerNum && job.Target == enemy.Num {
+		return true
+	}
+	if urgentPatrolTarget(p, enemy) {
+		old := patrolEnemy(p, job)
+		if old == nil || patrolMissionRank(p, enemy) < patrolMissionRank(p, old) {
+			return true
+		}
+	}
 	if job.Leader == 0 {
 		return true
 	}
