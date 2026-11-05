@@ -51,7 +51,19 @@ func (t *turnGenerator) migrateLegacyLandings() {
 			if landingManaged(f) || p.Automation.FleetRoles[f.Num] != "freighter" {
 				continue
 			}
-			if j := logisticsWork(f); j != nil && (j.Kind == "invade" || j.Kind == "invade-load") {
+			if j := logisticsWork(f); j != nil && (j.Kind == "invade" || j.Kind == "invade-load" || j.Kind == "landing-reserve") {
+				if f.CargoMass() == 0 {
+					// An empty legacy pickup has no delivery to finish. Keeping it
+					// reserved also makes a pending refit wait forever for that job.
+					delete(f.Tags, logisticsTag)
+					delete(f.Tags, "maintenance-pending")
+					t.releaseEscorts(p, f)
+					holdAutomaticFleet(p, f, "Empty legacy landing released for automatic duties")
+					continue
+				}
+				if j.Kind == "landing-reserve" {
+					continue
+				}
 				j.Kind = "landing-reserve"
 				j.Status = "Awaiting a coordinated landing force and scout"
 				saveLogisticsWork(f, j)
