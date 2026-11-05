@@ -167,6 +167,41 @@ func TestLandingOperationCompletesInFullNativeTurns(t *testing.T) {
 	}
 }
 
+func TestEmptyLegacyLandingReleasesPendingDeliveryAndLoadsAgain(t *testing.T) {
+	for _, kind := range []string{"invade", "invade-load", "landing-reserve"} {
+		t.Run(kind, func(t *testing.T) {
+			u := landingOperationUniverse(t)
+			f := u.Fleet("Transport0")
+			saveLogisticsWork(f, &logisticsJob{Kind: kind, TargetNum: u.Planet("Target").Num})
+			f.SetTag("maintenance-pending", "Finish current navigation/delivery before rebuilding")
+			u.Run((*turnGenerator).migrateLegacyLandings)
+			require.Nil(t, logisticsWork(f))
+			require.Empty(t, f.GetTag("maintenance-pending"))
+			require.Len(t, f.Waypoints, 1)
+			u.Run((*turnGenerator).fleetDesignMaintenance, (*turnGenerator).planLandingOperations)
+			require.True(t, landingManaged(f))
+			require.Positive(t, f.Cargo.Colonists)
+		})
+	}
+}
+
+func TestEmptyLegacyLandingHonorsRequestedRebuild(t *testing.T) {
+	scenario := maintenanceScenario()
+	scenario.Players[0].Designs = Designs(DesignTeamster, DesignTeamster, DesignSpaceStation)
+	scenario.Players[0].Designs[0].Name = "Old Transport"
+	scenario.Players[0].Designs[1].Name = "New Transport"
+	scenario.Players[0].Fleets = []ScenarioFleet{{Name: "Fleet", Design: "Old Transport", At: "Yard"}}
+	u := newTestUniverse(t, scenario)
+	requestRebuild(u)
+	p, f := u.Player(1), u.Fleet("Fleet")
+	p.Automation.FleetRoles = map[int]string{f.Num: "freighter"}
+	saveLogisticsWork(f, &logisticsJob{Kind: "invade-load", TargetNum: 999})
+	f.SetTag("maintenance-pending", "Finish current navigation/delivery before rebuilding")
+	u.Run((*turnGenerator).migrateLegacyLandings, (*turnGenerator).fleetDesignMaintenance)
+	require.Nil(t, logisticsWork(f))
+	require.True(t, f.InDesignMaintenance(), "release the impossible delivery without cancelling the requested rebuild")
+}
+
 func TestLegacyLandingWaitsForScoutAndProtectors(t *testing.T) {
 	u := landingOperationUniverse(t)
 	p := u.Player(1)
