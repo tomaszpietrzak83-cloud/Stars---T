@@ -1,6 +1,36 @@
 package cs
 
-import "slices"
+import (
+	"math"
+	"slices"
+)
+
+// Fuel auditing must validate the scheduled speed, not replace it with the
+// fastest route and undo synchronized arrivals.
+func fundedPatrolRallyWaypoints(rules *Rules, p *Player, f *Fleet, year int) bool {
+	job := readPatrolJob(f)
+	if !job.Provisional || job.Leader == 0 || job.CleanupTarget != 0 || patrolEnemy(p, job) == nil || len(f.Waypoints) < 2 || f.InAutomaticSafety() || f.InDesignMaintenance() || f.Waypoints[len(f.Waypoints)-1].Position != job.Rally {
+		return false
+	}
+	budget := *f
+	fuel, from, turns := f.Fuel, f.Position, 0
+	for _, wp := range f.Waypoints[1:] {
+		if wp.WarpSpeed < 1 || wp.WarpSpeed > automaticMaxWarp(p, f) || !automaticFleetLegSafe(rules, p, &budget, from, wp.Position, wp.WarpSpeed, false) {
+			return false
+		}
+		turns += max(1, int(math.Ceil(from.DistanceTo(wp.Position)/max(1, f.StrategicSpeed(wp.WarpSpeed)))))
+		_, left, _, ok := automaticLegFuel(p, &budget, wp.WarpSpeed, from.DistanceTo(wp.Position), fuel, 0)
+		if !ok {
+			return false
+		}
+		fuel, from = left, wp.Position
+		budget.Position, budget.Fuel = from, fuel
+		if planet := p.GetPlanetIntel(wp.TargetNum); planet != nil && planet.OwnedBy(p.Num) && budget.CanFuel(p, planet) {
+			fuel, budget.Fuel = f.Spec.FuelCapacity, f.Spec.FuelCapacity
+		}
+	}
+	return turns <= min(2, job.RendezvousBy-year) && fuel >= automaticReturnFuel(rules, p, &budget, from, expeditionStations(p, &budget), false)
+}
 
 // Synchronize a two-turn assembly before departure. Early arrivals must not
 // invalidate a viable pack on the following turn merely because they are idle.
