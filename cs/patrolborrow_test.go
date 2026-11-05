@@ -7,6 +7,28 @@ import (
 	"testing"
 )
 
+func TestColonyReliefReclaimsHuntersButKeepsDedicatedEscorts(t *testing.T) {
+	for _, role := range []string{"patrol", "escort"} {
+		t.Run(role, func(t *testing.T) {
+			u := automaticBomberUniverse(t)
+			p, bomber, f := u.Player(1), u.Fleet("Bomber"), u.Fleet("Cover")
+			p.Automation.FleetRoles[f.Num] = role
+			borrowBomberProtection(p, f, bomber)
+			p.FleetIntels = []*Fleet{{MapObject: MapObject{PlayerNum: 2, Num: 1, Position: u.Planet("Home").Position}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true, PowerRating: 1}}}}
+			u.Run((*turnGenerator).startPatrolEvaluation, (*turnGenerator).releaseUnreachablePatrolSupport)
+			u.Run(func(tg *turnGenerator) { tg.assignBomberProtection(p, bomber, bomber.Position, true) })
+			if role == "patrol" {
+				require.Equal(t, "patrol", p.Automation.FleetRoles[f.Num])
+				require.Empty(t, f.GetTag(bomberBorrowTag), "civilian protection must not immediately reclaim the released hunter")
+				require.True(t, patrolAvailable(p, f))
+			} else {
+				require.Equal(t, "escort", p.Automation.FleetRoles[f.Num])
+				require.NotEmpty(t, f.GetTag(escortTag))
+			}
+		})
+	}
+}
+
 func TestEmergencyCoverDoesNotTakeEveryHunter(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignTeamster, DesignDestroyerDelta, DesignSpaceStation), Fleets: []ScenarioFleet{
 		{Name: "Bomber", Design: DesignTeamster.Name, At: "Home"},

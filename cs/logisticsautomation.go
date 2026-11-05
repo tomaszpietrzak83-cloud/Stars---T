@@ -417,7 +417,7 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 			continue
 		}
 		if threat > power && escort.GetTag(recaptureAssaultTag) == "" && player.Automation.FleetRoles[escort.Num] == "patrol" && readPatrolJob(escort).Leader == 0 && escort.Position.DistanceTo(fleet.Position) <= 100 && escort.Spec.HasWeapons && !escort.Delete && !escort.InDesignMaintenance() && !escort.InAutomaticSafety() && !player.FleetInActiveAssembly(escort) && !fuelNetworkReserved(escort) && readTankerJob(escort) == nil && escort.GetTag("maintenance-pending") == "" {
-			if t.fundedPatrolSupport(player, escort, fleet) {
+			if !patrolNeededForColony(player, escort) && t.fundedPatrolSupport(player, escort, fleet) {
 				borrowBomberProtection(player, escort, fleet)
 			}
 		}
