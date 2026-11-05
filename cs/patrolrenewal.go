@@ -7,6 +7,9 @@ import "slices"
 func (t *turnGenerator) releaseCombatCruiseNetworks() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
+			if landingManaged(f) {
+				continue
+			}
 			plan := readFuelNetworkPlan(f)
 			if plan == nil || (!combatAutonomy(p, f) && p.Automation.FleetRoles[f.Num] != "bomber" && !scoutReconActive(p, f) && f.GetTag(priorityReconTag) == "") {
 				continue
