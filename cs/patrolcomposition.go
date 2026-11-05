@@ -22,6 +22,11 @@ func patrolCompositionValue(p *Player, group []*Fleet) float64 {
 // The score prices readiness damage and repair downtime as well as casualties;
 // an extra ship can be worth retaining even when a smaller stack wins.
 func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, job *patrolJob) {
+	// Older saves retained the expired assembly deadline during an attack.
+	if job.Grouped && !job.Provisional && job.CleanupTarget == 0 {
+		job.RendezvousBy, job.GatheringSince = 0, 0
+		job.Rally, job.CleanupUsed = Vector{}, false
+	}
 	job.CleanupEnemy, job.CleanupTarget = 0, 0
 	savePatrolJob(leader, *job)
 	existing := []*Fleet{leader}
@@ -204,6 +209,8 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		return
 	}
 	applyPatrolBattlePlan(p, leader, result.Tactic)
+	job.RendezvousBy, job.GatheringSince = 0, 0
+	job.Rally, job.CleanupUsed = Vector{}, false
 	job.Status = "Intercepting " + enemy.Name + " with native combat forecast"
 	savePatrolJob(leader, *job)
 	if !t.patrolRoute(p, leader, point, true) {

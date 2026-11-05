@@ -69,6 +69,10 @@ func (t *turnGenerator) launchLocalPatrol(p *Player, oldLeader, enemy *Fleet, jo
 		}
 		applyPatrolBattlePlan(p, leader, result.Tactic)
 		job.Provisional, job.RecruitPower, job.RequiredShips = false, 0, 1
+		// This assembly is complete. A later encounter may require a new
+		// rendezvous; its deadline must not inherit this finished gathering.
+		job.RendezvousBy, job.GatheringSince = 0, 0
+		job.Rally, job.CleanupUsed = Vector{}, false
 		job.CleanupEnemy, job.CleanupTarget = 0, 0
 		job.Status = "Intercepting " + enemy.Name + " with local wolf pack; <=5% sampled count/value losses"
 		savePatrolJob(leader, *job)
