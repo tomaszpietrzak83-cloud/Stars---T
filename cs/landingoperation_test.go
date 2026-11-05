@@ -248,6 +248,22 @@ func TestLandingLoadsOvercrowdedSourceBeforeScoutOrGuardsExist(t *testing.T) {
 	require.Equal(t, "gather", readLandingOperation(leader).Phase)
 }
 
+func TestCompletedTransportRebuildImmediatelyJoinsLandingPreparation(t *testing.T) {
+	u := landingOperationUniverse(t)
+	p, f := u.Player(1), u.Fleet("Transport0")
+	work := &fleetMaintenance{OriginalRole: "freighter", Stage: "rally", Group: "unfinished-distant-yard", Expected: 20, RallyPlanetNum: u.Planet("Home").Num}
+	writeMaintenance(f, work)
+	f.SetTag(replacementGroupTag, work.Group)
+	f.SetTag("maintenance-pending", "old rebuild")
+	u.Run((*turnGenerator).fleetDesignMaintenance, (*turnGenerator).planLandingOperations)
+	require.False(t, f.InDesignMaintenance())
+	require.Empty(t, f.GetTag(replacementGroupTag))
+	require.Empty(t, f.GetTag("maintenance-pending"))
+	require.Equal(t, "freighter", p.Automation.FleetRoles[f.Num])
+	require.True(t, landingManaged(f))
+	require.Positive(t, f.Cargo.Colonists)
+}
+
 func TestLandingReservationsUseAlternativePopulationSources(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignTeamster, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "A", Design: DesignTeamster.Name, At: "Home"}, {Name: "B", Design: DesignTeamster.Name, At: "Home"}}}, {}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}, {Name: "Other", Owner: 1, Position: Vector{10, 0}, Starbase: DesignSpaceStation.Name}, {Name: "Enemy", Owner: 2, Position: Vector{50, 0}, Cargo: Cargo{Colonists: 1000}}}})
 	p := u.Player(1)

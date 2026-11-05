@@ -147,17 +147,17 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 		if fuelNetworkManaged(fleet) {
 			continue
 		}
-		// Rebuilt patrols are independent hunters. Waiting for an old stack's
-		// remaining production must not remove completed ships from defence.
-		if work := readMaintenance(fleet); work != nil && work.Stage == "rally" && work.OriginalRole == "patrol" && !hasMaintenanceTargets(player, fleet) {
+		// Finished automatic ships can work independently. Transports will
+		// regroup with their landing army rather than wait for other shipyards.
+		if work := readMaintenance(fleet); work != nil && work.Stage == "rally" && (work.OriginalRole == "patrol" || work.OriginalRole == "freighter") && !hasMaintenanceTargets(player, fleet) {
 			delete(fleet.Tags, maintenanceTag)
 			delete(fleet.Tags, replacementGroupTag)
 			delete(fleet.Tags, "maintenance-pending")
 			if player.Automation.FleetRoles == nil {
 				player.Automation.FleetRoles = map[int]string{}
 			}
-			player.Automation.FleetRoles[fleet.Num] = "patrol"
-			holdAutomaticFleet(player, fleet, "Rebuild completed; available for colony defence and patrol")
+			player.Automation.FleetRoles[fleet.Num] = work.OriginalRole
+			holdAutomaticFleet(player, fleet, "Rebuild completed; resuming automatic duties")
 			continue
 		}
 		// A bulk upgrade can be queued during composition; finish gathering first.
