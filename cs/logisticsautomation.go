@@ -412,8 +412,14 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		if landingManaged(escort) {
 			continue
 		}
+		if escort.GetTag(bomberBorrowTag) != "" && escort.GetTag(escortTag) == strconv.Itoa(fleet.Num) && !t.fundedPatrolSupport(player, escort, fleet) {
+			releaseBorrowedHunter(player, escort)
+			continue
+		}
 		if threat > power && escort.GetTag(recaptureAssaultTag) == "" && player.Automation.FleetRoles[escort.Num] == "patrol" && readPatrolJob(escort).Leader == 0 && escort.Position.DistanceTo(fleet.Position) <= 100 && escort.Spec.HasWeapons && !escort.Delete && !escort.InDesignMaintenance() && !escort.InAutomaticSafety() && !player.FleetInActiveAssembly(escort) && !fuelNetworkReserved(escort) && readTankerJob(escort) == nil && escort.GetTag("maintenance-pending") == "" {
-			borrowBomberProtection(player, escort, fleet)
+			if t.fundedPatrolSupport(player, escort, fleet) {
+				borrowBomberProtection(player, escort, fleet)
+			}
 		}
 		if readTankerJob(escort) != nil || fuelNetworkManaged(escort) || escort.InAutomaticSafety() || escort.Delete || escort.InDesignMaintenance() || player.Automation.FleetRoles[escort.Num] != "escort" || !escort.Spec.HasWeapons {
 			continue
@@ -468,6 +474,9 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		for _, member := range group {
 			holdAutomaticFleet(player, member, job.Status)
 		}
+		group = slices.DeleteFunc(group, func(member *Fleet) bool {
+			return member != fleet && releaseBorrowedHunter(player, member)
+		})
 		saveAutomaticFuelRequest(fleet, automaticFuelRequest{Destination: job.Position, Target: target, Members: fleetNumbers(group), Urgent: true, AllowThreat: threat > 0})
 		return
 	}

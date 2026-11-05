@@ -174,11 +174,23 @@ func restoreBomberProtection(p *Player, escort *Fleet) bool {
 	return true
 }
 func (t *turnGenerator) assignBomberProtection(p *Player, bomber *Fleet, target Vector, emergency bool) {
+	needed, cover := 0, patrolPower(bomber)
+	if emergency {
+		needed = max(interceptionThreat(p, bomber), bomberChaseThreat(p, bomber))*3/2 + 1
+		for _, f := range t.game.getFleets(p.Num) {
+			if f.GetTag(escortTag) == strconv.Itoa(bomber.Num) && t.fundedPatrolSupport(p, f, bomber) {
+				cover += patrolPower(f)
+			}
+		}
+	}
 	candidates := slices.Clone(t.game.getFleets(p.Num))
 	sort.SliceStable(candidates, func(i, j int) bool {
 		return candidates[i].Position.DistanceTo(bomber.Position) < candidates[j].Position.DistanceTo(bomber.Position)
 	})
 	for _, f := range candidates {
+		if emergency && cover >= needed {
+			break
+		}
 		role := p.Automation.FleetRoles[f.Num]
 		if landingManaged(f) || fleetHasDedicatedMinesweeper(p, f) {
 			continue
@@ -193,7 +205,7 @@ func (t *turnGenerator) assignBomberProtection(p *Player, bomber *Fleet, target 
 			continue
 		}
 		if emergency {
-			if f.Position.DistanceTo(bomber.Position) > max(100, 2*f.StrategicSpeed(automaticMaxWarp(p, f))) {
+			if !t.fundedPatrolSupport(p, f, bomber) {
 				continue
 			}
 		} else {
@@ -203,6 +215,7 @@ func (t *turnGenerator) assignBomberProtection(p *Player, bomber *Fleet, target 
 			}
 		}
 		borrowBomberProtection(p, f, bomber)
+		cover += patrolPower(f)
 		if !emergency {
 			break
 		}
