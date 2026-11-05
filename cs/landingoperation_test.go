@@ -167,6 +167,53 @@ func TestLandingOperationCompletesInFullNativeTurns(t *testing.T) {
 	}
 }
 
+func TestLandingLeavesRealDebrisCollectorToFinishPickup(t *testing.T) {
+	u := landingOperationUniverse(t)
+	p, f := u.Player(1), u.Fleet("Transport0")
+	p.Automation.DisableSalvage = false
+	salvage := &Salvage{MapObject: MapObject{Num: 5, Position: Vector{50, -50}}, Cargo: Cargo{Ironium: 20}}
+	u.Game.Salvages = append(u.Game.Salvages, salvage)
+	u.Game.salvagesByNum[salvage.Num] = salvage
+	p.SalvageIntels = []*Salvage{salvage}
+	saveLogisticsWork(f, &logisticsJob{Kind: "salvage", TargetNum: salvage.Num, Position: salvage.Position})
+	f.Waypoints = append(f.Waypoints, NewPositionWaypoint(salvage.Position, 6))
+	for n := 0; n < 4 && f.Cargo.Ironium == 0; n++ {
+		u.Run((*turnGenerator).planLogisticsAutomation)
+		require.NotNil(t, landingLeader(u), "other empty transports still prepare a landing")
+		require.False(t, landingManaged(f), "the army must not steal a travelling collector")
+		require.Equal(t, "salvage", logisticsWork(f).Kind)
+		u.Run((*turnGenerator).fleetMove, (*turnGenerator).resolveLogisticsAutomation)
+	}
+	require.Equal(t, 20, f.Cargo.Ironium, "physical debris must reach the assigned collector")
+	require.True(t, salvage.Delete)
+	require.Zero(t, f.Cargo.Colonists)
+}
+
+func TestLandingCanReassignObsoleteDebrisPickup(t *testing.T) {
+	for _, state := range []string{"missing", "empty", "deleted", "reused-number", "disabled"} {
+		t.Run(state, func(t *testing.T) {
+			u := landingOperationUniverse(t)
+			p, f := u.Player(1), u.Fleet("Transport0")
+			p.Automation.DisableSalvage = state == "disabled"
+			s := &Salvage{MapObject: MapObject{Num: 5, Position: Vector{50, -50}}, Cargo: Cargo{Ironium: 20}}
+			saveLogisticsWork(f, &logisticsJob{Kind: "salvage", TargetNum: s.Num, Position: s.Position})
+			if state != "missing" {
+				p.SalvageIntels = []*Salvage{s}
+			}
+			s.Delete = state == "deleted"
+			if state == "empty" {
+				s.Cargo = Cargo{}
+			}
+			if state == "reused-number" {
+				s.Position = Vector{100, 100}
+			}
+			u.Run((*turnGenerator).planLandingOperations)
+			require.True(t, landingManaged(f))
+			require.Positive(t, f.Cargo.Colonists)
+		})
+	}
+}
+
 func TestEmptyLegacyLandingReleasesPendingDeliveryAndLoadsAgain(t *testing.T) {
 	for _, kind := range []string{"invade", "invade-load", "landing-reserve"} {
 		t.Run(kind, func(t *testing.T) {
