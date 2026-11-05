@@ -78,7 +78,9 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	result := p.patrolEvaluator.assess(p, group, enemy, point, 1)
 	checks := 0
 	maxChecks := 32
-	if urgentPatrolTarget(p, enemy) {
+	urgent := urgentPatrolTarget(p, enemy)
+	reserveShips := 0
+	if urgent {
 		maxChecks = 96
 	}
 	for _, candidate := range candidates {
@@ -90,15 +92,25 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		checks++
 		next := p.patrolEvaluator.assess(p, trial, enemy, point, 1)
 		opportunity := patrolCompositionValue(p, []*Fleet{support}) * .015 * float64(1+route.Turns)
-		if !result.Ready || next.Ready && next.Score+opportunity < result.Score {
+		if !result.Ready || next.Ready && (next.Score+opportunity < result.Score || urgent && patrolFormationShips(group) < reserveShips) {
 			group, result = trial, next
 		}
 		if result.Ready {
-			break
+			if !urgent {
+				break
+			}
+			// Relief must survive newly arriving reports while the force gathers.
+			// Keep a bounded reserve; the actual attack still requires a native check.
+			if reserveShips == 0 {
+				reserveShips = (patrolFormationShips(group)*5 + 3) / 4
+			}
+			if patrolFormationShips(group) >= reserveShips {
+				break
+			}
 		}
 	}
 	// Retain only a sufficient formation, including releasing a distant leader.
-	if result.Ready {
+	if result.Ready && !urgent {
 		for i := len(group) - 1; i >= 0 && len(group) > 1 && checks < maxChecks+4; i-- {
 			trial := append(slices.Clone(group[:i]), group[i+1:]...)
 			checks++

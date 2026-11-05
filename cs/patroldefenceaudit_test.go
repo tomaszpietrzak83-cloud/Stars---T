@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"log/slog"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -28,6 +29,22 @@ func TestCopiedPatrolDefencePlanning(t *testing.T) {
 	}
 	tg := newTurnGenerator(&g)
 	require.NoError(t, g.computeSpecs())
+	if os.Getenv("STARS_DEFENCE_COMPARE") == "1" {
+		p := g.getPlayer(1)
+		group := []*Fleet{}
+		for _, f := range g.getFleets(1) {
+			j := readPatrolJob(f)
+			if j.Enemy == 16 && j.Target == 41 {
+				group = append(group, f)
+			}
+		}
+		enemy := p.GetFleetIntel(16, 41)
+		e := &patrolEvaluator{rules: &g.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 4096}
+		t.Logf("WITH ARRIVALS %+v", e.assess(p, group, enemy, enemy.Position, 1))
+		p.FleetIntels = slices.DeleteFunc(p.FleetIntels, func(f *Fleet) bool { return f.PlayerNum == 16 && f.Num == 67 })
+		t.Logf("WITHOUT ARRIVAL 67 %+v", e.assess(p, group, enemy, enemy.Position, 1))
+		return
+	}
 	old := slog.Default()
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})))
 	defer slog.SetDefault(old)
