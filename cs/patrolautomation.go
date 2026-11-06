@@ -694,19 +694,10 @@ func (t *turnGenerator) planPatrolAutomation() {
 				savePatrolJob(fleet, job)
 				continue
 			}
-			planets := t.game.getPlanets(player.Num)
-			if len(planets) > 0 {
-				if fleet.Idle() {
-					job.Cycle++
-				}
-				dest := planets[(fleet.Num+job.Cycle)%len(planets)]
-				position := dest.Position
-				angle := float64((fleet.Num*7+job.Cycle)%12) * math.Pi / 6
-				position.X += int(math.Round(30 * math.Cos(angle)))
-				position.Y += int(math.Round(30 * math.Sin(angle)))
-				t.patrolRoute(player, fleet, position, false)
-			}
-			job.Status = "Patrolling owned territory"
+			// A lack of a funded objective is not a reason to manufacture home
+			// loops. Fuel recovery and new contact reports can enable the next leg.
+			delete(fleet.Tags, frontierPatrolTag)
+			job.Status = "Offensive advance awaits a funded objective or fresh reconnaissance"
 			savePatrolJob(fleet, job)
 		}
 	}

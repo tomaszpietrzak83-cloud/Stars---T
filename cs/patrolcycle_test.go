@@ -76,6 +76,7 @@ func TestPatrolBlockedDepartureReleasesMissionNextTurn(t *testing.T) {
 	p.Automation.FleetRoles[f.Num] = "patrol"
 	enemy := patrolTestEnemy(0, p)
 	p.FleetIntels = []*Fleet{enemy}
+	p.PlanetIntels = append(p.PlanetIntels, &Planet{MapObject: MapObject{Num: 500, Position: Vector{-60, 0}, ReportAge: ReportAgeUnexplored}})
 	savePatrolJob(f, patrolJob{Leader: f.Num, Enemy: enemy.PlayerNum, Target: enemy.Num})
 	u.Run(func(tg *turnGenerator) { tg.rememberBlockedPatrolDeparture(p, f) })
 	u.Game.Year++

@@ -220,7 +220,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				policy = automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: 20, MinWarp: automaticCruiseWarp(player, fleet)}
 			}
 			if fleet.GetTag(patrolFrontTag) != "" && readPatrolJob(fleet).Leader == 0 && !fleet.InAutomaticSafety() {
-				policy = economicalContainmentPolicy(player, fleet, fleet.Position.DistanceTo(goal.Position))
+				policy = automaticRoutePolicy{Fast: true, MaxTurns: 8}
 			}
 			if fleet.GetTag(recaptureAssaultTag) != "" && !fleet.InAutomaticSafety() {
 				policy = automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: 8, MinWarp: automaticCruiseWarp(player, fleet)}

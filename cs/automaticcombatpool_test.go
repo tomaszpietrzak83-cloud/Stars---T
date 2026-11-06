@@ -53,7 +53,7 @@ func TestSplitCombatPoolGetsDifferentFrontierDestinations(t *testing.T) {
 	p.Automation.FleetRoles[f.Num] = "patrol"
 	addExpeditionTestDock(p, Vector{})
 	for i := 1; i <= 5; i++ {
-		p.PlanetIntels = append(p.PlanetIntels, &Planet{MapObject: MapObject{Num: 500 + i, Position: Vector{60 + i*8, i * 15}}})
+		p.PlanetIntels = append(p.PlanetIntels, &Planet{MapObject: MapObject{Num: 500 + i, Position: Vector{60 + i*8, i * 15}, ReportAge: ReportAgeUnexplored}})
 	}
 	u.Run((*turnGenerator).splitAutomaticCombatPools, (*turnGenerator).planPatrolAutomation)
 	destinations := map[Vector]bool{}

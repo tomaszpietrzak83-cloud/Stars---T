@@ -50,6 +50,7 @@ func TestPatrolFreeEngineWorksAtColonyWithoutBaseAndZeroFuel(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(d, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Patrol", Design: d.Name, At: "Outpost"}}}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}, {Name: "Outpost", Owner: 1, Position: Vector{100, 0}}}})
 	p, f := u.Player(1), u.Fleet("Patrol")
 	p.Automation.FleetRoles = map[int]string{f.Num: "patrol"}
+	p.PlanetIntels = append(p.PlanetIntels, &Planet{MapObject: MapObject{Num: 500, Position: Vector{160, 0}, ReportAge: ReportAgeUnexplored}})
 	f.Fuel = 0
 	before := f.Position
 	u.Run((*turnGenerator).startPatrolEvaluation, (*turnGenerator).planPatrolAutomation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).recoverIdleAutomaticFleets, (*turnGenerator).enforceAutomaticDeparture)
