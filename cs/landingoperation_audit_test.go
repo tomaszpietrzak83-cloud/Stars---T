@@ -67,6 +67,12 @@ func TestLandingPlannerOnCopiedSnapshot(t *testing.T) {
 		collectorOrders, err = json.Marshal(collector.FleetOrders)
 		require.NoError(t, err)
 	}
+	guardsBefore := 0
+	for _, fleet := range g.getFleets(1) {
+		if landingManaged(fleet) && (g.getPlayer(1).Automation.FleetRoles[fleet.Num] == "patrol" || g.getPlayer(1).Automation.FleetRoles[fleet.Num] == "escort") {
+			guardsBefore++
+		}
+	}
 	before := 0
 	for _, f := range g.getFleets(1) {
 		before += f.Cargo.Colonists
@@ -96,6 +102,16 @@ func TestLandingPlannerOnCopiedSnapshot(t *testing.T) {
 		require.NoError(t, err)
 		require.JSONEq(t, string(collectorOrders), string(orders))
 		t.Logf("COLLECTOR preserved fleet=%d target=%d", collector.Num, logisticsWork(collector).TargetNum)
+	}
+	guardsAfter := 0
+	for _, fleet := range g.getFleets(1) {
+		if !fleet.Delete && landingManaged(fleet) && (g.getPlayer(1).Automation.FleetRoles[fleet.Num] == "patrol" || g.getPlayer(1).Automation.FleetRoles[fleet.Num] == "escort") {
+			guardsAfter++
+		}
+	}
+	if os.Getenv("STARS_LANDING_BASE_RECLAIM") != "" {
+		t.Logf("BASE guards before=%d after=%d", guardsBefore, guardsAfter)
+		require.Less(t, guardsAfter, guardsBefore, "release excessive legacy base reservations")
 	}
 	after, ops, members := 0, 0, 0
 	for _, f := range g.getFleets(1) {
