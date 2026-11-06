@@ -14,6 +14,11 @@ has a leader reference; all loading, movement, fuel use, merging, battle and dro
 use physical game objects and native rules. Phases: gather, scan, base, assault,
 landed. Losing the target or disabling automation releases the operation.
 Surviving escort tokens return to patrol duty after completion.
+Participants are reserved across convoy, bomber-protection, tanker, patrol and
+escort-staging planners. The copied campaign exposed competing assignments;
+the regression now runs those planners sequentially and checks that the escort
+role, orders and membership remain exclusive. Scout selection uses the nearest
+eligible funded route, including when replacing a lost scout.
 
 Empty available freighters start loading before a scout or escort is available.
 The source keeps the configured population reserve. Sources at 95% population
@@ -26,7 +31,9 @@ holds. Completed freighter rebuilds resume their role immediately, without
 waiting for other shipyards; ships still needing maintenance are not released.
 
 Old solo invade/invade-load jobs migrate to coordinated preparation, retaining
-their actual cargo. Enemy population estimates determine provisions; report age
+their actual cargo. Empty legacy jobs release their obsolete delivery and pending
+refit hold; an explicitly requested rebuild still takes precedence. Enemy
+population estimates determine provisions; report age
 does not exponentially inflate the army. Ground defenses affect native losses,
 but are not a scout veto. No remotely hidden enemy state is consulted; physical
 scout contact transmits orbital reports before battle.
@@ -44,32 +51,96 @@ minerals were carried; factories were aboard two sampled fleets, with no observe
 completed factory delivery; no transported mines were found. Private evidence:
 audit-results/transport-30-report-2026-11-05.txt (outside Git).
 
-Validation status
-Native regression scenarios cover a merged 567,000-person landing, incoming
-warships with/without stationed patrols, base suspension and retry, source
-reservations, loading before protection is free, and legacy migration. A full
-30-turn native controlled scenario captures its target and releases participants.
-Full integrated cs suite passed (138.687 seconds). AI, database, server and
-proto/converter tests passed. The rebuilt native backend and static UI/WASM
-passed an isolated browser test loading game 14 at year 2479, with no turn
-submitted and the year unchanged. Runtime evidence is in the private
-audit-results/landing-runtime-smoke-final.txt.
+Completed 30-turn measurement (2026-11-06)
+The frozen source 427fcc5e01515db624953e80de3a64c2a6c56cd0 completed
+2476 -> 2506, with 31 snapshots. The requested pause split the execution at
+2488; the resumed run continued the same checkpoint and frozen source.
+Private evidence: coordinated-final-v4-30 and coordinated-final-v4-resumed,
+coordinated-final-v4-summary.txt. Inputs are audit copies copied AGAIN by the
+harness. No personal saved-game turn was submitted.
 
-The requested real-galaxy 30-turn acceptance remains PENDING. The 2479 input is
-an audit backup copied again by TestCopiedTransportCampaign; its SHA256 must
-remain unchanged. Never submit a turn to the personal game for this test.
-Intermediate 2480: 31 freighters assigned landing load/rally, 147,000 people
-already aboard the preparing army, no drop yet. This is not proof of final
-campaign success. Final metrics/build/smoke results must replace pending status.
-The final combined 30-turn run starts at 2476 using production sources from
-5c37154e5a242455e56f9c44c37656fedadab2e0, identical in cs/server to the transport
-branch 80a1f3a4. Its private log/snapshots are coordinated-final-30. Earlier
-performance/diagnostic runs were intentionally interrupted and do not count
-as completed 30-turn acceptance.
+Two actual native landings succeeded:
+- Raisa, 2487: 231,000 attackers, 11,000 losses, 220,000 survivors.
+- Trial, 2498: 231,000 attackers, 69,300 losses, 161,700 survivors.
+The largest prepared army held 392,000 people. This real campaign did not execute
+a drop above 250,000; a separate native regression executes a merged 567,000-person
+drop and the controlled native scenario runs 30 turns.
+Thirteen carried factories were delivered (3 in 2477, 10 in 2479). No transported
+mines were observed. Minerals and passengers were carried. Freighter fleets fell
+from 161 to 28 while their ship count rose from 189 to 195: fleet merging must not
+be mistaken for ship losses. Final transport cargo: 2,079,000 people.
+
+The full campaign FAILED its final colony-defense assertion: two hostile bomber
+fleets remained over Senility, although it stayed owned with 109,200 people.
+Total owned colonies fell from 74 to 20. This is measurement evidence, not victory
+or acceptance of the frozen implementation. Eight final armies waited for bases,
+two gathered. Base operations had monopolized almost every hunter; some waited
+27 years. Do not attribute subsequent corrections to this frozen run.
+
+Corrections driven by that measurement
+- Preserve genuine empty debris collectors until the known pickup completes;
+  release obsolete/depleted/reused-number requests. Native test physically picks
+  up 20 kT. Actual copied fleet #261 preserves salvage #5 at 2484 (PASS1.213s).
+- Retarget empty pickups blocked by hostile or inaccessible sources to a funded
+  surplus colony, respecting reservations and arrival fuel. All15 copied ships
+  waiting at 2488 retarget Vindemiatrix262 -> LGM4/138 (PASS1.044s). Existing loaded
+  passengers are retained. Native regression verifies actual loading and reserve.
+- Build a sufficient orbital force using native combat forecasts and real funded
+  routes, with a maximum two-turn rally and one-turn attack. Failed candidates
+  are released rather than reserved indefinitely. Oversized old groups are
+  released; at most two existing guard ships remain reserved while no attack can
+  be formed. Urgent colony-defense commitments retain their orders.
+- Old observed base equipment can justify preparing a force, but dispatch needs
+  fresh orbital contact. Scout ScanYear is separate from surface ReportAge;
+  refreshing orbital equipment never invents current population information.
+  A scout refresh is requested only after a sufficient provisional force exists.
+  Base destruction releases excess guards before renewed landing reconnaissance.
+  Copied2506 replay: reserved patrol/escort fleets380 -> 19, ten operations,
+  40 total members, PASS23.26s. Native regressions actually destroy the base,
+  verify stale-report reconnaissance, and protect committed defenders.
+- Integrated patrol corrections preserve funded synchronized arrival, clear old
+  rendezvous deadlines, reclaim borrowed colony relief, and index frontier jobs.
+
+Final validation and handoff
+Final gameplay source 4f955071ce06c5bc6df74f63a4d9dc654966b52a is identical to patrol source
+da6cb8925220b2db19ffe3d3db1708bb56eb3e80 (only documentation differs).
+Full cs PASS 82.499s on that source, following PASS 84.305s before the final
+patrol transit correction. Dedicated base regressions PASS 0.223s. Windows
+backend, WASM and static UI rebuilt; isolated compiled browser/runtime smoke
+PASS with native login, authenticated GetGame, UI/WASM initialization, served
+WASM hash and unchanged game 14/year 2479. No personal turn was generated.
+Native SHA256 34699b962b0ca17d004245948d4ddc91c551bf21180bc07cdd9aed40f5bb9c68
+WASM SHA256 bace7346cddde86e933c7673b8978abfe3fe30bcd31af05aada273c14777e1df
+Private artifacts: audit-results/landing-release, BUILD-MANIFEST.json,
+SHA256SUMS.txt; smoke evidence landing-runtime-smoke-final.txt.
+
+The corrected-source diagnostic 6806/4106 completed four transitions 2488->2492.
+It was stopped after exposing unarmed transit incorrectly blocking a patrol
+rendezvous; it is not a completed six-turn acceptance. All15 previously blocked
+empty pickups reached LGM4 in2489 and physically loaded105,000 people by2490;
+their jobs became landing-rally. In2492 two actual small collectors departed for
+salvage5 and12. Freighter fleets101->36 with195 ships unchanged; no additional
+drop occurred during these four transitions. Excessive base reservations did
+not recur. Private evidence: landing-final-control-analysis.json,
+landing-final-control-pickups.json and patrol-final-control snapshots.
+The final transit correction permits provisional non-attack rendezvous travel
+past fully observed unarmed traffic; unknown/armed encounters and cleanup
+attacks retain normal combat assessment. Native tests include an incoming armed
+escort and the actual copied D57 route. The patrol chat is running a NEW30-turn
+control on this final source, starting2488. Results remain pending; keep it
+separate from both the frozen initial30 and the interrupted four-turn diagnostic.
+
+The full30 test's final defense assertion ran before its final input-hash check,
+so that hash assertion did not execute. Independent inspection confirms input
+years2476/2488 and old modification times. The2488 input matches its independent
+pre-resume copy outside three SQLite header bytes;2476 has no separately recorded
+pre-run SHA. Do not claim a completed pre/post SHA proof for the frozen campaign.
+The control launcher now verifies SHA in finally, including after test failure.
 
 Branch coordination
-codex/coordinated-landings uses a separate landing-worktree. Commit 88c4e7b0
+codex/coordinated-landings uses a separate landing-worktree. Commit88c4e7b0
 records the pre-isolation shared source snapshot, including concurrent patrol/UI
-work, and is not a claim that all those changes belong to the landing task.
-The patrol chat rebased its subsequent work on this exact source snapshot.
-Integrate both branches and validate before publishing/installing the release.
+work, and does not attribute all those changes to this task. The patrol chat
+works in codex/patrol-colony-defence; code is integrated and tested together.
+The main chat owns final release/install; no personal DB, audit snapshot, cache
+or runtime download belongs in Git.
