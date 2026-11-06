@@ -4,6 +4,7 @@ package cs
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/require"
 	"log/slog"
 	"os"
@@ -29,13 +30,44 @@ func TestCopiedPatrolDefencePlanning(t *testing.T) {
 	}
 	tg := newTurnGenerator(&g)
 	require.NoError(t, g.computeSpecs())
+	if os.Getenv("STARS_DEFENCE_RECON") == "1" {
+		g.Rules.ResetSeed(1)
+		tg.ordersPlayerNum = 1
+		tg.startPatrolEvaluation()
+		tg.enablePlanningThreatIndex()
+		defer tg.disablePlanningThreatIndex()
+		tg.planScoutAutomation()
+		tg.guardAutomaticFuel()
+		tg.planAutomaticSafety()
+		tg.enforceAutomaticDeparture()
+		assigned := 0
+		for _, f := range g.getFleets(1) {
+			if job := readScoutRecon(f); job != nil && job.Enemy == 24 && job.Target == 15 && !job.Watching {
+				t.Logf("COLONY_RECON scout=%d position=%v waypoints=%+v", f.Num, f.Position, f.Waypoints)
+				assigned++
+			}
+		}
+		require.Positive(t, assigned, "distant reconnaissance of the same design must not block a bombing contact")
+		tg.fleetMove()
+		tg.scanScoutReconContacts()
+		p := g.getPlayer(1)
+		require.False(t, unknownFleetEquipment(p, p.GetFleetIntel(24, 15)), "the nearby scout must physically reveal the missing equipment")
+		if os.Getenv("STARS_DEFENCE_CAPACITY") != "1" {
+			return
+		}
+	}
 	if os.Getenv("STARS_DEFENCE_CAPACITY") == "1" {
 		tg.startPatrolEvaluation()
 		if os.Getenv("STARS_DEFENCE_RECLAIM") == "1" {
 			tg.releaseUnreachablePatrolSupport()
 		}
 		p := g.getPlayer(1)
-		enemy := p.GetFleetIntel(27, 14)
+		owner, target := 27, 14
+		if value := os.Getenv("STARS_DEFENCE_CAPACITY_TARGET"); value != "" {
+			_, err := fmt.Sscanf(value, "%d:%d", &owner, &target)
+			require.NoError(t, err)
+		}
+		enemy := p.GetFleetIntel(owner, target)
 		require.NotNil(t, enemy)
 		for _, radius := range []float64{150, 400, 10000} {
 			group := []*Fleet{}
