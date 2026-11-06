@@ -70,6 +70,51 @@ as completed 30-turn acceptance.
 Branch coordination
 codex/coordinated-landings uses a separate landing-worktree. Commit 88c4e7b0
 records the pre-isolation shared source snapshot, including concurrent patrol/UI
-work, and is not a claim that all those changes belong to the landing task.
-The patrol chat rebased its subsequent work on this exact source snapshot.
-Integrate both branches and validate before publishing/installing the release.
+work, and does not attribute all those changes to this task. The patrol chat
+works in codex/patrol-colony-defence; code is integrated and tested together.
+The main chat owns final release/install; no personal DB, audit snapshot, cache
+or runtime download belongs in Git.
+
+
+Latest coordinated candidate (195b91c6 / peer 9c055f1b)
+Native movement snaps a remainder below one light-year. Two copied rendezvous
+routes therefore arrived one year early despite the planner reporting two.
+Pacing now chooses a funded route that also respects native arrival tolerance.
+A second copied replay exposed a physically assembled 53-ship relief force
+losing its launch opportunity after speculative recruitment exhausted the
+forecast budget. Existing assembled relief is now evaluated and dispatched
+first, retaining fresh assessment, departure checks and the loss doctrine.
+Native regression merges eight cruisers and destroys the bombarding fleet;
+copied 2493 replay launches 53 merged ships through final guards. Full cs PASS
+196.812s (patrol-ready-defence-full-cs.txt). Production trees are identical
+between the two commits; only this document and the checklist differ.
+Native/WASM/static frontend rebuilt; isolated compiled runtime smoke PASS,
+personalTurnsGenerated=0. Candidate hashes: landing-release/SHA256SUMS.txt.
+No installed release or personal save was changed.
+
+A separate corrected six-transition control starts from copied2492 on9c055f1b
+in patrol-final-control-ready-6. The frozen da6cb892 30-transition run retains
+its original code. As of2499 it confirms Trial captured in2498:231,000 attackers,
+68,800 lost and162,200 survivors. Leader108 physically merged32 transports
+and392,000 people by2497. Collector20 picked up7kT boranium in2494.
+This is partial campaign evidence, not completed acceptance: colonies59->33
+and Senility again has two hostile bomber fleets.
+
+Private copied2506 base-patrol diagnostic found Work97/1024,89 battle checks
+and zero budget-limit hits. No base-budget increase is justified by that test.
+Temporary diagnostic code is archived outside the production source tree.
+
+Unknown-base reconnaissance correction after candidate195b91c6
+Copied2499 Planet10 (owner19, base design5) had no known equipment slots and
+ScanYear0. Its scout191 was sent to rally, while base evaluation required those
+missing slots. Unknown equipment now requests the assigned scout's contact;
+transports and unassessed patrols remain outside the hostile orbit. Fuel audit
+now recognizes landing reconnaissance, as departure and safety checks already
+did, and preserves a fast funded route. Native regression fails before and
+passes after through both guards, actual movement and equipment discovery.
+Known overwhelming defenders do not trigger repeated reconnaissance sacrifices.
+Actual copied replay after guards directs scout191 from442,407 to391,460.
+Full cs PASS236.676s including that private replay. Other eight base operations
+had known slots; this correction does not explain all base waiting. Neither
+frozen campaign contains this later correction. Private replay source/logs are
+outside the repository; only native regression and production changes are kept.

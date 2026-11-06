@@ -69,6 +69,14 @@ func (t *turnGenerator) prepareLandingBaseAssault(p *Player, leader *Fleet, op *
 	base := reportedRecaptureBase(p, &report, true)
 	if base == nil {
 		t.releaseLandingBaseSurplus(p, leader, core)
+		// A base warning without its equipment is not a completed scout visit.
+		// Waiting for an assessed patrol here would wait forever for missing intel.
+		design := p.GetShipDesignIntel(target.PlayerNum, target.Spec.StarbaseDesignNum)
+		if target.Spec.HasStarbase && (design == nil || len(design.Slots) == 0) {
+			if scout := t.game.getFleet(p.Num, op.Scout); scout != nil && !scout.Delete && landingScout(p, scout) && !scout.InAutomaticSafety() && !scout.InDesignMaintenance() {
+				t.routeLanding(p, scout, target.Position, target.ToTarget(), true, 0)
+			}
+		}
 		return
 	}
 	pool := []landingBaseGuard{}
