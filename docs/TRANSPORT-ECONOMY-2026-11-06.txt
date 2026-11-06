@@ -1,0 +1,36 @@
+TRANSPORT ECONOMY AND CONFIGURATION — 2026-11-06
+
+Production: 5b39e26162ece278c0fb848408d1e5e2ef62ec05, branch codex/transport-economy.
+Includes core economy14c2eca0 and patrol47cab454 via941216b7. Separate working tree; shared working copy and personal saves untouched.
+
+DEFAULTS AND MENU
+Fleet automation -> Transport development and landings exposes habitability cutoff75%, population target/export reserve50%, captured colony target75%, absolute defense reserve80 units, factory/mine operating reserve95%, minimum attrition landing200,000 people, assembly escort2 ships. Checkboxes select civilian-first scheduling, captured-colony reinforcement, useful attrition drops, and blocked-base retargeting. Save transport policy persists through protobuf/API/database; reset restores form defaults before saving. Zero numeric API fields retain defaults for backward compatibility.
+Population percentages refer to planet capacity. Automatic targets apply below75% habitability; existing explicit manual destination thresholds remain available. Source reserve prevents re-export below50%. Conquest support persists until a starbase exists, not merely until75% population is reached. Loss of ownership clears support. Captures predating this feature lack the new conquest marker.
+
+TRANSPORT BEHAVIOR
+Civilian population/mineral work claims available ships before new landing recruitment by default; already committed landing operations remain coordinated. Shared outgoing reservations prevent civilian and military planners booking the same colonists. Mines/factories/defenses use existing routes and real cargo capacity; installation loading is opportunistic, with factory/mine reserve computed from operating population after departure. Defense export leaves80 absolute units even if maximum defenses is200.
+Mineral demand already accounts for queued future production (three-year yard resource budget plus the next unit), source reserve, incoming bookings and useful demand at arrival. A full useful shipment is preferred; unavailable useful cargo, salvage collection, or remaining destination capacity can prevent every observed hold being full. No claim that every fleet at every instant is full.
+Spare freighters load armies, physically merge one annual jump from target and assemble scout/patrol support. Reconnaissance checks orbit; enemy base blocks landing pending assessed patrol destruction and renewed reconnaissance. Incoming warships require cover already on station. Large useful attrition drops can weaken defenders without capture; minimum expected damage prevents waste against overwhelming ground defense. An army blocked by an unavailable base assault can retarget a nearby reported base-free colony, retaining cargo and requiring new reconnaissance. Empty completed armies split into usable civilian holds again.
+Safety is based on actual combat mechanics: fleets sharing the same final coordinates can battle even without a planet (cs/turn.go fleetBattle). Merely crossing flight paths does not itself trigger that battle. Hence planet-only immunity is not guaranteed; endpoint checks remain appropriate.
+
+VALIDATION
+Final production: full cs93.183s, AI0.540s, db1.007s/generated0.184s, server116.941s, converter0.179s PASS. Additional retarget-disable and configurable priority-pass tests PASS0.057s. UI19/19 PASS8.26s; svelte-check0errors/0warnings. API test retains server-owned conquest state while persisting user policy.
+Controlled native tests execute full colony delivery,15mines packed45kT and unloaded,20defenses moved leaving80, conservation/shared reservations,567,000-person merged conquest,210,000-person attrition attack actually reducing defenders without capture, blocked-base retarget and empty-army split preserving fuel.
+Windows native/WASM/static frontend rebuilt from final production; isolated compiled-runtime smoke PASS: login, authenticated GetGame, UI and WASM initialization, served WASM checksum, year2479 unchanged;0personal turns generated. Artifacts remain private in audit-results/landing-release; main release chat owns installation/publication.
+
+EARLIER-SAVE CAMPAIGNS (CORE14c2eca0, BEFORE FINAL CONFIGURATION/PATROL INTEGRATION)
+Two separate six-turn samples, not twelve consecutive unique turns:
+2454->2460 PASS141.61s: observed delivery lower bound519,000 people and1250kT minerals (392I/168B/690G); final42loaded freighters all42full.
+2459->2465 PASS172.52s: observed lower bound512,900 people and1045kT minerals (255I/332B/458G); final35loaded,34full. Partial cargo may reflect salvage/in-progress work.
+These are conservative matched-fleet cargo-decrease observations at delivery destinations, not a complete transaction ledger. No natural installation delivery or conquest was established in these short samples. Native tests cover those paths; earlier frozen30-turn measurement2476->2506 recorded two231,000-person captures and13factories delivered, but also failed a colony-defense assertion. Do not treat that earlier campaign as30turn acceptance of current production. Additional late campaigns were stopped at user request; not restarted.
+Both input copies were copied again to temporary databases by the test and hashes unchanged:
+2454 c4bf183c7b017644cfdd21df678e63d4b7bc83d074f1d89d8521f43d470dcac8
+2459 60852d36d10635070b71c173f9f8f193cee02fac2c4345888a2282da9ee73196
+Jobless counts include return travel and maintenance: sampled fleets5/33 returned over several years;91 progressed through maintenance to active travel. No stationary maintenance bug was established by that count alone.
+
+EVIDENCE (private audit-results, excluded from Git)
+transport-policy-final-all-tests.txt, transport-policy-extra-tests.txt,
+transport-policy-ui-tests-final.txt, transport-policy-ui-check.txt,
+transport-policy-runtime-smoke.txt, transport-economy-2454-6.txt,
+transport-economy-2459-6.txt, corresponding manifests and cargo summaries.
+Generated protobuf files were produced by standard local protoc plugins using a private protocompile descriptor driver because Buf source traversal returned Access is denied. Go converter was regenerated with goverter. Generated sources compile and API/browser persistence tests pass.
