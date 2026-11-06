@@ -9,6 +9,12 @@ import (
 )
 
 const patrolFrontTag = "patrol-front"
+const patrolFrontVisitsTag = "patrol-front-visits"
+
+type patrolFrontVisit struct {
+	Owner, Target, Until int
+	Type                 MapObjectType
+}
 
 // Do not recruit backwater hunters for a long unarmed chase while visible
 // combat formations need reinforcement. Nearby kills and imminent landings win.
@@ -42,6 +48,7 @@ type patrolFrontCandidate struct {
 	pressure float64
 	score    float64
 	anchor   *Planet
+	support  bool
 }
 
 // Local interception is planned first. Surplus hunters move toward reported
@@ -87,7 +94,14 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 	}
 	var previous patrolFront
 	hasPrevious := json.Unmarshal([]byte(f.GetTag(patrolFrontTag)), &previous) == nil
-	appendCandidate := func(obj MapObject, center Vector, standOff, pressure float64) {
+	visits := []patrolFrontVisit{}
+	_ = json.Unmarshal([]byte(f.GetTag(patrolFrontVisitsTag)), &visits)
+	visits = slices.DeleteFunc(visits, func(v patrolFrontVisit) bool { return v.Until < t.game.Year })
+	homeDistance := math.Inf(1)
+	for _, dock := range docks {
+		homeDistance = min(homeDistance, f.Position.DistanceTo(dock.Position))
+	}
+	appendCandidate := func(obj MapObject, center Vector, standOff, pressure float64, support bool) {
 		var anchor *Planet
 		nearest := math.Inf(1)
 		for _, dock := range docks {
@@ -99,14 +113,28 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 		if anchor == nil {
 			return
 		}
-		// Approach from friendly fuel territory, never choose the enemy's orbit.
-		position := center
-		if nearest <= standOff {
-			position = anchor.Position
-		} else {
-			position = center.ToFloat64().Add(anchor.Position.Subtract(center).Normalized().Scale(standOff)).ToInt(true)
+		for _, visit := range visits {
+			if visit.Owner == obj.PlayerNum && visit.Target == obj.Num && visit.Type == obj.Type {
+				return
+			}
 		}
-		c := patrolFrontCandidate{patrolFront: patrolFront{Owner: obj.PlayerNum, Target: obj.Num, Type: obj.Type, Position: position}, name: obj.Name, center: center, distance: f.Position.DistanceTo(position), pressure: pressure, anchor: anchor}
+		// Approach from the ship's current side. A fuel dock funds the route;
+		// it must not pull an advanced ship back to the friendly side of a front.
+		position := center
+		if standOff > 0 {
+			direction := f.Position.Subtract(center)
+			if direction == (Vector{}) {
+				direction = anchor.Position.Subtract(center)
+			}
+			position = center.ToFloat64().Add(direction.Normalized().Scale(standOff)).ToInt(true)
+		}
+		if f.Position.DistanceTo(position) < 12 {
+			// Reaching an observation area completes this advance. If the native
+			// combat planner cannot attack, seek another objective, not a tiny orbit.
+			visits = append(visits, patrolFrontVisit{obj.PlayerNum, obj.Num, t.game.Year + 3, obj.Type})
+			return
+		}
+		c := patrolFrontCandidate{patrolFront: patrolFront{Owner: obj.PlayerNum, Target: obj.Num, Type: obj.Type, Position: position}, name: obj.Name, center: center, distance: f.Position.DistanceTo(position), pressure: pressure, anchor: anchor, support: support}
 		allocated := 0.0
 		for _, assignment := range allocations[frontKey{c.Owner, c.Target, c.Type}] {
 			if len(assignment.fleet.Waypoints) > 1 || assignment.fleet.Position.DistanceTo(position) < 100 {
@@ -114,6 +142,14 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 			}
 		}
 		c.score = (100 + c.distance) * (1 + allocated) / max(1, pressure)
+		// A deep force increasingly favors useful conquest support. Nearby kills
+		// and urgent colony relief were already considered by the tactical pass.
+		if support {
+			c.score /= 2 + min(4, homeDistance/100)
+		}
+		if nearest+80 < homeDistance && !support {
+			c.score *= 2
+		}
 		if hasPrevious && previous.Owner == c.Owner && previous.Target == c.Target && previous.Type == c.Type {
 			c.score *= .8
 		}
@@ -127,19 +163,48 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 		if priorityFleet(p, enemy) {
 			pressure *= 3
 		}
-		appendCandidate(enemy.MapObject, patrolInterceptPosition(enemy), max(80, enemy.observedStrategicSpeed()+24), min(256, pressure))
+		appendCandidate(enemy.MapObject, patrolInterceptPosition(enemy), max(80, enemy.observedStrategicSpeed()+24), min(256, pressure), false)
+	}
+	// Transport operations own recruitment and native base-assault assessment.
+	// Route surplus hunters into their reachable assembly area without reserving
+	// them or changing the user's planet priorities. A retarget is read next turn.
+	landingTargets := map[int]bool{}
+	for _, leader := range t.game.getFleets(p.Num) {
+		op := readLandingOperation(leader)
+		if leader.Delete || op == nil || op.Need <= 0 || landingTargets[op.Target] {
+			continue
+		}
+		target := p.GetPlanetIntel(op.Target)
+		if target == nil || !target.Owned() || target.PlayerNum != op.Owner || target.PlayerNum == p.Num || p.IsFriend(target.PlayerNum) {
+			continue
+		}
+		landingTargets[target.Num] = true
+		appendCandidate(target.MapObject, op.Rally, 0, 12, true)
 	}
 	// Known hostile colonies provide the next frontier after mobile contacts clear.
 	for _, planet := range p.PlanetIntels {
-		if planet == nil || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || planet.Unexplored() {
+		if planet == nil || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || planet.Unexplored() || landingTargets[planet.Num] {
 			continue
 		}
-		pressure := 2.0
+		pressure := 2 + min(6, homeDistance/100)
 		if p.Automation.PriorityPlanets[planet.Num] {
 			pressure = 12
 		}
-		appendCandidate(planet.MapObject, planet.Position, 120, pressure)
+		appendCandidate(planet.MapObject, planet.Position, 80, pressure, false)
 	}
+	// When a front is cleared or temporarily cannot be attacked, expand contact
+	// coverage at unexplored or stale neutral worlds instead of circling home.
+	for _, planet := range p.PlanetIntels {
+		if planet == nil || planet.Owned() || !planet.Unexplored() && planet.ReportAge < 4 {
+			continue
+		}
+		appendCandidate(planet.MapObject, planet.Position, 0, 1, false)
+	}
+	if len(visits) > 16 {
+		visits = visits[len(visits)-16:]
+	}
+	data, _ := json.Marshal(visits)
+	f.SetTag(patrolFrontVisitsTag, string(data))
 	slices.SortStableFunc(candidates, func(a, b patrolFrontCandidate) int {
 		if a.score < b.score {
 			return -1
@@ -154,15 +219,6 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 	})
 	for _, c := range candidates[:min(8, len(candidates))] {
 		position := c.Position
-		if f.Position.DistanceTo(position) < 12 {
-			// A short observation leg keeps ships active without closing on the enemy.
-			direction := c.anchor.Position.Subtract(c.center).Normalized()
-			side := 1.0
-			if f.Num%2 == 0 {
-				side = -1
-			}
-			position = position.ToFloat64().Add(VectorFloat64{X: -direction.Y * 12 * side, Y: direction.X * 12 * side}).ToInt(true)
-		}
 		// Try the frontier itself, then funded forward legs. Far contacts must not
 		// freeze a ship which can already advance to the next useful observation area.
 		for _, limit := range []float64{math.Inf(1), 120, 60, 30} {
@@ -174,7 +230,7 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 			if dest == f.Position {
 				continue
 			}
-			policy := economicalContainmentPolicy(p, f, f.Position.DistanceTo(dest))
+			policy := automaticRoutePolicy{Fast: true, MaxTurns: 8}
 			route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, dest, MapObjectTarget{}, policy)
 			if route == nil || route.WaitForFuel {
 				continue
@@ -183,7 +239,11 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 			f.SetTag(patrolFrontTag, string(data))
 			f.SetTag(patrolSectorTag, strconv.Itoa(c.anchor.Num))
 			applyExpeditionRoute(p, f, route)
-			f.SetTag(frontierPatrolTag, fmt.Sprintf("Advancing to frontier near %s; gathering outside enemy reach, return fuel reserved", c.name))
+			status := fmt.Sprintf("Offensive advance toward %s; return fuel reserved", c.name)
+			if c.support {
+				status = fmt.Sprintf("Advancing to support the invasion of %s; return fuel reserved", c.name)
+			}
+			f.SetTag(frontierPatrolTag, status)
 			return true
 		}
 	}

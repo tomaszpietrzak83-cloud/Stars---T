@@ -33,10 +33,10 @@ func TestPatrolYearlyChoiceUsesHeadOnEndpoint(t *testing.T) {
 	require.Equal(t, far.Num, readPatrolJob(f).Target)
 }
 
-func TestPatrolSectorStaysAtBusyBirthBaseAndSurplusCoversOtherBase(t *testing.T) {
+func TestScoutSectorStaysAtBusyBirthBaseAndSurplusCoversOtherBase(t *testing.T) {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignDestroyerDelta, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Local", Design: DesignDestroyerDelta.Name, At: "Home"}, {Name: "Spare", Design: DesignDestroyerDelta.Name, At: "Home"}}}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}, {Name: "Border", Owner: 1, Starbase: DesignSpaceStation.Name, Position: Vector{100, 0}}}})
 	p, a, b := u.Player(1), u.Fleet("Local"), u.Fleet("Spare")
-	p.Automation.FleetRoles = map[int]string{a.Num: "patrol", b.Num: "patrol"}
+	p.Automation.FleetRoles = map[int]string{a.Num: "scout", b.Num: "scout"}
 	p.PlanetIntels = []*Planet{u.Planet("Home"), u.Planet("Border")}
 	p.FleetIntels = []*Fleet{patrolTestEnemy(0, p)}
 	u.Run(func(tg *turnGenerator) { require.True(t, tg.patrolFrontier(p, a)) })

@@ -1,0 +1,85 @@
+OFFENSIVE PATROL POLICY - 2026-11-06
+Production commit47cab4546e81e2c83fa68cf38d09080006c543dd.
+
+User intent: expand toward enemy territory, kill traffic on the way, assemble
+assessed combat forces and increasingly support conquest rather than circle
+safe owned colonies. Existing nearby interception/urgent defence still runs
+before surplus relocation. Existing combat-loss thresholds are unchanged.
+
+Concrete causes removed:
+-Patrol fallback assigned24ly home loops and a second fallback30ly home loop.
+-The front approach point was determined from the nearest friendly fuel dock;
+ nearby hostile planets could anchor that point at the friendly colony itself.
+-Reaching the front produced a12ly sideways observation leg repeatedly.
+-Fuel guard replaced an already funded forward route with economical patrol
+ policy, including warp1 in the regression scenario.
+
+New behaviour:
+-Combat patrols choose a reported front, active invasion rally, or unexplored/
+ stale neutral observation objective. Legacy local coverage remains for scouts.
+-Approach uses the ship's current side of the contact; docks fund the return.
+-A reached observation area is remembered for3 years, with bounded16-entry
+ memory; choose another objective rather than a tiny orbit. If no funded
+ objective exists, report it honestly instead of manufacturing home loops.
+-Active landing Target/Owner/Rally/Need is read each plan; support becomes more
+ important with distance from friendly fuel territory. Retarget is followed.
+-No user PriorityPlanets changes, automatic landing membership or speculative
+ combat permission is created by this front movement.
+-Funded fast forward legs survive the fuel guard. Native battle assessment,
+ return fuel and departure safety remain required. Retreat/refuelling can
+ still move a fleet toward owned space when materially necessary.
+
+Validation:
+-Full cs PASS97.516s. Four new behavioural scenarios verify forward movement,
+ continued advance beyond a completed observation, approach from current side,
+ actual invasion support/retarget and exploratory alternatives. Old tests
+ requiring home loops were updated to the new explicit objectives; scout
+ coverage and zero-fuel free-engine movement remain tested.
+-Additional native integration PASS:40 free hunters move80ly to an actual
+ landing rally; landing assessment selects2, physically merges and destroys
+ the orbital base. Transport remains behind with its colonists. This is a
+ controlled engine scenario, not a claimed campaign capture.
+-AI PASS3.687s; db4.170s; server151.197s; converter3.305s.
+-Windows/WASM/static UI rebuilt. Isolated native login, API, compiled browser
+ UI and game/WASM initialization PASS at2459, no turn generated. Initial smoke
+ launcher used Windows PowerShell legacy HTML parsing and falsely timed out
+ despite HTTP200; using UseBasicParsing fixed the harness, no product change.
+ Native SHA3590cbe2d7e41d76356554aad644e50ee3e093ab6e22423e189840d169f7916f
+ WASM SHA044fb4ada515849435bb6fb21d32b91b06c68a3677679db2a20c1aad7efc437c
+ Staging: audit-results/patrol-offensive-release. Do not publish staging/data.
+ Main chat owns integration, final release version, installation and publication.
+
+Same earlier complete copy,2459->2471,12 transitions:
+Baseline840938fe versus production47cab454. Input SHA unchanged in both:
+60852d36d10635070b71c173f9f8f193cee02fac2c4345888a2282da9ee73196.
+New run PASS412.15s (concurrent build/tests; not a clean performance benchmark).
+Before/after:52/52 hunter kills,0/0 hunter losses,45/41 hunter-design battles.
+Final moving hunters49/58; total hunters66/66. Stationary rally members0/0
+throughout. Total stationary/no-order fleet-year observations27/34; not every
+ship moves every year. Final stationary hunters3, including2 landing guards.
+Active home-loop orders were0 in both natural samples, so their removal is
+established by code/native regressions, not an observed campaign improvement.
+Final median distance to nearest owned planet35.26/37.77ly. This does not prove
+continuous strategic expansion. Counts of progress toward the previous year's
+front objective decreased86->61 (2222.5->1272.4 summed fleet-ly); objectives
+changed, and this is not a measure of progress toward the current year's target.
+Concrete new support movements toward Axolotl:135 in2463,141 in2466,179 in2468.
+Two landing guards persisted8 turns; transport retarget work remains separately
+owned by the transport chat. Its new policy is NOT in this frozen measurement.
+Small70kT collector112 actually gained3kT debris at306,427 in2466.
+Both versions ended with65 colonies from59. ZERO hostile planets captured in
+both samples. No strategic victory or guaranteed defence claim is justified.
+
+Coordination:
+Transport chat preserves landingBaseRequested/prepareLandingBaseAssault and
+Target/Owner/Rally/Need retarget interface. Its codex/transport-economy work
+changes transport economics/menu independently. Only shared production edit
+here is one patrolFrontTag policy assignment in automatictanker.go, agreed
+with that chat. Main and transport chat were notified of47cab454 and limits.
+No personal saved turn advanced. No new transport-policy tests launched here.
+
+Local evidence (private inputs and snapshots must stay outside Git):
+patrol-offensive-full-cs-v2.txt, patrol-offensive-orbital-assault.txt,
+patrol-offensive-integration-tests.txt, patrol-offensive-runtime-smoke-v2.txt,
+patrol-final-control-offensive.txt and -manifest.txt, -analysis.json, -hunters.json,
+patrol-offensive-baseline-progress.json and patrol-offensive-new-progress.json.
