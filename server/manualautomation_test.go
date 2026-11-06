@@ -33,7 +33,7 @@ func TestManualOrdersAfterMergedFleetHasStaleAssignments(t *testing.T) {
 	ctx = context.WithValue(ctx, keyDbRead, conn.NewReadClient())
 	ctx = context.WithValue(ctx, keyGame, game)
 	ctx = context.WithValue(ctx, keyGamePlayer, &game.Players[0])
-	_, err = NewPlayerServiceHandler(conn, cfg, newDiscordNotifier(conn, cfg)).UpdatePlayerOrders(ctx, connect.NewRequest(&v1.UpdatePlayerOrdersRequest{GameId: full.ID, Orders: &v1.PlayerOrders{Automation: &v1.LogisticsAutomation{FleetRoles: map[int32]string{999: "scout"}, RebuildFleets: map[int32]bool{int32(f.Num): true}}}}))
+	_, err = NewPlayerServiceHandler(conn, cfg, newDiscordNotifier(conn, cfg)).UpdatePlayerOrders(ctx, connect.NewRequest(&v1.UpdatePlayerOrdersRequest{GameId: full.ID, Orders: &v1.PlayerOrders{Automation: &v1.LogisticsAutomation{TransportPolicy: &v1.TransportPolicy{DefenseReserve: 70, CapturedPopulationTarget: 85}, FleetRoles: map[int32]string{999: "scout"}, RebuildFleets: map[int32]bool{int32(f.Num): true}}}}))
 	require.NoError(t, err)
 	saved, err := c.GetFleetByNum(ctx, full.ID, p.Num, f.Num)
 	require.NoError(t, err)
@@ -46,4 +46,7 @@ func TestManualOrdersAfterMergedFleetHasStaleAssignments(t *testing.T) {
 	require.Empty(t, player.Automation.RebuildFleets)
 	require.Equal(t, p.Automation.PatrolMemory, player.Automation.PatrolMemory, "ordinary client orders cannot erase server-owned contact memory")
 	require.Equal(t, p.Automation.OccupationSupport, player.Automation.OccupationSupport)
+	require.NotNil(t, player.Automation.TransportPolicy)
+	require.Equal(t, 70, player.Automation.TransportPolicy.DefenseReserve)
+	require.Equal(t, 85, player.Automation.TransportPolicy.CapturedPopulationTarget)
 }

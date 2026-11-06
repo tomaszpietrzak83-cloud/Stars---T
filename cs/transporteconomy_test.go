@@ -92,11 +92,11 @@ func TestCivilianDeliveryClaimsTransportBeforeLanding(t *testing.T) {
 	require.NotNil(t, landingLeader(u), "remaining holds may still prepare a landing")
 }
 
-func TestDefenseExportLeavesEightyPercentAndPhysicallyDelivers(t *testing.T) {
+func TestDefenseExportLeavesEightyUnitsAndPhysicallyDelivers(t *testing.T) {
 	u := passengerUniverse(t)
 	p, f, source, dest := u.Player(1), u.Fleet("Transport"), u.Planet("Home"), u.Planet("Young colony")
 	p.Automation.InfrastructureTransport = true
-	source.Spec.MaxDefenses, source.Defenses = 100, 100
+	source.Spec.MaxDefenses, source.Defenses = 200, 100
 	dest.Spec.MaxDefenses, dest.Defenses = 100, 0
 	source.Factories, source.Mines = 0, 0
 	u.Run(func(tg *turnGenerator) { tg.loadOpportunisticInfrastructure(p, f, source, dest, 0) })
@@ -107,6 +107,31 @@ func TestDefenseExportLeavesEightyPercentAndPhysicallyDelivers(t *testing.T) {
 	u.Run((*turnGenerator).unloadOpportunisticInfrastructure)
 	require.Equal(t, 20, dest.Defenses)
 	require.Zero(t, f.CargoMass())
+}
+
+func TestTransportPolicyChangesActualPopulationAndLandingRules(t *testing.T) {
+	u := passengerUniverse(t)
+	p, dest := u.Player(1), u.Planet("Young colony")
+	p.Automation.ManualPassengerThresholds = false
+	p.Automation.TransportPolicy = &TransportPolicy{ColonyHabitabilityCutoff: 60, ColonyPopulationTarget: 45, CapturedPopulationTarget: 85, DefenseReserve: 70, InstallationReservePercent: 90, AttritionMinimumPeople: 300000, LandingEscortShips: 4}
+	require.NoError(t, p.Automation.Validate())
+	dest.Spec.Habitability = 59
+	require.Equal(t, 45, colonyPopulationPercent(p, dest))
+	require.Equal(t, populationTarget(dest, 45), sourcePopulationReserve(p, dest))
+	dest.Spec.Habitability = 60
+	require.Equal(t, 20, colonyPopulationPercent(p, dest))
+	p.Automation.OccupationSupport = map[int]bool{dest.Num: true}
+	require.Equal(t, 85, colonyPopulationPercent(p, dest))
+	p.Automation.TransportPolicy.DisableCapturedSupport = true
+	require.Equal(t, 20, colonyPopulationPercent(p, dest))
+	dest.Cargo.Colonists = 10000
+	require.False(t, usefulAttritionLanding(&u.Game.Rules, p, dest, 2100))
+	require.True(t, usefulAttritionLanding(&u.Game.Rules, p, dest, 3000))
+	p.Automation.TransportPolicy.DisableAttrition = true
+	require.False(t, usefulAttritionLanding(&u.Game.Rules, p, dest, 3000))
+	for _, bad := range []TransportPolicy{{ColonyHabitabilityCutoff: 101}, {DefenseReserve: -1}, {AttritionMinimumPeople: 12345}, {LandingEscortShips: -1}} {
+		require.Error(t, bad.Validate())
+	}
 }
 
 func TestSurplusMinesArePackedAndPhysicallyDelivered(t *testing.T) {
@@ -154,6 +179,10 @@ func TestBlockedBaseArmyRetargetsWithoutDroppingBlind(t *testing.T) {
 	weak.Spec.MaxPopulation = 100000
 	weak.Cargo.Colonists = 1
 	p.PlanetIntels = append(p.PlanetIntels, &weak)
+	p.Automation.TransportPolicy = &TransportPolicy{DisableRetarget: true}
+	u.Run(func(tg *turnGenerator) { require.False(t, tg.retargetBlockedLanding(p, leader, op)) })
+	require.NotEqual(t, weak.Num, op.Target)
+	p.Automation.TransportPolicy.DisableRetarget = false
 	u.Run(func(tg *turnGenerator) { tg.prepareLandingBaseAssault(p, leader, op, p.GetPlanetIntel(op.Target), nil) })
 	require.Equal(t, weak.Num, op.Target)
 	require.Equal(t, "gather", op.Phase)
@@ -162,6 +191,17 @@ func TestBlockedBaseArmyRetargetsWithoutDroppingBlind(t *testing.T) {
 	require.Equal(t, loaded, leader.Cargo.Colonists)
 	require.Empty(t, leader.GetTag(recaptureAssaultTag))
 	require.NotEqual(t, weak.Position, leader.Position)
+}
+
+func TestConfiguredLandingPrioritySelectsRecruitmentPass(t *testing.T) {
+	for _, early := range []bool{false, true} {
+		u := landingOperationUniverse(t)
+		u.Player(1).Automation.TransportPolicy = &TransportPolicy{LandingsFirst: early}
+		u.Run(func(tg *turnGenerator) { tg.planLandingOperationsForPriority(!early) })
+		require.Nil(t, landingLeader(u))
+		u.Run(func(tg *turnGenerator) { tg.planLandingOperationsForPriority(early) })
+		require.NotNil(t, landingLeader(u))
+	}
 }
 
 func TestUsefulAttritionDropReducesRealDefenders(t *testing.T) {

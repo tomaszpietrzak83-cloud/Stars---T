@@ -158,7 +158,7 @@ func (t *turnGenerator) findPassengerTransfer(player *Player, fleet *Fleet) *log
 		if ap != bp {
 			return ap
 		}
-		ac, bc := player.Automation.OccupationSupport[a.job.DeliveryNum], player.Automation.OccupationSupport[b.job.DeliveryNum]
+		ac, bc := !player.Automation.transportPolicy().DisableCapturedSupport && player.Automation.OccupationSupport[a.job.DeliveryNum], !player.Automation.transportPolicy().DisableCapturedSupport && player.Automation.OccupationSupport[b.job.DeliveryNum]
 		if ac != bc {
 			return ac
 		}
@@ -343,13 +343,14 @@ func passengerCruiseFleet(fleet *Fleet) bool {
 // For d>1/4 the native growth law is k*d*(1-d)^2. Its maximum
 // is d=1/3. Round the reserve up to a whole 100-person cargo unit.
 func sourcePopulationReserve(p *Player, planet *Planet) int {
-	if p.Automation.OccupationSupport[planet.Num] {
-		return populationTarget(planet, 75)
+	policy := p.Automation.transportPolicy()
+	if p.Automation.OccupationSupport[planet.Num] && !policy.DisableCapturedSupport {
+		return populationTarget(planet, policy.CapturedPopulationTarget)
 	}
 	if p.Automation.ManualPassengerThresholds {
 		percent := p.Automation.sourcePopulationPercent()
-		if planet.Spec.Habitability > 0 && planet.Spec.Habitability < 75 {
-			percent = max(percent, 50)
+		if planet.Spec.Habitability > 0 && planet.Spec.Habitability < policy.ColonyHabitabilityCutoff {
+			percent = max(percent, policy.ColonyPopulationTarget)
 		}
 		return populationTarget(planet, percent)
 	}

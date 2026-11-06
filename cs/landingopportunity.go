@@ -23,7 +23,8 @@ func (t *turnGenerator) disperseEmptyLandingTransports(p *Player, leader *Fleet)
 // A failed occupation can still be useful, but never send tiny or mostly
 // annihilated drops. This estimate uses reported ground data, not hidden state.
 func usefulAttritionLanding(rules *Rules, p *Player, target *Planet, troops int) bool {
-	if troops < 2000 || target == nil || target.Cargo.Colonists <= 0 {
+	policy := p.Automation.transportPolicy()
+	if policy.DisableAttrition || troops < policy.AttritionMinimumPeople/100 || target == nil || target.Cargo.Colonists <= 0 {
 		return false
 	}
 	survival := max(0, 1-target.Spec.DefenseCoverage*rules.InvasionDefenseCoverageFactor)
@@ -35,7 +36,7 @@ func usefulAttritionLanding(rules *Rules, p *Player, target *Planet, troops int)
 // choose a nearby reported base-free colony it can provision for occupation;
 // the new operation still assembles, scouts and passes the orbital checks.
 func (t *turnGenerator) retargetBlockedLanding(p *Player, leader *Fleet, op *landingOperation) bool {
-	if leader.Position != op.Rally || leader.Cargo.Colonists == 0 {
+	if p.Automation.transportPolicy().DisableRetarget || leader.Position != op.Rally || leader.Cargo.Colonists == 0 {
 		return false
 	}
 	candidates := []*Planet{}

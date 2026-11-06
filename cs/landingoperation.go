@@ -301,7 +301,7 @@ func (t *turnGenerator) startLandingOperation(p *Player, handled map[int]bool) *
 			}
 			cover = append(cover, f)
 			ships += f.Spec.TotalShips
-			if ships >= 2 {
+			if ships >= p.Automation.transportPolicy().LandingEscortShips {
 				break
 			}
 		}
@@ -479,10 +479,18 @@ func (t *turnGenerator) landingReservations(p *Player) map[int]int {
 	return reserved
 }
 func (t *turnGenerator) planLandingOperations() {
+	t.planLandingOperationsForPriority(true)
+	t.planLandingOperationsForPriority(false)
+}
+
+func (t *turnGenerator) planLandingOperationsForPriority(landingsFirst bool) {
 	if t.ordersOnly {
 		return
 	}
 	for _, p := range t.automaticPlayers() {
+		if p.Automation.transportPolicy().LandingsFirst != landingsFirst {
+			continue
+		}
 		for _, f := range t.game.getFleets(p.Num) {
 			n, _ := strconv.Atoi(f.GetTag(landingMemberTag))
 			owner := t.game.getFleet(p.Num, n)
@@ -577,7 +585,7 @@ func (t *turnGenerator) recruitLandingProtection(p *Player, leader *Fleet, op *l
 			ships += f.Spec.TotalShips
 		}
 	}
-	if ships >= 2 {
+	if ships >= p.Automation.transportPolicy().LandingEscortShips {
 		return
 	}
 	candidates := slices.Clone(t.game.getFleets(p.Num))
@@ -603,7 +611,7 @@ func (t *turnGenerator) recruitLandingProtection(p *Player, leader *Fleet, op *l
 		delete(f.Tags, patrolTag)
 		applyExpeditionRoute(p, f, route)
 		ships += f.Spec.TotalShips
-		if ships >= 2 {
+		if ships >= p.Automation.transportPolicy().LandingEscortShips {
 			break
 		}
 	}
@@ -800,7 +808,7 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 			protection += f.Spec.TotalShips
 		}
 	}
-	if op.Phase == "gather" && protection < 2 {
+	if op.Phase == "gather" && protection < p.Automation.transportPolicy().LandingEscortShips {
 		ready = false
 	}
 	if op.Phase != "gather" && (op.Base || target.Spec.HasStarbase) {
@@ -838,14 +846,14 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 			guardShips += f.Spec.TotalShips
 		}
 	}
-	if guardShips < 2 && len(op.EscortDesigns) == 0 {
+	if guardShips < p.Automation.transportPolicy().LandingEscortShips && len(op.EscortDesigns) == 0 {
 		for _, f := range t.game.getFleets(p.Num) {
 			if landingAvailable(p, f) && patrolAvailable(p, f) && readPatrolJob(f).Leader == 0 {
 				f.SetTag(landingMemberTag, strconv.Itoa(leader.Num))
 				delete(f.Tags, patrolTag)
 				t.routeLanding(p, f, op.Rally, MapObjectTarget{}, false, 0)
 				guardShips += f.Spec.TotalShips
-				if guardShips >= 2 {
+				if guardShips >= p.Automation.transportPolicy().LandingEscortShips {
 					break
 				}
 			}

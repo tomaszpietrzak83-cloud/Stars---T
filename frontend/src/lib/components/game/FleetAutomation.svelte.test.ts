@@ -291,3 +291,43 @@ it('does not offer Scout to an armed fleet without scanners', async () => {
 			.query()
 	).toBeNull();
 });
+
+it('saves editable transport policy and retains other automation settings', async () => {
+	render(FleetAutomation);
+	await page.getByLabelText('Lower-habitability cutoff (%)').fill('60');
+	await page.getByLabelText('Lower-habitability population target and reserve (%)').fill('45');
+	await page.getByLabelText('Captured colony population target (%)').fill('85');
+	await page.getByLabelText('Defenses to retain at source (units)').fill('70');
+	await page.getByLabelText('Factory and mine operating reserve (%)').fill('90');
+	await page.getByLabelText('Minimum weakening landing (people)').fill('300000');
+	await page.getByLabelText('Patrol ships for landing assembly').fill('4');
+	await page
+		.getByRole('checkbox', {
+			name: 'Allow large landings that weaken defenders without capturing the planet'
+		})
+		.click();
+	await page.getByRole('button', { name: 'Save transport policy', exact: true }).click();
+	const policy = get(context.player).playerOrders!.automation!.transportPolicy!;
+	expect(policy.colonyHabitabilityCutoff).toBe(60);
+	expect(policy.colonyPopulationTarget).toBe(45);
+	expect(policy.capturedPopulationTarget).toBe(85);
+	expect(policy.defenseReserve).toBe(70);
+	expect(policy.installationReservePercent).toBe(90);
+	expect(policy.attritionMinimumPeople).toBe(300000);
+	expect(policy.landingEscortShips).toBe(4);
+	expect(policy.disableAttrition).toBe(true);
+	await page.getByRole('button', { name: 'Reset transport policy to defaults' }).click();
+	await page.getByRole('button', { name: 'Save transport policy', exact: true }).click();
+	expect(get(context.player).playerOrders!.automation!.transportPolicy!.defenseReserve).toBe(80);
+	expect(get(context.player).playerOrders!.automation!.transportPolicy!.disableAttrition).toBe(
+		false
+	);
+});
+
+it('rejects invalid transport policy values before saving', async () => {
+	render(FleetAutomation);
+	await page.getByLabelText('Minimum weakening landing (people)').fill('12345');
+	await expect
+		.element(page.getByRole('button', { name: 'Save transport policy', exact: true }))
+		.toBeDisabled();
+});

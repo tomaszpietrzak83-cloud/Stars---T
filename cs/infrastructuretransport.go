@@ -40,11 +40,15 @@ func saveInfrastructure(f *Fleet, c infrastructureCargo) {
 }
 func (f *Fleet) CargoMass() int              { return f.Cargo.Total() + readInfrastructure(f).mass() }
 func (f *Fleet) carriesInfrastructure() bool { return f != nil && readInfrastructure(f).mass() > 0 }
-func installationSurplus(stock, capacity int) int {
+func installationSurplus(stock, capacity int, configured ...int) int {
+	percent := 95
+	if len(configured) > 0 {
+		percent = configured[0]
+	}
 	if capacity <= 0 {
 		return 0
 	}
-	return max(0, stock-(capacity*95+99)/100)
+	return max(0, stock-(capacity*percent+99)/100)
 }
 func installationCapacity(player *Player, p *Planet, population int) (int, int, int) {
 	population = min(max(0, population), p.Spec.MaxPopulation)
@@ -65,10 +69,11 @@ func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet
 		return
 	}
 	packed := readInfrastructure(f)
+	policy := player.Automation.transportPolicy()
 	if packed.mass() > 0 && packed.Destination != dest.Num {
 		return
 	}
-	sf, sm, sd := installationCapacity(player, source, max(0, source.GetPopulation()-passengers*100))
+	sf, sm, _ := installationCapacity(player, source, max(0, source.GetPopulation()-passengers*100))
 	df, dm, dd := installationCapacity(player, dest, dest.GetPopulation()+passengers*100)
 	for _, other := range t.game.getFleets(player.Num) {
 		if other.Num != f.Num && !other.Delete {
@@ -84,11 +89,11 @@ func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet
 	if room <= 0 {
 		return
 	}
-	factories := min(installationSurplus(source.Factories, sf), max(0, df-dest.Factories-packed.Factories), room/5)
+	factories := min(installationSurplus(source.Factories, sf, policy.InstallationReservePercent), max(0, df-dest.Factories-packed.Factories), room/5)
 	room -= factories * 5
-	mines := min(installationSurplus(source.Mines, sm), max(0, dm-dest.Mines-packed.Mines), room/3)
+	mines := min(installationSurplus(source.Mines, sm, policy.InstallationReservePercent), max(0, dm-dest.Mines-packed.Mines), room/3)
 	room -= mines * 3
-	defenses := min(max(0, source.Defenses-(sd*80+99)/100), max(0, dd-dest.Defenses-packed.Defenses), room)
+	defenses := min(max(0, source.Defenses-policy.DefenseReserve), max(0, dd-dest.Defenses-packed.Defenses), room)
 	source.Factories -= factories
 	source.Mines -= mines
 	source.Defenses -= defenses
@@ -101,8 +106,8 @@ func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet
 	}
 	actualPassengers := min(passengers, max(0, f.availableColonistSpace()+reserved-factories*5-mines*3-defenses))
 	sf, sm, _ = installationCapacity(player, source, max(0, source.GetPopulation()-actualPassengers*100))
-	restoreFactories := min(factories, max(0, (sf*95+99)/100-source.Factories))
-	restoreMines := min(mines, max(0, (sm*95+99)/100-source.Mines))
+	restoreFactories := min(factories, max(0, (sf*policy.InstallationReservePercent+99)/100-source.Factories))
+	restoreMines := min(mines, max(0, (sm*policy.InstallationReservePercent+99)/100-source.Mines))
 	source.Factories += restoreFactories
 	source.Mines += restoreMines
 	factories -= restoreFactories

@@ -1595,6 +1595,7 @@ func (c *ProtoConverter) ConvertLRTSpec(source *v1.LRTSpec) cs.LRTSpec {
 func (c *ProtoConverter) ConvertLogisticsAutomation(source *v1.LogisticsAutomation) cs.LogisticsAutomation {
 	var csLogisticsAutomation cs.LogisticsAutomation
 	if source != nil {
+		csLogisticsAutomation.TransportPolicy = c.pCraig_starsv1TransportPolicyToPCsTransportPolicy((*source).TransportPolicy)
 		csLogisticsAutomation.PriorityFleets = (*source).PriorityFleets
 		if (*source).PriorityTraders != nil {
 			csLogisticsAutomation.PriorityTraders = make(map[int]bool, len((*source).PriorityTraders))
@@ -2829,6 +2830,7 @@ func (c *ProtoConverter) csLRTToUint32(source cs.LRT) uint32 {
 }
 func (c *ProtoConverter) csLogisticsAutomationToPCraig_starsv1LogisticsAutomation(source cs.LogisticsAutomation) *v1.LogisticsAutomation {
 	var craig_starsv1LogisticsAutomation v1.LogisticsAutomation
+	craig_starsv1LogisticsAutomation.TransportPolicy = c.pCsTransportPolicyToPCraig_starsv1TransportPolicy(source.TransportPolicy)
 	craig_starsv1LogisticsAutomation.PriorityFleets = source.PriorityFleets
 	if source.PriorityTraders != nil {
 		craig_starsv1LogisticsAutomation.PriorityTraders = make(map[int32]bool, len(source.PriorityTraders))
@@ -4384,6 +4386,25 @@ func (c *ProtoConverter) pCraig_starsv1TechRequirementsToCsTechRequirements(sour
 	}
 	return csTechRequirements
 }
+func (c *ProtoConverter) pCraig_starsv1TransportPolicyToPCsTransportPolicy(source *v1.TransportPolicy) *cs.TransportPolicy {
+	var pCsTransportPolicy *cs.TransportPolicy
+	if source != nil {
+		var csTransportPolicy cs.TransportPolicy
+		csTransportPolicy.ColonyHabitabilityCutoff = Int32ToInt((*source).ColonyHabitabilityCutoff)
+		csTransportPolicy.ColonyPopulationTarget = Int32ToInt((*source).ColonyPopulationTarget)
+		csTransportPolicy.CapturedPopulationTarget = Int32ToInt((*source).CapturedPopulationTarget)
+		csTransportPolicy.DefenseReserve = Int32ToInt((*source).DefenseReserve)
+		csTransportPolicy.InstallationReservePercent = Int32ToInt((*source).InstallationReservePercent)
+		csTransportPolicy.AttritionMinimumPeople = Int32ToInt((*source).AttritionMinimumPeople)
+		csTransportPolicy.LandingEscortShips = Int32ToInt((*source).LandingEscortShips)
+		csTransportPolicy.LandingsFirst = (*source).LandingsFirst
+		csTransportPolicy.DisableAttrition = (*source).DisableAttrition
+		csTransportPolicy.DisableRetarget = (*source).DisableRetarget
+		csTransportPolicy.DisableCapturedSupport = (*source).DisableCapturedSupport
+		pCsTransportPolicy = &csTransportPolicy
+	}
+	return pCsTransportPolicy
+}
 func (c *ProtoConverter) pCraig_starsv1UniverseGenerationRulesToCsUniverseGenerationRules(source *v1.UniverseGenerationRules) cs.UniverseGenerationRules {
 	var csUniverseGenerationRules cs.UniverseGenerationRules
 	if source != nil {
@@ -4708,6 +4729,25 @@ func (c *ProtoConverter) pCsTargetToPCraig_starsv1MapObjectTarget(source *cs.Tar
 		pCraig_starsv1MapObjectTarget = &craig_starsv1MapObjectTarget
 	}
 	return pCraig_starsv1MapObjectTarget
+}
+func (c *ProtoConverter) pCsTransportPolicyToPCraig_starsv1TransportPolicy(source *cs.TransportPolicy) *v1.TransportPolicy {
+	var pCraig_starsv1TransportPolicy *v1.TransportPolicy
+	if source != nil {
+		var craig_starsv1TransportPolicy v1.TransportPolicy
+		craig_starsv1TransportPolicy.ColonyHabitabilityCutoff = IntToInt32((*source).ColonyHabitabilityCutoff)
+		craig_starsv1TransportPolicy.ColonyPopulationTarget = IntToInt32((*source).ColonyPopulationTarget)
+		craig_starsv1TransportPolicy.CapturedPopulationTarget = IntToInt32((*source).CapturedPopulationTarget)
+		craig_starsv1TransportPolicy.DefenseReserve = IntToInt32((*source).DefenseReserve)
+		craig_starsv1TransportPolicy.InstallationReservePercent = IntToInt32((*source).InstallationReservePercent)
+		craig_starsv1TransportPolicy.AttritionMinimumPeople = IntToInt32((*source).AttritionMinimumPeople)
+		craig_starsv1TransportPolicy.LandingEscortShips = IntToInt32((*source).LandingEscortShips)
+		craig_starsv1TransportPolicy.LandingsFirst = (*source).LandingsFirst
+		craig_starsv1TransportPolicy.DisableAttrition = (*source).DisableAttrition
+		craig_starsv1TransportPolicy.DisableRetarget = (*source).DisableRetarget
+		craig_starsv1TransportPolicy.DisableCapturedSupport = (*source).DisableCapturedSupport
+		pCraig_starsv1TransportPolicy = &craig_starsv1TransportPolicy
+	}
+	return pCraig_starsv1TransportPolicy
 }
 func (c *ProtoConverter) pCsVectorGenericToPCraig_starsv1Vector(source *cs.VectorGeneric[int]) *v1.Vector {
 	var pCraig_starsv1Vector *v1.Vector

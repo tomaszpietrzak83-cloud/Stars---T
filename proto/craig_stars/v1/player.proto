@@ -126,6 +126,7 @@ message PlayerOrders {
 }
 
 message LogisticsAutomation {
+  TransportPolicy transport_policy = 28;
   // Fleet numbers are local to each player: keys are "playerNum:fleetNum".
   map<string, bool> priority_fleets = 27;
   map<int32, bool> priority_traders = 26;
@@ -266,4 +267,18 @@ message StatisticsCounters {
  int64 mines_built = 22;
  int64 defenses_built = 23;
  int64 minerals_salvaged = 24;
+}
+
+message TransportPolicy {
+ int32 colony_habitability_cutoff = 1;
+ int32 colony_population_target = 2;
+ int32 captured_population_target = 3;
+ int32 defense_reserve = 4;
+ int32 installation_reserve_percent = 5;
+ int32 attrition_minimum_people = 6;
+ int32 landing_escort_ships = 7;
+ bool landings_first = 8;
+ bool disable_attrition = 9;
+ bool disable_retarget = 10;
+ bool disable_captured_support = 11;
 }
