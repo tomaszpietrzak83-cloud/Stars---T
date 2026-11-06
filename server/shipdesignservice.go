@@ -47,7 +47,7 @@ func (s *shipDesignService) UpdateShipDesignAutoOrders(ctx context.Context, req 
 	if err = cs.ValidateDesignAutoRole(req.Msg.Role, spec); err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	design.Spec.DefaultAutoRole = req.Msg.Role
+	design.Spec.DefaultAutoRole = cs.NormalizeAutomaticRole(req.Msg.Role)
 	if err = contextDbWrite(ctx).SaveShipDesign(ctx, design); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

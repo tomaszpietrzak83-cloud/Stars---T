@@ -199,6 +199,7 @@ func (s *playerService) UpdatePlayerOrders(ctx context.Context, req *connect.Req
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("load composition fleets"))
 	}
+	player.NormalizeFleetEscortRoles(&orders.Automation, fleets)
 	owned := map[int]bool{}
 	for _, f := range fleets {
 		owned[f.Num] = true

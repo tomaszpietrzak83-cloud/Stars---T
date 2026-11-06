@@ -84,6 +84,15 @@ func (t *turnGenerator) generateTurn() error {
 	// wp0 tasks
 	t.fleetInit()
 	t.restoreBorrowedManualFleets()
+	for _, player := range t.game.Players {
+		fleets := t.game.getFleets(player.Num)
+		player.NormalizeFleetEscortRoles(&player.Automation, fleets)
+		for _, fleet := range fleets {
+			if player.Automation.FleetRoles[fleet.Num] == "patrol" {
+				delete(fleet.Tags, escortStagingTag)
+			}
+		}
+	}
 	t.prepareDedicatedMinesweepers()
 	t.resumeCompletedEvades()
 	t.repairStaleScoutRoles()
@@ -2183,7 +2192,7 @@ func (t *turnGenerator) buildFleet(player *Player, planet *Planet, token ShipTok
 	fleet.OrbitingPlanetNum = planet.Num
 	role := effectiveDesignAutoRole(token.design.Spec)
 	if explicitRole {
-		role = override
+		role = NormalizeAutomaticRole(override)
 		if role == "manual" {
 			role = ""
 		}

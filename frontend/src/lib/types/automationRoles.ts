@@ -11,9 +11,13 @@ export function dedicatedMinesweeper(spec?: ShipDesignSpec) {
 		spec.weaponSlots.every((s) => s.quantity > 0 && s.hullComponent === 'Gatling Gun')
 	);
 }
+export function normalizeAutomaticRole(role: string): string {
+	return role === 'escort' ? 'patrol' : role;
+}
+
 export function designAutoRole(spec?: ShipDesignSpec): string {
 	if (spec?.defaultAutoRole === 'manual') return '';
-	return dedicatedMinesweeper(spec) ? 'minesweeper' : (spec?.defaultAutoRole ?? '');
+	return dedicatedMinesweeper(spec) ? 'minesweeper' : normalizeAutomaticRole(spec?.defaultAutoRole ?? '');
 }
 export function automationRoles(fleet: Fleet, designs: ShipDesign[] = [], currentRole = '') {
 	const spec = fleet.spec?.shipDesignSpec;
@@ -56,11 +60,11 @@ export function automationRoles(fleet: Fleet, designs: ShipDesign[] = [], curren
 		roles.push({ value: 'bomber', label: 'Bomber: autonomous raids and wolf packs' });
 	if (spec?.hasWeapons) {
 		roles.push({ value: 'patrol', label: 'Auto Patrol: intercept and regroup' });
-		roles.push({ value: 'escort', label: 'Escort' });
 		roles.push({ value: 'combat', label: 'Combat: manual mission with automatic safety' });
 	}
 	if ((spec?.fuelCapacity ?? 0) > 0)
 		roles.push({ value: 'tanker', label: 'Tanker: automatic fuel supply' });
+	currentRole = normalizeAutomaticRole(currentRole);
 	if (currentRole && !roles.some((option) => option.value === currentRole))
 		roles.push({
 			value: currentRole,

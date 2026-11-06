@@ -159,7 +159,7 @@ func restoreBomberProtection(p *Player, escort *Fleet) bool {
 	if old.Role == "" {
 		delete(p.Automation.FleetRoles, escort.Num)
 	} else {
-		p.Automation.FleetRoles[escort.Num] = old.Role
+		p.Automation.FleetRoles[escort.Num] = NormalizeAutomaticRole(old.Role)
 	}
 	orders := old.Orders
 	orders.Waypoints = slices.Clone(orders.Waypoints)

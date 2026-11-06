@@ -2,6 +2,13 @@ package cs
 
 import "fmt"
 
+func NormalizeAutomaticRole(role string) string {
+	if role == "escort" {
+		return "patrol"
+	}
+	return role
+}
+
 // Design defaults apply only to new construction. A replacement's actual
 // existing role and unfinished mission take precedence over a design default.
 func ValidateDesignAutoRole(role string, spec ShipDesignSpec) error {

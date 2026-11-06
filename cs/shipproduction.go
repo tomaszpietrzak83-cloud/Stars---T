@@ -193,6 +193,7 @@ func PlanEmpireShipProduction(r *Rules, player *Player, planets []*Planet, desig
 	if err := ValidateDesignAutoRole(role, d.Spec); err != nil {
 		return result, err
 	}
+	role = NormalizeAutomaticRole(role)
 	result.AutoRole = role
 	for _, source := range planets {
 		if !source.OwnedBy(local.Num) || !source.Spec.HasStarbase {

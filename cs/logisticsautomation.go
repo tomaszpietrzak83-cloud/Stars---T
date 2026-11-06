@@ -151,6 +151,17 @@ func saveLogisticsWork(fleet *Fleet, job *logisticsJob) {
 	fleet.SetTag(logisticsTag, string(data))
 }
 
+// Legacy escort selections become Patrol. A patrol temporarily borrowed for
+// protection retains its mission until released.
+func (p *Player) NormalizeFleetEscortRoles(automation *LogisticsAutomation, fleets []*Fleet) {
+	for _, fleet := range fleets {
+		if automation.FleetRoles[fleet.Num] == "escort" &&
+			(p.Automation.FleetRoles[fleet.Num] != "escort" || fleet.GetTag(bomberBorrowTag) == "" || fleet.GetTag(escortTag) == "") {
+			automation.FleetRoles[fleet.Num] = "patrol"
+		}
+	}
+}
+
 func (p *Player) ValidateLogisticsAutomation(automation LogisticsAutomation, fleets []*Fleet) error {
 	if err := automation.Validate(); err != nil {
 		return err
@@ -350,6 +361,7 @@ func (t *turnGenerator) releaseEscorts(player *Player, freighter *Fleet) {
 			if restoreBomberProtection(player, escort) {
 				continue
 			}
+			player.Automation.FleetRoles[escort.Num] = NormalizeAutomaticRole(player.Automation.FleetRoles[escort.Num])
 			routeAutomatically(&t.game.Rules, player, escort, escort.Position, MapObjectTarget{}, 0)
 		}
 	}

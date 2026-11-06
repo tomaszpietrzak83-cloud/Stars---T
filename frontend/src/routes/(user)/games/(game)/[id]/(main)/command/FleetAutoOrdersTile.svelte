@@ -3,7 +3,7 @@
  import { clone, create } from '@bufbuild/protobuf';
  import { getGameContext } from '#lib/services/GameContext.js';
  import { LogisticsAutomationSchema, type Fleet } from '#lib/types/cs-proto.js';
- import { automationRoles, automationPlan } from '#lib/types/automationRoles.js';
+ import { automationRoles, automationPlan, normalizeAutomaticRole } from '#lib/types/automationRoles.js';
  import CommandTile from './CommandTile.svelte';
  let { fleet }: {fleet: Fleet}=$props();
  const {player,universe,updatePlayerOrders}=getGameContext();
@@ -12,7 +12,7 @@
  let options=$derived(automationRoles(fleet,$universe.getMyDesigns(),automation.fleetRoles[fleet.mapObject?.num??0]??''));
  let num=$derived(fleet.mapObject?.num??0);
  let petal=$derived.by(()=>{try{return JSON.parse(fleet.mapObject?.tags['scout-mission']??'null') as {plan?:number[],leg?:number,returnAt?:number}|null;}catch{return null;}});
- let role=$derived(automation.fleetRoles[num]??'');
+ let role=$derived(normalizeAutomaticRole(automation.fleetRoles[num]??''));
  let plan=$derived(automation.fleetAssemblies[Number(fleet.mapObject?.tags['fleet-assembly'])]);
  let locked=$derived(!!fleet.mapObject?.tags['design-maintenance'] || (!!plan && plan.completedRevision!==plan.revision));
  async function assign(value:string) {

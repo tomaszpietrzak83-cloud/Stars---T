@@ -48,7 +48,7 @@ func effectiveDesignAutoRole(spec ShipDesignSpec) string {
 	if dedicatedMinesweeperSpec(spec) {
 		return "minesweeper"
 	}
-	return spec.DefaultAutoRole
+	return NormalizeAutomaticRole(spec.DefaultAutoRole)
 }
 
 // Retire stale combat assignments without touching manual fleets or interrupting

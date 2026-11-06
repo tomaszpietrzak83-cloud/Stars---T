@@ -2,7 +2,7 @@
 	import FuelRouteDetails from './FuelRouteDetails.svelte';
 	import TransportPolicySettings from './TransportPolicySettings.svelte';
 	import { clone, create } from '@bufbuild/protobuf';
-	import { automationRoles } from '#lib/types/automationRoles.js';
+	import { automationRoles, normalizeAutomaticRole } from '#lib/types/automationRoles.js';
 	import { rangeSelection } from '#lib/types/rangeSelection.js';
 	import { readable } from 'svelte/store';
 	import ResearchTaxSettings from './ResearchTaxSettings.svelte';
@@ -78,7 +78,7 @@
 	let sortKey = $state<'role' | 'rebuilding'>('role');
 	let roleSort = $state<'none' | 'ascending' | 'descending'>('none');
 	function roleLabel(fleet: Fleet) {
-		const role = automation.fleetRoles[fleet.mapObject!.num] ?? '';
+		const role = normalizeAutomaticRole(automation.fleetRoles[fleet.mapObject!.num] ?? '');
 		return (
 			automationRoles(fleet, $universe.getMyDesigns?.() ?? [], role).find(
 				(option) => option.value === role
@@ -687,7 +687,7 @@
 							<select
 								class="select select-sm"
 								aria-label={`Role for ${fleet.mapObject?.name}`}
-								value={automation.fleetRoles[num] ?? ''}
+								value={normalizeAutomaticRole(automation.fleetRoles[num] ?? '')}
 								disabled={busy || $readOnly || maintenance || reserved(fleet)}
 								onchange={(event) => {
 									const role = event.currentTarget.value;

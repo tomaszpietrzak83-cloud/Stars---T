@@ -219,3 +219,25 @@ func TestBombardmentEscortDoesNotBlockPassingCivilianRoute(t *testing.T) {
 	enemy.WarpSpeed = 6
 	require.Positive(t, knownRouteThreat(p, Vector{0, 0}, Vector{40, 0}), "a moving formation must be treated as mobile again")
 }
+
+func TestLegacyEscortSelectionBecomesPatrol(t *testing.T) {
+	u := logisticsUniverse(t)
+	player := u.Player(1)
+	fleet := u.Fleet("Escort")
+	transport := u.Fleet("Transport")
+	player.Automation.FleetRoles = map[int]string{fleet.Num: "escort"}
+	fleet.SetTag(escortStagingTag, "legacy staging")
+
+	player.NormalizeFleetEscortRoles(&player.Automation, u.Game.getFleets(player.Num))
+
+	require.Equal(t, "patrol", player.Automation.FleetRoles[fleet.Num])
+	require.True(t, patrolOperational(player, fleet))
+
+	borrowBomberProtection(player, fleet, transport)
+	player.NormalizeFleetEscortRoles(&player.Automation, u.Game.getFleets(player.Num))
+	require.Equal(t, "escort", player.Automation.FleetRoles[fleet.Num])
+	u.turn.releaseEscorts(player, transport)
+	require.Equal(t, "patrol", player.Automation.FleetRoles[fleet.Num])
+
+	require.Equal(t, "patrol", effectiveDesignAutoRole(ShipDesignSpec{DefaultAutoRole: "escort"}))
+}
