@@ -6,12 +6,11 @@ package craig_starsv1
 
 import (
 	fmt "fmt"
-	io "io"
-
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
 	timestamppb "github.com/planetscale/vtprotobuf/types/known/timestamppb"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb1 "google.golang.org/protobuf/types/known/timestamppb"
+	io "io"
 )
 
 const (
@@ -1060,6 +1059,18 @@ func (m *LogisticsAutomation) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.TransportPolicy != nil {
+		size, err := m.TransportPolicy.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe2
 	}
 	if len(m.PriorityFleets) > 0 {
 		for k := range m.PriorityFleets {
@@ -2292,6 +2303,114 @@ func (m *StatisticsCounters) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *TransportPolicy) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TransportPolicy) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *TransportPolicy) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.DisableCapturedSupport {
+		i--
+		if m.DisableCapturedSupport {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x58
+	}
+	if m.DisableRetarget {
+		i--
+		if m.DisableRetarget {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x50
+	}
+	if m.DisableAttrition {
+		i--
+		if m.DisableAttrition {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.LandingsFirst {
+		i--
+		if m.LandingsFirst {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.LandingEscortShips != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.LandingEscortShips))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.AttritionMinimumPeople != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.AttritionMinimumPeople))
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.InstallationReservePercent != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.InstallationReservePercent))
+		i--
+		dAtA[i] = 0x28
+	}
+	if m.DefenseReserve != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DefenseReserve))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.CapturedPopulationTarget != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CapturedPopulationTarget))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.ColonyPopulationTarget != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ColonyPopulationTarget))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.ColonyHabitabilityCutoff != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ColonyHabitabilityCutoff))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *Player) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -2838,6 +2957,10 @@ func (m *LogisticsAutomation) SizeVT() (n int) {
 			n += mapEntrySize + 2 + protohelpers.SizeOfVarint(uint64(mapEntrySize))
 		}
 	}
+	if m.TransportPolicy != nil {
+		l = m.TransportPolicy.SizeVT()
+		n += 2 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -3214,6 +3337,49 @@ func (m *StatisticsCounters) SizeVT() (n int) {
 	}
 	if m.MineralsSalvaged != 0 {
 		n += 2 + protohelpers.SizeOfVarint(uint64(m.MineralsSalvaged))
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *TransportPolicy) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ColonyHabitabilityCutoff != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ColonyHabitabilityCutoff))
+	}
+	if m.ColonyPopulationTarget != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ColonyPopulationTarget))
+	}
+	if m.CapturedPopulationTarget != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.CapturedPopulationTarget))
+	}
+	if m.DefenseReserve != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.DefenseReserve))
+	}
+	if m.InstallationReservePercent != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.InstallationReservePercent))
+	}
+	if m.AttritionMinimumPeople != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.AttritionMinimumPeople))
+	}
+	if m.LandingEscortShips != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.LandingEscortShips))
+	}
+	if m.LandingsFirst {
+		n += 2
+	}
+	if m.DisableAttrition {
+		n += 2
+	}
+	if m.DisableRetarget {
+		n += 2
+	}
+	if m.DisableCapturedSupport {
+		n += 2
 	}
 	n += len(m.unknownFields)
 	return n
@@ -7155,6 +7321,42 @@ func (m *LogisticsAutomation) UnmarshalVT(dAtA []byte) error {
 			}
 			m.PriorityFleets[mapkey] = mapvalue
 			iNdEx = postIndex
+		case 28:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TransportPolicy", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.TransportPolicy == nil {
+				m.TransportPolicy = &TransportPolicy{}
+			}
+			if err := m.TransportPolicy.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -9575,6 +9777,270 @@ func (m *StatisticsCounters) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TransportPolicy) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TransportPolicy: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TransportPolicy: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ColonyHabitabilityCutoff", wireType)
+			}
+			m.ColonyHabitabilityCutoff = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ColonyHabitabilityCutoff |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ColonyPopulationTarget", wireType)
+			}
+			m.ColonyPopulationTarget = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ColonyPopulationTarget |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CapturedPopulationTarget", wireType)
+			}
+			m.CapturedPopulationTarget = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CapturedPopulationTarget |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DefenseReserve", wireType)
+			}
+			m.DefenseReserve = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DefenseReserve |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InstallationReservePercent", wireType)
+			}
+			m.InstallationReservePercent = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.InstallationReservePercent |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AttritionMinimumPeople", wireType)
+			}
+			m.AttritionMinimumPeople = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.AttritionMinimumPeople |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LandingEscortShips", wireType)
+			}
+			m.LandingEscortShips = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LandingEscortShips |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LandingsFirst", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.LandingsFirst = bool(v != 0)
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DisableAttrition", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.DisableAttrition = bool(v != 0)
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DisableRetarget", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.DisableRetarget = bool(v != 0)
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DisableCapturedSupport", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.DisableCapturedSupport = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

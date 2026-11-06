@@ -7,13 +7,12 @@
 package craig_starsv1
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -952,7 +951,8 @@ func (x *PlayerOrders) GetCargoTransfers() map[string]*CargoTransfers {
 }
 
 type LogisticsAutomation struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	TransportPolicy *TransportPolicy       `protobuf:"bytes,28,opt,name=transport_policy,json=transportPolicy,proto3" json:"transport_policy,omitempty"`
 	// Fleet numbers are local to each player: keys are "playerNum:fleetNum".
 	PriorityFleets               map[string]bool          `protobuf:"bytes,27,rep,name=priority_fleets,json=priorityFleets,proto3" json:"priority_fleets,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	PriorityTraders              map[int32]bool           `protobuf:"bytes,26,rep,name=priority_traders,json=priorityTraders,proto3" json:"priority_traders,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
@@ -1013,6 +1013,13 @@ func (x *LogisticsAutomation) ProtoReflect() protoreflect.Message {
 // Deprecated: Use LogisticsAutomation.ProtoReflect.Descriptor instead.
 func (*LogisticsAutomation) Descriptor() ([]byte, []int) {
 	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *LogisticsAutomation) GetTransportPolicy() *TransportPolicy {
+	if x != nil {
+		return x.TransportPolicy
+	}
+	return nil
 }
 
 func (x *LogisticsAutomation) GetPriorityFleets() map[string]bool {
@@ -2253,6 +2260,130 @@ func (x *StatisticsCounters) GetMineralsSalvaged() int64 {
 	return 0
 }
 
+type TransportPolicy struct {
+	state                      protoimpl.MessageState `protogen:"open.v1"`
+	ColonyHabitabilityCutoff   int32                  `protobuf:"varint,1,opt,name=colony_habitability_cutoff,json=colonyHabitabilityCutoff,proto3" json:"colony_habitability_cutoff,omitempty"`
+	ColonyPopulationTarget     int32                  `protobuf:"varint,2,opt,name=colony_population_target,json=colonyPopulationTarget,proto3" json:"colony_population_target,omitempty"`
+	CapturedPopulationTarget   int32                  `protobuf:"varint,3,opt,name=captured_population_target,json=capturedPopulationTarget,proto3" json:"captured_population_target,omitempty"`
+	DefenseReserve             int32                  `protobuf:"varint,4,opt,name=defense_reserve,json=defenseReserve,proto3" json:"defense_reserve,omitempty"`
+	InstallationReservePercent int32                  `protobuf:"varint,5,opt,name=installation_reserve_percent,json=installationReservePercent,proto3" json:"installation_reserve_percent,omitempty"`
+	AttritionMinimumPeople     int32                  `protobuf:"varint,6,opt,name=attrition_minimum_people,json=attritionMinimumPeople,proto3" json:"attrition_minimum_people,omitempty"`
+	LandingEscortShips         int32                  `protobuf:"varint,7,opt,name=landing_escort_ships,json=landingEscortShips,proto3" json:"landing_escort_ships,omitempty"`
+	LandingsFirst              bool                   `protobuf:"varint,8,opt,name=landings_first,json=landingsFirst,proto3" json:"landings_first,omitempty"`
+	DisableAttrition           bool                   `protobuf:"varint,9,opt,name=disable_attrition,json=disableAttrition,proto3" json:"disable_attrition,omitempty"`
+	DisableRetarget            bool                   `protobuf:"varint,10,opt,name=disable_retarget,json=disableRetarget,proto3" json:"disable_retarget,omitempty"`
+	DisableCapturedSupport     bool                   `protobuf:"varint,11,opt,name=disable_captured_support,json=disableCapturedSupport,proto3" json:"disable_captured_support,omitempty"`
+	unknownFields              protoimpl.UnknownFields
+	sizeCache                  protoimpl.SizeCache
+}
+
+func (x *TransportPolicy) Reset() {
+	*x = TransportPolicy{}
+	mi := &file_craig_stars_v1_player_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransportPolicy) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransportPolicy) ProtoMessage() {}
+
+func (x *TransportPolicy) ProtoReflect() protoreflect.Message {
+	mi := &file_craig_stars_v1_player_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransportPolicy.ProtoReflect.Descriptor instead.
+func (*TransportPolicy) Descriptor() ([]byte, []int) {
+	return file_craig_stars_v1_player_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *TransportPolicy) GetColonyHabitabilityCutoff() int32 {
+	if x != nil {
+		return x.ColonyHabitabilityCutoff
+	}
+	return 0
+}
+
+func (x *TransportPolicy) GetColonyPopulationTarget() int32 {
+	if x != nil {
+		return x.ColonyPopulationTarget
+	}
+	return 0
+}
+
+func (x *TransportPolicy) GetCapturedPopulationTarget() int32 {
+	if x != nil {
+		return x.CapturedPopulationTarget
+	}
+	return 0
+}
+
+func (x *TransportPolicy) GetDefenseReserve() int32 {
+	if x != nil {
+		return x.DefenseReserve
+	}
+	return 0
+}
+
+func (x *TransportPolicy) GetInstallationReservePercent() int32 {
+	if x != nil {
+		return x.InstallationReservePercent
+	}
+	return 0
+}
+
+func (x *TransportPolicy) GetAttritionMinimumPeople() int32 {
+	if x != nil {
+		return x.AttritionMinimumPeople
+	}
+	return 0
+}
+
+func (x *TransportPolicy) GetLandingEscortShips() int32 {
+	if x != nil {
+		return x.LandingEscortShips
+	}
+	return 0
+}
+
+func (x *TransportPolicy) GetLandingsFirst() bool {
+	if x != nil {
+		return x.LandingsFirst
+	}
+	return false
+}
+
+func (x *TransportPolicy) GetDisableAttrition() bool {
+	if x != nil {
+		return x.DisableAttrition
+	}
+	return false
+}
+
+func (x *TransportPolicy) GetDisableRetarget() bool {
+	if x != nil {
+		return x.DisableRetarget
+	}
+	return false
+}
+
+func (x *TransportPolicy) GetDisableCapturedSupport() bool {
+	if x != nil {
+		return x.DisableCapturedSupport
+	}
+	return false
+}
+
 var File_craig_stars_v1_player_proto protoreflect.FileDescriptor
 
 const file_craig_stars_v1_player_proto_rawDesc = "" +
@@ -2357,8 +2488,9 @@ const file_craig_stars_v1_player_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1aa\n" +
 	"\x13CargoTransfersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x124\n" +
-	"\x05value\x18\x02 \x01(\v2\x1e.craig_stars.v1.CargoTransfersR\x05value:\x028\x01\"\x89\x12\n" +
-	"\x13LogisticsAutomation\x12`\n" +
+	"\x05value\x18\x02 \x01(\v2\x1e.craig_stars.v1.CargoTransfersR\x05value:\x028\x01\"\xd5\x12\n" +
+	"\x13LogisticsAutomation\x12J\n" +
+	"\x10transport_policy\x18\x1c \x01(\v2\x1f.craig_stars.v1.TransportPolicyR\x0ftransportPolicy\x12`\n" +
 	"\x0fpriority_fleets\x18\x1b \x03(\v27.craig_stars.v1.LogisticsAutomation.PriorityFleetsEntryR\x0epriorityFleets\x12c\n" +
 	"\x10priority_traders\x18\x1a \x03(\v28.craig_stars.v1.LogisticsAutomation.PriorityTradersEntryR\x0fpriorityTraders\x12c\n" +
 	"\x10priority_planets\x18\x19 \x03(\v28.craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntryR\x0fpriorityPlanets\x12:\n" +
@@ -2518,13 +2650,25 @@ const file_craig_stars_v1_player_proto_rawDesc = "" +
 	"\vmines_built\x18\x16 \x01(\x03R\n" +
 	"minesBuilt\x12%\n" +
 	"\x0edefenses_built\x18\x17 \x01(\x03R\rdefensesBuilt\x12+\n" +
-	"\x11minerals_salvaged\x18\x18 \x01(\x03R\x10mineralsSalvaged*\x85\x01\n" +
+	"\x11minerals_salvaged\x18\x18 \x01(\x03R\x10mineralsSalvaged\"\xd7\x04\n" +
+	"\x0fTransportPolicy\x12<\n" +
+	"\x1acolony_habitability_cutoff\x18\x01 \x01(\x05R\x18colonyHabitabilityCutoff\x128\n" +
+	"\x18colony_population_target\x18\x02 \x01(\x05R\x16colonyPopulationTarget\x12<\n" +
+	"\x1acaptured_population_target\x18\x03 \x01(\x05R\x18capturedPopulationTarget\x12'\n" +
+	"\x0fdefense_reserve\x18\x04 \x01(\x05R\x0edefenseReserve\x12@\n" +
+	"\x1cinstallation_reserve_percent\x18\x05 \x01(\x05R\x1ainstallationReservePercent\x128\n" +
+	"\x18attrition_minimum_people\x18\x06 \x01(\x05R\x16attritionMinimumPeople\x120\n" +
+	"\x14landing_escort_ships\x18\a \x01(\x05R\x12landingEscortShips\x12%\n" +
+	"\x0elandings_first\x18\b \x01(\bR\rlandingsFirst\x12+\n" +
+	"\x11disable_attrition\x18\t \x01(\bR\x10disableAttrition\x12)\n" +
+	"\x10disable_retarget\x18\n" +
+	" \x01(\bR\x0fdisableRetarget\x128\n" +
+	"\x18disable_captured_support\x18\v \x01(\bR\x16disableCapturedSupport*\x85\x01\n" +
 	"\x0ePlayerRelation\x12\x1f\n" +
 	"\x1bPLAYER_RELATION_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17PLAYER_RELATION_NEUTRAL\x10\x01\x12\x1a\n" +
 	"\x16PLAYER_RELATION_FRIEND\x10\x02\x12\x19\n" +
-	"\x15PLAYER_RELATION_ENEMY\x10\x03B\xbe\x01\n" +
-	"\x12com.craig_stars.v1B\vPlayerProtoP\x01ZFgithub.com/sirgwain/craig-stars/proto/gen/craig_stars/v1;craig_starsv1\xa2\x02\x03CXX\xaa\x02\rCraigStars.V1\xca\x02\rCraigStars\\V1\xe2\x02\x19CraigStars\\V1\\GPBMetadata\xea\x02\x0eCraigStars::V1b\x06proto3"
+	"\x15PLAYER_RELATION_ENEMY\x10\x03BHZFgithub.com/sirgwain/craig-stars/proto/gen/craig_stars/v1;craig_starsv1b\x06proto3"
 
 var (
 	file_craig_stars_v1_player_proto_rawDescOnce sync.Once
@@ -2539,7 +2683,7 @@ func file_craig_stars_v1_player_proto_rawDescGZIP() []byte {
 }
 
 var file_craig_stars_v1_player_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_craig_stars_v1_player_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
+var file_craig_stars_v1_player_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
 var file_craig_stars_v1_player_proto_goTypes = []any{
 	(PlayerRelation)(0),            // 0: craig_stars.v1.PlayerRelation
 	(*Player)(nil),                 // 1: craig_stars.v1.Player
@@ -2563,121 +2707,123 @@ var file_craig_stars_v1_player_proto_goTypes = []any{
 	(*PlayerAccounting)(nil),       // 19: craig_stars.v1.PlayerAccounting
 	(*StatisticsYear)(nil),         // 20: craig_stars.v1.StatisticsYear
 	(*StatisticsCounters)(nil),     // 21: craig_stars.v1.StatisticsCounters
-	nil,                            // 22: craig_stars.v1.Player.AcquiredTechsEntry
-	nil,                            // 23: craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
-	nil,                            // 24: craig_stars.v1.PlayerOrders.CargoTransfersEntry
-	nil,                            // 25: craig_stars.v1.LogisticsAutomation.PriorityFleetsEntry
-	nil,                            // 26: craig_stars.v1.LogisticsAutomation.PriorityTradersEntry
-	nil,                            // 27: craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntry
-	nil,                            // 28: craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
-	nil,                            // 29: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
-	nil,                            // 30: craig_stars.v1.LogisticsAutomation.FleetRolesEntry
-	nil,                            // 31: craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
-	nil,                            // 32: craig_stars.v1.FleetAssembly.DesignsEntry
-	nil,                            // 33: craig_stars.v1.FleetAssembly.SourceFleetsEntry
-	(*GameDBObject)(nil),           // 34: craig_stars.v1.GameDBObject
-	(AiDifficulty)(0),              // 35: craig_stars.v1.AiDifficulty
-	(*Race)(nil),                   // 36: craig_stars.v1.Race
-	(*TechLevel)(nil),              // 37: craig_stars.v1.TechLevel
-	(*PlayerMessage)(nil),          // 38: craig_stars.v1.PlayerMessage
-	(*BattleRecord)(nil),           // 39: craig_stars.v1.BattleRecord
-	(*PlayerIntel)(nil),            // 40: craig_stars.v1.PlayerIntel
-	(*ScoreIntel)(nil),             // 41: craig_stars.v1.ScoreIntel
-	(*ShipDesign)(nil),             // 42: craig_stars.v1.ShipDesign
-	(*Planet)(nil),                 // 43: craig_stars.v1.Planet
-	(*Fleet)(nil),                  // 44: craig_stars.v1.Fleet
-	(*Minefield)(nil),              // 45: craig_stars.v1.Minefield
-	(*MineralPacket)(nil),          // 46: craig_stars.v1.MineralPacket
-	(*MysteryTrader)(nil),          // 47: craig_stars.v1.MysteryTrader
-	(*Salvage)(nil),                // 48: craig_stars.v1.Salvage
-	(*Wormhole)(nil),               // 49: craig_stars.v1.Wormhole
-	(*MapObjectTarget)(nil),        // 50: craig_stars.v1.MapObjectTarget
-	(*Cargo)(nil),                  // 51: craig_stars.v1.Cargo
-	(*timestamppb.Timestamp)(nil),  // 52: google.protobuf.Timestamp
-	(TechField)(0),                 // 53: craig_stars.v1.TechField
-	(NextResearchField)(0),         // 54: craig_stars.v1.NextResearchField
-	(BattleTarget)(0),              // 55: craig_stars.v1.BattleTarget
-	(BattleTactic)(0),              // 56: craig_stars.v1.BattleTactic
-	(BattleAttackWho)(0),           // 57: craig_stars.v1.BattleAttackWho
-	(*WaypointTransportTasks)(nil), // 58: craig_stars.v1.WaypointTransportTasks
-	(QueueItemType)(0),             // 59: craig_stars.v1.QueueItemType
+	(*TransportPolicy)(nil),        // 22: craig_stars.v1.TransportPolicy
+	nil,                            // 23: craig_stars.v1.Player.AcquiredTechsEntry
+	nil,                            // 24: craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
+	nil,                            // 25: craig_stars.v1.PlayerOrders.CargoTransfersEntry
+	nil,                            // 26: craig_stars.v1.LogisticsAutomation.PriorityFleetsEntry
+	nil,                            // 27: craig_stars.v1.LogisticsAutomation.PriorityTradersEntry
+	nil,                            // 28: craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntry
+	nil,                            // 29: craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
+	nil,                            // 30: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
+	nil,                            // 31: craig_stars.v1.LogisticsAutomation.FleetRolesEntry
+	nil,                            // 32: craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
+	nil,                            // 33: craig_stars.v1.FleetAssembly.DesignsEntry
+	nil,                            // 34: craig_stars.v1.FleetAssembly.SourceFleetsEntry
+	(*GameDBObject)(nil),           // 35: craig_stars.v1.GameDBObject
+	(AiDifficulty)(0),              // 36: craig_stars.v1.AiDifficulty
+	(*Race)(nil),                   // 37: craig_stars.v1.Race
+	(*TechLevel)(nil),              // 38: craig_stars.v1.TechLevel
+	(*PlayerMessage)(nil),          // 39: craig_stars.v1.PlayerMessage
+	(*BattleRecord)(nil),           // 40: craig_stars.v1.BattleRecord
+	(*PlayerIntel)(nil),            // 41: craig_stars.v1.PlayerIntel
+	(*ScoreIntel)(nil),             // 42: craig_stars.v1.ScoreIntel
+	(*ShipDesign)(nil),             // 43: craig_stars.v1.ShipDesign
+	(*Planet)(nil),                 // 44: craig_stars.v1.Planet
+	(*Fleet)(nil),                  // 45: craig_stars.v1.Fleet
+	(*Minefield)(nil),              // 46: craig_stars.v1.Minefield
+	(*MineralPacket)(nil),          // 47: craig_stars.v1.MineralPacket
+	(*MysteryTrader)(nil),          // 48: craig_stars.v1.MysteryTrader
+	(*Salvage)(nil),                // 49: craig_stars.v1.Salvage
+	(*Wormhole)(nil),               // 50: craig_stars.v1.Wormhole
+	(*MapObjectTarget)(nil),        // 51: craig_stars.v1.MapObjectTarget
+	(*Cargo)(nil),                  // 52: craig_stars.v1.Cargo
+	(*timestamppb.Timestamp)(nil),  // 53: google.protobuf.Timestamp
+	(TechField)(0),                 // 54: craig_stars.v1.TechField
+	(NextResearchField)(0),         // 55: craig_stars.v1.NextResearchField
+	(BattleTarget)(0),              // 56: craig_stars.v1.BattleTarget
+	(BattleTactic)(0),              // 57: craig_stars.v1.BattleTactic
+	(BattleAttackWho)(0),           // 58: craig_stars.v1.BattleAttackWho
+	(*WaypointTransportTasks)(nil), // 59: craig_stars.v1.WaypointTransportTasks
+	(QueueItemType)(0),             // 60: craig_stars.v1.QueueItemType
 }
 var file_craig_stars_v1_player_proto_depIdxs = []int32{
-	34, // 0: craig_stars.v1.Player.game_db_object:type_name -> craig_stars.v1.GameDBObject
+	35, // 0: craig_stars.v1.Player.game_db_object:type_name -> craig_stars.v1.GameDBObject
 	8,  // 1: craig_stars.v1.Player.player_orders:type_name -> craig_stars.v1.PlayerOrders
 	7,  // 2: craig_stars.v1.Player.player_plans:type_name -> craig_stars.v1.PlayerPlans
-	35, // 3: craig_stars.v1.Player.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
-	36, // 4: craig_stars.v1.Player.race:type_name -> craig_stars.v1.Race
-	37, // 5: craig_stars.v1.Player.tech_levels:type_name -> craig_stars.v1.TechLevel
-	37, // 6: craig_stars.v1.Player.tech_levels_spent:type_name -> craig_stars.v1.TechLevel
+	36, // 3: craig_stars.v1.Player.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
+	37, // 4: craig_stars.v1.Player.race:type_name -> craig_stars.v1.Race
+	38, // 5: craig_stars.v1.Player.tech_levels:type_name -> craig_stars.v1.TechLevel
+	38, // 6: craig_stars.v1.Player.tech_levels_spent:type_name -> craig_stars.v1.TechLevel
 	13, // 7: craig_stars.v1.Player.relations:type_name -> craig_stars.v1.PlayerRelationship
-	38, // 8: craig_stars.v1.Player.messages:type_name -> craig_stars.v1.PlayerMessage
-	22, // 9: craig_stars.v1.Player.acquired_techs:type_name -> craig_stars.v1.Player.AcquiredTechsEntry
+	39, // 8: craig_stars.v1.Player.messages:type_name -> craig_stars.v1.PlayerMessage
+	23, // 9: craig_stars.v1.Player.acquired_techs:type_name -> craig_stars.v1.Player.AcquiredTechsEntry
 	12, // 10: craig_stars.v1.Player.stats:type_name -> craig_stars.v1.PlayerStats
-	39, // 11: craig_stars.v1.PlayerUniverse.battle_records:type_name -> craig_stars.v1.BattleRecord
-	40, // 12: craig_stars.v1.PlayerUniverse.player_intels:type_name -> craig_stars.v1.PlayerIntel
-	41, // 13: craig_stars.v1.PlayerUniverse.score_intels:type_name -> craig_stars.v1.ScoreIntel
-	42, // 14: craig_stars.v1.PlayerUniverse.designs:type_name -> craig_stars.v1.ShipDesign
-	43, // 15: craig_stars.v1.PlayerUniverse.planets:type_name -> craig_stars.v1.Planet
-	44, // 16: craig_stars.v1.PlayerUniverse.fleets:type_name -> craig_stars.v1.Fleet
-	45, // 17: craig_stars.v1.PlayerUniverse.minefields:type_name -> craig_stars.v1.Minefield
-	46, // 18: craig_stars.v1.PlayerUniverse.mineral_packets:type_name -> craig_stars.v1.MineralPacket
-	47, // 19: craig_stars.v1.PlayerUniverse.mystery_traders:type_name -> craig_stars.v1.MysteryTrader
-	48, // 20: craig_stars.v1.PlayerUniverse.salvages:type_name -> craig_stars.v1.Salvage
-	49, // 21: craig_stars.v1.PlayerUniverse.wormholes:type_name -> craig_stars.v1.Wormhole
-	50, // 22: craig_stars.v1.ByHandCargoTransfer.map_object_target:type_name -> craig_stars.v1.MapObjectTarget
-	51, // 23: craig_stars.v1.ByHandCargoTransfer.cargo:type_name -> craig_stars.v1.Cargo
+	40, // 11: craig_stars.v1.PlayerUniverse.battle_records:type_name -> craig_stars.v1.BattleRecord
+	41, // 12: craig_stars.v1.PlayerUniverse.player_intels:type_name -> craig_stars.v1.PlayerIntel
+	42, // 13: craig_stars.v1.PlayerUniverse.score_intels:type_name -> craig_stars.v1.ScoreIntel
+	43, // 14: craig_stars.v1.PlayerUniverse.designs:type_name -> craig_stars.v1.ShipDesign
+	44, // 15: craig_stars.v1.PlayerUniverse.planets:type_name -> craig_stars.v1.Planet
+	45, // 16: craig_stars.v1.PlayerUniverse.fleets:type_name -> craig_stars.v1.Fleet
+	46, // 17: craig_stars.v1.PlayerUniverse.minefields:type_name -> craig_stars.v1.Minefield
+	47, // 18: craig_stars.v1.PlayerUniverse.mineral_packets:type_name -> craig_stars.v1.MineralPacket
+	48, // 19: craig_stars.v1.PlayerUniverse.mystery_traders:type_name -> craig_stars.v1.MysteryTrader
+	49, // 20: craig_stars.v1.PlayerUniverse.salvages:type_name -> craig_stars.v1.Salvage
+	50, // 21: craig_stars.v1.PlayerUniverse.wormholes:type_name -> craig_stars.v1.Wormhole
+	51, // 22: craig_stars.v1.ByHandCargoTransfer.map_object_target:type_name -> craig_stars.v1.MapObjectTarget
+	52, // 23: craig_stars.v1.ByHandCargoTransfer.cargo:type_name -> craig_stars.v1.Cargo
 	3,  // 24: craig_stars.v1.CargoTransfers.transfers:type_name -> craig_stars.v1.ByHandCargoTransfer
-	52, // 25: craig_stars.v1.PlayerStatus.updated_at:type_name -> google.protobuf.Timestamp
-	35, // 26: craig_stars.v1.PlayerStatus.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
-	39, // 27: craig_stars.v1.Intels.battle_records:type_name -> craig_stars.v1.BattleRecord
-	40, // 28: craig_stars.v1.Intels.player_intels:type_name -> craig_stars.v1.PlayerIntel
-	41, // 29: craig_stars.v1.Intels.score_intels:type_name -> craig_stars.v1.ScoreIntel
-	43, // 30: craig_stars.v1.Intels.planet_intels:type_name -> craig_stars.v1.Planet
-	44, // 31: craig_stars.v1.Intels.fleet_intels:type_name -> craig_stars.v1.Fleet
-	42, // 32: craig_stars.v1.Intels.ship_design_intels:type_name -> craig_stars.v1.ShipDesign
-	46, // 33: craig_stars.v1.Intels.mineral_packet_intels:type_name -> craig_stars.v1.MineralPacket
-	45, // 34: craig_stars.v1.Intels.minefield_intels:type_name -> craig_stars.v1.Minefield
-	49, // 35: craig_stars.v1.Intels.wormhole_intels:type_name -> craig_stars.v1.Wormhole
-	47, // 36: craig_stars.v1.Intels.mystery_trader_intels:type_name -> craig_stars.v1.MysteryTrader
-	48, // 37: craig_stars.v1.Intels.salvage_intels:type_name -> craig_stars.v1.Salvage
+	53, // 25: craig_stars.v1.PlayerStatus.updated_at:type_name -> google.protobuf.Timestamp
+	36, // 26: craig_stars.v1.PlayerStatus.ai_difficulty:type_name -> craig_stars.v1.AiDifficulty
+	40, // 27: craig_stars.v1.Intels.battle_records:type_name -> craig_stars.v1.BattleRecord
+	41, // 28: craig_stars.v1.Intels.player_intels:type_name -> craig_stars.v1.PlayerIntel
+	42, // 29: craig_stars.v1.Intels.score_intels:type_name -> craig_stars.v1.ScoreIntel
+	44, // 30: craig_stars.v1.Intels.planet_intels:type_name -> craig_stars.v1.Planet
+	45, // 31: craig_stars.v1.Intels.fleet_intels:type_name -> craig_stars.v1.Fleet
+	43, // 32: craig_stars.v1.Intels.ship_design_intels:type_name -> craig_stars.v1.ShipDesign
+	47, // 33: craig_stars.v1.Intels.mineral_packet_intels:type_name -> craig_stars.v1.MineralPacket
+	46, // 34: craig_stars.v1.Intels.minefield_intels:type_name -> craig_stars.v1.Minefield
+	50, // 35: craig_stars.v1.Intels.wormhole_intels:type_name -> craig_stars.v1.Wormhole
+	48, // 36: craig_stars.v1.Intels.mystery_trader_intels:type_name -> craig_stars.v1.MysteryTrader
+	49, // 37: craig_stars.v1.Intels.salvage_intels:type_name -> craig_stars.v1.Salvage
 	17, // 38: craig_stars.v1.PlayerPlans.production_plans:type_name -> craig_stars.v1.ProductionPlan
 	15, // 39: craig_stars.v1.PlayerPlans.battle_plans:type_name -> craig_stars.v1.BattlePlan
 	16, // 40: craig_stars.v1.PlayerPlans.transport_plans:type_name -> craig_stars.v1.TransportPlan
 	9,  // 41: craig_stars.v1.PlayerOrders.automation:type_name -> craig_stars.v1.LogisticsAutomation
-	23, // 42: craig_stars.v1.PlayerOrders.design_maintenance:type_name -> craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
-	53, // 43: craig_stars.v1.PlayerOrders.researching:type_name -> craig_stars.v1.TechField
-	54, // 44: craig_stars.v1.PlayerOrders.next_research_field:type_name -> craig_stars.v1.NextResearchField
-	24, // 45: craig_stars.v1.PlayerOrders.cargo_transfers:type_name -> craig_stars.v1.PlayerOrders.CargoTransfersEntry
-	25, // 46: craig_stars.v1.LogisticsAutomation.priority_fleets:type_name -> craig_stars.v1.LogisticsAutomation.PriorityFleetsEntry
-	26, // 47: craig_stars.v1.LogisticsAutomation.priority_traders:type_name -> craig_stars.v1.LogisticsAutomation.PriorityTradersEntry
-	27, // 48: craig_stars.v1.LogisticsAutomation.priority_planets:type_name -> craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntry
-	28, // 49: craig_stars.v1.LogisticsAutomation.design_families:type_name -> craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
-	10, // 50: craig_stars.v1.LogisticsAutomation.research_tax:type_name -> craig_stars.v1.ResearchTaxPolicy
-	29, // 51: craig_stars.v1.LogisticsAutomation.fleet_assemblies:type_name -> craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
-	30, // 52: craig_stars.v1.LogisticsAutomation.fleet_roles:type_name -> craig_stars.v1.LogisticsAutomation.FleetRolesEntry
-	31, // 53: craig_stars.v1.LogisticsAutomation.rebuild_fleets:type_name -> craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
-	32, // 54: craig_stars.v1.FleetAssembly.designs:type_name -> craig_stars.v1.FleetAssembly.DesignsEntry
-	33, // 55: craig_stars.v1.FleetAssembly.source_fleets:type_name -> craig_stars.v1.FleetAssembly.SourceFleetsEntry
-	19, // 56: craig_stars.v1.PlayerStats.accounting:type_name -> craig_stars.v1.PlayerAccounting
-	0,  // 57: craig_stars.v1.PlayerRelationship.relation:type_name -> craig_stars.v1.PlayerRelation
-	55, // 58: craig_stars.v1.BattlePlan.primary_target:type_name -> craig_stars.v1.BattleTarget
-	55, // 59: craig_stars.v1.BattlePlan.secondary_target:type_name -> craig_stars.v1.BattleTarget
-	56, // 60: craig_stars.v1.BattlePlan.tactic:type_name -> craig_stars.v1.BattleTactic
-	57, // 61: craig_stars.v1.BattlePlan.attack_who:type_name -> craig_stars.v1.BattleAttackWho
-	58, // 62: craig_stars.v1.TransportPlan.tasks:type_name -> craig_stars.v1.WaypointTransportTasks
-	18, // 63: craig_stars.v1.ProductionPlan.items:type_name -> craig_stars.v1.ProductionPlanItem
-	59, // 64: craig_stars.v1.ProductionPlanItem.type:type_name -> craig_stars.v1.QueueItemType
-	21, // 65: craig_stars.v1.PlayerAccounting.counters:type_name -> craig_stars.v1.StatisticsCounters
-	20, // 66: craig_stars.v1.PlayerAccounting.history:type_name -> craig_stars.v1.StatisticsYear
-	21, // 67: craig_stars.v1.StatisticsYear.counters:type_name -> craig_stars.v1.StatisticsCounters
-	4,  // 68: craig_stars.v1.PlayerOrders.CargoTransfersEntry.value:type_name -> craig_stars.v1.CargoTransfers
-	11, // 69: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry.value:type_name -> craig_stars.v1.FleetAssembly
-	70, // [70:70] is the sub-list for method output_type
-	70, // [70:70] is the sub-list for method input_type
-	70, // [70:70] is the sub-list for extension type_name
-	70, // [70:70] is the sub-list for extension extendee
-	0,  // [0:70] is the sub-list for field type_name
+	24, // 42: craig_stars.v1.PlayerOrders.design_maintenance:type_name -> craig_stars.v1.PlayerOrders.DesignMaintenanceEntry
+	54, // 43: craig_stars.v1.PlayerOrders.researching:type_name -> craig_stars.v1.TechField
+	55, // 44: craig_stars.v1.PlayerOrders.next_research_field:type_name -> craig_stars.v1.NextResearchField
+	25, // 45: craig_stars.v1.PlayerOrders.cargo_transfers:type_name -> craig_stars.v1.PlayerOrders.CargoTransfersEntry
+	22, // 46: craig_stars.v1.LogisticsAutomation.transport_policy:type_name -> craig_stars.v1.TransportPolicy
+	26, // 47: craig_stars.v1.LogisticsAutomation.priority_fleets:type_name -> craig_stars.v1.LogisticsAutomation.PriorityFleetsEntry
+	27, // 48: craig_stars.v1.LogisticsAutomation.priority_traders:type_name -> craig_stars.v1.LogisticsAutomation.PriorityTradersEntry
+	28, // 49: craig_stars.v1.LogisticsAutomation.priority_planets:type_name -> craig_stars.v1.LogisticsAutomation.PriorityPlanetsEntry
+	29, // 50: craig_stars.v1.LogisticsAutomation.design_families:type_name -> craig_stars.v1.LogisticsAutomation.DesignFamiliesEntry
+	10, // 51: craig_stars.v1.LogisticsAutomation.research_tax:type_name -> craig_stars.v1.ResearchTaxPolicy
+	30, // 52: craig_stars.v1.LogisticsAutomation.fleet_assemblies:type_name -> craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry
+	31, // 53: craig_stars.v1.LogisticsAutomation.fleet_roles:type_name -> craig_stars.v1.LogisticsAutomation.FleetRolesEntry
+	32, // 54: craig_stars.v1.LogisticsAutomation.rebuild_fleets:type_name -> craig_stars.v1.LogisticsAutomation.RebuildFleetsEntry
+	33, // 55: craig_stars.v1.FleetAssembly.designs:type_name -> craig_stars.v1.FleetAssembly.DesignsEntry
+	34, // 56: craig_stars.v1.FleetAssembly.source_fleets:type_name -> craig_stars.v1.FleetAssembly.SourceFleetsEntry
+	19, // 57: craig_stars.v1.PlayerStats.accounting:type_name -> craig_stars.v1.PlayerAccounting
+	0,  // 58: craig_stars.v1.PlayerRelationship.relation:type_name -> craig_stars.v1.PlayerRelation
+	56, // 59: craig_stars.v1.BattlePlan.primary_target:type_name -> craig_stars.v1.BattleTarget
+	56, // 60: craig_stars.v1.BattlePlan.secondary_target:type_name -> craig_stars.v1.BattleTarget
+	57, // 61: craig_stars.v1.BattlePlan.tactic:type_name -> craig_stars.v1.BattleTactic
+	58, // 62: craig_stars.v1.BattlePlan.attack_who:type_name -> craig_stars.v1.BattleAttackWho
+	59, // 63: craig_stars.v1.TransportPlan.tasks:type_name -> craig_stars.v1.WaypointTransportTasks
+	18, // 64: craig_stars.v1.ProductionPlan.items:type_name -> craig_stars.v1.ProductionPlanItem
+	60, // 65: craig_stars.v1.ProductionPlanItem.type:type_name -> craig_stars.v1.QueueItemType
+	21, // 66: craig_stars.v1.PlayerAccounting.counters:type_name -> craig_stars.v1.StatisticsCounters
+	20, // 67: craig_stars.v1.PlayerAccounting.history:type_name -> craig_stars.v1.StatisticsYear
+	21, // 68: craig_stars.v1.StatisticsYear.counters:type_name -> craig_stars.v1.StatisticsCounters
+	4,  // 69: craig_stars.v1.PlayerOrders.CargoTransfersEntry.value:type_name -> craig_stars.v1.CargoTransfers
+	11, // 70: craig_stars.v1.LogisticsAutomation.FleetAssembliesEntry.value:type_name -> craig_stars.v1.FleetAssembly
+	71, // [71:71] is the sub-list for method output_type
+	71, // [71:71] is the sub-list for method input_type
+	71, // [71:71] is the sub-list for extension type_name
+	71, // [71:71] is the sub-list for extension extendee
+	0,  // [0:71] is the sub-list for field type_name
 }
 
 func init() { file_craig_stars_v1_player_proto_init() }
@@ -2705,7 +2851,7 @@ func file_craig_stars_v1_player_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_craig_stars_v1_player_proto_rawDesc), len(file_craig_stars_v1_player_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   33,
+			NumMessages:   34,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

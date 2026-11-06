@@ -46,7 +46,7 @@ func (t *turnGenerator) landingBaseProtectors(p *Player, leader *Fleet, op *land
 	ships := 0
 	for _, f := range existing {
 		role := p.Automation.FleetRoles[f.Num]
-		if (role == "patrol" || role == "escort") && ships+f.Spec.TotalShips <= 2 && !defencePatrolCommitted(p, f) {
+		if (role == "patrol" || role == "escort") && ships+f.Spec.TotalShips <= p.Automation.transportPolicy().LandingEscortShips && !defencePatrolCommitted(p, f) {
 			core[f.Num] = true
 			ships += f.Spec.TotalShips
 		}

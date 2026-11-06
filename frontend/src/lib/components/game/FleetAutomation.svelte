@@ -1,5 +1,6 @@
 <script lang="ts">
 	import FuelRouteDetails from './FuelRouteDetails.svelte';
+	import TransportPolicySettings from './TransportPolicySettings.svelte';
 	import { clone, create } from '@bufbuild/protobuf';
 	import { automationRoles } from '#lib/types/automationRoles.js';
 	import { rangeSelection } from '#lib/types/rangeSelection.js';
@@ -273,8 +274,8 @@
 			/>Carry surplus installations on existing routes</label
 		>
 		<p class="text-xs">
-			Factories, mines and defenses are picked up opportunistically, retaining 95% of current
-			operating capacity. No dedicated collection trips are created.
+			Factories and mines retain the configured share of operating capacity; defenses retain a
+			fixed number of units. Installations use existing delivery routes, without dedicated collection trips.
 		</p>
 		<p class="text-sm my-2">
 			Owned stations with docks provide fuel; ordinary colonies do not. Idle tankers fill gaps
@@ -456,9 +457,9 @@
 			/>Use manual population thresholds</label
 		>
 		<p class="text-xs my-2">
-			By default, sources retain one third of capacity, which maximizes absolute population growth.
-			Transports wait empty at the source until a full, fuel-safe load is available. Growing
-			destinations are supplied to 20%. Manual thresholds override this rule.
+			Ordinary high-habitability sources retain one third of capacity and destinations receive people
+			up to 20%. Lower-habitability and captured colonies use the transport policy below. Transports
+			wait for a full useful load and enough fuel. Manual settings change ordinary population targets.
 		</p>
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-3">
 			<label
@@ -517,6 +518,8 @@
 					value.escortStrengthPercent = escortStrength;
 				})}>Save thresholds</button
 		>
+		<TransportPolicySettings {automation} busy={busy || $readOnly} onSave={save} />
+
 		<p class="text-sm mt-2">
 			The source keeps its reserve. Incoming passenger convoys count toward the destination target.
 			Colonies must be owned and suitable for the race. Existing passenger convoys finish their

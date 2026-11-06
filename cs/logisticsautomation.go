@@ -11,6 +11,7 @@ import (
 )
 
 type LogisticsAutomation struct {
+	TransportPolicy *TransportPolicy `json:"transportPolicy,omitempty"`
 	// Server-owned occupation support, retained until a base exists.
 	OccupationSupport map[int]bool `json:"occupationSupport,omitempty"`
 	// Server-owned reports retained for lost-contact search, never attack authority.
@@ -93,6 +94,11 @@ func (a LogisticsAutomation) scoutReturnTurns() int {
 	return a.ScoutMaxReturnTurns
 }
 func (a LogisticsAutomation) Validate() error {
+	if a.TransportPolicy != nil {
+		if err := a.TransportPolicy.Validate(); err != nil {
+			return err
+		}
+	}
 	if a.SourcePopulationPercent < 0 || a.SourcePopulationPercent > 100 || a.DestinationPopulationPercent < 0 || a.DestinationPopulationPercent > 99 || a.SourcePopulationPercent > 0 && a.DestinationPopulationPercent >= a.SourcePopulationPercent {
 		return fmt.Errorf("stored population thresholds must satisfy 1 <= destination < source <= 100")
 	}
@@ -506,7 +512,9 @@ func (t *turnGenerator) planLogisticsAutomation() {
 			}
 		}
 	}
-	defer t.planLandingOperations() // civilian deliveries claim free holds first
+	// Each player selects the early or late landing-planning pass.
+	t.planLandingOperationsForPriority(true)
+	defer t.planLandingOperationsForPriority(false)
 	for _, player := range t.automaticPlayers() {
 		for _, escort := range t.game.getFleets(player.Num) {
 			if escort.GetTag(escortStagingTag) == "" && readTankerJob(escort) == nil && !fuelNetworkManaged(escort) && player.Automation.FleetRoles[escort.Num] == "escort" && escort.GetTag(escortTag) == "" && !escort.InAutomaticSafety() && !escort.InDesignMaintenance() {

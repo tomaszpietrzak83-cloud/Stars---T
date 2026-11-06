@@ -265,7 +265,7 @@ type Converter interface {
 	ConvertPlayerRelations(source []*craig_starsv1.PlayerRelationship) []cs.PlayerRelationship
 	ConvertPlayerOrders(source *craig_starsv1.PlayerOrders) cs.PlayerOrders
 	// Patrol contact memory is server-owned and intentionally absent from orders.
-	// goverter:ignore PatrolMemory
+	// goverter:ignore PatrolMemory OccupationSupport
 	ConvertLogisticsAutomation(source *craig_starsv1.LogisticsAutomation) cs.LogisticsAutomation
 
 	// goverter:ignore Delete

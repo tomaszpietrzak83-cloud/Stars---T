@@ -71,8 +71,8 @@ func (t *turnGenerator) reconcileMixedInstallations(p *Player, f *Fleet, source,
 			}
 		}
 	}
-	factories := min(max(0, packed.Factories-before.Factories), max(0, (sf*95+99)/100-source.Factories, packed.Factories+dest.Factories-df))
-	mines := min(max(0, packed.Mines-before.Mines), max(0, (sm*95+99)/100-source.Mines, packed.Mines+dest.Mines-dm))
+	factories := min(max(0, packed.Factories-before.Factories), max(0, (sf*p.Automation.transportPolicy().InstallationReservePercent+99)/100-source.Factories, packed.Factories+dest.Factories-df))
+	mines := min(max(0, packed.Mines-before.Mines), max(0, (sm*p.Automation.transportPolicy().InstallationReservePercent+99)/100-source.Mines, packed.Mines+dest.Mines-dm))
 	source.Factories += factories
 	source.Mines += mines
 	packed.Factories -= factories

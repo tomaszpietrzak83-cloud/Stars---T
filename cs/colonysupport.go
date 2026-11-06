@@ -3,12 +3,13 @@ package cs
 // Occupation support is a destination policy, not a reason to raise the size of
 // the initial invasion. Existing manual passenger thresholds remain available.
 func colonyPopulationPercent(p *Player, planet *Planet) int {
-	if p.Automation.OccupationSupport[planet.Num] {
-		return 75
+	policy := p.Automation.transportPolicy()
+	if p.Automation.OccupationSupport[planet.Num] && !policy.DisableCapturedSupport {
+		return policy.CapturedPopulationTarget
 	}
 	percent := p.Automation.destinationPopulationPercent()
-	if !p.Automation.ManualPassengerThresholds && planet.Spec.Habitability > 0 && planet.Spec.Habitability < 75 {
-		percent = max(percent, 50)
+	if !p.Automation.ManualPassengerThresholds && planet.Spec.Habitability > 0 && planet.Spec.Habitability < policy.ColonyHabitabilityCutoff {
+		percent = max(percent, policy.ColonyPopulationTarget)
 	}
 	return percent
 }
