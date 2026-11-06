@@ -38,8 +38,12 @@ type automaticTankerJob struct {
 }
 
 func readTankerJob(fleet *Fleet) *automaticTankerJob {
+	raw := fleet.GetTag(tankerJobTag)
+	if raw == "" {
+		return nil
+	}
 	var job automaticTankerJob
-	if json.Unmarshal([]byte(fleet.GetTag(tankerJobTag)), &job) != nil {
+	if json.Unmarshal([]byte(raw), &job) != nil {
 		return nil
 	}
 	return &job
