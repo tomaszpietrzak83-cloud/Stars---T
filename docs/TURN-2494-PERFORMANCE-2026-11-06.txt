@@ -1,0 +1,87 @@
+CURRENT SAVE 2494: TURN GENERATION AUDIT, 2026-11-06
+
+Result
+A single native turn 2494 -> 2495 on a temporary copy took 245.589 seconds
+(4 min 5.589 s) WITHOUT CPU profiling. A separate CPU-profiled run from the same
+backup took 206.577 seconds. Do not average these or label them a guaranteed
+range: there is one unprofiled run, and Windows/background workload and execution
+variation were not isolated. The earlier 101-second result used the older 2479
+backup, not this input.
+
+Unprofiled wall-time phases
+Loading the game             4.847 s
+Archiving submitted orders   0.487 s
+Simulation                 229.310 s (93.37% of total)
+AI orders                    0.182 s
+Database persistence        10.268 s
+Archiving result             0.491 s
+Total                      245.589 s
+Database persistence includes encoding plus SQL and transaction work; it is not
+pure SQLite query time. Backup copying and post-turn export are outside the timer.
+
+CPU profile findings
+Profiled wall time 206.58 s; CPU samples total 254.41 CPU seconds, because multiple
+threads can run concurrently. Cumulative call-tree costs below OVERLAP and must
+not be summed or treated as wall-time partitions.
+planPatrolAutomation             118.57 CPU s / 46.61% of samples
+advanceAssessedPatrol            100.39 CPU s
+planAutomaticRoute                76.28 CPU s
+assignSoloPatrol                   60.12 CPU s
+automaticRouteLegSafe             56.64 CPU s
+runtime.gcDrain                   48.05 CPU s / 18.89% of samples
+  runtime.scanObject              40.24 CPU s cumulative; 21.04 s flat
+    (GC heap scanning, NOT the game's intelligence scanning)
+automaticReturnFuel               34.47 CPU s
+routeThreat                       32.51 CPU s
+sortedPatrolTargets               29.89 CPU s
+patrolColonyDeadline              21.32 CPU s
+enemyApproachingColony            13.93 CPU s
+
+Concrete next optimization candidates; NOT implemented in this audit
+1. Target ranking is recomputed per friendly fleet. sortedPatrolTargets already
+   caches each enemy within one sort, but the next fleet repeats the work.
+   patrolTargetPriority calls patrolColonyDeadline, then rank calls it again.
+   That helper scans PlanetIntels and can call patrolDefendedColony, which calls
+   enemyApproachingColony and scans planets again. Reuse one computed deadline
+   and static threat rank per enemy/report snapshot; retain per-fleet distance
+   and exact stable ordering/ties. A player-owned-colony index would avoid
+   scanning all 2744 planet reports for every ownership/direction check.
+   Locations: cs/patrolsort.go:10, :25, :78; cs/patrolqueue.go:16;
+   cs/patrolautomation.go:808; cs/scoutrecon.go:98.
+2. Routing and return fuel still evaluate many dock/warp alternatives and
+   geometric threat intersections. Profile these nested loops before extending
+   caching; existing corridor results are scoped to one route search. Any reuse
+   must include fuel/cargo/engine, report and policy changes; geometric filtering
+   must preserve threat boundaries, civilian stops, gates and return reserves.
+   Locations: cs/automaticroute.go:153, :193; cs/logisticsautomation.go:253.
+3. GC takes substantial CPU. Avoid repeated temporary rank maps, cloned enemy
+   lists and route arrays where lifetime/ownership allows. A scoped allocation
+   profile is needed before attributing the allocation volume to a particular
+   function; a CPU profile alone does not provide allocation-byte counts.
+AI parallelism and database tuning are lower priorities on this particular save.
+No speculative percentage speedup is promised for these unimplemented candidates.
+
+Method and safety
+Read-only SQLite connection to the user's data/data.db; SQLite backup API produced
+one consistent input at game 14/year 2494/WaitingForPlayers. Backup quick_check OK.
+Input contains 33 players, 2744 planets and 12418 fleet/base database records.
+Both runs use the verified turn-final-1106.exe test harness from the deployed
+turn-speed build, GOMAXPROCS=12 (host reports 12 logical processors), with annual
+archives enabled. Each test copies the audit input again to its own t.TempDir()
+database, and only that second copy is connected for generation. Both tests PASS,
+advance only the temporary game to 2495 and verify the input SHA256 unchanged.
+No personal server restart, API generation call, source implementation edit,
+new build or deployment was performed. The user game remains 2494/WaitingForPlayers.
+Final read-only comparison of all 20 database tables against the initial backup
+is recorded in safety-check.json: 18 tables match, while planets and players changed during the audit. Differences concern production queues/specs/tags, automation/revision and timestamps. Live server logs contain QueueShipProduction, UpdatePlayerOrders and UpdatePlanetOrders requests during this period. This audit sent none of those requests and never connected a writable client to the live DB. No whole-live-database unchanged claim is made; the input backup hash is unchanged and the live year/state remain 2494/WaitingForPlayers. Concurrent application work may affect timing; its contribution was not isolated.
+
+Private evidence (do not publish saves, profiles or exported player state)
+../audit-results/turn-2494-audit/input-2494.db
+../audit-results/turn-2494-audit/input.json
+../audit-results/turn-2494-audit/{profile,timing}.log
+../audit-results/turn-2494-audit/{profile,timing}/phases.log
+../audit-results/turn-2494-audit/profile/turn.cpu
+../audit-results/turn-2494-audit/cpu-{cumulative,flat}.txt
+../audit-results/turn-2494-audit/safety-check.json
+Input SHA256:
+d3da592db3bde25933a0e582d73f6a58c1fef122e2c9d34206a90125179e410f
