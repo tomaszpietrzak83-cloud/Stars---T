@@ -84,6 +84,9 @@ func TestRouteThreatCachePreservesModesMarginsAndScope(t *testing.T) {
 	require.NotEmpty(t, p.routeThreatIndex.routes)
 	cleanupCache()
 	require.Nil(t, p.routeThreatIndex.routes, "one search must not retain corridor results for the next search")
+	from, to := Vector{0, 35}, Vector{200, 35}
+	require.Equal(t, uncachedRouteThreat(p, from, to, true), routeThreat(p, from, to, true))
+	require.Nil(t, p.routeThreatIndex.routes, "a standalone threat check must not recreate the route cache")
 }
 
 func TestRouteThreatCacheBoundsMemoryWithoutChangingAnswers(t *testing.T) {
