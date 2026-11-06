@@ -22,7 +22,15 @@ func readyPatrolPrefix(p *Player, pool []*Fleet, enemy *Fleet, point Vector, che
 		if n == len(pool) {
 			break
 		}
-		n = min(len(pool), n*2)
+		if n >= max(64, reportedFleetShips(enemy)) {
+			// Large unsuccessful formations can consume most of the forecast
+			// budget. Probe the complete nearby force before spending the rest
+			// on intermediate sizes; every accepted force still needs a native
+			// confirmation, and narrowing remains bounded below.
+			n = len(pool)
+		} else {
+			n = min(len(pool), n*2)
+		}
 	}
 	if chosen == 0 {
 		return nil, result
