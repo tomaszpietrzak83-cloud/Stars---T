@@ -233,3 +233,22 @@ Final transport candidate630ab410: native/WASM/static UI rebuild and isolated
 compiled browser/backend smoke PASS. Manifest and SHA256SUMS are in private
 landing-release staging; personalTurnsGenerated=0. Main release owner must
 rebuild again if adding later patrol composition/cache changes.
+
+
+Final patrol integration (supersedes the630ab410 candidate above)
+Peer687140d3 integrated without code conflicts as0f35b4ff. Only checklist/docs
+remain different between the branches. Native forecast count no longer caps
+the number of candidate fleets. Large unsuccessful composition probes test
+the full nearby pool before spending the remaining budget on intermediate
+sizes. Forecast cache keys use the modeled merged formation when merge=true,
+so physical merging does not repeat an identical expensive assessment; separate
+formations retain separate keys and damage changes invalidate cached results.
+Native regression physically merges400 ships, flies three turns and destroys
+80 enemies through final guards. The smaller21-ship/1898-work regression remains
+valid. Full cs PASS327.281s on the identical peer source, including four copied
+replays (patrol-final-critical-full-cs.txt). Frozen campaign sources are unchanged
+and their results must not be attributed to this later integration.
+Integrated0f35b4ff native/WASM/static frontend rebuilt; isolated compiled UI,
+native backend and WASM initialization smoke PASS, personalTurnsGenerated=0.
+Private staging manifest/SHA256SUMS now identify0f35b4ff/687140d3. No install or
+publication performed by the transport chat.
