@@ -24,6 +24,10 @@ type patrolEvaluator struct {
 	Work, Battles, Hits int
 	Limit               int
 	Deferred            map[string]bool
+	DefencePlanned      bool
+	PlanningDefence     bool
+	DefenceMembers      map[int]bool
+	DefenceChecks       *patrolEvaluator
 }
 
 func (t *turnGenerator) startPatrolEvaluation() {
@@ -68,7 +72,21 @@ func patrolEncounterReports(p *Player, target *Fleet, point Vector, horizon floa
 }
 
 func (e *patrolEvaluator) assess(p *Player, own []*Fleet, target *Fleet, point Vector, horizon float64) patrolAssessment {
-	return e.assessEncounter(p, own, patrolEncounterReports(p, target, point, horizon), point, horizon)
+	reports := patrolEncounterReports(p, target, point, horizon)
+	// A relief force must remain viable after the enemy repairs during assembly.
+	// Clone reports so this conservative forecast never changes observed intel.
+	if urgentPatrolTarget(p, target) && slices.ContainsFunc(own, func(f *Fleet) bool { return f.Position != point }) {
+		for i, report := range reports {
+			copy := *report
+			copy.Tokens = slices.Clone(report.Tokens)
+			for j := range copy.Tokens {
+				copy.Tokens[j].Damage = 0
+				copy.Tokens[j].QuantityDamaged = 0
+			}
+			reports[i] = &copy
+		}
+	}
+	return e.assessEncounter(p, own, reports, point, horizon)
 }
 
 func (e *patrolEvaluator) assessEncounter(p *Player, own []*Fleet, reports []*Fleet, point Vector, horizon float64) patrolAssessment {
@@ -107,6 +125,16 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		}
 		return patrolAssessment{Ready: strength >= threat*3/2+1, Reason: "Small unknown contact: bounded reported-strength assessment"}
 	}
+	modeled := own
+	if merge {
+		merged := patrolMergedFormation(e.rules, p, own)
+		if merged == nil {
+			return patrolAssessment{Reason: "Player battle plans cannot be combined by automation"}
+		}
+		modeled = []*Fleet{merged}
+	}
+	// Cache the formation that the native forecast actually fights. Physical
+	// merging must not spend the same budget again on an identical stack.
 	type formation struct {
 		Owner     int
 		Tokens    []ShipToken
@@ -116,7 +144,7 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		Designs   []*ShipDesign
 	}
 	inputs := []formation{}
-	for _, f := range own {
+	for _, f := range modeled {
 		auto := automaticPatrolBattlePlan(p, f)
 		plan := patrolPlanForFleet(p, f)
 		if auto || isManagedPatrolPlan(f) {
@@ -151,13 +179,8 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		e.Hits++
 		return result
 	}
-	modeled := own
-	if merge {
-		merged := patrolMergedFormation(e.rules, p, own)
-		if merged == nil {
-			return patrolAssessment{Reason: "Player battle plans cannot be combined by automation"}
-		}
-		modeled = []*Fleet{merged}
+	if e.Work >= e.Limit {
+		return patrolAssessment{Reason: "Native forecast budget exhausted; concentration retained"}
 	}
 	model, err := newPatrolBattleCopy(e.rules, p, modeled, reports)
 	if err != nil {

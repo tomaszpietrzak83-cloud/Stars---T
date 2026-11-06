@@ -7,6 +7,9 @@ const escortStagingTag = "escort-staging"
 func (t *turnGenerator) planEscortStaging() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
+			if landingManaged(f) {
+				continue
+			}
 			if p.Automation.FleetRoles[f.Num] != "escort" || f.Delete || f.Starbase || f.InDesignMaintenance() || f.InAutomaticSafety() || fuelNetworkManaged(f) || f.GetTag(escortTag) != "" || f.GetTag(tankerAwaitTag) != "" || readTankerJob(f) != nil || p.FleetInActiveAssembly(f) || f.GetTag("maintenance-pending") != "" || f.GetTag(bomberBorrowTag) != "" {
 				continue
 			}

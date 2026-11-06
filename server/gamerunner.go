@@ -271,6 +271,10 @@ func (gr *gameRunner) HostGame(hostID int64, settings *cs.GameSettings) (*cs.Ful
 		return nil, err
 	}
 
+	if fullGame.IsSinglePlayer() {
+		gr.archiveTurnResult(fullGame)
+	}
+
 	return fullGame, nil
 }
 
@@ -812,6 +816,8 @@ func (gr *gameRunner) StartGame(game *cs.Game) error {
 		return fmt.Errorf("save game %d: %w", fullGame.ID, err)
 	}
 
+	gr.archiveTurnResult(fullGame)
+
 	return nil
 }
 
@@ -1089,9 +1095,7 @@ func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGa
 	}
 
 	phase("database commit")
-	if err := gr.archiveTurn(fullGame, "result"); err != nil {
-		slog.Error("Turn saved but result archive failed", slog.Any("error", err), slog.Int64("GameID", fullGame.ID))
-	}
+	gr.archiveTurnResult(fullGame)
 	return nil
 
 }

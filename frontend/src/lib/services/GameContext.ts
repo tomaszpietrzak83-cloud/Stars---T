@@ -127,7 +127,7 @@ export type GameContext = {
 		playerNum: number,
 		universe: Universe
 	) => void;
-	gotoBattle: (battleNum: number) => void;
+	gotoBattle: (battleNum: number, selectMessage?: boolean) => void;
 
 	// game updates
 	updateGame: (g: FullGame | Game | GameSettings | GameWithPlayersFlat | GameWithPlayers) => void;
@@ -563,7 +563,7 @@ export async function createGameContext(
 	}
 
 	// select a battle location in the scanner and make the battle message the current message
-	function gotoBattle(battleNum: number) {
+	function gotoBattle(battleNum: number, selectMessage = true) {
 		const u = get(universe);
 		const p = get(player);
 		const battle = u.getBattle(battleNum);
@@ -576,11 +576,11 @@ export async function createGameContext(
 			selectMapObject(target);
 			zoomToMapObject(target);
 		} else {
-			zoomToMapObject({ position: battle.position } as MapObjectLike);
+			zoomToMapObject(deepSpaceMapObject(battle.position));
 		}
 
 		const battleMessageNum = p.messages.findIndex((m) => m.battleNum == battle.num);
-		if (battleMessageNum) {
+		if (selectMessage && battleMessageNum >= 0) {
 			messageNum.set(battleMessageNum);
 		}
 	}

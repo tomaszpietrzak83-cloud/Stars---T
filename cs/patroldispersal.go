@@ -11,10 +11,26 @@ func (t *turnGenerator) disperseUnreadyPatrol(p *Player, leader, enemy *Fleet, j
 	p.patrolEvaluator.Deferred[priorityFleetKey(enemy.PlayerNum, enemy.Num)] = true
 	job.Grouped = !t.ordersOnly
 	savePatrolJob(leader, *job)
+	// Only this pack needs immediate reassignment. Replanning every idle
+	// patrol here repeats the global planner for each unsuccessful pack.
+	released := map[int]bool{}
+	existing := map[int]bool{}
+	for _, f := range t.game.getFleets(p.Num) {
+		existing[f.Num] = true
+		if readPatrolJob(f).Leader == leader.Num {
+			released[f.Num] = true
+		}
+	}
 	t.releasePatrol(p, leader)
+	if p.patrolEvaluator.PlanningDefence {
+		return
+	}
 	// Split children must receive work in this pass too, even when created after
 	// the outer planner took its fleet snapshot.
 	for _, f := range slices.Clone(t.game.getFleets(p.Num)) {
+		if existing[f.Num] && !released[f.Num] {
+			continue
+		}
 		if !patrolAvailable(p, f) || readPatrolJob(f).Leader != 0 || !f.Idle() {
 			continue
 		}

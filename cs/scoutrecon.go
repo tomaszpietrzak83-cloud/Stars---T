@@ -197,6 +197,12 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 		for _, other := range t.game.getFleets(p.Num) {
 			job := readScoutRecon(other)
 			if other != f && scoutReconActive(p, other) && !other.Delete && !other.InDesignMaintenance() && !other.InAutomaticSafety() && other.GetTag("maintenance-pending") == "" && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && (job.Target == enemy.Num || unknownDesignOverlap(p, enemy, p.GetFleetIntel(job.Enemy, job.Target))) {
+				// A remote lower-priority copy of this design cannot reserve
+				// reconnaissance while its counterpart bombards our colony.
+				assigned := p.GetFleetIntel(job.Enemy, job.Target)
+				if job.Target != enemy.Num && p.patrolEvaluator != nil && assigned != nil && patrolMissionRank(p, enemy) < patrolMissionRank(p, assigned) {
+					continue
+				}
 				claimed = true
 				break
 			}
@@ -218,11 +224,12 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 			continue
 		}
 		value := float64(route.Turns)*1000 + f.Position.DistanceTo(enemy.Position)
-		if p.patrolEvaluator != nil {
-			value += float64(patrolMissionRank(p, enemy)) * 100000
-		}
 		if incoming || priorityFleet(p, enemy) {
 			value *= .01
+		}
+		if p.patrolEvaluator != nil {
+			// Travel preferences must not discount the shared mission priority.
+			value += float64(patrolMissionRank(p, enemy)) * 100000
 		}
 		if value < score {
 			chosen, best, score = enemy, route, value

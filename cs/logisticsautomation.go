@@ -228,7 +228,7 @@ func knownRouteThreat(player *Player, from, to Vector) int {
 
 func civilianTraffic(player *Player, fleet *Fleet) bool {
 	role := player.Automation.FleetRoles[fleet.Num]
-	return (role == "freighter" || role == "scout") && !fleet.InDesignMaintenance() && !fleet.InAutomaticSafety()
+	return role == "freighter" || role == "scout" && !fleet.InDesignMaintenance() && !fleet.InAutomaticSafety()
 }
 
 func transitRouteThreat(player *Player, fleet *Fleet, from, to Vector) int {
@@ -259,6 +259,7 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 			index.built = true
 			index.margin = player.Automation.escortMargin()
 			index.threats = nil
+			index.routes = make(map[routeThreatKey]int)
 			for _, intel := range player.FleetIntels {
 				if intel == nil || intel.Delete || intel.ReportAge != 0 || intel.PlayerNum == player.Num || player.IsFriend(intel.PlayerNum) || !patrolReportedCombatant(player, intel) {
 					continue
@@ -268,12 +269,24 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 				index.threats = append(index.threats, threat)
 			}
 		}
+		key := routeThreatKey{from: from, to: to, civilian: civilian}
+		if civilian {
+			// Civilian threats depend on the arrival point, not the corridor.
+			key.from = Vector{}
+		}
+		if value, ok := index.routes[key]; ok {
+			return value
+		}
 		total := 0
 		for _, threat := range index.threats {
 			if threat.threatensRoute(from, to, civilian) {
 				total = min(1_000_000_000, total+threat.power)
 			}
 		}
+		if len(index.routes) >= 65536 {
+			clear(index.routes)
+		}
+		index.routes[key] = total
 		return total
 	}
 	return uncachedRouteThreat(player, from, to, civilian)
@@ -396,8 +409,17 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		return cmp.Compare(a.Position.DistanceTo(fleet.Position), b.Position.DistanceTo(fleet.Position))
 	})
 	for _, escort := range escortCandidates {
+		if landingManaged(escort) {
+			continue
+		}
+		if escort.GetTag(bomberBorrowTag) != "" && escort.GetTag(escortTag) == strconv.Itoa(fleet.Num) && !t.fundedPatrolSupport(player, escort, fleet) {
+			releaseBorrowedHunter(player, escort)
+			continue
+		}
 		if threat > power && escort.GetTag(recaptureAssaultTag) == "" && player.Automation.FleetRoles[escort.Num] == "patrol" && readPatrolJob(escort).Leader == 0 && escort.Position.DistanceTo(fleet.Position) <= 100 && escort.Spec.HasWeapons && !escort.Delete && !escort.InDesignMaintenance() && !escort.InAutomaticSafety() && !player.FleetInActiveAssembly(escort) && !fuelNetworkReserved(escort) && readTankerJob(escort) == nil && escort.GetTag("maintenance-pending") == "" {
-			borrowBomberProtection(player, escort, fleet)
+			if !patrolNeededForColony(player, escort) && t.fundedPatrolSupport(player, escort, fleet) {
+				borrowBomberProtection(player, escort, fleet)
+			}
 		}
 		if readTankerJob(escort) != nil || fuelNetworkManaged(escort) || escort.InAutomaticSafety() || escort.Delete || escort.InDesignMaintenance() || player.Automation.FleetRoles[escort.Num] != "escort" || !escort.Spec.HasWeapons {
 			continue
@@ -452,6 +474,9 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		for _, member := range group {
 			holdAutomaticFleet(player, member, job.Status)
 		}
+		group = slices.DeleteFunc(group, func(member *Fleet) bool {
+			return member != fleet && releaseBorrowedHunter(player, member)
+		})
 		saveAutomaticFuelRequest(fleet, automaticFuelRequest{Destination: job.Position, Target: target, Members: fleetNumbers(group), Urgent: true, AllowThreat: threat > 0})
 		return
 	}
@@ -471,6 +496,7 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 }
 
 func (t *turnGenerator) planLogisticsAutomation() {
+	t.planLandingOperations()
 	for _, player := range t.automaticPlayers() {
 		for _, escort := range t.game.getFleets(player.Num) {
 			if escort.GetTag(escortStagingTag) == "" && readTankerJob(escort) == nil && !fuelNetworkManaged(escort) && player.Automation.FleetRoles[escort.Num] == "escort" && escort.GetTag(escortTag) == "" && !escort.InAutomaticSafety() && !escort.InDesignMaintenance() {
@@ -497,7 +523,7 @@ func (t *turnGenerator) planLogisticsAutomation() {
 			}
 		}
 		for _, fleet := range fleets {
-			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() {
+			if landingManaged(fleet) || fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() {
 				continue
 			}
 			if fleet.GetTag(containmentTag) != "" {
@@ -507,16 +533,14 @@ func (t *turnGenerator) planLogisticsAutomation() {
 				continue
 			}
 			job := t.currentLogisticsWork(player, fleet)
+			if job != nil && job.Kind == "landing-reserve" {
+				holdAutomaticFleet(player, fleet, job.Status)
+				continue
+			}
 			if job != nil && job.Kind == "radiation-return" {
 				continue
 			}
-			if job != nil && job.Kind == "passengers" && fleet.CargoMass() == 0 && fleet.GetTag("maintenance-pending") == "" && !player.Automation.DisablePassengerTransport {
-				if landing := t.findInvasionTransfer(player, fleet, true); landing != nil {
-					t.releaseEscorts(player, fleet)
-					job = landing
-					saveLogisticsWork(fleet, job)
-				}
-			}
+
 			if job != nil && job.Kind == "passengers" && fleet.CargoMass() == 0 && strings.HasPrefix(job.Status, "Waiting") && !t.passengerPickupReady(player, fleet, job) {
 				if replacement := t.findPassengerTransfer(player, fleet); replacement != nil && replacement.Kind == "passengers" && t.passengerPickupReady(player, fleet, replacement) {
 					t.releaseEscorts(player, fleet)
@@ -601,12 +625,6 @@ func (t *turnGenerator) planLogisticsAutomation() {
 				target = nearest.MapObject.ToTarget()
 			} else if job == nil {
 
-				if job == nil && !colonizerPassengerCarrier(player, fleet) && !player.Automation.DisablePassengerTransport {
-					job = t.findAutomaticInvasion(player, fleet)
-					if job != nil {
-						target = t.game.getPlanet(job.TargetNum).MapObject.ToTarget()
-					}
-				}
 				if job == nil && !colonizerPassengerCarrier(player, fleet) && !player.Automation.DisableMineralSupply {
 					job = t.findShipyardSupplyMode(player, fleet, claimed, false)
 					if job != nil {
@@ -738,7 +756,7 @@ func (t *turnGenerator) collectBattleSalvage() {
 func (t *turnGenerator) resolveLogisticsAutomation() {
 	for _, player := range t.automaticPlayers() {
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if fleet.InAutomaticSafety() || fleet.Delete || !passengerCarrier(player, fleet) || fleet.InDesignMaintenance() {
+			if landingManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || !passengerCarrier(player, fleet) || fleet.InDesignMaintenance() {
 				continue
 			}
 			job := logisticsWork(fleet)
@@ -748,7 +766,7 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 			switch job.Kind {
 			case "radiation-return":
 				planet := t.game.getPlanet(job.TargetNum)
-				if planet != nil && planet.OwnedBy(player.Num) {
+				if suitableColony(player, planet) {
 					planet.Cargo.Colonists += fleet.Cargo.Colonists
 					fleet.Cargo.Colonists = 0
 					delete(fleet.Tags, logisticsTag)
@@ -841,7 +859,7 @@ func (t *turnGenerator) pruneAutomationAssignments() {
 func (t *turnGenerator) dispatchReadyLogistics() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
-			if f.Delete || fuelNetworkManaged(f) || f.InAutomaticSafety() || f.InDesignMaintenance() || !passengerCarrier(p, f) {
+			if landingManaged(f) || f.Delete || fuelNetworkManaged(f) || f.InAutomaticSafety() || f.InDesignMaintenance() || !passengerCarrier(p, f) {
 				continue
 			}
 			job := logisticsWork(f)

@@ -4,10 +4,12 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"github.com/sirgwain/craig-stars/cs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/sirgwain/craig-stars/cs"
 )
 
 // Private game state only, never authentication data or the whole server DB.
@@ -59,4 +61,11 @@ func (gr *gameRunner) archiveTurn(game *cs.FullGame, phase string) error {
 	}
 	name := fmt.Sprintf("year-%d-%s-%s.json.gz", game.Year, phase, time.Now().UTC().Format("20060102T150405.000000000Z"))
 	return os.Rename(temporary, filepath.Join(dir, name))
+}
+
+// Archive only after the game state has been committed to the database.
+func (gr *gameRunner) archiveTurnResult(game *cs.FullGame) {
+	if err := gr.archiveTurn(game, "result"); err != nil {
+		slog.Error("Game state saved but result archive failed", slog.Any("error", err), slog.Int64("GameID", game.ID), slog.Int("Year", game.Year))
+	}
 }

@@ -2,6 +2,7 @@ package cs
 
 import (
 	"encoding/json"
+	"maps"
 	"math"
 	"slices"
 	"sort"
@@ -30,9 +31,23 @@ type patrolJob struct {
 	Status         string      `json:"status"`
 }
 
+type cachedPatrolJob struct {
+	raw string
+	job patrolJob
+}
+
 func readPatrolJob(f *Fleet) patrolJob {
-	var job patrolJob
-	_ = json.Unmarshal([]byte(f.GetTag(patrolTag)), &job)
+	raw := f.GetTag(patrolTag)
+	if raw == "" {
+		return patrolJob{}
+	}
+	if f.patrolJobCache == nil || f.patrolJobCache.raw != raw {
+		var job patrolJob
+		_ = json.Unmarshal([]byte(raw), &job)
+		f.patrolJobCache = &cachedPatrolJob{raw: raw, job: job}
+	}
+	job := f.patrolJobCache.job
+	job.SupportDesigns = maps.Clone(job.SupportDesigns)
 	return job
 }
 func savePatrolJob(f *Fleet, job patrolJob) {
@@ -164,7 +179,7 @@ func patrolCanAttack(player *Player, fleet *Fleet) bool {
 		return player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, patrolInterceptPosition(enemy), 1).Ready
 	}
 	if player.patrolEvaluator != nil && job.Leader == fleet.Num && enemy != nil && !patrolNeedsRecon(player, enemy) && fleet.Spec.TotalShips >= job.RequiredShips {
-		result := player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, patrolInterceptPosition(enemy), 1)
+		result := patrolFleetEvaluator(player, fleet).assess(player, []*Fleet{fleet}, enemy, patrolInterceptPosition(enemy), 1)
 		if result.Ready {
 			applyPatrolBattlePlan(player, fleet, result.Tactic)
 		}
@@ -176,6 +191,9 @@ func patrolAvailable(player *Player, f *Fleet) bool {
 	return f.GetTag(containmentTag) == "" && patrolOperational(player, f)
 }
 func patrolOperational(player *Player, f *Fleet) bool {
+	if landingManaged(f) {
+		return false
+	}
 	if f.GetTag(recaptureAssaultTag) != "" {
 		return false
 	}
@@ -302,7 +320,7 @@ func (t *turnGenerator) patrolPursuitSafe(fleet *Fleet, position Vector, remaini
 	player := t.game.getPlayer(fleet.PlayerNum)
 	if player.Automation.FleetRoles[fleet.Num] == "patrol" && player.patrolEvaluator != nil {
 		if enemy := patrolTacticalEnemy(player, fleet); enemy != nil {
-			result := player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, position, 1)
+			result := patrolFleetEvaluator(player, fleet).assess(player, []*Fleet{fleet}, enemy, position, 1)
 			if !result.Ready {
 				return false
 			}
@@ -482,6 +500,7 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 func (t *turnGenerator) planPatrolAutomation() {
 	for _, player := range t.game.Players {
 		t.reconcilePatrolJobs(player)
+		t.planUrgentPatrolDefence(player)
 		fleets := []*Fleet{}
 		for _, fleet := range t.game.getFleets(player.Num) {
 			delete(fleet.Tags, patrolMineSweepTag)
@@ -509,7 +528,13 @@ func (t *turnGenerator) planPatrolAutomation() {
 			return a < b
 		})
 		for _, fleet := range fleets {
+			if landingManaged(fleet) {
+				continue
+			}
 			job := readPatrolJob(fleet)
+			if defencePatrolCommitted(player, fleet) {
+				continue
+			}
 			if fleet.GetTag(recaptureAssaultTag) != "" {
 				continue
 			}

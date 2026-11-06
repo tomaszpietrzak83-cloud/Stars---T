@@ -26,6 +26,9 @@ func atOwnFuelDock(p *Player, f *Fleet) bool {
 func (t *turnGenerator) recoverIdleAutomaticFleets() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
+			if landingManaged(f) {
+				continue
+			}
 			if job := readPatrolJob(f); job.Provisional && job.Leader != 0 && patrolEnemy(p, job) != nil && !f.InAutomaticSafety() && !f.InDesignMaintenance() {
 				continue
 			}

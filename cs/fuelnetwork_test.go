@@ -146,7 +146,7 @@ func TestNetworkOneWayColonizationNeedsNoDestinationDock(t *testing.T) {
 	p.PlanetIntels = append(p.PlanetIntels, goal)
 	p.Automation.FleetRoles[customer.Num] = "colonizer:best"
 	u.Run(func(tg *turnGenerator) {
-		chosen, route := tg.assistedColonyTarget(p, customer, "best", map[int]int{})
+		chosen, route := tg.assistedColonyTarget(p, customer, "best", map[int]int{}, true)
 		require.NotNil(t, chosen)
 		require.Equal(t, goal.Num, chosen.Num)
 		require.NotNil(t, route)

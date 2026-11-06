@@ -51,7 +51,7 @@ func (t *turnGenerator) passengerReservations(player *Player, exclude int) (inco
 }
 
 func suitableColony(player *Player, planet *Planet) bool {
-	return planet != nil && planet.OwnedBy(player.Num) && planet.Spec.MaxPopulation > 0 && (planet.Spec.Habitability > 0 || player.Race.Spec.InnateResources || (player.Race.Spec.Instaforming || player.Automation.ServeTerraformingWorlds) && prospectivePlanetQuality(player, planet) > 0)
+	return planet != nil && planet.OwnedBy(player.Num) && planet.Spec.MaxPopulation > 0 && planet.Spec.Habitability > 0
 }
 
 func (t *turnGenerator) passengerDestination(player *Player, fleet *Fleet, preferred int) *Planet {

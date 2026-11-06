@@ -6,7 +6,11 @@ function Get-StarsSha256([string]$filename){
 }
 $projectRoot=$PSScriptRoot
 $backendExe=Join-Path $projectRoot 'windows\stars-local.exe'
-if(Test-Path -LiteralPath (Join-Path $projectRoot 'dist\stars-local.pending.exe')) {$backendExe=Join-Path $projectRoot 'dist\stars-local.exe'}
+$localExe=Join-Path $projectRoot 'dist\stars-local.exe'
+$pendingExe=Join-Path $projectRoot 'dist\stars-local.pending.exe'
+if((Test-Path -LiteralPath $pendingExe) -or ((Test-Path -LiteralPath $localExe) -and (!(Test-Path -LiteralPath $backendExe) -or (Get-Item -LiteralPath $localExe).LastWriteTimeUtc -gt (Get-Item -LiteralPath $backendExe).LastWriteTimeUtc))) {
+ $backendExe=$localExe
+}
 $webScript=Join-Path $projectRoot 'tools\local-web.mjs'
 $logs=Join-Path $projectRoot 'tmp\launch'
 $null=New-Item -ItemType Directory -Force -Path $logs

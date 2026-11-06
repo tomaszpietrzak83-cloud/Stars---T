@@ -105,6 +105,9 @@ func TestPatrolLocalCriticalMassMergesAndLaunchesWithoutDistantCommand(t *testin
 	p := u.Player(1)
 	old := u.Fleet("Old command")
 	a, b := u.Fleet("Local A"), u.Fleet("Local B")
+	job := readPatrolJob(old)
+	job.RendezvousBy, job.Rally = u.Game.Year-1, a.Position
+	savePatrolJob(old, job)
 	u.Run((*turnGenerator).startPatrolEvaluation)
 	u.Run(func(tg *turnGenerator) { tg.advancePatrol(p, old) })
 	require.True(t, a.Delete || b.Delete, "native merge must occur before departure")
@@ -117,6 +120,8 @@ func TestPatrolLocalCriticalMassMergesAndLaunchesWithoutDistantCommand(t *testin
 	require.Greater(t, len(local.Waypoints), 1)
 	require.Equal(t, u.Fleet("Threat").Position, local.Waypoints[len(local.Waypoints)-1].Position)
 	require.False(t, readPatrolJob(local).Provisional)
+	require.Zero(t, readPatrolJob(local).RendezvousBy, "a completed gathering must not expire later reinforcement rendezvous")
+	require.Zero(t, readPatrolJob(local).GatheringSince)
 	require.NotEqual(t, old.Num, readPatrolJob(u.Fleet("Late")).Leader)
 	u.Run(func(tg *turnGenerator) { require.True(t, tg.patrolDepartureConfirmed(p, local)) })
 }

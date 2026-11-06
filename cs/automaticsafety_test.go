@@ -56,7 +56,9 @@ func TestKnownDesignReportsTriggerEvasionWithoutPrivateFleetSpecs(t *testing.T) 
 	original := NewPositionWaypoint(Vector{0, 0}, 5)
 	f.Waypoints = []Waypoint{{Position: f.Position}, original}
 	p.Automation.FleetRoles = map[int]string{f.Num: "freighter"}
-	enemy := &Fleet{MapObject: MapObject{Num: 9, PlayerNum: 2, Position: Vector{10, 0}}, WarpSpeed: 5, Heading: VectorFloat64{X: 1}, Tokens: []ShipToken{{DesignNum: 8, Quantity: 1}}}
+	// Both fleets end at (0,0); merely crossing the civilian's course no
+	// longer causes evasion. Equipment still comes only from public designs.
+	enemy := &Fleet{MapObject: MapObject{Num: 9, PlayerNum: 2, Position: Vector{25, 0}}, WarpSpeed: 5, Heading: VectorFloat64{X: -1}, Tokens: []ShipToken{{DesignNum: 8, Quantity: 1}}}
 	p.FleetIntels = []*Fleet{enemy}
 	p.ShipDesignIntels = []*ShipDesign{{Num: 8, PlayerNum: 2, Hull: Destroyer.Name, Slots: []ShipDesignSlot{{Quantity: 1}}, Spec: ShipDesignSpec{PowerRating: 100}}}
 	u.Run((*turnGenerator).refreshAutomaticFuelIntel)

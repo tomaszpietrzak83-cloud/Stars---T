@@ -38,8 +38,12 @@ type automaticTankerJob struct {
 }
 
 func readTankerJob(fleet *Fleet) *automaticTankerJob {
+	raw := fleet.GetTag(tankerJobTag)
+	if raw == "" {
+		return nil
+	}
 	var job automaticTankerJob
-	if json.Unmarshal([]byte(fleet.GetTag(tankerJobTag)), &job) != nil {
+	if json.Unmarshal([]byte(raw), &job) != nil {
 		return nil
 	}
 	return &job
@@ -159,11 +163,17 @@ func convoyMembers(player *Player, fleet *Fleet, all []*Fleet) []*Fleet {
 func (t *turnGenerator) guardAutomaticFuel() {
 	for _, player := range t.automaticPlayers() {
 		for _, fleet := range t.game.getFleets(player.Num) {
+			if fundedPatrolRallyWaypoints(&t.game.Rules, player, fleet, t.game.Year) {
+				continue
+			}
 			if fundedTraderWaypoints(&t.game.Rules, player, fleet) || (readTankerJob(fleet) != nil && readTankerJob(fleet).TargetNum > 0) || (fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet)) || fuelNetworkManaged(fleet) || !isAutomaticFleet(player, fleet) || player.Automation.FleetRoles[fleet.Num] == "tanker" || fleet.GetTag(escortTag) != "" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
 			group := convoyMembers(player, fleet, t.game.getFleets(player.Num))
 			if len(fleet.Waypoints) < 2 {
+				if landingManaged(fleet) {
+					continue
+				}
 				if fleet.GetTag(anticipatedSalvageTag) != "" {
 					continue
 				}
@@ -176,7 +186,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				continue
 			}
 			goal := fleet.Waypoints[1]
-			allowThreat := combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
+			allowThreat := landingScout(player, fleet) || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
 			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
 			if job := logisticsWork(fleet); job != nil {
 				goal.Position = job.Position
@@ -191,6 +201,9 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				target = MapObjectTarget{}
 			}
 			policy := automaticRoutePolicy{AllowThreat: allowThreat, OneWay: colonizationOneWay(player, fleet, goal)}
+			if landingScout(player, fleet) && !fleet.InAutomaticSafety() {
+				policy.Fast = true
+			}
 			if fleet.GetTag(containmentTag) != "" {
 				policy = economicalContainmentPolicy(player, fleet, fleet.Position.DistanceTo(goal.Position))
 			}
@@ -678,6 +691,9 @@ func (t *turnGenerator) resolveAutomaticTankers() {
 }
 
 func automaticFuelDonor(player *Player, fleet *Fleet) bool {
+	if landingManaged(fleet) {
+		return false
+	}
 	role := player.Automation.FleetRoles[fleet.Num]
 	return role == "tanker" || role == "patrol" || role == "escort" && fleet.GetTag(escortTag) == "" && fleet.GetTag(bomberBorrowTag) == "" && !player.FleetInActiveAssembly(fleet)
 }

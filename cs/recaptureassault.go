@@ -8,8 +8,9 @@ import (
 
 const recaptureAssaultTag = "recapture-assault"
 
-func reportedRecaptureBase(p *Player, planet *Planet) *Fleet {
-	if planet == nil || !p.Automation.PriorityPlanets[planet.Num] || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || planet.ReportAge > 2 || !planet.Spec.HasStarbase {
+func reportedRecaptureBase(p *Player, planet *Planet, landingRequest ...bool) *Fleet {
+	requested := len(landingRequest) > 0 && landingRequest[0]
+	if planet == nil || !p.Automation.PriorityPlanets[planet.Num] && !requested || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || planet.ReportAge > 2 || !planet.Spec.HasStarbase {
 		return nil
 	}
 	design := p.GetShipDesignIntel(planet.PlayerNum, planet.Spec.StarbaseDesignNum)
@@ -76,14 +77,14 @@ func (t *turnGenerator) planRecaptureAssaults() {
 					target.Spec.HasStarbase = false
 				}
 			}
-			if p.Automation.FleetRoles[f.Num] != "patrol" || f.Delete || f.InDesignMaintenance() || f.InAutomaticSafety() || target == nil || !target.Spec.HasStarbase || target.PlayerNum == p.Num || !p.Automation.PriorityPlanets[num] || p.IsFriend(target.PlayerNum) {
+			if p.Automation.FleetRoles[f.Num] != "patrol" || f.Delete || f.InDesignMaintenance() || f.InAutomaticSafety() || target == nil || !target.Spec.HasStarbase || target.PlayerNum == p.Num || !p.Automation.PriorityPlanets[num] && !landingBaseRequested(p, num, fleets) || p.IsFriend(target.PlayerNum) {
 				delete(f.Tags, recaptureAssaultTag)
 				continue
 			}
 			claimed[num] = true
 			delete(f.Tags, patrolFrontTag)
 			delete(f.Tags, frontierPatrolTag)
-			base := reportedRecaptureBase(p, target)
+			base := t.reportedLandingBase(p, target)
 			if base == nil {
 				holdAutomaticFleet(p, f, "Orbital assault awaits fresh equipment reconnaissance")
 				continue
@@ -187,7 +188,7 @@ func (t *turnGenerator) recaptureDepartureConfirmed(p *Player, f *Fleet, target 
 	if f.GetTag(recaptureAssaultTag) != strconv.Itoa(target.Num) {
 		return false
 	}
-	base := reportedRecaptureBase(p, target)
+	base := t.reportedLandingBase(p, target)
 	if base == nil {
 		return false
 	}

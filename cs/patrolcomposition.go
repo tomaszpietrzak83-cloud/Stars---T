@@ -1,6 +1,9 @@
 package cs
 
-import "slices"
+import (
+	"log/slog"
+	"slices"
+)
 
 func patrolCompositionValue(p *Player, group []*Fleet) float64 {
 	value := 0.0
@@ -19,6 +22,11 @@ func patrolCompositionValue(p *Player, group []*Fleet) float64 {
 // The score prices readiness damage and repair downtime as well as casualties;
 // an extra ship can be worth retaining even when a smaller stack wins.
 func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, job *patrolJob) {
+	// Older saves retained the expired assembly deadline during an attack.
+	if job.Grouped && !job.Provisional && job.CleanupTarget == 0 {
+		job.RendezvousBy, job.GatheringSince = 0, 0
+		job.Rally, job.CleanupUsed = Vector{}, false
+	}
 	job.CleanupEnemy, job.CleanupTarget = 0, 0
 	savePatrolJob(leader, *job)
 	existing := []*Fleet{leader}
@@ -46,6 +54,13 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		return
 	}
 	group := []*Fleet{leader}
+	result := p.patrolEvaluator.assess(p, group, enemy, point, 1)
+	// The candidate loop cannot run once its native forecast budget is spent.
+	// Avoid computing hundreds of routes that would immediately be discarded.
+	if !result.Ready && p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
+		t.disperseUnreadyPatrol(p, leader, enemy, job)
+		return
+	}
 	type candidate struct {
 		fleet *Fleet
 		route *expeditionRoute
@@ -72,27 +87,70 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		}
 		return a.fleet.Num - b.fleet.Num
 	})
-	result := p.patrolEvaluator.assess(p, group, enemy, point, 1)
 	checks := 0
+	maxChecks := 32
+	urgent := urgentPatrolTarget(p, enemy)
+	reserveShips := 0
+	if urgent {
+		maxChecks = 96
+	}
+	if urgent && !result.Ready && len(candidates) > 8 {
+		pool := []*Fleet{leader}
+		// maxChecks bounds forecasts, not the force needed to defeat an enemy.
+		// Prefix growth already obeys both that bound and the native work budget.
+		for _, candidate := range candidates {
+			pool = append(pool, candidate.fleet)
+		}
+		if ready, assessment := readyPatrolPrefix(p, pool, enemy, point, &checks, maxChecks); ready != nil {
+			group, result = ready, assessment
+			reserveShips = (patrolFormationShips(group)*5 + 3) / 4
+			n := len(group)
+			for n < len(pool) && patrolFormationShips(pool[:n]) < reserveShips {
+				n++
+			}
+			if n > len(group) && checks < maxChecks && p.patrolEvaluator.Work < p.patrolEvaluator.Limit {
+				checks++
+				if reserve := p.patrolEvaluator.assess(p, pool[:n], enemy, point, 1); reserve.Ready {
+					group, result = pool[:n], reserve
+				}
+			}
+		}
+	}
 	for _, candidate := range candidates {
+		if result.Ready && urgent && reserveShips > 0 && patrolFormationShips(group) >= reserveShips {
+			break
+		}
 		support, route := candidate.fleet, candidate.route
-		if checks >= 32 || p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
+		if slices.Contains(group, support) {
+			continue
+		}
+		if checks >= maxChecks || p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
 			break
 		}
 		trial := append(slices.Clone(group), support)
 		checks++
 		next := p.patrolEvaluator.assess(p, trial, enemy, point, 1)
 		opportunity := patrolCompositionValue(p, []*Fleet{support}) * .015 * float64(1+route.Turns)
-		if !result.Ready || next.Ready && next.Score+opportunity < result.Score {
+		if !result.Ready || next.Ready && (next.Score+opportunity < result.Score || urgent && patrolFormationShips(group) < reserveShips) {
 			group, result = trial, next
 		}
 		if result.Ready {
-			break
+			if !urgent {
+				break
+			}
+			// Relief must survive newly arriving reports while the force gathers.
+			// Keep a bounded reserve; the actual attack still requires a native check.
+			if reserveShips == 0 {
+				reserveShips = (patrolFormationShips(group)*5 + 3) / 4
+			}
+			if patrolFormationShips(group) >= reserveShips {
+				break
+			}
 		}
 	}
 	// Retain only a sufficient formation, including releasing a distant leader.
-	if result.Ready {
-		for i := len(group) - 1; i >= 0 && len(group) > 1 && checks < 36; i-- {
+	if result.Ready && !urgent {
+		for i := len(group) - 1; i >= 0 && len(group) > 1 && checks < maxChecks+4; i-- {
 			trial := append(slices.Clone(group[:i]), group[i+1:]...)
 			checks++
 			next := p.patrolEvaluator.assess(p, trial, enemy, point, 1)
@@ -102,6 +160,9 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		}
 	}
 	if !result.Ready {
+		if p.patrolEvaluator.PlanningDefence {
+			slog.Debug("defence composition rejected", "leader", leader.Num, "enemy", enemy.Num, "ships", patrolFormationShips(group), "checks", checks, "work", p.patrolEvaluator.Work, "reason", result.Reason)
+		}
 		t.disperseUnreadyPatrol(p, leader, enemy, job)
 		return
 	}
@@ -157,6 +218,9 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	if !allHere {
 		job.Provisional = false
 		if !t.movingPatrolRally(p, leader, job) {
+			if p.patrolEvaluator.PlanningDefence {
+				slog.Debug("defence rendezvous rejected", "leader", leader.Num, "enemy", enemy.Num, "ships", patrolFormationShips(group), "deadline", job.RendezvousBy, "year", t.game.Year)
+			}
 			t.disperseUnreadyPatrol(p, leader, enemy, job)
 		}
 		return
@@ -179,6 +243,8 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 		return
 	}
 	applyPatrolBattlePlan(p, leader, result.Tactic)
+	job.RendezvousBy, job.GatheringSince = 0, 0
+	job.Rally, job.CleanupUsed = Vector{}, false
 	job.Status = "Intercepting " + enemy.Name + " with native combat forecast"
 	savePatrolJob(leader, *job)
 	if !t.patrolRoute(p, leader, point, true) {
@@ -216,6 +282,21 @@ func patrolGroupPower(group []*Fleet) int {
 
 func patrolSupportCanLeave(p *Player, f, enemy *Fleet) bool {
 	job := readPatrolJob(f)
+	if defencePatrolCommitted(p, f) {
+		return job.Enemy == enemy.PlayerNum && job.Target == enemy.Num
+	}
+	if f.GetTag(bomberBorrowTag) != "" {
+		return false
+	}
+	if job.Enemy == enemy.PlayerNum && job.Target == enemy.Num {
+		return true
+	}
+	if urgentPatrolTarget(p, enemy) {
+		old := patrolEnemy(p, job)
+		if old == nil || patrolMissionRank(p, enemy) < patrolMissionRank(p, old) {
+			return true
+		}
+	}
 	if job.Leader == 0 {
 		return true
 	}

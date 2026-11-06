@@ -190,7 +190,7 @@
 
  <label class="block my-3">AI opponents: {aiCount}<input aria-label="AI opponents" class="range w-full" type="range" min="0" max="144" step="1" value={aiCount} oninput={e=>setAICount(Number(e.currentTarget.value))} /></label>
  <label class="block my-3">Starting location <select aria-label="Starting location" class="select" bind:value={settings.hostStartPosition}><option value="">Random</option><option value="edge">Edge</option><option value="center">Center</option></select></label>
- <p class="text-xs opacity-75 mb-3">Your capital only: Random uses normal placement; Edge selects a planet around 5% of the map width or height from the nearest border; Center selects one near the middle. The closest available planet is used.</p>
+ <p class="text-xs opacity-75 mb-3">Your capital only: Random uses normal placement; Edge selects a planet within 3–7% of the map width or height from the nearest border; Center selects one near the middle. The closest available planet is used.</p>
  <SectionHeader>
   <button type="button" class="btn-ghost w-full flex flex-row" onclick={addPlayer}>
 			Players

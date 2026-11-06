@@ -595,3 +595,15 @@ func Test_completionEstimate_starbaseWithoutSpec(t *testing.T) {
 	assert.Equal(t, 2, items[0].YearsToBuildAll)       // next year still has a dock to build them
 	assert.Equal(t, FleetSpec{}, planet.Starbase.Spec) // the caller's starbase isn't changed
 }
+
+func TestEmptyQueueEstimatesOnlyUnreservedResourcesAsLeftover(t *testing.T) {
+	planet := Planet{Spec: PlanetSpec{
+		ResourcesPerYear:          100,
+		ResourcesPerYearResearch:  25,
+		ResourcesPerYearAvailable: 75,
+	}}
+	_, leftover, err := NewCompletionEstimator().GetProductionWithEstimates(nil, nil, planet)
+	if err != nil || leftover != 75 {
+		t.Fatalf("empty queue leftover = %d, err = %v; want 75", leftover, err)
+	}
+}

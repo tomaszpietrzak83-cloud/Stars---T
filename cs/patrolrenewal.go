@@ -7,6 +7,9 @@ import "slices"
 func (t *turnGenerator) releaseCombatCruiseNetworks() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
+			if landingManaged(f) {
+				continue
+			}
 			plan := readFuelNetworkPlan(f)
 			if plan == nil || (!combatAutonomy(p, f) && p.Automation.FleetRoles[f.Num] != "bomber" && !scoutReconActive(p, f) && f.GetTag(priorityReconTag) == "") {
 				continue
@@ -46,6 +49,7 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 		return false
 	}
 	target := patrolInterceptPosition(enemy)
+	urgent := urgentPatrolTarget(p, enemy)
 	candidates := []Vector{point}
 	// Sample between members as well as toward the enemy, accounting for
 	// unequal travel speeds through actual route planning.
@@ -69,7 +73,7 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 	}
 	policies := make([]automaticRoutePolicy, len(group))
 	for i := range policies {
-		policies[i] = automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: 20}
+		policies[i] = automaticRoutePolicy{Fast: true, EconomicalPatrol: !urgent, MaxTurns: 20}
 	}
 	if job.RendezvousBy == 0 {
 		candidates = slices.DeleteFunc(candidates, func(v Vector) bool {
@@ -85,11 +89,14 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 		// Do not move the finish line each turn.
 		candidates = []Vector{job.Rally}
 	}
-	chosen := choosePatrolRally(&t.game.Rules, p, group, target, candidates, policies)
+	chosen := choosePatrolRally(&t.game.Rules, p, group, target, candidates, policies, urgent)
 	if chosen == nil {
 		return false
 	}
 	if chosen.GatherTurns > 2 {
+		return false
+	}
+	if !synchronizePatrolRally(&t.game.Rules, p, group, target, chosen) {
 		return false
 	}
 	if job.RendezvousBy == 0 {
@@ -148,7 +155,7 @@ type patrolRally struct {
 	Routes      []*expeditionRoute
 }
 
-func choosePatrolRally(rules *Rules, p *Player, group []*Fleet, target Vector, candidates []Vector, policies []automaticRoutePolicy) *patrolRally {
+func choosePatrolRally(rules *Rules, p *Player, group []*Fleet, target Vector, candidates []Vector, policies []automaticRoutePolicy, urgent ...bool) *patrolRally {
 	var best *patrolRally
 	seen := map[Vector]bool{}
 	for _, point := range candidates {
@@ -191,6 +198,15 @@ func choosePatrolRally(rules *Rules, p *Player, group []*Fleet, target Vector, c
 		candidate.GatherTurns = candidate.Turns
 		candidate.Turns += attack.Turns
 		candidate.Fuel += attack.Fuel
+		if len(urgent) > 0 && urgent[0] {
+			if candidate.GatherTurns > 2 {
+				continue
+			}
+			if best == nil || candidate.Turns < best.Turns || candidate.Turns == best.Turns && (candidate.GatherTurns < best.GatherTurns || candidate.GatherTurns == best.GatherTurns && (point.DistanceTo(target) < best.Position.DistanceTo(target) || point.DistanceTo(target) == best.Position.DistanceTo(target) && candidate.Fuel < best.Fuel)) {
+				best = candidate
+			}
+			continue
+		}
 		if best == nil || candidate.GatherTurns < best.GatherTurns || candidate.GatherTurns == best.GatherTurns && (candidate.Turns < best.Turns || candidate.Turns == best.Turns && candidate.Fuel < best.Fuel) {
 			best = candidate
 		}

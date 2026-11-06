@@ -51,6 +51,49 @@ func TestPatrolRejectsFiveAgainstReportedSuperiorEndpoint(t *testing.T) {
 	u.Run(func(tg *turnGenerator) { require.False(t, tg.patrolDepartureConfirmed(p, f)) })
 }
 
+func TestPatrolGatheringPassesKnownUnarmedTrafficButNotEscorts(t *testing.T) {
+	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{
+		{Designs: Designs(DesignDestroyerDelta), Fleets: []ScenarioFleet{{Name: "Gathering", Design: DesignDestroyerDelta.Name}}},
+		{Designs: Designs(DesignSmallFreighter, DesignDestroyerDelta), Fleets: []ScenarioFleet{{Name: "Traffic", Design: DesignSmallFreighter.Name, Position: Vector{16, 0}}, {Name: "Escort", Design: DesignDestroyerDelta.Name, Quantity: 20, Position: Vector{80, 0}}}},
+	}})
+	p, f, traffic, escort := u.Player(1), u.Fleet("Gathering"), u.Fleet("Traffic"), u.Fleet("Escort")
+	p.Automation.FleetRoles = map[int]string{f.Num: "patrol"}
+	p.discoverer.discoverDesign(traffic.Tokens[0].design, true)
+	p.discoverer.discoverFleet(traffic, true)
+	u.Run((*turnGenerator).startPatrolEvaluation)
+	// No forecast is available: that cannot turn fully known noncombatants
+	// into a reason to halt a funded gathering leg.
+	p.patrolEvaluator.Limit = 0
+	f.Waypoints = []Waypoint{{Position: f.Position}, {Position: Vector{32, 0}, WarpSpeed: 4}}
+	savePatrolJob(f, patrolJob{Leader: f.Num, Provisional: true, Rally: Vector{32, 0}})
+	u.Run(func(tg *turnGenerator) { require.True(t, tg.patrolDepartureConfirmed(p, f)) })
+	// An attack/cleanup still requires its normal useful-victory forecast.
+	job := readPatrolJob(f)
+	job.CleanupTarget = traffic.Num
+	savePatrolJob(f, job)
+	u.Run(func(tg *turnGenerator) { require.False(t, tg.patrolDepartureConfirmed(p, f)) })
+	job.CleanupTarget = 0
+	savePatrolJob(f, job)
+	design := p.GetShipDesignIntel(2, traffic.Tokens[0].DesignNum)
+	slots := design.Slots
+	design.Slots = nil
+	trafficReport := p.GetFleetIntel(2, traffic.Num)
+	require.False(t, harmlessPatrolTransit(&u.Game.Rules, p, trafficReport, traffic.Position))
+	trafficReport.Tokens[0].Quantity = 8
+	u.Run(func(tg *turnGenerator) { require.False(t, tg.patrolDepartureConfirmed(p, f)) })
+	trafficReport.Tokens[0].Quantity = 1
+	design.Slots = slots
+	p.discoverer.discoverDesign(escort.Tokens[0].design, true)
+	p.discoverer.discoverFleet(escort, true)
+	report := p.GetFleetIntel(2, escort.Num)
+	report.Heading, report.WarpSpeed = VectorFloat64{X: -1}, 8
+	require.Contains(t, patrolEncounterReports(p, trafficReport, traffic.Position, 1), report)
+	require.True(t, patrolReportedCombatant(p, report))
+	u.Run(func(tg *turnGenerator) {
+		require.False(t, tg.patrolDepartureConfirmed(p, f), "converging armed escort blocks transit")
+	})
+}
+
 func TestCopied2459LossOrdersRejectFiveVsTwentyEight(t *testing.T) {
 	path := os.Getenv("STARS_PATROL_LOSS_SNAPSHOT")
 	if path == "" {

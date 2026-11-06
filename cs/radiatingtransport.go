@@ -58,7 +58,7 @@ func (t *turnGenerator) prepareRadiatingTransports() {
 				continue
 			}
 			for _, colony := range t.game.getPlanets(p.Num) {
-				if colony.Position == f.Position {
+				if colony.Position == f.Position && suitableColony(p, colony) {
 					colony.Cargo.Colonists += f.Cargo.Colonists
 					f.Cargo.Colonists = 0
 					delete(f.Tags, logisticsTag)
@@ -71,6 +71,9 @@ func (t *turnGenerator) prepareRadiatingTransports() {
 			var best *expeditionRoute
 			var destination *Planet
 			for _, colony := range t.game.getPlanets(p.Num) {
+				if !suitableColony(p, colony) {
+					continue
+				}
 				route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, colony.Position, colony.ToTarget(), automaticRoutePolicy{Fast: true, MaxTurns: 20})
 				if route != nil && !route.WaitForFuel && (best == nil || route.Turns < best.Turns) {
 					best = route

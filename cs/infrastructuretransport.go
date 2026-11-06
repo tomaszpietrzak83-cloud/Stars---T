@@ -20,7 +20,9 @@ type infrastructureCargo struct {
 func readInfrastructure(f *Fleet) infrastructureCargo {
 	var c infrastructureCargo
 	if f != nil {
-		_ = json.Unmarshal([]byte(f.GetTag(infrastructureCargoTag)), &c)
+		if raw := f.GetTag(infrastructureCargoTag); raw != "" {
+			_ = json.Unmarshal([]byte(raw), &c)
+		}
 	}
 	c.Factories = max(0, c.Factories)
 	c.Mines = max(0, c.Mines)
@@ -59,7 +61,7 @@ func installationCapacity(player *Player, p *Planet, population int) (int, int, 
 // Pickup is only called during another already funded logistics pickup.
 // It never creates a route or goes searching for a source planet.
 func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet, source, dest *Planet, passengers int, reservedPassengers ...int) {
-	if !player.Automation.InfrastructureTransport || source == nil || dest == nil || !source.OwnedBy(player.Num) || !dest.OwnedBy(player.Num) || source.Num == dest.Num || f.Position != source.Position {
+	if !player.Automation.InfrastructureTransport || source == nil || dest == nil || !source.OwnedBy(player.Num) || !suitableColony(player, dest) || source.Num == dest.Num || f.Position != source.Position {
 		return
 	}
 	packed := readInfrastructure(f)
@@ -124,7 +126,7 @@ func (t *turnGenerator) unloadOpportunisticInfrastructure() {
 				if p.Position != f.Position {
 					continue
 				}
-				if p.Num != c.Destination && destination != nil && destination.OwnedBy(player.Num) {
+				if !suitableColony(player, p) || p.Num != c.Destination && suitableColony(player, destination) {
 					continue
 				}
 				p.Factories += c.Factories

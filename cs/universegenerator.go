@@ -425,9 +425,6 @@ func (ug *universeGenerator) getPlayerPlanets() ([]int, error) {
 
 	width := int(ug.area.X)
 	height := int(ug.area.Y)
-	insetScore := func(x, y int) int {
-		return Abs(min(x*height, (width-x)*height, y*width, (height-y)*width) - width*height/20)
-	}
 	if width <= 0 || height <= 0 {
 		return nil, fmt.Errorf("getPlayerPlanets: invalid area (%v x %v)", width, height)
 	}
@@ -540,8 +537,8 @@ retryFullPlacement:
 		if ug.HostStartPosition == "edge" || ug.HostStartPosition == "center" {
 			score := func(p pxy) int {
 				if ug.HostStartPosition == "edge" {
-					// Prefer the 5% inset perimeter, rather than the outermost star.
-					return insetScore(p.x, p.y)
+					// Prefer stars within the 3–7% band along the nearest edge.
+					return edgeStartScore(Vector{p.x, p.y}, ug.area)
 				}
 				return distSquared(p.x, p.y, width/2, height/2)
 			}
@@ -671,8 +668,8 @@ retryFullPlacement:
 			if ug.HostStartPosition == "edge" {
 				pos := ug.Universe.Planets[out[i]].Position
 				old := ug.Universe.Planets[out[chosen]].Position
-				distance = float64(insetScore(pos.X, pos.Y))
-				current = float64(insetScore(old.X, old.Y))
+				distance = float64(edgeStartScore(pos, ug.area))
+				current = float64(edgeStartScore(old, ug.area))
 			}
 			if distance < current {
 				chosen = i
@@ -681,6 +678,12 @@ retryFullPlacement:
 		out[host], out[chosen] = out[chosen], out[host]
 	}
 	return out, nil
+}
+
+func edgeStartScore(position, area Vector) int {
+	distance := 100 * min(position.X*area.Y, (area.X-position.X)*area.Y, position.Y*area.X, (area.Y-position.Y)*area.X)
+	span := area.X * area.Y
+	return max(0, 3*span-distance, distance-7*span)
 }
 
 func (ug *universeGenerator) generatePlanets() error {
@@ -700,14 +703,28 @@ func (ug *universeGenerator) generatePlanets() error {
 	rules.random.Shuffle(len(names), func(i, j int) { names[i], names[j] = names[j], names[i] })
 
 	// place planets in the universe
-	positions, err := ug.placePlanets(numPlanets, int(ug.area.X), int(ug.area.Y), ug.Rules.MinPlanetSpacing, ug.Rules.BorderInset)
-	if err != nil {
-		return err
+	borderInset := ug.Rules.BorderInset
+	if ug.HostStartPosition == "edge" {
+		borderInset = min(borderInset, max(0, 3*min(ug.area.X, ug.area.Y)/100-10))
 	}
-
-	// if clumping enabled, clump up the planets
-	if ug.GalaxyClumping {
-		ug.clump(positions, int(ug.area.X), int(ug.area.Y), ug.Rules.MinPlanetSpacing, ug.Rules.BorderInset)
+	var positions []Vector
+	for attempt := 0; attempt < 8; attempt++ {
+		positions, err = ug.placePlanets(numPlanets, ug.area.X, ug.area.Y, rules.MinPlanetSpacing, borderInset)
+		if err != nil {
+			return err
+		}
+		if ug.GalaxyClumping {
+			if ug.HostStartPosition == "edge" {
+				ug.clump(positions, ug.area.X, ug.area.Y, borderInset, 10)
+			} else {
+				ug.clump(positions, ug.area.X, ug.area.Y, rules.MinPlanetSpacing, rules.BorderInset)
+			}
+		}
+		if ug.HostStartPosition != "edge" || slices.ContainsFunc(positions, func(pos Vector) bool {
+			return edgeStartScore(pos, ug.area) == 0
+		}) {
+			break
+		}
 	}
 
 	// in case we don't have quite as many planets as we thought

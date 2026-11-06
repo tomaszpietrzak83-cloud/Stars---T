@@ -141,10 +141,23 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 			// Safety temporarily suspends refit without losing its group or mission.
 			continue
 		}
-		if fleet.carriesInfrastructure() {
+		if landingManaged(fleet) || fleet.carriesInfrastructure() {
 			continue
 		}
 		if fuelNetworkManaged(fleet) {
+			continue
+		}
+		// Finished automatic ships can work independently. Transports will
+		// regroup with their landing army rather than wait for other shipyards.
+		if work := readMaintenance(fleet); work != nil && work.Stage == "rally" && (work.OriginalRole == "patrol" || work.OriginalRole == "freighter") && !hasMaintenanceTargets(player, fleet) {
+			delete(fleet.Tags, maintenanceTag)
+			delete(fleet.Tags, replacementGroupTag)
+			delete(fleet.Tags, "maintenance-pending")
+			if player.Automation.FleetRoles == nil {
+				player.Automation.FleetRoles = map[int]string{}
+			}
+			player.Automation.FleetRoles[fleet.Num] = work.OriginalRole
+			holdAutomaticFleet(player, fleet, "Rebuild completed; resuming automatic duties")
 			continue
 		}
 		// A bulk upgrade can be queued during composition; finish gathering first.

@@ -2,6 +2,7 @@ import { clone, create } from '@bufbuild/protobuf';
 import { get } from 'svelte/store';
 import { beforeEach, expect, it, vi } from 'vitest';
 import {
+	BattleRecordSchema,
 	FleetSchema,
 	MapObjectType,
 	WaypointDestSchema,
@@ -457,4 +458,17 @@ it('keeps the chosen map zoom when a report selects a new object', async()=>{
  context.zoomToMapObject(u.fleets[1]);
  expect(recalledScannerViewport(key)?.scale).toBe(18);
  expect(get(context.zoomTarget)).toBe(u.fleets[1]);
+});
+
+it('centers and locates a battle in empty space without leaving the battle summary', async () => {
+	const { context, u } = await setup();
+	const battle = create(BattleRecordSchema, { num: 5, position: { x: 80, y: 90 } });
+	u.battleRecords = [battle];
+	context.messageNum.set(0);
+
+	context.gotoBattle(battle.num, false);
+
+	expect(get(context.zoomTarget)?.mapObject?.position).toEqual(battle.position);
+	expect(get(context.mostRecentMapObject)?.mapObject?.position).toEqual(battle.position);
+	expect(get(context.messageNum)).toBe(0);
 });
