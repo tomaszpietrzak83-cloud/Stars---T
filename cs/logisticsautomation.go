@@ -140,8 +140,12 @@ type logisticsJob struct {
 }
 
 func logisticsWork(fleet *Fleet) *logisticsJob {
+	raw := fleet.GetTag(logisticsTag)
+	if raw == "" {
+		return nil
+	}
 	job := &logisticsJob{}
-	if json.Unmarshal([]byte(fleet.GetTag(logisticsTag)), job) != nil {
+	if json.Unmarshal([]byte(raw), job) != nil {
 		return nil
 	}
 	return job

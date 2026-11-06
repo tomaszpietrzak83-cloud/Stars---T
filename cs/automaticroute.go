@@ -64,7 +64,11 @@ func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp i
 		}
 	}
 	for _, field := range player.MinefieldIntels {
-		if field == nil || segmentDistance(field.Position, from, to) > field.Radius()+1 {
+		if field == nil {
+			continue
+		}
+		radius := field.Radius()
+		if !routeBoundsOverlap(from, to, field.Position, field.Position, radius+1) || segmentDistance(field.Position, from, to) > radius+1 {
 			continue
 		}
 		if field.Detonate {
@@ -74,7 +78,7 @@ func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp i
 			if distance > step {
 				end = from.ToFloat64().Add(to.Subtract(from).Normalized().Scale(step))
 			}
-			if from.DistanceTo(field.Position) > field.Radius() || end.DistanceTo(field.Position.ToFloat64()) <= field.Radius()+2 || to.DistanceTo(field.Position) <= field.Radius()+2 {
+			if from.DistanceTo(field.Position) > radius || end.DistanceTo(field.Position.ToFloat64()) <= radius+2 || to.DistanceTo(field.Position) <= radius+2 {
 				return false
 			}
 		} else if field.PlayerNum != player.Num {
@@ -151,6 +155,12 @@ func automaticLegFuel(player *Player, fleet *Fleet, warp int, distance float64, 
 // A pickup must leave enough fuel even after loading the cargo hold. The reserve
 // is a reachable dock, not a guessed percentage of the fuel tank.
 func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Vector, stations []*Planet, allowThreat bool, returnTurns ...int) int {
+	defer scopedRouteThreatIndex(player)()
+	// A nested reserve calculation reads the same snapshot as its route
+	// search. Reuse that cache, but create/release one for standalone calls.
+	if player.routeThreatIndex.routes == nil {
+		defer scopedRouteThreatCache(player)()
+	}
 	best := int(^uint(0) >> 2)
 	loaded := deliveryReturnBudget(player, fleet, position)
 	limit := 0
@@ -160,27 +170,50 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 	if automatic := automaticReturnLimit(player, fleet, MapObjectTarget{}); automatic > 0 && (limit == 0 || limit > automatic) {
 		limit = automatic
 	}
+	maxWarp, cruiseWarp := automaticMaxWarp(player, fleet), automaticCruiseWarp(player, fleet)
+	role := player.Automation.FleetRoles[fleet.Num]
+	cruiseRequired := role == "scout" || role == "patrol" || passengerCruiseFleet(fleet)
+	automatic := isAutomaticFleet(player, fleet)
+	freeMovement := usefulFreePatrolMovement(player, fleet)
 	for _, station := range stations {
 		if station.Position == position {
 			return 0
 		}
+		distance := position.DistanceTo(station.Position)
+		// Cruise feasibility and fuel budgeting ask about the same speed.
+		// Reports and endpoints do not change within this station calculation.
+		var safety [11]int8
+		safeAt := func(speed int) bool {
+			if safety[speed] == 0 {
+				safety[speed] = -1
+				if automaticFleetLegSafe(rules, player, fleet, position, station.Position, speed, allowThreat) {
+					safety[speed] = 1
+				}
+			}
+			return safety[speed] == 1
+		}
 		cruiseSafe := false
-		for speed := automaticCruiseWarp(player, fleet); speed <= automaticMaxWarp(player, fleet); speed++ {
-			if automaticFleetLegSafe(rules, player, fleet, position, station.Position, speed, allowThreat) {
+		for speed := cruiseWarp; speed <= maxWarp; speed++ {
+			if safeAt(speed) {
 				cruiseSafe = true
 				break
 			}
 		}
-		for speed := 1; speed <= automaticMaxWarp(player, fleet); speed++ {
-			if limit > 0 && math.Ceil(position.DistanceTo(station.Position)/fleet.StrategicSpeed(speed)) > float64(limit) {
+		for speed := 1; speed <= maxWarp; speed++ {
+			if limit > 0 && math.Ceil(distance/fleet.StrategicSpeed(speed)) > float64(limit) {
 				continue
 			}
-			if (player.Automation.FleetRoles[fleet.Num] == "scout" || player.Automation.FleetRoles[fleet.Num] == "patrol" || passengerCruiseFleet(fleet) || isAutomaticFleet(player, fleet) && cruiseSafe) && speed < automaticCruiseWarp(player, fleet) && position.DistanceTo(station.Position) > fleet.StrategicSpeed(speed) && !(usefulFreePatrolMovement(player, fleet) && speed <= fleet.Spec.Engine.FreeSpeed) {
+			if (cruiseRequired || automatic && cruiseSafe) && speed < cruiseWarp && distance > fleet.StrategicSpeed(speed) && !(freeMovement && speed <= fleet.Spec.Engine.FreeSpeed) {
 				continue
 			}
-			if automaticFleetLegSafe(rules, player, fleet, position, station.Position, speed, allowThreat) {
-				if required, _, _, ok := automaticLegFuel(player, loaded, speed, position.DistanceTo(station.Position), fleet.Spec.FuelCapacity, 0); ok {
+			if safeAt(speed) {
+				if required, _, _, ok := automaticLegFuel(player, loaded, speed, distance, fleet.Spec.FuelCapacity, 0); ok {
 					best = min(best, required)
+					// Fuel requirements are nonnegative. Once a safe zero-fuel
+					// return exists, no other station can improve the minimum.
+					if best == 0 {
+						return 0
+					}
 				}
 			}
 		}
@@ -328,6 +361,9 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 		arrival[0][i] = f.Fuel
 	}
 	done := make([]bool, n)
+	// Scratch belongs to this search; only accepted destinations retain a copy.
+	fuelLeft := make([]int, len(fleets))
+	choices := make([]int, 0, maxWarp+1)
 	for i := range times {
 		times[i] = infinity
 		previous[i] = -1
@@ -362,7 +398,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 			if distance == 0 && at != 0 {
 				continue
 			}
-			choices := make([]int, 0, maxWarp+1)
+			choices = choices[:0]
 			for speed := 1; speed <= maxWarp; speed++ {
 				if speed < policy.MinWarp && distance > fleets[0].StrategicSpeed(speed) {
 					continue
@@ -393,7 +429,6 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				if !safe {
 					continue
 				}
-				fuelLeft := make([]int, len(fleets))
 				costTotal := 0
 				valid := true
 				for i, fleet := range fleets {
@@ -418,7 +453,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				}
 				if score(turns, used[at]+costTotal) < score(times[next], used[next]) || score(turns, used[at]+costTotal) == score(times[next], used[next]) && (turns < times[next] || policy.HighestWarp && speed > speeds[next]) {
 					times[next], used[next], previous[next], speeds[next] = turns, used[at]+costTotal, at, speed
-					arrival[next] = fuelLeft
+					arrival[next] = append(arrival[next][:0], fuelLeft...)
 				}
 			}
 		}

@@ -14,9 +14,18 @@ func (threat indexedRouteThreat) threatensRoute(from, to Vector, civilian bool) 
 	if civilian {
 		// Passing a fleet in space does not initiate orbital combat. A stop on
 		// its reported position or course can still bring the ships together.
-		return segmentDistance(to, threat.position, threat.next) <= 3
+		return routeBoundsOverlap(to, to, threat.position, threat.next, 3) && segmentDistance(to, threat.position, threat.next) <= 3
 	}
-	return segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach
+	return routeBoundsOverlap(from, to, threat.position, threat.end, threat.reach) && segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach
+}
+
+// Disjoint expanded bounding boxes cannot contain segments within reach.
+// Keep the exact geometry for overlapping boxes, including boundary contact.
+func routeBoundsOverlap(a, b, c, d Vector, reach float64) bool {
+	return float64(min(a.X, b.X)) <= float64(max(c.X, d.X))+reach &&
+		float64(min(c.X, d.X)) <= float64(max(a.X, b.X))+reach &&
+		float64(min(a.Y, b.Y)) <= float64(max(c.Y, d.Y))+reach &&
+		float64(min(c.Y, d.Y)) <= float64(max(a.Y, b.Y))+reach
 }
 
 func routeThreatReport(p *Player, intel *Fleet, margin float64) indexedRouteThreat {

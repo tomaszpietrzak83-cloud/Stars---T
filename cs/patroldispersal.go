@@ -41,16 +41,23 @@ func (t *turnGenerator) disperseUnreadyPatrol(p *Player, leader, enemy *Fleet, j
 }
 
 func (t *turnGenerator) assignSoloPatrol(p *Player, f *Fleet) bool {
+	// Assignments stay unchanged until this function selects a target and
+	// returns. Build the occupied-target set once, not once per enemy report.
+	claimed := make(map[[2]int]bool)
+	for _, other := range t.game.getFleets(p.Num) {
+		if other.Delete || other == f {
+			continue
+		}
+		job := readPatrolJob(other)
+		if job.Leader != 0 {
+			claimed[[2]int{job.Enemy, job.Target}] = true
+		}
+	}
 	for _, enemy := range sortedPatrolTargets(p, f) {
 		if enemy == nil || enemy.Delete || enemy.ReportAge != 0 || enemy.Starbase || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) || patrolNeedsRecon(p, enemy) || declinedPatrolTarget(f, enemy, t.game.Year) || p.patrolEvaluator.Deferred[priorityFleetKey(enemy.PlayerNum, enemy.Num)] {
 			continue
 		}
-		claimed := false
-		for _, other := range t.game.getFleets(p.Num) {
-			j := readPatrolJob(other)
-			claimed = claimed || !other.Delete && other != f && j.Leader != 0 && j.Enemy == enemy.PlayerNum && j.Target == enemy.Num
-		}
-		if claimed {
+		if claimed[[2]int{enemy.PlayerNum, enemy.Num}] {
 			continue
 		}
 		point := patrolInterceptPosition(enemy)

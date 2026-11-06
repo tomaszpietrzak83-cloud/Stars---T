@@ -1,0 +1,125 @@
+Turn 2494 calculation optimization - 2026-11-06
+
+Scope and safety
+User requested faster calculations without changing rules, tests only on a copy,
+and handoff to the main chat for committing. No deployment, live restart, live
+API calls, or personal turn generation were performed by this task.
+Baseline: 411432c2aecb90c57095005ba1b75dd674a3607d.
+Input: ../audit-results/turn-2494-audit/input-2494.db (game 14, year 2494).
+SHA256: d3da592db3bde25933a0e582d73f6a58c1fef122e2c9d34206a90125179e410f.
+The benchmark copies this backup again into t.TempDir(), generates only there,
+and asserts the input hash is unchanged. The input was captured during the
+preceding audit; it is not a claim to include subsequent live order edits.
+
+Unprofiled measurements, same computer, GOMAXPROCS=12, archives enabled
+                            Baseline seconds    Final seconds
+GenerateTurn total              255.059557         139.413830
+Load                              4.999173           5.008221
+Submitted orders archive          0.506256           0.515549
+Simulation                      239.881928         124.308985
+AI orders                         0.221058           0.154099
+Database commit                   8.986087           8.955305
+Result archive                    0.461438           0.468025
+Total improvement: 45.34%, saving 115.65 seconds; approximately 1.83x throughput.
+These are individual full-turn measurements, not a multi-run statistical mean.
+A first implementation measured 193.818435 seconds and was then improved further.
+
+Implemented changes
+- Reject route obstacles with disjoint expanded bounding boxes, retaining exact
+  segment distance tests for overlapping boxes and boundary contact. Minefield
+  radius is computed once per field examination.
+- Cache corridor threats within each standalone return-fuel calculation; nested
+  calculations reuse the enclosing route search cache. No results survive the
+  enclosing search. Existing bounded cache and invalidation rules remain intact.
+- Reuse speed safety decisions within one station calculation; hoist invariant
+  speeds, distance and fleet classifications out of the return-fuel inner loops.
+  Stop when a valid zero-fuel return is found: no nonnegative minimum can improve.
+- Reuse route-search scratch slices. Each accepted node keeps its own arrival
+  fuel slice, preventing aliasing between candidate routes.
+- Filter owned colonies once per patrol target sort, calculate each deadline once,
+  and avoid the duplicate colony scan in finding the defended colony. Stable ties,
+  public-intel restrictions, priorities and mutation refresh between calls remain.
+- Cache nearest-enemy distances only within each friendly-fleet sort; clear the
+  cache before the next sort after patrol assignments/releases.
+- Build occupied patrol targets once per assignSoloPatrol call, replacing the
+  enemy-by-own-fleet repeated scan. Assignments change only at successful return.
+  The measured intermediate profile attributed about 22 CPU seconds to that scan.
+- Avoid JSON decoding for empty maintenance/logistics tags; stop incoming rebuild
+  demand scanning after the existing yard resource budget has been exhausted.
+  No ship, patrol, transport, safety, priority or fuel rule was changed.
+
+Correctness evidence
+Both first and final unprofiled candidates match the baseline full exported
+state after normalization of createdAt/updatedAt, shipDesignIntels ordering,
+and consecutive PlayerDiscovery messages. No physical state, orders, AI orders,
+reports or fuel-resume tags are excluded. Compared: 1 game, 33 players,
+11007 fleets, 2744 planets, 1566 starbases and all other exported object groups.
+Differences: zero. Raw metadata/order differences are expected (15248 records).
+
+Tests and builds
+- go test -buildvcs=false ./...: PASS, including server 115.857 s.
+- go test -buildvcs=false ./cs/...: PASS, 83.541 s.
+- After the last occupied-target optimization, patrol/route/fuel regression
+  tests repeated: PASS, 74.870 s; final full copied-turn comparison also PASS.
+- 50000 randomized geometry cases compare civilian/combat decisions and minefield
+  rejection against unfiltered exact geometry, including boundary/degenerate cases.
+- Return fuel: preserved pre-change reference, 288 scenarios across three fleet
+  compositions, four roles, distances, time limits and threat settings, checked
+  both standalone and nested in a route cache (576 result comparisons).
+- Native Windows and WASM builds PASS. Svelte check: 0 errors, 0 warnings.
+- Compiled frontend build PASS; final isolated HTTP smoke on 18906/15206 PASS:
+  local login, compiled HTML/entry modules, served WASM hash, authenticated GetGame
+  on a second copy at year 2494. Smoke processes stopped; no turn submitted.
+
+Release handoff
+The live native process uses windows/stars-local.exe. It was deliberately not
+replaced or stopped. The tested NEW native binary and matching release manifest
+are staged outside the repository at:
+  ../audit-results/turn-2494-opt/stage/stars-local.exe
+  ../audit-results/turn-2494-opt/stage/SHA256SUMS.txt
+New native SHA256:
+  5c3ee72643519a427968c5f0a5ac40d5bbac2aebb8df7690f091ad06799a9a59
+New WASM SHA256:
+  e395c1fd933b58b6a82cfedc9ff009e2bb82ee83751522c89ae598dac5e090cc
+The working-tree manifest describes the actual working-tree files (old running
+native, new WASM). To commit the complete new release without touching the live
+process, use an isolated checkout for the staged native binary and staged release
+manifest. Frontend build and WASM are rebuilt in this working copy; the running
+frontend serves its existing immutable .runtime/ui snapshot.
+Do not include audit databases, state exports, logs or tool caches in the commit.
+Private evidence is under ../audit-results/turn-2494-opt/ (baseline, optimized,
+final, profile, final-profile, comparison JSON, test/build/smoke logs).
+
+Final diagnostic profile (separate run, not used for the unprofiled comparison)
+Wall: 141.877155 s. CPU samples: 169.71 s (concurrent GC uses additional cores).
+Cumulative CPU costs overlap and must NOT be added:
+  Patrol planning                      58.15 s
+    automatic route search             29.12 s
+    patrol reconnaissance              13.69 s
+  Logistics planning                   20.28 s
+  Actual player scanning               13.48 s
+  GC marking                           27.52 s
+  JSON decoding (across callers)        19.28 s
+Return-fuel calculation is now 3.37 CPU s (intermediate version 15.79 s), and
+maintenance decoding 4.97 s (intermediate 17.17 s). Intermediate patrol planning
+was 91.85 s and logistics 37.92 s. These comparisons are diagnostic, not isolated
+microbenchmarks. runtime.scanObject is garbage-collector work, not game scanning.
+The remaining costs include reconnaissance encounter searches, route planning,
+logistics simulations, actual sensor reports, JSON and persistence. They have not
+all been eliminated; this report does not claim an absolute minimum possible
+turn time. Additional spatial indexes or broader caches would require independent
+invalidation/semantics tests. No heuristic cutoff or reduction in game analysis
+was introduced merely to make the benchmark shorter.
+
+Concurrent-work boundary discovered at handoff
+The tested final binaries were built at16:57, before another task changed the
+shared working tree at17:04-17:06. New mine avoidance work appeared in
+cs/mineavoidance.go, automaticroute.go, automaticdeparture.go, patrolmines.go
+and related tests. Those changes are not part of this performance audit and
+were not reverted. The 139.413830 s result, full-state equivalence, and staged
+binaries describe the performance-only version, NOT the subsequently combined
+working tree. The main chat was explicitly notified to separate the commits or
+revalidate/rebuild the combined version before committing its release binaries.
+In particular, the new automaticMineLegSafe replaces the minefield loop optimized
+here. Do not claim the current combined tree preserves the audited turn result
+without another comparison appropriate to the mine-avoidance rules.

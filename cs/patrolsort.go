@@ -9,6 +9,14 @@ import (
 // this call: later planning passes must observe new reports and planet owners.
 func sortedPatrolTargets(player *Player, fleet *Fleet) []*Fleet {
 	enemies := slices.Clone(player.FleetIntels)
+	// Ownership is fixed for this sort. Most reports are foreign planets;
+	// filter them once instead of scanning them for every enemy's deadline.
+	colonies := make([]*Planet, 0)
+	for _, planet := range player.PlanetIntels {
+		if planet != nil && planet.OwnedBy(player.Num) {
+			colonies = append(colonies, planet)
+		}
+	}
 	type targetRank struct {
 		priority, deadline  int
 		bomber, approaching bool
@@ -19,11 +27,11 @@ func sortedPatrolTargets(player *Player, fleet *Fleet) []*Fleet {
 		if value, ok := ranks[enemy]; ok {
 			return value
 		}
-		value := targetRank{approaching: enemyApproachingColony(player, enemy)}
-		value.priority = patrolTargetPriority(player, enemy, value.approaching)
-		if player.patrolEvaluator != nil {
-			_, value.deadline = patrolColonyDeadline(player, enemy)
-		}
+		defended := patrolDefendedColonyAmong(player, enemy, colonies)
+		value := targetRank{approaching: defended != nil}
+		bombing, deadline := patrolColonyDeadlineAmong(player, enemy, colonies, defended)
+		value.deadline = deadline
+		value.priority = patrolTargetPriorityWithDeadline(player, enemy, value.approaching, bombing, deadline)
 		value.bomber = patrolReportedBomber(player, enemy)
 		value.distance = fleet.Position.DistanceTo(enemy.Position)
 		ranks[enemy] = value
@@ -76,6 +84,10 @@ func patrolReportedTransport(p *Player, f *Fleet) bool {
 }
 func patrolTargetPriority(p *Player, f *Fleet, approaching bool) int {
 	bombing, deadline := patrolColonyDeadline(p, f)
+	return patrolTargetPriorityWithDeadline(p, f, approaching, bombing, deadline)
+}
+
+func patrolTargetPriorityWithDeadline(p *Player, f *Fleet, approaching, bombing bool, deadline int) int {
 	if bombing {
 		return -4
 	}

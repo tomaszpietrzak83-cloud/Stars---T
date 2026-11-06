@@ -511,13 +511,18 @@ func (t *turnGenerator) planPatrolAutomation() {
 		if len(fleets) == 0 {
 			continue
 		}
+		nearestDistances := make(map[*Fleet]float64, len(fleets))
 		nearest := func(f *Fleet) float64 {
+			if distance, ok := nearestDistances[f]; ok {
+				return distance
+			}
 			distance := math.Inf(1)
 			for _, enemy := range player.FleetIntels {
 				if enemy != nil && !enemy.Delete && !enemy.Starbase && enemy.ReportAge == 0 && enemy.PlayerNum != player.Num && !player.IsFriend(enemy.PlayerNum) {
 					distance = min(distance, f.Position.DistanceTo(enemy.Position))
 				}
 			}
+			nearestDistances[f] = distance
 			return distance
 		}
 		sort.Slice(fleets, func(i, j int) bool {
@@ -575,6 +580,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 		// Releasing a pack creates new single-ship fleets. Give them work in
 		// this same planning pass, rather than leaving them idle for a year.
 		fleets = slices.Clone(t.game.getFleets(player.Num))
+		clear(nearestDistances)
 		sort.Slice(fleets, func(i, j int) bool {
 			a, b := nearest(fleets[i]), nearest(fleets[j])
 			if a == b {
@@ -813,20 +819,25 @@ func (t *turnGenerator) mergePatrolRendezvous() {
 // Respond to a reported course toward our colonies before the attacker enters
 // the local 150-ly interception radius. No hidden enemy orders are consulted.
 func patrolDefendedColony(p *Player, enemy *Fleet) *Planet {
-	if !enemyApproachingColony(p, enemy) {
+	return patrolDefendedColonyAmong(p, enemy, p.PlanetIntels)
+}
+
+func patrolDefendedColonyAmong(p *Player, enemy *Fleet, colonies []*Planet) *Planet {
+	if enemy == nil || enemy.Delete || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) || enemy.ReportAge < 0 || enemy.ReportAge > 2 || enemy.Heading.LengthSquared() == 0 {
 		return nil
 	}
 	heading := enemy.Heading.Normalized()
+	speed := max(1, enemy.observedStrategicSpeed())
 	var best *Planet
 	nearest := math.Inf(1)
-	for _, colony := range p.PlanetIntels {
+	for _, colony := range colonies {
 		if colony == nil || !colony.OwnedBy(p.Num) {
 			continue
 		}
 		delta := colony.Position.Subtract(enemy.Position).ToFloat64()
 		along := delta.X*heading.X + delta.Y*heading.Y
 		cross := math.Abs(delta.X*heading.Y - delta.Y*heading.X)
-		if along >= 0 && along <= max(1, enemy.observedStrategicSpeed())*10 && cross <= 20 && along < nearest {
+		if along >= 0 && along <= speed*10 && cross <= 20 && along < nearest {
 			best = colony
 			nearest = along
 		}

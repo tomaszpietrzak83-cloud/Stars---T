@@ -14,7 +14,11 @@ type patrolMission struct {
 }
 
 func patrolColonyDeadline(p *Player, f *Fleet) (bool, int) {
-	for _, planet := range p.PlanetIntels {
+	return patrolColonyDeadlineAmong(p, f, p.PlanetIntels, patrolDefendedColony(p, f))
+}
+
+func patrolColonyDeadlineAmong(p *Player, f *Fleet, colonies []*Planet, defended *Planet) (bool, int) {
+	for _, planet := range colonies {
 		if planet != nil && planet.OwnedBy(p.Num) && planet.Position == f.Position {
 			if patrolReportedBomber(p, f) {
 				return true, 0
@@ -26,7 +30,7 @@ func patrolColonyDeadline(p *Player, f *Fleet) (bool, int) {
 			}
 		}
 	}
-	if planet := patrolDefendedColony(p, f); planet != nil {
+	if planet := defended; planet != nil {
 		return false, int(math.Ceil(f.Position.DistanceTo(planet.Position) / max(1, f.observedStrategicSpeed())))
 	}
 	return false, 1000

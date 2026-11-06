@@ -221,8 +221,14 @@ func (t *turnGenerator) incomingRebuildMinerals(p *Player, yard *Planet) Mineral
 	need := Mineral{}
 	budget := max(1, yard.Spec.ResourcesPerYearAvailable) * 3
 	for _, f := range t.game.getFleets(p.Num) {
+		if budget <= 0 {
+			break
+		}
+		if f.Delete {
+			continue
+		}
 		w := readMaintenance(f)
-		if f.Delete || w == nil || w.Stage != "scrap" || w.PlanetNum != yard.Num {
+		if w == nil || w.Stage != "scrap" || w.PlanetNum != yard.Num {
 			continue
 		}
 		for _, token := range f.Tokens {

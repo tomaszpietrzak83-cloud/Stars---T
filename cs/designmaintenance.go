@@ -53,6 +53,9 @@ func (p *Player) ValidateDesignMaintenance(policies DesignMaintenance) error {
 func (f *Fleet) InDesignMaintenance() bool       { return f.GetTag(maintenanceTag) != "" }
 func readMaintenance(f *Fleet) *fleetMaintenance { return decodeMaintenance(f.GetTag(maintenanceTag)) }
 func decodeMaintenance(raw string) *fleetMaintenance {
+	if raw == "" {
+		return nil
+	}
 	work := &fleetMaintenance{}
 	if json.Unmarshal([]byte(raw), work) != nil {
 		return nil
