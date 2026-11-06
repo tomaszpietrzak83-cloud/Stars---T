@@ -142,9 +142,10 @@ assessment of its25%reserve. Failed coarse search falls back to the original
 mixed-composition loop. Every accepted group has its own successful forecast;
 combat is not assumed monotonic and the chosen group is not claimed minimal.
 Final copied replay:78 ships against16:25 and53 against16:16, zero blocked
-members after fuel/departure guards, Work4096. A separate six-transition control
-from copied2492 to2498 is running on e06046fb in patrol-final-control-prefix-6.
-It does not replace or modify the frozen da6cb892 measurement.
+members after fuel/departure guards, Work4096. The e06046fb control in patrol-final-control-prefix-6 was stopped after two
+completed transitions (2492->2494), exposing premature native arrival and
+budget starvation of an already assembled force. It is not a six-turn PASS.
+Its input SHA remained unchanged; the frozen da6cb892 measurement continues.
 
 The full30 test's final defense assertion ran before its final input-hash check,
 so that hash assertion did not execute. Independent inspection confirms input
@@ -160,3 +161,32 @@ work, and does not attribute all those changes to this task. The patrol chat
 works in codex/patrol-colony-defence; code is integrated and tested together.
 The main chat owns final release/install; no personal DB, audit snapshot, cache
 or runtime download belongs in Git.
+
+
+Latest coordinated candidate (195b91c6 / peer 9c055f1b)
+Native movement snaps a remainder below one light-year. Two copied rendezvous
+routes therefore arrived one year early despite the planner reporting two.
+Pacing now chooses a funded route that also respects native arrival tolerance.
+A second copied replay exposed a physically assembled 53-ship relief force
+losing its launch opportunity after speculative recruitment exhausted the
+forecast budget. Existing assembled relief is now evaluated and dispatched
+first, retaining fresh assessment, departure checks and the loss doctrine.
+Native regression merges eight cruisers and destroys the bombarding fleet;
+copied 2493 replay launches 53 merged ships through final guards. Full cs PASS
+196.812s (patrol-ready-defence-full-cs.txt). Production trees are identical
+between the two commits; only this document and the checklist differ.
+Native/WASM/static frontend rebuilt; isolated compiled runtime smoke PASS,
+personalTurnsGenerated=0. Candidate hashes: landing-release/SHA256SUMS.txt.
+No installed release or personal save was changed.
+
+A separate corrected six-transition control starts from copied2492 on9c055f1b
+in patrol-final-control-ready-6. The frozen da6cb892 30-transition run retains
+its original code. As of2499 it confirms Trial captured in2498:231,000 attackers,
+68,800 lost and162,200 survivors. Leader108 physically merged32 transports
+and392,000 people by2497. Collector20 picked up7kT boranium in2494.
+This is partial campaign evidence, not completed acceptance: colonies59->33
+and Senility again has two hostile bomber fleets.
+
+Private copied2506 base-patrol diagnostic found Work97/1024,89 battle checks
+and zero budget-limit hits. No base-budget increase is justified by that test.
+Temporary diagnostic code is archived outside the production source tree.
