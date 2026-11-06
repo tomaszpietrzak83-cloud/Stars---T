@@ -125,6 +125,16 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		}
 		return patrolAssessment{Ready: strength >= threat*3/2+1, Reason: "Small unknown contact: bounded reported-strength assessment"}
 	}
+	modeled := own
+	if merge {
+		merged := patrolMergedFormation(e.rules, p, own)
+		if merged == nil {
+			return patrolAssessment{Reason: "Player battle plans cannot be combined by automation"}
+		}
+		modeled = []*Fleet{merged}
+	}
+	// Cache the formation that the native forecast actually fights. Physical
+	// merging must not spend the same budget again on an identical stack.
 	type formation struct {
 		Owner     int
 		Tokens    []ShipToken
@@ -134,7 +144,7 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		Designs   []*ShipDesign
 	}
 	inputs := []formation{}
-	for _, f := range own {
+	for _, f := range modeled {
 		auto := automaticPatrolBattlePlan(p, f)
 		plan := patrolPlanForFleet(p, f)
 		if auto || isManagedPatrolPlan(f) {
@@ -171,14 +181,6 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 	}
 	if e.Work >= e.Limit {
 		return patrolAssessment{Reason: "Native forecast budget exhausted; concentration retained"}
-	}
-	modeled := own
-	if merge {
-		merged := patrolMergedFormation(e.rules, p, own)
-		if merged == nil {
-			return patrolAssessment{Reason: "Player battle plans cannot be combined by automation"}
-		}
-		modeled = []*Fleet{merged}
 	}
 	model, err := newPatrolBattleCopy(e.rules, p, modeled, reports)
 	if err != nil {

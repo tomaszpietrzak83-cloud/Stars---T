@@ -96,7 +96,9 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	}
 	if urgent && !result.Ready && len(candidates) > 8 {
 		pool := []*Fleet{leader}
-		for _, candidate := range candidates[:min(maxChecks, len(candidates))] {
+		// maxChecks bounds forecasts, not the force needed to defeat an enemy.
+		// Prefix growth already obeys both that bound and the native work budget.
+		for _, candidate := range candidates {
 			pool = append(pool, candidate.fleet)
 		}
 		if ready, assessment := readyPatrolPrefix(p, pool, enemy, point, &checks, maxChecks); ready != nil {
