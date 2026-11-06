@@ -60,6 +60,7 @@ func TestLandingBaseReleasesImpossibleLegacyOverReservation(t *testing.T) {
 	require.Equal(t, 2, reserved)
 	require.Equal(t, 38, released)
 	require.Equal(t, 10, leader.Cargo.Colonists)
+	require.Len(t, u.Fleet("Scout").Waypoints, 1, "known overwhelming defenders must not consume replacement scouts")
 }
 
 func TestLandingBaseChoosesSufficientShortRallyAndDestroysBase(t *testing.T) {
@@ -166,4 +167,29 @@ func TestLandingBaseGoneReleasesExcessGuards(t *testing.T) {
 	require.Equal(t, 2, guards)
 	require.False(t, op.Base)
 	require.Equal(t, "scan", op.Phase)
+}
+
+func TestLandingUnknownBaseReceivesFirstEquipmentReconnaissance(t *testing.T) {
+	u, leader, op := landingBaseUniverse(t, false)
+	p, scout := u.Player(1), u.Fleet("Scout")
+	target := p.GetPlanetIntel(op.Target)
+	design := p.GetShipDesignIntel(target.PlayerNum, target.Spec.StarbaseDesignNum)
+	design.Slots = nil
+	op.ScanYear = 0
+	saveLandingOperation(leader, op)
+	plan := func(tg *turnGenerator) {
+		tg.advanceLandingOperation(p, leader, readLandingOperation(leader), p.GetPlanetIntel(op.Target))
+	}
+	u.Run(plan)
+	require.Greater(t, len(scout.Waypoints), 1, "unknown base cannot be assessed until the scout visits")
+	require.Equal(t, target.Position, scout.Waypoints[1].Position)
+	for _, f := range u.Game.getFleets(1) {
+		require.Empty(t, f.GetTag(recaptureAssaultTag), "unknown equipment must not authorize an attack")
+	}
+	u.Run((*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove, (*turnGenerator).scanLandingContacts)
+	require.Equal(t, target.Position, scout.Position)
+	require.NotEmpty(t, p.GetShipDesignIntel(target.PlayerNum, target.Spec.StarbaseDesignNum).Slots)
+	require.Equal(t, u.Game.Year, readLandingOperation(leader).ScanYear)
+	require.Equal(t, op.Rally, leader.Position)
+	require.Equal(t, 10, leader.Cargo.Colonists)
 }

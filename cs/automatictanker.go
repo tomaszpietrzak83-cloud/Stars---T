@@ -186,7 +186,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				continue
 			}
 			goal := fleet.Waypoints[1]
-			allowThreat := combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
+			allowThreat := landingScout(player, fleet) || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || len(group) > 1 || assemblyLeaderCanAdvance(player, fleet) || patrolCanAttack(player, fleet)
 			allowThreat = allowThreat || collectionArrivalCover(player, fleet, t.game.getFleets(player.Num)) > 0
 			if job := logisticsWork(fleet); job != nil {
 				goal.Position = job.Position
@@ -201,6 +201,9 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				target = MapObjectTarget{}
 			}
 			policy := automaticRoutePolicy{AllowThreat: allowThreat, OneWay: colonizationOneWay(player, fleet, goal)}
+			if landingScout(player, fleet) && !fleet.InAutomaticSafety() {
+				policy.Fast = true
+			}
 			if fleet.GetTag(containmentTag) != "" {
 				policy = economicalContainmentPolicy(player, fleet, fleet.Position.DistanceTo(goal.Position))
 			}

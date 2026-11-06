@@ -190,3 +190,18 @@ and Senility again has two hostile bomber fleets.
 Private copied2506 base-patrol diagnostic found Work97/1024,89 battle checks
 and zero budget-limit hits. No base-budget increase is justified by that test.
 Temporary diagnostic code is archived outside the production source tree.
+
+Unknown-base reconnaissance correction after candidate195b91c6
+Copied2499 Planet10 (owner19, base design5) had no known equipment slots and
+ScanYear0. Its scout191 was sent to rally, while base evaluation required those
+missing slots. Unknown equipment now requests the assigned scout's contact;
+transports and unassessed patrols remain outside the hostile orbit. Fuel audit
+now recognizes landing reconnaissance, as departure and safety checks already
+did, and preserves a fast funded route. Native regression fails before and
+passes after through both guards, actual movement and equipment discovery.
+Known overwhelming defenders do not trigger repeated reconnaissance sacrifices.
+Actual copied replay after guards directs scout191 from442,407 to391,460.
+Full cs PASS236.676s including that private replay. Other eight base operations
+had known slots; this correction does not explain all base waiting. Neither
+frozen campaign contains this later correction. Private replay source/logs are
+outside the repository; only native regression and production changes are kept.
