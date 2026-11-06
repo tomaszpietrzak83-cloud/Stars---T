@@ -28,11 +28,36 @@ func (t *turnGenerator) patrolDepartureConfirmed(p *Player, f *Fleet) bool {
 		if point.DistanceTo(report.Position) > 3 && point.DistanceTo(patrolInterceptPosition(report)) > 3 {
 			continue
 		}
+		// A gathering leg is transit, not a mission to destroy every transport
+		// it passes. Failure to catch known unarmed traffic cannot make that
+		// transit dangerous. Include converging escorts before allowing it.
+		job := readPatrolJob(f)
+		if job.Provisional && job.CleanupTarget == 0 && wp.TargetType != MapObjectTypeFleet && harmlessPatrolTransit(&t.game.Rules, p, report, point) {
+			continue
+		}
 		result := patrolFleetEvaluator(p, f).assess(p, []*Fleet{f}, report, point, 1)
 		if !result.Ready {
 			return false
 		}
 		applyPatrolBattlePlan(p, f, result.Tactic)
+	}
+	return true
+}
+
+func harmlessPatrolTransit(rules *Rules, p *Player, target *Fleet, point Vector) bool {
+	for _, report := range patrolEncounterReports(p, target, point, 1) {
+		if unknownFleetEquipment(p, report) || report.Starbase {
+			return false
+		}
+		for _, token := range report.Tokens {
+			// Fresh discoveries include slots before every derived spec field.
+			for _, slot := range p.GetShipDesignIntel(report.PlayerNum, token.DesignNum).Slots {
+				component := rules.techs.GetHullComponent(slot.HullComponent)
+				if component == nil || slot.Quantity > 0 && component.Power > 0 {
+					return false
+				}
+			}
+		}
 	}
 	return true
 }
