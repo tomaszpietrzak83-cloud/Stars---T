@@ -7,12 +7,10 @@ import (
 
 const patrolMineSweepTag = "patrol-mine-sweep"
 
-// Local interception has already had first choice. Idle capable patrols clear
-// reported hostile fields affecting colonies or active routes, from the rim.
+// Dedicated minesweepers clear reported hostile fields, starting at the rim.
 func (t *turnGenerator) patrolSweepObstacle(p *Player, f *Fleet) bool {
 	delete(f.Tags, patrolMineSweepTag)
-	dedicated := p.Automation.FleetRoles[f.Num] == "minesweeper"
-	if f.Spec.MineSweep <= 0 {
+	if !automaticMinesweeper(p, f) {
 		return false
 	}
 	// A sweep-capable ship physically surveys its current known field. This
@@ -37,48 +35,17 @@ func (t *turnGenerator) patrolSweepObstacle(p *Player, f *Fleet) bool {
 			continue
 		}
 		distance := max(0, f.Position.DistanceTo(field.Position)-field.Radius())
-		if distance > 100 && !dedicated {
-			continue
-		}
-		useful := dedicated
-		for _, colony := range p.PlanetIntels {
-			if colony != nil && colony.OwnedBy(p.Num) && colony.Position.DistanceTo(field.Position) <= field.Radius()+50 {
-				useful = true
-				break
-			}
-		}
-		if !useful {
-			for _, ship := range t.game.getFleets(p.Num) {
-				if len(ship.Waypoints) < 2 {
-					continue
-				}
-				from := ship.Position
-				for _, wp := range ship.Waypoints[1:] {
-					if segmentDistance(field.Position, from, wp.Position) <= field.Radius() {
-						useful = true
-						break
-					}
-					from = wp.Position
-				}
-				if useful {
-					break
-				}
-			}
-		}
-		if !useful {
-			continue
-		}
 		safe := t.game.Rules.MinefieldStatsByType[field.MinefieldType].MaxSpeed + p.Race.Spec.MinefieldSafeWarpBonus
 		point := f.Position
 		if distance > 0 {
 			point = field.Position.ToFloat64().Add(f.Position.Subtract(field.Position).Normalized().Scale(max(0, field.Radius()-2))).ToInt(true)
-		} else if dedicated {
+		} else {
 			// Sweeping only removes the outer annulus down to our distance
 			// from the center. Advance inside the shrinking field to finish it.
 			point = field.Position.ToFloat64().Add(f.Position.Subtract(field.Position).Normalized().Scale(max(0, f.Position.DistanceTo(field.Position)-f.StrategicSpeed(max(1, safe))))).ToInt(true)
 		}
-		candidate := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: !dedicated, EconomicalPatrol: true, MaxWarp: min(6, max(1, safe)), MinWarp: 1, MaxTurns: 20})
-		if dedicated && distance > 4 {
+		candidate := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{EconomicalPatrol: true, MaxWarp: min(6, max(1, safe)), MinWarp: 1, MaxTurns: 20})
+		if distance > 4 {
 			candidate = t.minesweeperApproach(p, f, field, point, max(1, safe))
 		}
 		if candidate == nil || candidate.WaitForFuel {
@@ -95,13 +62,7 @@ func (t *turnGenerator) patrolSweepObstacle(p *Player, f *Fleet) bool {
 	applyExpeditionRoute(p, f, route)
 	status := "Clearing hostile minefield " + best.Name + " from its rim; return fuel reserved"
 	f.SetTag(patrolMineSweepTag, status)
-	if dedicated {
-		f.SetTag(fuelStatusTag, status)
-		return true
-	}
-	job := readPatrolJob(f)
-	job.Status = status
-	savePatrolJob(f, job)
+	f.SetTag(fuelStatusTag, status)
 	return true
 }
 

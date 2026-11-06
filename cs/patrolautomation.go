@@ -692,9 +692,6 @@ func (t *turnGenerator) planPatrolAutomation() {
 				continue
 			}
 			job := readPatrolJob(fleet)
-			if t.patrolSweepObstacle(player, fleet) {
-				continue
-			}
 			if t.patrolFrontier(player, fleet) {
 				job.Status = fleet.GetTag(frontierPatrolTag)
 				savePatrolJob(fleet, job)

@@ -186,18 +186,26 @@ func TestFuelReserveIncludesCargoAndConvoyUsesIndependentBudgets(t *testing.T) {
 	require.Equal(t, old, escort.Waypoints[0], "convoy orders must not alias")
 }
 
-func TestFuelPlannerMineSpeedSafeWarpAndFixedMovingTargets(t *testing.T) {
+func TestFuelPlannerDetoursAroundMinefieldsAndFixesMovingTargets(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Transport")
 	p.MinefieldIntels = []*Minefield{{MapObject: MapObject{PlayerNum: 2, Position: Vector{25, 0}}, MinefieldType: MinefieldTypeStandard, NumMines: 100}}
 	require.True(t, routeAutomatically(&u.Game.Rules, p, f, Vector{50, 0}, MapObjectTarget{TargetType: MapObjectTypeFleet, TargetNum: 99}, 0))
-	require.LessOrEqual(t, f.Waypoints[1].WarpSpeed, 4)
-	require.Equal(t, MapObjectTypeNone, f.Waypoints[1].TargetType)
-	p.MinefieldIntels[0].PlayerNum = p.Num
+	require.Greater(t, len(f.Waypoints), 2)
+	field := p.MinefieldIntels[0]
+	for i, wp := range f.Waypoints[1:] {
+		require.Greater(t, segmentDistance(field.Position, f.Waypoints[i].Position, wp.Position), automaticMineClearance(field))
+	}
+	require.Equal(t, MapObjectTypeNone, f.Waypoints[len(f.Waypoints)-1].TargetType)
+	require.False(t, automaticLegSafe(&u.Game.Rules, p, Vector{}, Vector{50, 0}, 1, true))
+	require.False(t, automaticLegSafe(&u.Game.Rules, p, Vector{0, 12}, Vector{50, 12}, 8, false))
+	require.True(t, automaticLegSafe(&u.Game.Rules, p, Vector{0, 14}, Vector{50, 14}, 8, false))
+	require.False(t, automaticLegSafe(&u.Game.Rules, p, Vector{24, 0}, Vector{50, 0}, 1, false), "an escape cannot cross back toward the field's center")
+	require.True(t, automaticLegSafe(&u.Game.Rules, p, Vector{26, 0}, Vector{50, 0}, 1, false))
+	field.PlayerNum = p.Num
 	require.True(t, automaticLegSafe(&u.Game.Rules, p, Vector{}, Vector{50, 0}, 8, false))
-	p.MinefieldIntels[0].Detonate = true
-	require.False(t, routeAutomatically(&u.Game.Rules, p, f, Vector{50, 0}, MapObjectTarget{}, 0))
-	require.Len(t, f.Waypoints, 1)
+	field.Detonate = true
+	require.False(t, automaticLegSafe(&u.Game.Rules, p, Vector{}, Vector{50, 0}, 8, false))
 	p.MinefieldIntels = nil
 	p.Race.Spec.EngineFailureRate = .1
 	p.Race.Spec.EngineReliableSpeed = 4
@@ -396,4 +404,18 @@ func TestFuelAssistanceIsForRescueOrActiveCombat(t *testing.T) {
 	require.False(t, fuelAssistanceUseful(p, f, routine))
 	savePatrolJob(f, patrolJob{Leader: f.Num, Enemy: 2, Target: 99})
 	require.True(t, fuelAssistanceUseful(p, f, routine))
+}
+
+func TestAutomaticDepartureRechecksGrowthOfReportedMinefield(t *testing.T) {
+	u := logisticsUniverse(t)
+	player, fleet := u.Player(1), u.Fleet("Transport")
+	field := &Minefield{MapObject: MapObject{PlayerNum: 2, Position: Vector{25, 14}}, MinefieldType: MinefieldTypeStandard, NumMines: 100}
+	player.MinefieldIntels = []*Minefield{field}
+	require.True(t, routeAutomatically(&u.Game.Rules, player, fleet, Vector{50, 0}, MapObjectTarget{}, 0))
+	require.Len(t, fleet.Waypoints, 2)
+
+	field.NumMines = 144
+	u.Run((*turnGenerator).enforceAutomaticDeparture)
+	require.Len(t, fleet.Waypoints, 1)
+	require.NotEmpty(t, fleet.GetTag(fuelResumeTag))
 }

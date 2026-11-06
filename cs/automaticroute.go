@@ -42,14 +42,14 @@ func automaticMaxWarp(player *Player, fleet *Fleet) int {
 // Collision rules use the field owner's friendship, which is not guaranteed by
 // our own diplomatic setting. Non-owned fields are therefore treated conservatively.
 func automaticLegSafe(rules *Rules, player *Player, from, to Vector, warp int, allowThreat bool, strategicSpeed ...float64) bool {
-	return automaticRouteLegSafe(rules, player, from, to, warp, allowThreat, false, strategicSpeed...)
+	return automaticRouteLegSafe(rules, player, from, to, warp, allowThreat, false, false, strategicSpeed...)
 }
 
 func automaticFleetLegSafe(rules *Rules, player *Player, fleet *Fleet, from, to Vector, warp int, allowThreat bool) bool {
-	return automaticRouteLegSafe(rules, player, from, to, warp, allowThreat, civilianTraffic(player, fleet), fleet.StrategicSpeed(warp))
+	return automaticRouteLegSafe(rules, player, from, to, warp, allowThreat, civilianTraffic(player, fleet), automaticMinesweeper(player, fleet), fleet.StrategicSpeed(warp))
 }
 
-func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp int, allowThreat, civilian bool, strategicSpeed ...float64) bool {
+func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp int, allowThreat, civilian, sweep bool, strategicSpeed ...float64) bool {
 	step := float64(warp * warp)
 	if len(strategicSpeed) > 0 {
 		step = strategicSpeed[0]
@@ -63,35 +63,7 @@ func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp i
 			return false
 		}
 	}
-	for _, field := range player.MinefieldIntels {
-		if field == nil {
-			continue
-		}
-		radius := field.Radius()
-		if !routeBoundsOverlap(from, to, field.Position, field.Position, radius+1) || segmentDistance(field.Position, from, to) > radius+1 {
-			continue
-		}
-		if field.Detonate {
-			// Permit escape from a detonating field only if this very turn ends outside it.
-			distance := from.DistanceTo(to)
-			end := to.ToFloat64()
-			if distance > step {
-				end = from.ToFloat64().Add(to.Subtract(from).Normalized().Scale(step))
-			}
-			if from.DistanceTo(field.Position) > radius || end.DistanceTo(field.Position.ToFloat64()) <= radius+2 || to.DistanceTo(field.Position) <= radius+2 {
-				return false
-			}
-		} else if field.PlayerNum != player.Num {
-			safe := rules.MinefieldStatsByType[field.MinefieldType].MaxSpeed + player.Race.Spec.MinefieldSafeWarpBonus
-			if safe == 0 {
-				safe = 3
-			}
-			if warp > safe {
-				return false
-			}
-		}
-	}
-	return true
+	return automaticMineLegSafe(rules, player, from, to, warp, step, sweep)
 }
 
 func fullCargoBudget(fleet *Fleet) *Fleet {
@@ -218,11 +190,13 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 			}
 		}
 	}
+	if best > fleet.Spec.FuelCapacity && !automaticMinesweeper(player, fleet) {
+		best = mineDetourReturnFuel(rules, player, loaded, position, stations, allowThreat, limit, best)
+	}
 	return best
 }
 
-// All intermediate nodes are actual known fuel docks. Separate budgets and
-// return reserves for every member prevent a convoy from spending its escort's fuel.
+// Docks can refuel the convoy; minefield bypass points carry forward actual arrival fuel.
 func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position Vector, target MapObjectTarget, policy automaticRoutePolicy) *expeditionRoute {
 	defer scopedRouteThreatIndex(player)()
 	defer scopedRouteThreatCache(player)()
@@ -289,9 +263,8 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 		if fleet.Spec.Engine.strategicFactor() != fleets[0].Spec.Engine.strategicFactor() {
 			maxWarp = min(maxWarp, 8)
 		}
-		reserve[i] = automaticReturnFuel(rules, player, fleet, position, stations, policy.AllowThreat, policy.ReturnTurnsLimit)
-		if policy.RefuelRendezvous || policy.OneWay {
-			reserve[i] = 0
+		if !policy.RefuelRendezvous && !policy.OneWay {
+			reserve[i] = automaticReturnFuel(rules, player, fleet, position, stations, policy.AllowThreat, policy.ReturnTurnsLimit)
 		}
 		if i < len(policy.DeliveryFuel) {
 			reserve[i] += policy.DeliveryFuel[i]
@@ -306,6 +279,10 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 	if maxWarp < 1 && !hasGates {
 		return nil
 	}
+	sweep := len(fleets) == 1 && automaticMinesweeper(player, fleets[0])
+	legSafe := func(from, to Vector, warp int) bool {
+		return automaticRouteLegSafe(rules, player, from, to, warp, policy.AllowThreat, civilianTraffic(player, fleets[0]), sweep, fleets[0].StrategicSpeed(warp))
+	}
 	// With no gate alternative a straight leg achieving the geometric minimum
 	// ETA cannot be improved by a dock detour. This keeps dense empires cheap.
 	if !hasGates && maxWarp > 0 && (policy.Fast || policy.EmergencyReturn) {
@@ -316,7 +293,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 			if speed < policy.MinWarp && distance > fleets[0].StrategicSpeed(speed) {
 				continue
 			}
-			if int(math.Ceil(distance/fleets[0].StrategicSpeed(speed))) != minimum || !automaticFleetLegSafe(rules, player, fleets[0], start, position, speed, policy.AllowThreat) {
+			if int(math.Ceil(distance/fleets[0].StrategicSpeed(speed))) != minimum || !legSafe(start, position, speed) {
 				continue
 			}
 			left := make([]int, len(fleets))
@@ -350,6 +327,14 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 		if station.Position != position {
 			positions = append(positions, station.Position)
 			targets = append(targets, station.MapObject.ToTarget())
+		}
+	}
+	if !sweep {
+		for _, point := range mineDetourPoints(player, start, position) {
+			if !slices.Contains(positions, point) {
+				positions = append(positions, point)
+				targets = append(targets, MapObjectTarget{})
+			}
 		}
 	}
 	n := len(positions)
@@ -422,7 +407,7 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				if policy.MaxTurns > 0 && turns > policy.MaxTurns {
 					continue
 				}
-				safe := automaticFleetLegSafe(rules, player, fleets[0], positions[at], positions[next], speed, policy.AllowThreat)
+				safe := legSafe(positions[at], positions[next], speed)
 				if speed == StargateWarpSpeed {
 					safe = automaticLegSafe(rules, player, positions[next], positions[next], 1, policy.AllowThreat)
 				}
@@ -433,8 +418,8 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				valid := true
 				for i, fleet := range fleets {
 					available := fleet.Spec.FuelCapacity
-					if at == 0 {
-						available = fleet.Fuel
+					if at == 0 || docks[positions[at]] == nil {
+						available = arrival[at][i]
 					}
 					endReserve := 0
 					if next == 1 {

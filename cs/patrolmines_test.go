@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestPatrolClearsLocalHostileMinesOnlyWhenCapable(t *testing.T) {
+func TestOnlyMinesweepersEnterLocalHostileMinefields(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Escort")
 	p.Automation.FleetRoles[f.Num] = "patrol"
@@ -22,10 +22,12 @@ func TestPatrolClearsLocalHostileMinesOnlyWhenCapable(t *testing.T) {
 	f.Spec.MineSweep = 0
 	require.False(t, u.turn.patrolSweepObstacle(p, f))
 	f.Spec.MineSweep = 600
+	require.False(t, u.turn.patrolSweepObstacle(p, f))
+	p.Automation.FleetRoles[f.Num] = "minesweeper"
 	require.True(t, u.turn.patrolSweepObstacle(p, f))
 	require.Greater(t, len(f.Waypoints), 1)
-	require.Less(t, f.Waypoints[1].Position.DistanceTo(field.Position), field.Radius())
-	require.LessOrEqual(t, f.Waypoints[1].WarpSpeed, u.Game.Rules.MinefieldStatsByType[field.MinefieldType].MaxSpeed+p.Race.Spec.MinefieldSafeWarpBonus)
+	require.Less(t, f.Waypoints[len(f.Waypoints)-1].Position.DistanceTo(field.Position), field.Radius())
+	require.LessOrEqual(t, f.Waypoints[len(f.Waypoints)-1].WarpSpeed, u.Game.Rules.MinefieldStatsByType[field.MinefieldType].MaxSpeed+p.Race.Spec.MinefieldSafeWarpBonus)
 	field.PlayerNum = p.Num
 	require.False(t, u.turn.patrolSweepObstacle(p, f))
 	field.PlayerNum = enemy.Num
@@ -33,10 +35,10 @@ func TestPatrolClearsLocalHostileMinesOnlyWhenCapable(t *testing.T) {
 	require.False(t, u.turn.patrolSweepObstacle(p, f), "patrol must not park inside a detonating field")
 }
 
-func TestSweepingPatrolDoesNotWaitOnAFieldAlreadyClearedAtItsPosition(t *testing.T) {
+func TestMinesweeperDoesNotWaitOnAFieldAlreadyClearedAtItsPosition(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Escort")
-	p.Automation.FleetRoles[f.Num] = "patrol"
+	p.Automation.FleetRoles[f.Num] = "minesweeper"
 	f.Spec.MineSweep = 600
 	p.PlanetIntels = []*Planet{u.Planet("Home")}
 	p.MinefieldIntels = []*Minefield{{MapObject: MapObject{Num: 99, PlayerNum: 2, Position: f.Position}, MinefieldType: MinefieldTypeStandard, NumMines: 100}}

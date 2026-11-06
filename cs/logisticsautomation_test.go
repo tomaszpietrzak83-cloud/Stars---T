@@ -99,12 +99,14 @@ func TestLogisticsCapacityAndMineSafety(t *testing.T) {
 	p, fleet := u.Player(1), u.Fleet("Transport")
 	p.MinefieldIntels = []*Minefield{{MapObject: MapObject{PlayerNum: 2, Position: Vector{25, 0}}, MinefieldType: MinefieldTypeStandard, NumMines: 100}}
 	u.Run((*turnGenerator).planLogisticsAutomation)
-	require.Len(t, fleet.Waypoints, 2)
-	require.LessOrEqual(t, fleet.Waypoints[1].WarpSpeed, u.Game.Rules.MinefieldStatsByType[MinefieldTypeStandard].MaxSpeed)
-	p.MinefieldIntels[0].Detonate = true
+	require.Greater(t, len(fleet.Waypoints), 2)
+	field := p.MinefieldIntels[0]
+	field.Detonate = true
 	u.Run((*turnGenerator).planLogisticsAutomation)
-	require.Len(t, fleet.Waypoints, 1)
-	require.Contains(t, logisticsWork(fleet).Status, "safe route")
+	for i, wp := range fleet.Waypoints[1:] {
+		require.Greater(t, segmentDistance(field.Position, fleet.Waypoints[i].Position, wp.Position), automaticMineClearance(field))
+	}
+	require.Equal(t, Vector{50, 0}, fleet.Waypoints[len(fleet.Waypoints)-1].Position)
 	cargo := Cargo{Ironium: 1000, Boranium: 1000, Germanium: 1000}
 	loaded := takeMinerals(fleet, &cargo)
 	require.Equal(t, fleet.Spec.CargoCapacity, loaded)
