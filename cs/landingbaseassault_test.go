@@ -121,19 +121,31 @@ func TestLandingBaseStaleReportRequiresScoutBeforeAttack(t *testing.T) {
 		launched = launched || f.GetTag(recaptureAssaultTag) != ""
 	}
 	require.True(t, launched, "fresh observed contacts unlock the assessed assault")
+	u.Run((*turnGenerator).planRecaptureAssaults, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove, (*turnGenerator).fleetBattle)
+	require.False(t, u.Planet("Target").Spec.HasStarbase, "final departure checks must accept fresh orbital reconnaissance with old surface data")
 }
 
 func TestLandingBasePreservesCommittedDefenderOrders(t *testing.T) {
-	u, leader, op := landingBaseUniverse(t, false)
-	p, defender := u.Player(1), u.Fleet("Guard0")
-	p.patrolEvaluator = &patrolEvaluator{DefenceMembers: map[int]bool{defender.Num: true}}
-	defender.Waypoints = []Waypoint{{Position: defender.Position}, {Position: Vector{-40, 0}}}
-	orders := append([]Waypoint(nil), defender.Waypoints...)
-	u.Run(func(tg *turnGenerator) {
-		tg.advanceLandingOperation(p, leader, readLandingOperation(leader), p.GetPlanetIntel(op.Target))
-	})
-	require.False(t, landingManaged(defender))
-	require.Equal(t, orders, defender.Waypoints)
+	for _, baseGone := range []bool{false, true} {
+		t.Run(fmt.Sprint("baseGone=", baseGone), func(t *testing.T) {
+			u, leader, op := landingBaseUniverse(t, false)
+			p, defender := u.Player(1), u.Fleet("Guard0")
+			p.patrolEvaluator = &patrolEvaluator{DefenceMembers: map[int]bool{defender.Num: true}}
+			defender.Waypoints = []Waypoint{{Position: defender.Position}, {Position: Vector{-40, 0}}}
+			job := patrolJob{Leader: defender.Num, Enemy: 2, Target: 1, GatheringSince: u.Game.Year}
+			savePatrolJob(defender, job)
+			orders := append([]Waypoint(nil), defender.Waypoints...)
+			if baseGone {
+				p.GetPlanetIntel(op.Target).Spec.HasStarbase = false
+			}
+			u.Run(func(tg *turnGenerator) {
+				tg.advanceLandingOperation(p, leader, readLandingOperation(leader), p.GetPlanetIntel(op.Target))
+			})
+			require.False(t, landingManaged(defender))
+			require.Equal(t, orders, defender.Waypoints)
+			require.Equal(t, job, readPatrolJob(defender))
+		})
+	}
 }
 
 func TestLandingBaseGoneReleasesExcessGuards(t *testing.T) {

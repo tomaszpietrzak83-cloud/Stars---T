@@ -19,6 +19,9 @@ func (t *turnGenerator) releaseLandingBaseSurplus(p *Player, leader *Fleet, keep
 		}
 		delete(f.Tags, landingMemberTag)
 		delete(f.Tags, "automatic-landing-screen")
+		if defencePatrolCommitted(p, f) {
+			continue
+		}
 		delete(f.Tags, patrolTag)
 		if !f.InAutomaticSafety() && !f.InDesignMaintenance() && !fuelNetworkManaged(f) && !defencePatrolCommitted(p, f) {
 			restorePatrolBattlePlan(p, f)
