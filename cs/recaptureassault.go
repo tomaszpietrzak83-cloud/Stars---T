@@ -84,7 +84,7 @@ func (t *turnGenerator) planRecaptureAssaults() {
 			claimed[num] = true
 			delete(f.Tags, patrolFrontTag)
 			delete(f.Tags, frontierPatrolTag)
-			base := reportedRecaptureBase(p, target, landingBaseRequested(p, target.Num, fleets))
+			base := t.reportedLandingBase(p, target)
 			if base == nil {
 				holdAutomaticFleet(p, f, "Orbital assault awaits fresh equipment reconnaissance")
 				continue
@@ -188,7 +188,7 @@ func (t *turnGenerator) recaptureDepartureConfirmed(p *Player, f *Fleet, target 
 	if f.GetTag(recaptureAssaultTag) != strconv.Itoa(target.Num) {
 		return false
 	}
-	base := reportedRecaptureBase(p, target, landingBaseRequested(p, target.Num, t.game.getFleets(p.Num)))
+	base := t.reportedLandingBase(p, target)
 	if base == nil {
 		return false
 	}

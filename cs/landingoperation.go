@@ -672,7 +672,8 @@ func (t *turnGenerator) retargetLandingPickup(p *Player, f *Fleet, op *landingOp
 func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *landingOperation, target *Planet) {
 	// A fresh ordinary scan or an allied orbital patrol can confirm that the
 	// base is gone. Clear the remembered warning, then require the scout again.
-	if op.Phase == "base" && !target.Spec.HasStarbase && target.ReportAge <= 1 {
+	if op.Phase == "base" && !target.Spec.HasStarbase && (target.ReportAge <= 1 || op.ScanYear > 0 && op.ScanYear >= t.game.Year-1) {
+		t.releaseLandingBaseSurplus(p, leader, t.landingBaseProtectors(p, leader, op))
 		op.Base = false
 		op.Phase = "scan"
 		op.ScanYear = 0
@@ -692,6 +693,11 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 	guards := []*Fleet{}
 	for _, f := range members {
 		role := p.Automation.FleetRoles[f.Num]
+		if (role == "patrol" || role == "escort") && defencePatrolCommitted(p, f) {
+			delete(f.Tags, landingMemberTag)
+			delete(f.Tags, "automatic-landing-screen")
+			continue
+		}
 		if f.InAutomaticSafety() || f.InDesignMaintenance() {
 			ready = false
 			continue
@@ -792,7 +798,7 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 	}
 	protection := 0
 	for _, f := range members {
-		if (p.Automation.FleetRoles[f.Num] == "patrol" || p.Automation.FleetRoles[f.Num] == "escort") && !f.InAutomaticSafety() && (f.Position == op.Rally || f.GetTag("automatic-landing-screen") != "" && f.Position == target.Position) {
+		if (p.Automation.FleetRoles[f.Num] == "patrol" || p.Automation.FleetRoles[f.Num] == "escort") && !f.InAutomaticSafety() && !defencePatrolCommitted(p, f) && (f.Position == op.Rally || f.GetTag("automatic-landing-screen") != "" && f.Position == target.Position) {
 			protection += f.Spec.TotalShips
 		}
 	}
@@ -883,38 +889,6 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 	t.routeLanding(p, leader, target.Position, target.ToTarget(), true, 1)
 }
 
-func (t *turnGenerator) prepareLandingBaseAssault(p *Player, leader *Fleet, op *landingOperation, target *Planet, guards []*Fleet) {
-	// Make the request visible to the existing orbital combat planner, without
-	// changing the user's priority flags. Reinforcements gather at our rally.
-	saveLandingOperation(leader, op)
-	base := reportedRecaptureBase(p, target, true)
-	if base == nil {
-		return
-	}
-	if len(guards) > 0 && t.assessRecapture(p, guards, base).Ready {
-		attack := guards[0]
-		if !t.mergeLandingGroup(p, attack, guards) {
-			return
-		}
-		delete(attack.Tags, landingMemberTag)
-		p.Automation.FleetRoles[attack.Num] = "patrol"
-		attack.SetTag(recaptureAssaultTag, strconv.Itoa(target.Num))
-		t.routeLanding(p, attack, target.Position, target.ToTarget(), true, 1)
-		return
-	}
-	for _, f := range t.game.getFleets(p.Num) {
-		if landingAvailable(p, f) && patrolAvailable(p, f) && readPatrolJob(f).Leader == 0 {
-			route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, op.Rally, MapObjectTarget{}, automaticRoutePolicy{MaxTurns: 8})
-			if route == nil || route.WaitForFuel {
-				continue
-			}
-			f.SetTag(landingMemberTag, strconv.Itoa(leader.Num))
-			delete(f.Tags, patrolTag)
-			applyExpeditionRoute(p, f, route)
-		}
-	}
-}
-
 // Contact is recorded before battle, so a scout can transmit a base warning
 // even when it is destroyed there. No remote hidden planet/fleet state is read.
 func (t *turnGenerator) scanLandingContacts() {
@@ -933,6 +907,7 @@ func (t *turnGenerator) scanLandingContacts() {
 				for _, guard := range t.game.getFleets(p.Num) {
 					if !guard.Delete && guard.Position == target.Position && guard.GetTag(recaptureAssaultTag) == strconv.Itoa(op.Target) {
 						op.Base = target.Spec.HasStarbase
+						op.ScanYear = t.game.Year
 						if intel := p.GetPlanetIntel(op.Target); intel != nil {
 							intel.Spec.HasStarbase = op.Base
 						}
@@ -948,6 +923,7 @@ func (t *turnGenerator) scanLandingContacts() {
 				p.discoverer = newDiscoverer(t.log, p)
 			}
 			p.discoverer.discoverPlanet(&t.game.Rules, target, false, false)
+			p.discoverer.discoverPlanetStarbase(target)
 			if target.Starbase != nil {
 				for _, tok := range target.Starbase.Tokens {
 					if tok.design != nil {
