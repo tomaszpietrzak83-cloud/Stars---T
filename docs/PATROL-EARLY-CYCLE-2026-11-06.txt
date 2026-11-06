@@ -1,0 +1,40 @@
+Additional earlier-save cycle verification, 2026-11-06
+Source:840938fed3c3c13e5506f9414ee0d314aad818de; production unchanged687140d3.
+Twelve complete native server transitions2459->2471 PASS331.39s. Input is a
+complete earlier audit copy compacted with VACUUM INTO to98,721,792bytes;
+no game rows or AI reports removed. Input SHA before/after unchanged:
+60852d36d10635070b71c173f9f8f193cee02fac2c4345888a2282da9ee73196.
+Personal save was not advanced. No production changes were needed.
+
+Observed on the unmodified copied campaign:
+-45 hunter-design battles,52 kills attributed to hunter firing tokens,0 losses.
+-Zero physically stationary/no-order rally members in all12 transitions.
+-Fleet194 (persistent ID99691),9 ships at230,338, destroyed3 enemy ships in2460.
+ In2461 all9 are individual patrol fleets and have moved: persistent leader
+ plus new IDs100119..100126. They occupy3 distinct positions. This is actual
+ split/movement evidence, not just a role/tag change. Those enemies were unarmed.
+-Fleet209/ID99695 was1 ship in2463 at its rally150,249; in2464 it physically
+ consisted of4 ships and killed a scout at132,234. Its4-ship successor153
+ attacked another scout in2465; all4 then became moving individual patrols
+ in2466 (IDs101954,102476,102477,102478). Not every attack produces immediate
+ dispersal when another local target is selected.
+-In2465 freighter4 (70kT hold) physically gained6kT off-planet minerals at
+301,342 while the22kT debris field disappeared. The pickup figure is6kT,
+not22kT: field decrease also includes decay. This is a conservative observed
+minimum; end-of-turn snapshots omit within-turn pickup/unload events.
+-No armed enemy formation was fought naturally in this interval. Do NOT
+present this campaign as proof of beating a stronger armed opponent.
+
+Fresh targeted native-engine tests on the SAME production source both PASS:
+-TestPatrolNativeStrongEnemyMergeKillDisperseCycle: one hunter fails the native
+readiness check against2 armed enemy destroyers. Three hunters physically
+merge, move and destroy them in native battle. After native repair the
+survivors split into individual hunters. This is a controlled scenario,
+not an encounter observed in the user's earlier save.
+-TestSmallCollectorActuallyPicksUpAndDeliversTwoDebrisFields: the small collector
+actually loads and delivers12ironium+8germanium to Home; both fields disappear,
+and the large freighter is never assigned their salvage job.
+
+Local evidence:patrol-final-control-early-cycle.txt and its manifest,
+patrol-final-control-early-cycle-analysis.json, patrol-final-control-early-cycle-hunters.json,
+patrol-early-cycle-native.txt. Private snapshots/databases are excluded from Git.
