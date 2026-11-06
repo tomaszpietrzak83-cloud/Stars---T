@@ -45,16 +45,19 @@ func TestVanishedSalvageReleasesTransportForANewPassengerJob(t *testing.T) {
 	require.Equal(t, "999", f.GetTag("empty-salvage"))
 	require.Greater(t, len(f.Waypoints), 1)
 }
-func TestPatrolSelectsFrontierAndKeepsEconomicalRouteThroughFuelGuard(t *testing.T) {
+func TestPatrolSelectsForwardObjectiveAndKeepsFundedRouteThroughFuelGuard(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Escort")
 	p.Automation.FleetRoles = map[int]string{f.Num: "patrol"}
 	p.PlanetIntels = []*Planet{u.Planet("Home"), {MapObject: MapObject{Num: 2, Position: Vector{100, 0}, ReportAge: ReportAgeUnexplored}}}
 	u.Run((*turnGenerator).planPatrolAutomation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture)
 	require.Greater(t, len(f.Waypoints), 1)
-	require.LessOrEqual(t, f.Waypoints[len(f.Waypoints)-1].Position.DistanceTo(u.Planet("Home").Position), float64(48))
+	require.Equal(t, Vector{100, 0}, f.Waypoints[len(f.Waypoints)-1].Position)
 	require.NotEmpty(t, f.GetTag(patrolSectorTag))
-	require.LessOrEqual(t, f.Waypoints[1].WarpSpeed, 6)
+	require.Greater(t, f.Waypoints[1].WarpSpeed, 1)
+	u.Run((*turnGenerator).fleetMove)
+	require.Greater(t, f.Position.X, 0)
+	require.GreaterOrEqual(t, f.Fuel, 0)
 }
 func TestBombingWolfPackMergesAndRestoresOriginalRolesAfterMission(t *testing.T) {
 	u := automaticBomberUniverse(t)
