@@ -205,3 +205,24 @@ Full cs PASS236.676s including that private replay. Other eight base operations
 had known slots; this correction does not explain all base waiting. Neither
 frozen campaign contains this later correction. Private replay source/logs are
 outside the repository; only native regression and production changes are kept.
+
+
+Transport handoff snapshot (2026-11-06)
+Transport production380590bb is equivalent to patrol3d4ca42b; differences only
+in checklist/documentation. The patrol branch has integrated the change and
+resolved its document conflict. Additional scout-priority/composition/cache
+work belongs to the patrol chat; it is not silently included in this candidate.
+The original required 30-transition measurement is complete; its findings drove
+the subsequent corrections above. The full current cs suite also includes the
+controlled 30-native-turn landing regression. No claim is made that the current
+candidate completed another 30 turns of the real campaign.
+The additional frozen da6 campaign reached2501 and lost Senility (owner0,
+population0, three hostile bomber fleets). At2500 collector19 actually picked
+up70kT ironium at496,216 and retained it while returning in2501; together with
+collector20's7kT boranium this confirms77kT pickups in this partial run.
+The separate9c055 six-turn control reached2494. Patrol615 physically merged53
+ships and destroyed52 bombers atEridanus with no own losses, as reported by the
+patrol audit. This does not establish overall colony-defense success.
+The patrol chat retains ownership of both running controls, their checkpoint
+continuation, and later patrol changes. Main release chat owns final integrated
+build/install/publication; the transport candidate is not an installed release.
