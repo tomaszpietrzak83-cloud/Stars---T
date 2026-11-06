@@ -33,7 +33,8 @@ const None = 0
 // in the fleet. Fleets also have orders that can be updated by the player, in the form of waypoints and the battle plan.
 // Fleets are one of the commandable MapObjects in the game.
 type Fleet struct {
-	patrolJobCache *cachedPatrolJob
+	patrolJobCache              *cachedPatrolJob
+	maintenanceDestinationCache *cachedMaintenanceDestination
 	GameDBObject
 	MapObject
 	FleetOrders
@@ -1368,6 +1369,17 @@ func (fleet *Fleet) GetFuelCost(player *Player, warpSpeed int, distance float64)
 // fuel as possible to carry.
 func (fleet *Fleet) fuelUsage(player *Player, warpSpeed int, distance float64) float64 {
 	ifeFactor := 1 + player.Race.Spec.FuelEfficiencyOffset
+	// A single design needs neither a copied token slice nor a sort. This is
+	// especially common after dispersing patrols and in repeated route budgets.
+	if len(fleet.Tokens) == 0 {
+		return 0
+	}
+	if len(fleet.Tokens) == 1 {
+		token := fleet.Tokens[0]
+		cargo := min(fleet.CargoMass(), token.design.Spec.CargoCapacity*token.Quantity)
+		mass := token.design.Spec.Mass*token.Quantity + cargo
+		return token.design.Spec.Engine.fuelUsage(warpSpeed, mass, distance, ifeFactor)
+	}
 
 	// most efficient engines first, keeping token order for ties
 	tokens := make([]ShipToken, len(fleet.Tokens))

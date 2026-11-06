@@ -1,0 +1,127 @@
+Turn 2494 optimization, second pass - 2026-11-06
+
+Result and scope
+The merged mine-avoidance version had a major calculation regression. Its copied
+turn completed in 1144.927240 s with profiling. An optimized intermediate build
+completed in 143.529584 s with profiling. The final release completed in
+116.464511 s without profiling, including load, archives, AI and database commit.
+The final complete exported game state matches the merged baseline after the
+metadata/report-order normalization described below. No game rules were removed.
+The user requested handoff to the main chat for committing, not deployment.
+No personal turn was generated, live API called, or live process restarted.
+
+Reference and reproducibility
+Baseline production revision: d30e70c8 (includes minefield avoidance/growth margin).
+HEAD advanced during the work to035e4159, changing only transportdetour_test.go.
+That newly committed test was also run successfully against these changes.
+Input: ../audit-results/turn-2494-audit/input-2494.db, game14 year2494.
+SHA256 d3da592db3bde25933a0e582d73f6a58c1fef122e2c9d34206a90125179e410f.
+This is the same immutable2494 snapshot used previously, not a fresh capture of
+later live orders. Every run copies it again into t.TempDir(); hash checks pass.
+GOMAXPROCS=12 for whole-turn runs. Submitted/result archives enabled.
+
+Measured runs (GenerateTurn, not test setup/export)
+  Merged baseline, CPU profiler:       1144.927240 s (19m04.927s), PASS
+  Intermediate, CPU profiler:           143.529584 s (2m23.530s), PASS
+  Intermediate, no profiler:            124.889682 s (2m04.890s), PASS
+  Final release, no profiler:           116.464511 s (1m56.465s), PASS
+The two profiled runs differ by approximately87.46% wall time. They are individual
+measurements, not statistical means. The unusually long baseline overlapped
+limited builds/tests and the beginning of the intermediate diagnostic run;
+therefore this is not a strictly isolated latency experiment. Total CPU samples
+also fell from1249.04 to177.59 seconds, confirming much less actual calculation.
+Final release timing ran without another benchmark or build competing with it.
+Do not present the profiled-baseline vs unprofiled-final ratio as a controlled
+percentage comparison. The clean final time is the measured practical result.
+
+Phase timings (baseline profiled -> final unprofiled; seconds)
+  Load                     6.572600 ->   4.727372
+  Orders archive           0.651924 ->   0.488891
+  Simulation            1123.772245 -> 101.687046
+  AI orders                0.226658 ->   0.159112
+  Database commit         13.158246 ->   8.939994
+  Result archive           0.540566 ->   0.459419
+
+Actual bottleneck
+Baseline cumulative CPU: planAutomaticRoute913.87s, automaticReturnFuel879.99s,
+mineDetourReturnFuel875.00s (70.05% of all samples), automaticLegFuel301.48s,
+fuelUsage250.62s, automaticMineLegSafe228.79s. These costs are nested, not additive.
+Patrol target selection planned expensive mine-detour return routes BEFORE
+rejecting destinations that could not meet the outbound deadline. It also kept
+searching docks after finding a valid zero-reserve return.
+
+Changes, with unchanged rules and tie breakers
+1. Compute the convoy speed bound first. Without compatible gates, reject an
+   impossible straight-line deadline before calculating return fuel. Compatible
+   gates disable the geometric rejection. Keep a tiny conservative boundary slack.
+2. In graph search, reject a strictly worse score lower bound before safety/fuel
+   work. Edge fuel burn is nonnegative; equality still reaches the original
+   time/HighestWarp tie breakers. No heuristic truncation or search-limit change.
+3. Cache minefield intersection geometry per route search, independent of warp.
+   Evaluate sweeping, safe warp, outward escape and detonation separately at each
+   speed. Cache empty results, bound entries4096, restore enclosing caches on exit.
+4. Stop mine-detour return searches when a valid required reserve reaches zero.
+5. Give fuel-network route searches the same scoped threat/mine caches and test
+   their existing time budget before expensive safety checks. Donor allocations,
+   label dominance, expansion limit, visit order and fuel budgets are unchanged.
+6. Within one dispersed-pack reassignment batch, reuse reconnaissance answers for
+   immutable public reports. The local closure is discarded after the batch;
+   later phases and other batches re-read reports. No Player-level persistent cache.
+7. Cache only maintenance destination/stage/validity, keyed by the exact raw tag.
+   Use the existing complete JSON decoder, so malformed nested orders still fail.
+   Never expose mutable cached orders. Reuse yard rebuild priority in its source loop.
+8. Avoid allocating/copying/sorting token slices for zero/one-design fleet fuel
+   calculations; retain the exact mass/cargo/engine formula and mixed-fleet path.
+
+Correctness and tests
+Both the intermediate124.889682s and final116.464511s exported states match the
+merged baseline completely after removing createdAt/updatedAt, sorting design
+intel records and consecutive PlayerDiscovery messages. No physical values,
+orders, fuel-resume tags, AI orders or other reports are excluded.
+Compared:1 game,33 players,11009 fleets,2744 planets,1566 starbases and all other
+exported groups. Zero normalized differences;15250 raw metadata/order differences.
+- Independent merged-version route-search reference:192 cases including gates,
+  mine detours, low fuel, generators, deadlines, warp caps and HighestWarp ties.
+- Independent mine-rule reference:26400 speed/sweeping decisions across random
+  corridors, zero-length legs, detonations, inside-field starts and changed reports.
+  Nested cache restoration,4096-entry bound and non-retention outside scope tested.
+- Maintenance decoder equivalence including malformed nested orders, tag changes
+  and copied-fleet cache isolation. Reconnaissance batch refresh/equivalence tested.
+- Fuel formula reference:396 combinations plus empty fleet, including mixed fleets.
+- Full cs and root/server suites PASS (initial cs89.739s, server119.847s).
+- Full cs suite repeated after fuel fast path/zero-detour exit:PASS82.218s.
+- After final fuel-network scoping/order change, network/colonization/route/cache
+  regressions repeated:PASS0.277s; final full copied turn/state comparison PASS.
+- Concurrently committed transport/escort detour test:PASS0.044s.
+- Native/WASM and compiled UI builds PASS; Svelte check0 errors/0 warnings.
+- Final isolated HTTP smoke18916/15216 PASS: local login, compiled HTML/modules,
+  served WASM hash, authenticated GetGame on another2494 copy. No turn submitted.
+  Smoke processes stopped. Input backup hash unchanged.
+
+Remaining costs
+The intermediate optimized profile shows patrol planning39.09 CPU s, GC32.94s,
+colonization25.33s (including fuel-network routing24.47s), logistics15.29s and
+actual sensor scans14.14s. The final change specifically addresses fuel-network
+repeated safety work; its unprofiled total fell from124.89 to116.46s.
+These are not an exhaustive final profile or proof of an absolute minimum.
+Withdrawal checks, serialization/allocation and sensor report sharing remain
+potential future profiling targets. No game analysis was suppressed for speed.
+
+Commit handoff and safety
+The pre-existing dirty windows/stars-local.exe was NOT overwritten or committed.
+The current working-tree hash manifest preserves its native entry and updates the
+rebuilt WASM entry. To commit the complete release without touching the live
+executable, use an isolated checkout with BOTH staged files:
+  ../audit-results/turn-2494-round2/stage/stars-local.exe
+  ../audit-results/turn-2494-round2/stage/SHA256SUMS.txt
+Native SHA256:
+  6919ed6c9c690a8a703835a3740443081c4c0c7da73627a87d96e5ab6b57aee8
+WASM SHA256:
+  bc863ecad21f6a73f7dba1233fde8366604c8cebabc9fa48d624202ceaf7ae50
+The rebuilt frontend/build is in this working copy; the live UI uses its immutable
+runtime snapshot. No installation/restart is authorized by this handoff.
+Exact tested source/test copies, SHA256 manifest and patch are retained privately
+in ../audit-results/turn-2494-round2/source-snapshot/. All12 source/test hashes
+were verified unchanged after the release build. Do not commit audit saves,
+profiles, state exports, logs, or compiler caches.
+Private logs/profiles/comparisons: ../audit-results/turn-2494-round2/.

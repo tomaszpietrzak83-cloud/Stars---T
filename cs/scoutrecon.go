@@ -143,6 +143,20 @@ func patrolNeedsRecon(p *Player, target *Fleet) bool {
 	}
 	return unknown && count >= 8
 }
+
+// Callers must keep public reports and diplomacy fixed for this short batch.
+// The closure owns its cache; nothing is stored on Player or retained by a turn.
+func patrolReconSnapshot(p *Player) func(*Fleet) bool {
+	answers := make(map[*Fleet]bool)
+	return func(target *Fleet) bool {
+		if value, ok := answers[target]; ok {
+			return value
+		}
+		value := patrolNeedsRecon(p, target)
+		answers[target] = value
+		return value
+	}
+}
 func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 	if !t.ordersOnly && f.Spec.TotalShips > 1 && f.Cargo.Colonists == 0 {
 		genuine := true

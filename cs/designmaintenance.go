@@ -52,6 +52,32 @@ func (p *Player) ValidateDesignMaintenance(policies DesignMaintenance) error {
 }
 func (f *Fleet) InDesignMaintenance() bool       { return f.GetTag(maintenanceTag) != "" }
 func readMaintenance(f *Fleet) *fleetMaintenance { return decodeMaintenance(f.GetTag(maintenanceTag)) }
+
+// Yard demand only needs the assignment, not a mutable copy of original orders.
+// Validate with the full decoder once per raw tag, preserving malformed-tag
+// behavior. Cached values are immutable, including when a fleet is copied.
+type cachedMaintenanceDestination struct {
+	raw       string
+	stage     string
+	planetNum int
+	valid     bool
+}
+
+func maintenanceDestination(f *Fleet) (string, int, bool) {
+	raw := f.GetTag(maintenanceTag)
+	if raw == "" {
+		return "", 0, false
+	}
+	if f.maintenanceDestinationCache == nil || f.maintenanceDestinationCache.raw != raw {
+		value := &cachedMaintenanceDestination{raw: raw}
+		if work := decodeMaintenance(raw); work != nil {
+			value.stage, value.planetNum, value.valid = work.Stage, work.PlanetNum, true
+		}
+		f.maintenanceDestinationCache = value
+	}
+	value := f.maintenanceDestinationCache
+	return value.stage, value.planetNum, value.valid
+}
 func decodeMaintenance(raw string) *fleetMaintenance {
 	if raw == "" {
 		return nil

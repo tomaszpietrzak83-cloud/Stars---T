@@ -254,15 +254,27 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 		hasGates = hasGates || automaticGateCompatible(player, fleets, station)
 	}
 	maxWarp := 10
-	reserve := make([]int, len(fleets))
-	for i, fleet := range fleets {
+	for _, fleet := range fleets {
 		maxWarp = min(maxWarp, automaticMaxWarp(player, fleet))
-		// Separate convoy members receive identical waypoints. Unlike ships in
-		// one fleet, they do not share an engine minimum; use a common ordinary
-		// speed when their boosts differ so escorts never leave cargo behind.
+		// Keep the same convoy speed restriction for unlike engine boosts.
 		if fleet.Spec.Engine.strategicFactor() != fleets[0].Spec.Engine.strategicFactor() {
 			maxWarp = min(maxWarp, 8)
 		}
+	}
+	if policy.MaxWarp > 0 {
+		maxWarp = min(maxWarp, policy.MaxWarp)
+	}
+	if maxWarp < 1 && !hasGates {
+		return nil
+	}
+	// Without a compatible gate, no detour can beat the straight-line travel
+	// bound. Reject impossible deadlines BEFORE planning a return-fuel route,
+	// which can itself search many minefield detours. Preserve boundary cases.
+	if !hasGates && policy.MaxTurns > 0 && start.DistanceTo(position) > float64(policy.MaxTurns)*fleets[0].StrategicSpeed(maxWarp)+1e-9 {
+		return nil
+	}
+	reserve := make([]int, len(fleets))
+	for i, fleet := range fleets {
 		if !policy.RefuelRendezvous && !policy.OneWay {
 			reserve[i] = automaticReturnFuel(rules, player, fleet, position, stations, policy.AllowThreat, policy.ReturnTurnsLimit)
 		}
@@ -272,12 +284,6 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 		if reserve[i] > fleet.Spec.FuelCapacity {
 			return nil
 		}
-	}
-	if policy.MaxWarp > 0 {
-		maxWarp = min(maxWarp, policy.MaxWarp)
-	}
-	if maxWarp < 1 && !hasGates {
-		return nil
 	}
 	sweep := len(fleets) == 1 && automaticMinesweeper(player, fleets[0])
 	legSafe := func(from, to Vector, warp int) bool {
@@ -405,6 +411,12 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 					turns = times[at] + max(1, int(math.Ceil(distance/fleets[0].StrategicSpeed(speed))))
 				}
 				if policy.MaxTurns > 0 && turns > policy.MaxTurns {
+					continue
+				}
+				// Fuel burned by an edge is nonnegative. Even a free edge
+				// cannot improve this node if its lower bound is already worse.
+				// Keep equality: the existing time/warp tie breakers still apply.
+				if score(turns, used[at]) > score(times[next], used[next]) {
 					continue
 				}
 				safe := legSafe(positions[at], positions[next], speed)

@@ -19,7 +19,24 @@ func mineObstructsNavigation(player *Player, field *Minefield) bool {
 	return field != nil && !field.Delete && field.NumMines > 0 && (field.PlayerNum != player.Num || field.Detonate)
 }
 
-func automaticMineLegSafe(rules *Rules, player *Player, from, to Vector, warp int, step float64, sweep bool) bool {
+type routeMineKey struct{ from, to Vector }
+type routeMineObstacle struct {
+	field                                     *Minefield
+	radius, clearance, closest, startDistance float64
+}
+
+// Geometry is independent of warp and sweeping capability. Retain it only
+// within the current route search; evaluate movement/detonation rules below
+// for every speed. Empty results are cached too, with bounded memory.
+func routeMineObstacles(player *Player, from, to Vector) []routeMineObstacle {
+	key := routeMineKey{from, to}
+	index := player.routeThreatIndex
+	if index != nil && index.mineLegs != nil {
+		if value, ok := index.mineLegs[key]; ok {
+			return value
+		}
+	}
+	var result []routeMineObstacle
 	for _, field := range player.MinefieldIntels {
 		if !mineObstructsNavigation(player, field) {
 			continue
@@ -34,6 +51,22 @@ func automaticMineLegSafe(rules *Rules, player *Player, from, to Vector, warp in
 			continue
 		}
 		startDistance := from.DistanceTo(center)
+		result = append(result, routeMineObstacle{field, radius, clearance, closest, startDistance})
+	}
+	if index != nil && index.mineLegs != nil {
+		if len(index.mineLegs) >= 4096 {
+			clear(index.mineLegs)
+		}
+		index.mineLegs[key] = result
+	}
+	return result
+}
+
+func automaticMineLegSafe(rules *Rules, player *Player, from, to Vector, warp int, step float64, sweep bool) bool {
+	for _, obstacle := range routeMineObstacles(player, from, to) {
+		field := obstacle.field
+		radius, clearance, closest, startDistance := obstacle.radius, obstacle.clearance, obstacle.closest, obstacle.startDistance
+		center := field.Position
 		if field.Detonate {
 			// A detonating field can only be escaped before this year's blast.
 			end := to.ToFloat64()
@@ -123,6 +156,11 @@ func mineDetourReturnFuel(rules *Rules, player *Player, fleet *Fleet, from Vecto
 			}
 		}
 		best = min(best, required)
+		// As in the direct-return budget, zero is the minimum possible
+		// reserve. Further dock searches cannot improve this answer.
+		if best == 0 {
+			return 0
+		}
 	}
 	return best
 }

@@ -77,7 +77,8 @@ func (t *turnGenerator) findShipyardSupplyMode(player *Player, fleet *Fleet, cla
 		if !yard.Spec.HasStarbase && !queuedStarbase(yard) {
 			continue
 		}
-		if !idleStock && t.incomingRebuildMinerals(player, yard).Total() == 0 {
+		rebuilding := t.incomingRebuildMinerals(player, yard).Total() > 0
+		if !idleStock && !rebuilding {
 			active := false
 			for _, item := range yard.ProductionQueue {
 				if manufacturingItem(item) && item.Quantity > 0 && (item.Type != QueueItemTypeShipToken || player.DesignMaintenance[item.DesignNum] == 0) {
@@ -109,7 +110,7 @@ func (t *turnGenerator) findShipyardSupplyMode(player *Player, fleet *Fleet, cla
 				continue
 			}
 			score := fleet.Position.DistanceTo(source.Position) + source.Position.DistanceTo(yard.Position)
-			if t.incomingRebuildMinerals(player, yard).Total() > 0 {
+			if rebuilding {
 				score /= 4
 			}
 			if score >= best {
@@ -135,7 +136,7 @@ func (t *turnGenerator) findShipyardSupplyMode(player *Player, fleet *Fleet, cla
 				continue
 			}
 			travel := first.Turns + delivery.Turns
-			if !manufacturingDeliveryUseful(&t.game.Rules, player, yard, probe.Cargo.ToMineral(), travel) && t.incomingRebuildMinerals(player, yard).Total() == 0 {
+			if !manufacturingDeliveryUseful(&t.game.Rules, player, yard, probe.Cargo.ToMineral(), travel) && !rebuilding {
 				continue
 			}
 			chosen = &logisticsJob{Kind: "planet", TargetNum: source.Num, Position: source.Position, DeliveryNum: yard.Num, Load: probe.Cargo.ToMineral()}
@@ -227,8 +228,8 @@ func (t *turnGenerator) incomingRebuildMinerals(p *Player, yard *Planet) Mineral
 		if f.Delete {
 			continue
 		}
-		w := readMaintenance(f)
-		if w == nil || w.Stage != "scrap" || w.PlanetNum != yard.Num {
+		stage, planetNum, valid := maintenanceDestination(f)
+		if !valid || stage != "scrap" || planetNum != yard.Num {
 			continue
 		}
 		for _, token := range f.Tokens {

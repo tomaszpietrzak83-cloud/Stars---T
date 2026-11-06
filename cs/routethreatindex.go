@@ -44,6 +44,7 @@ type routeThreatIndex struct {
 	threats       []indexedRouteThreat
 	hostileOrbits map[Vector]*Planet
 	routes        map[routeThreatKey]int
+	mineLegs      map[routeMineKey][]routeMineObstacle
 }
 
 type routeThreatKey struct {
@@ -56,8 +57,10 @@ type routeThreatKey struct {
 func scopedRouteThreatCache(p *Player) func() {
 	index := p.routeThreatIndex
 	previous := index.routes
+	previousMines := index.mineLegs
 	index.routes = make(map[routeThreatKey]int)
-	return func() { index.routes = previous }
+	index.mineLegs = make(map[routeMineKey][]routeMineObstacle)
+	return func() { index.routes, index.mineLegs = previous, previousMines }
 }
 
 func hostileOrbitalBase(p *Player, point Vector) bool {

@@ -80,6 +80,8 @@ func fuelLabelDominates(a, b *fuelNetworkLabel) bool {
 // Pareto labels retain slower arrivals with more fuel; one label per node is
 // insufficient when a tanker cannot refill every convoy member completely.
 func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet, destination Vector, target MapObjectTarget, policy automaticRoutePolicy, anyDock ...bool) *fuelNetworkRoute {
+	defer scopedRouteThreatIndex(player)()
+	defer scopedRouteThreatCache(player)()
 	if len(fleets) == 0 {
 		return nil
 	}
@@ -192,13 +194,6 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 				} else if speed < minWarp && distance > fleets[0].StrategicSpeed(speed) {
 					continue
 				}
-				if warp == StargateWarpSpeed {
-					if !automaticLegSafe(rules, player, to.position, to.position, 1, policy.AllowThreat) {
-						continue
-					}
-				} else if !automaticFleetLegSafe(rules, player, fleets[0], from.position, to.position, warp, policy.AllowThreat) {
-					continue
-				}
 				turns := 1
 				if distance == 0 && to.dock == nil {
 					turns = 0
@@ -206,6 +201,13 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 					turns = max(1, int(math.Ceil(distance/fleets[0].StrategicSpeed(warp))))
 				}
 				if current.turns+turns > maxTurns {
+					continue
+				}
+				if warp == StargateWarpSpeed {
+					if !automaticLegSafe(rules, player, to.position, to.position, 1, policy.AllowThreat) {
+						continue
+					}
+				} else if !automaticFleetLegSafe(rules, player, fleets[0], from.position, to.position, warp, policy.AllowThreat) {
 					continue
 				}
 				leg := fuelNetworkLeg{From: from.position, To: to.position, Target: to.target, Warp: warp, RefuelDock: to.dock != nil, DockWait: distance == 0 && to.dock != nil, Required: make([]int, len(fleets)), Reserve: make([]int, len(fleets))}

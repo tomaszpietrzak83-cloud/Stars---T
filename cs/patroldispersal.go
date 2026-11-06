@@ -27,6 +27,9 @@ func (t *turnGenerator) disperseUnreadyPatrol(p *Player, leader, enemy *Fleet, j
 	}
 	// Split children must receive work in this pass too, even when created after
 	// the outer planner took its fleet snapshot.
+	// Reassigning our ships does not change enemy fleet/design reports. Share
+	// reconnaissance answers only for this batch, never with later phases.
+	needsRecon := patrolReconSnapshot(p)
 	for _, f := range slices.Clone(t.game.getFleets(p.Num)) {
 		if existing[f.Num] && !released[f.Num] {
 			continue
@@ -34,13 +37,17 @@ func (t *turnGenerator) disperseUnreadyPatrol(p *Player, leader, enemy *Fleet, j
 		if !patrolAvailable(p, f) || readPatrolJob(f).Leader != 0 || !f.Idle() {
 			continue
 		}
-		if !t.assignSoloPatrol(p, f) {
+		if !t.assignSoloPatrolWithRecon(p, f, needsRecon) {
 			t.patrolFrontier(p, f)
 		}
 	}
 }
 
 func (t *turnGenerator) assignSoloPatrol(p *Player, f *Fleet) bool {
+	return t.assignSoloPatrolWithRecon(p, f, func(enemy *Fleet) bool { return patrolNeedsRecon(p, enemy) })
+}
+
+func (t *turnGenerator) assignSoloPatrolWithRecon(p *Player, f *Fleet, needsRecon func(*Fleet) bool) bool {
 	// Assignments stay unchanged until this function selects a target and
 	// returns. Build the occupied-target set once, not once per enemy report.
 	claimed := make(map[[2]int]bool)
@@ -54,7 +61,7 @@ func (t *turnGenerator) assignSoloPatrol(p *Player, f *Fleet) bool {
 		}
 	}
 	for _, enemy := range sortedPatrolTargets(p, f) {
-		if enemy == nil || enemy.Delete || enemy.ReportAge != 0 || enemy.Starbase || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) || patrolNeedsRecon(p, enemy) || declinedPatrolTarget(f, enemy, t.game.Year) || p.patrolEvaluator.Deferred[priorityFleetKey(enemy.PlayerNum, enemy.Num)] {
+		if enemy == nil || enemy.Delete || enemy.ReportAge != 0 || enemy.Starbase || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) || needsRecon(enemy) || declinedPatrolTarget(f, enemy, t.game.Year) || p.patrolEvaluator.Deferred[priorityFleetKey(enemy.PlayerNum, enemy.Num)] {
 			continue
 		}
 		if claimed[[2]int{enemy.PlayerNum, enemy.Num}] {
