@@ -35,13 +35,22 @@ func fundedPatrolRallyWaypoints(rules *Rules, p *Player, f *Fleet, year int) boo
 // Synchronize a two-turn assembly before departure. Early arrivals must not
 // invalidate a viable pack on the following turn merely because they are idle.
 func pacedPatrolRoute(rules *Rules, p *Player, f *Fleet, point Vector, route *expeditionRoute) *expeditionRoute {
-	if route.Turns == 2 {
+	arrivesOnSecondTurn := func(candidate *expeditionRoute) bool {
+		if candidate == nil || candidate.Turns != 2 {
+			return false
+		}
+		// Native movement snaps to a destination less than one light-year
+		// beyond this turn's range. The route planner's ceil alone therefore
+		// cannot distinguish a paced arrival from an early arrival.
+		return len(candidate.Waypoints) > 2 || (len(candidate.Waypoints) == 2 && f.Position.DistanceTo(point)-f.StrategicSpeed(candidate.Waypoints[1].WarpSpeed) >= 1)
+	}
+	if arrivesOnSecondTurn(route) {
 		return route
 	}
 	var best *expeditionRoute
 	for warp := 1; warp <= automaticMaxWarp(p, f); warp++ {
 		candidate := planAutomaticRoute(rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, MinWarp: warp, MaxWarp: warp, MaxTurns: 2, AllowThreat: knownWithdrawalRoute(p, f.Position, point)})
-		if candidate != nil && !candidate.WaitForFuel && candidate.NetworkRequest == nil && candidate.Turns == 2 && (best == nil || candidate.Fuel < best.Fuel) {
+		if arrivesOnSecondTurn(candidate) && !candidate.WaitForFuel && candidate.NetworkRequest == nil && (best == nil || candidate.Fuel < best.Fuel) {
 			best = candidate
 		}
 	}

@@ -54,3 +54,33 @@ func TestPatrolRallySynchronizesActualArrivalWithoutIdleTurn(t *testing.T) {
 		})
 	}
 }
+
+func TestPatrolRallyRespectsNativeArrivalTolerance(t *testing.T) {
+	for _, start := range []Vector{{35, -16}, {44, 16}} {
+		t.Run(start.String(), func(t *testing.T) {
+			design := Designs(DesignDestroyerDelta)[0]
+			design.Slots[0].HullComponent = TransGalacticFuelScoop.Name
+			u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{
+				{Designs: Designs(design, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Near", Design: design.Name, Position: start}}},
+				{Designs: Designs(DesignDestroyerDelta), Fleets: []ScenarioFleet{{Name: "Enemy", Design: DesignDestroyerDelta.Name, Position: Vector{300, 0}}}},
+			}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name}}})
+			p, f, enemy := u.Player(1), u.Fleet("Near"), u.Fleet("Enemy")
+			p.Automation.FleetRoles = map[int]string{f.Num: "patrol"}
+			p.discoverer.discoverDesign(enemy.Tokens[0].design, true)
+			p.discoverer.discoverFleet(enemy, true)
+			point := Vector{40, 0}
+			route := planAutomaticRoute(&u.Game.Rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, MinWarp: 4, MaxWarp: 4, MaxTurns: 2})
+			require.NotNil(t, route)
+			require.Equal(t, 2, route.Turns)
+			route = pacedPatrolRoute(&u.Game.Rules, p, f, point, route)
+			require.NotNil(t, route)
+			savePatrolJob(f, patrolJob{Provisional: true, Leader: f.Num, Enemy: 2, Target: enemy.Num, Rally: point, RendezvousBy: u.Game.Year + 2})
+			applyExpeditionRoute(p, f, route)
+			u.Run((*turnGenerator).startPatrolEvaluation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove)
+			require.NotEqual(t, point, f.Position, "native arrival tolerance must not create an early waiting ship")
+			u.Game.Year++
+			u.Run((*turnGenerator).fleetInit, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove)
+			require.Equal(t, point, f.Position)
+		})
+	}
+}
