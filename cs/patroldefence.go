@@ -12,11 +12,12 @@ func (t *turnGenerator) planUrgentPatrolDefence(p *Player) {
 	e.DefencePlanned, e.PlanningDefence = true, true
 	e.DefenceMembers = map[int]bool{}
 	defer func() { e.PlanningDefence = false }()
+	launched := t.launchAssembledPatrolDefence(p)
 	for _, mission := range p.patrolQueue {
 		if e.Work >= e.Limit {
 			break
 		}
-		if mission.Kind != "attack" || mission.Tier > 1 || mission.Deadline > 2 {
+		if launched[mission.Key] || mission.Kind != "attack" || mission.Tier > 1 || mission.Deadline > 2 {
 			continue
 		}
 		enemy := patrolEnemy(p, patrolJob{Enemy: mission.Enemy, Target: mission.Target})
