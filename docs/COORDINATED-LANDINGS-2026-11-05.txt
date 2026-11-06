@@ -210,8 +210,11 @@ outside the repository; only native regression and production changes are kept.
 Transport handoff snapshot (2026-11-06)
 Transport production380590bb is equivalent to patrol3d4ca42b; differences only
 in checklist/documentation. The patrol branch has integrated the change and
-resolved its document conflict. Additional scout-priority/composition/cache
-work belongs to the patrol chat; it is not silently included in this candidate.
+resolved its document conflict. Scout-priority correction was subsequently integrated as630ab410 (peer7f3f7684):
+a remote reservation of the same unknown design cannot block reconnaissance
+of a higher-priority colony threat. Native/copy regressions and combined full
+cs PASS287.567s. Later composition/cache work belongs to the patrol chat and
+is not included in this candidate.
 The original required 30-transition measurement is complete; its findings drove
 the subsequent corrections above. The full current cs suite also includes the
 controlled 30-native-turn landing regression. No claim is made that the current
@@ -226,3 +229,7 @@ patrol audit. This does not establish overall colony-defense success.
 The patrol chat retains ownership of both running controls, their checkpoint
 continuation, and later patrol changes. Main release chat owns final integrated
 build/install/publication; the transport candidate is not an installed release.
+Final transport candidate630ab410: native/WASM/static UI rebuild and isolated
+compiled browser/backend smoke PASS. Manifest and SHA256SUMS are in private
+landing-release staging; personalTurnsGenerated=0. Main release owner must
+rebuild again if adding later patrol composition/cache changes.
