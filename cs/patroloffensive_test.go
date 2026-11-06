@@ -4,10 +4,49 @@ package cs
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestOffensiveAdvanceFeedsAssessedOrbitalAssault(t *testing.T) {
+	u, army, op := landingBaseUniverse(t, false)
+	p := u.Player(1)
+	for _, f := range u.Game.getFleets(1) {
+		if p.Automation.FleetRoles[f.Num] == "patrol" {
+			delete(f.Tags, landingMemberTag)
+			f.Position = Vector{-80, 0}
+			f.Waypoints = []Waypoint{{Position: f.Position}}
+		}
+	}
+	// The offensive planner supplies actual nearby ships; it does not authorize
+	// a base attack or borrow transports. Landing assessment remains in charge.
+	u.Run(func(tg *turnGenerator) {
+		for _, f := range u.Game.getFleets(1) {
+			if p.Automation.FleetRoles[f.Num] == "patrol" {
+				require.True(t, tg.advancePatrolFront(p, f))
+				require.Empty(t, f.GetTag(landingMemberTag))
+			}
+		}
+	}, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture)
+	for step := 0; step < 4; step++ {
+		u.Run((*turnGenerator).fleetMove)
+	}
+	u.Run(func(tg *turnGenerator) {
+		tg.prepareLandingBaseAssault(p, army, op, p.GetPlanetIntel(op.Target), nil)
+	})
+	var attack *Fleet
+	for _, f := range u.Game.getFleets(1) {
+		if !f.Delete && f.GetTag(recaptureAssaultTag) == strconv.Itoa(op.Target) {
+			attack = f
+		}
+	}
+	require.NotNil(t, attack, "forward movement must feed an actual assessed attack")
+	u.Run((*turnGenerator).planRecaptureAssaults, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove, (*turnGenerator).fleetBattle)
+	require.False(t, u.Planet("Target").Spec.HasStarbase)
+	require.Equal(t, 10, army.Cargo.Colonists, "civilian landing waits for cleared orbit")
+}
 
 func offensiveFrontUniverse(t *testing.T) *testUniverse {
 	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{
