@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestLoadedDeliveryUsesSafeDockDetourInsteadOfWaitingForEscort(t *testing.T) {
+func TestLoadedDeliveryUsesSafeDetourInsteadOfWaitingForEscort(t *testing.T) {
 	for _, invade := range []bool{false, true} {
 		owner := 1
 		if invade {
@@ -34,9 +34,12 @@ func TestLoadedDeliveryUsesSafeDockDetourInsteadOfWaitingForEscort(t *testing.T)
 		u.Run((*turnGenerator).refreshAutomaticFuelIntel, func(tg *turnGenerator) {
 			require.Positive(t, knownRouteThreat(p, f.Position, target.Position))
 			route := planAutomaticRoute(&u.Game.Rules, p, []*Fleet{f}, target.Position, target.ToTarget(), automaticRoutePolicy{})
-			require.NotNil(t, route, "a safe fuel-dock detour must exist")
+			require.NotNil(t, route, "a funded minefield detour must exist")
 			require.False(t, route.WaitForFuel)
-			require.Equal(t, u.Planet("Dock").Position, route.Waypoints[1].Position)
+			require.Greater(t, len(route.Waypoints), 2)
+			for i, wp := range route.Waypoints[1:] {
+				require.Greater(t, segmentDistance(enemy.Position, route.Waypoints[i].Position, wp.Position), automaticMineClearance(p.MinefieldIntels[0]))
+			}
 			tg.prepareConvoyWithMinimum(p, f, job, target.ToTarget(), 1)
 			require.Len(t, f.Waypoints, 1, "a mandatory escort cannot be bypassed")
 			tg.prepareConvoy(p, f, job, target.ToTarget())
