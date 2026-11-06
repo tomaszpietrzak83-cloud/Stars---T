@@ -88,6 +88,7 @@ func TestLandingOperationLoadsMergesScansAndDropsOver250K(t *testing.T) {
 	require.True(t, leader.Spec.HasWeapons)
 	u.Run((*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove, (*turnGenerator).fleetBattle, (*turnGenerator).resolveLandingDrops, (*turnGenerator).resolveColonistDrops)
 	require.Equal(t, 1, target.PlayerNum)
+	require.True(t, p.Automation.OccupationSupport[target.Num], "native conquest requests civilian reinforcement")
 	require.Zero(t, leader.Cargo.Colonists)
 	require.Equal(t, "landed", readLandingOperation(leader).Phase)
 	u.Run((*turnGenerator).planLandingOperations)

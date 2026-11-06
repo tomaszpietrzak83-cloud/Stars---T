@@ -448,6 +448,12 @@ func (t *turnGenerator) resolveColonistDrops() {
 			attacker := inv.attacker
 			planet.emptyPlanet()
 			planet.PlayerNum = attacker.Num
+			if inv.defender != nil && !inv.colonization {
+				if attacker.Automation.OccupationSupport == nil {
+					attacker.Automation.OccupationSupport = map[int]bool{}
+				}
+				attacker.Automation.OccupationSupport[planet.Num] = true
+			}
 			planet.setPopulation(inv.remainingAttackers)
 			planet.Scanner = attacker.Race.Spec.InnateScanner
 			if attacker.Race.Spec.InnateMining {

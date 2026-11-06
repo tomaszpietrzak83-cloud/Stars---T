@@ -506,7 +506,7 @@ func deliveryReturnBudget(p *Player, f *Fleet, position Vector) *Fleet {
 	if dest == nil || !dest.OwnedBy(p.Num) || dest.Position != position {
 		return fullCargoBudget(f)
 	}
-	if f.Cargo.Colonists > 0 && populationTarget(dest, max(35, p.Automation.destinationPopulationPercent()))-dest.Cargo.Colonists < f.Cargo.Colonists {
+	if f.Cargo.Colonists > 0 && populationTarget(dest, max(35, colonyPopulationPercent(p, dest)))-dest.Cargo.Colonists < f.Cargo.Colonists {
 		return fullCargoBudget(f)
 	}
 	copy := *f

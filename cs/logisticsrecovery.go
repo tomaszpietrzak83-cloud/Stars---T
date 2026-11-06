@@ -52,7 +52,7 @@ func (t *turnGenerator) currentLogisticsWork(p *Player, f *Fleet) *logisticsJob 
 			valid = valid && source.OwnedBy(p.Num) && suitableColony(p, dest)
 			if valid {
 				incoming, _ := t.passengerReservations(p, f.Num)
-				room := populationTarget(dest, p.Automation.destinationPopulationPercent()) - dest.Cargo.Colonists - incoming[dest.Num]
+				room := populationTarget(dest, colonyPopulationPercent(p, dest)) - dest.Cargo.Colonists - incoming[dest.Num]
 				valid = room > 0 && t.destinationCanFillTransport(p, f, source, dest, room)
 			}
 		}

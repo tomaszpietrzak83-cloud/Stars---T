@@ -102,6 +102,9 @@ func (t *turnGenerator) landingMembers(p *Player, leader *Fleet) []*Fleet {
 }
 
 func landingAvailable(p *Player, f *Fleet) bool {
+	if job := logisticsWork(f); p.Automation.FleetRoles[f.Num] == "freighter" && job != nil && job.Kind != "invade" && job.Kind != "invade-load" && job.Kind != "landing-reserve" && job.Kind != "salvage" {
+		return false // an assigned civilian delivery is not an idle transport
+	}
 	// An empty collector is working, not idle. Let a known, still valid debris
 	// pickup finish before assigning its hold to an army. Stale jobs must not
 	// reserve ships forever, and a reused salvage number is a different target.
@@ -472,12 +475,7 @@ func (t *turnGenerator) landingTargetClaimed(p *Player, num int) bool {
 	return false
 }
 func (t *turnGenerator) landingReservations(p *Player) map[int]int {
-	reserved := map[int]int{}
-	for _, f := range t.game.getFleets(p.Num) {
-		if j := logisticsWork(f); !f.Delete && j != nil && j.Kind == "landing-load" {
-			reserved[j.TargetNum] += j.Passengers
-		}
-	}
+	_, reserved := t.passengerReservations(p, 0)
 	return reserved
 }
 func (t *turnGenerator) planLandingOperations() {
@@ -816,7 +814,7 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 		t.prepareLandingBaseAssault(p, leader, op, target, local)
 		return
 	}
-	if !ready || leader.Cargo.Colonists < op.Need {
+	if !ready || leader.Cargo.Colonists < op.Need && (leader.CargoMass() != leader.Spec.CargoCapacity || !usefulAttritionLanding(&t.game.Rules, p, target, leader.Cargo.Colonists)) {
 		return
 	}
 	if op.Phase == "gather" {
@@ -984,6 +982,9 @@ func (t *turnGenerator) resolveLandingDrops() {
 }
 
 func (t *turnGenerator) finishLandingOperation(p *Player, leader *Fleet, op *landingOperation) {
+	if op.Phase == "landed" && !t.ordersOnly {
+		defer t.disperseEmptyLandingTransports(p, leader)
+	}
 	for _, f := range t.landingMembers(p, leader) {
 		delete(f.Tags, landingMemberTag)
 		delete(f.Tags, landingOperationTag)
