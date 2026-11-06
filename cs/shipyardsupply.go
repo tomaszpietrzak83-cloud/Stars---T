@@ -259,7 +259,7 @@ func (t *turnGenerator) previewShipyardPickup(p *Player, f *Fleet, source, dest 
 	t.topUpLogisticsCargo(p, &probe, &origin, dest)
 	if automaticPassengersAllowed(p, f) && suitableColony(p, dest) && !p.Automation.DisablePassengerTransport {
 		incoming, _ := t.passengerReservations(p, f.Num)
-		pax := max(0, min(probe.availableColonistSpace(), origin.Cargo.Colonists-sourcePopulationReserve(p, &origin), populationTarget(dest, p.Automation.destinationPopulationPercent())-dest.Cargo.Colonists-incoming[dest.Num]))
+		pax := max(0, min(probe.availableColonistSpace(), origin.Cargo.Colonists-sourcePopulationReserve(p, &origin), populationTarget(dest, colonyPopulationPercent(p, dest))-dest.Cargo.Colonists-incoming[dest.Num]))
 		origin.Cargo.Colonists -= pax
 		probe.Cargo.Colonists += pax
 	}

@@ -141,6 +141,7 @@ func (t *turnGenerator) prepareLandingBaseAssault(p *Player, leader *Fleet, op *
 	}
 	if chosen == 0 {
 		t.releaseLandingBaseSurplus(p, leader, core)
+		t.retargetBlockedLanding(p, leader, op)
 		return
 	}
 	for lo, hi := failed+1, chosen; lo < hi && t.recaptureEvaluator(p).Work < t.recaptureEvaluator(p).Limit; {

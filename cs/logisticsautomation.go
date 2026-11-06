@@ -11,6 +11,8 @@ import (
 )
 
 type LogisticsAutomation struct {
+	// Server-owned occupation support, retained until a base exists.
+	OccupationSupport map[int]bool `json:"occupationSupport,omitempty"`
 	// Server-owned reports retained for lost-contact search, never attack authority.
 	PatrolMemory                 map[string]PatrolContactMemory `json:"patrolMemory,omitempty"`
 	PriorityFleets               map[string]bool                `json:"priorityFleets,omitempty"`
@@ -496,7 +498,15 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 }
 
 func (t *turnGenerator) planLogisticsAutomation() {
-	t.planLandingOperations()
+	t.updateOccupationSupport()
+	for _, p := range t.automaticPlayers() {
+		for _, f := range slices.Clone(t.game.getFleets(p.Num)) {
+			if op := readLandingOperation(f); !f.Delete && op != nil && (op.Phase == "landed" || op.Phase == "cancelled") {
+				t.finishLandingOperation(p, f, op)
+			}
+		}
+	}
+	defer t.planLandingOperations() // civilian deliveries claim free holds first
 	for _, player := range t.automaticPlayers() {
 		for _, escort := range t.game.getFleets(player.Num) {
 			if escort.GetTag(escortStagingTag) == "" && readTankerJob(escort) == nil && !fuelNetworkManaged(escort) && player.Automation.FleetRoles[escort.Num] == "escort" && escort.GetTag(escortTag) == "" && !escort.InAutomaticSafety() && !escort.InDesignMaintenance() {

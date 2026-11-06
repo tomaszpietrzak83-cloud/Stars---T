@@ -88,7 +88,7 @@ func (t *turnGenerator) loadOpportunisticInfrastructure(player *Player, f *Fleet
 	room -= factories * 5
 	mines := min(installationSurplus(source.Mines, sm), max(0, dm-dest.Mines-packed.Mines), room/3)
 	room -= mines * 3
-	defenses := min(installationSurplus(source.Defenses, sd), max(0, dd-dest.Defenses-packed.Defenses), room)
+	defenses := min(max(0, source.Defenses-(sd*80+99)/100), max(0, dd-dest.Defenses-packed.Defenses), room)
 	source.Factories -= factories
 	source.Mines -= mines
 	source.Defenses -= defenses

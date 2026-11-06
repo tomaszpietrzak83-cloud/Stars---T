@@ -34,7 +34,7 @@ func starbaseCompletion(rules *Rules, p *Player, planet Planet, extra Mineral) i
 // On good worlds, carry construction stock opportunistically with passengers.
 // Predict their own mining/production first; Germanium is left to factories.
 func (t *turnGenerator) prefetchStarbaseMinerals(p *Player, dest *Planet) Mineral {
-	if dest == nil || !dest.OwnedBy(p.Num) || dest.Spec.HasStarbase || prospectivePlanetQuality(p, dest) < 80 || queuedStarbase(dest) {
+	if dest == nil || !dest.OwnedBy(p.Num) || dest.Spec.HasStarbase || prospectivePlanetQuality(p, dest) < 80 && !p.Automation.OccupationSupport[dest.Num] || queuedStarbase(dest) {
 		return Mineral{}
 	}
 	var design *ShipDesign

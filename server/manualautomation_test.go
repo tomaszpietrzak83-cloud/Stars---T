@@ -24,6 +24,7 @@ func TestManualOrdersAfterMergedFleetHasStaleAssignments(t *testing.T) {
 	f := fleets[0]
 	p.Automation.FleetRoles = map[int]string{f.Num: "escort", 999: "scout"}
 	p.Automation.PatrolMemory = map[string]cs.PatrolContactMemory{"2:8": {Enemy: 2, Target: 8, Seen: 2400, Position: cs.Vector{X: 100}}}
+	p.Automation.OccupationSupport = map[int]bool{1: true}
 	require.NoError(t, c.UpdatePlayerOrders(ctx, p))
 	f.Tags = cs.Tags{"bomber-protection-borrow": `{"role":"patrol"}`, "note": "keep"}
 	require.NoError(t, c.SaveFleet(ctx, f))
@@ -44,4 +45,5 @@ func TestManualOrdersAfterMergedFleetHasStaleAssignments(t *testing.T) {
 	require.Empty(t, player.Automation.FleetRoles)
 	require.Empty(t, player.Automation.RebuildFleets)
 	require.Equal(t, p.Automation.PatrolMemory, player.Automation.PatrolMemory, "ordinary client orders cannot erase server-owned contact memory")
+	require.Equal(t, p.Automation.OccupationSupport, player.Automation.OccupationSupport)
 }
