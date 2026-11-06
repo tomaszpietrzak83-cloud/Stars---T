@@ -102,15 +102,15 @@ Corrections driven by that measurement
   rendezvous deadlines, reclaim borrowed colony relief, and index frontier jobs.
 
 Final validation and handoff
-Final gameplay source 4f955071ce06c5bc6df74f63a4d9dc654966b52a is identical to patrol source
-da6cb8925220b2db19ffe3d3db1708bb56eb3e80 (only documentation differs).
-Full cs PASS 82.499s on that source, following PASS 84.305s before the final
-patrol transit correction. Dedicated base regressions PASS 0.223s. Windows
+Final gameplay source 3bf8d0413b8111aead261c617cc7b3df5bafe75f is identical to patrol source
+e06046fbabb3c16ad7c55386d31d2df0a777478b (only documentation differs).
+Full cs PASS 106.220s on that source, including copied D57 and simultaneous
+colony-defense diagnostics. Dedicated base regressions PASS 0.223s. Windows
 backend, WASM and static UI rebuilt; isolated compiled browser/runtime smoke
 PASS with native login, authenticated GetGame, UI/WASM initialization, served
 WASM hash and unchanged game 14/year 2479. No personal turn was generated.
-Native SHA256 34699b962b0ca17d004245948d4ddc91c551bf21180bc07cdd9aed40f5bb9c68
-WASM SHA256 bace7346cddde86e933c7673b8978abfe3fe30bcd31af05aada273c14777e1df
+Native SHA256 a21fa3e678384714d6fbf4c6ac6d69cbadeea6f50404f2809aebdb9be5a488e4
+WASM SHA256 f30b6adc7b7ba9224fff7af0bf041210a7f684b55ed77651adecc22d1652f004
 Private artifacts: audit-results/landing-release, BUILD-MANIFEST.json,
 SHA256SUMS.txt; smoke evidence landing-runtime-smoke-final.txt.
 
@@ -127,8 +127,24 @@ The final transit correction permits provisional non-attack rendezvous travel
 past fully observed unarmed traffic; unknown/armed encounters and cleanup
 attacks retain normal combat assessment. Native tests include an incoming armed
 escort and the actual copied D57 route. The patrol chat is running a NEW30-turn
-control on this final source, starting2488. Results remain pending; keep it
+control on frozen da6cb892, starting2488. Results remain pending; keep it
 separate from both the frozen initial30 and the interrupted four-turn diagnostic.
+
+
+Later simultaneous-defense optimization (e06046fb / 3bf8d041)
+An independent copied2492 replay confirmed the original4096 work budget could
+be exhausted after assigning one relief group. Simply swapping the first two
+missions yielded two funded groups, even through final departure checks, but
+reported combat power contradicted a naive weaker-first interpretation.
+The accepted correction preserves the original mission order and safety rules:
+growing composition prefixes, narrowing a confirmed force, then one native
+assessment of its25%reserve. Failed coarse search falls back to the original
+mixed-composition loop. Every accepted group has its own successful forecast;
+combat is not assumed monotonic and the chosen group is not claimed minimal.
+Final copied replay:78 ships against16:25 and53 against16:16, zero blocked
+members after fuel/departure guards, Work4096. A separate six-transition control
+from copied2492 to2498 is running on e06046fb in patrol-final-control-prefix-6.
+It does not replace or modify the frozen da6cb892 measurement.
 
 The full30 test's final defense assertion ran before its final input-hash check,
 so that hash assertion did not execute. Independent inspection confirms input
