@@ -34,6 +34,21 @@ type routeThreatIndex struct {
 	margin        int
 	threats       []indexedRouteThreat
 	hostileOrbits map[Vector]*Planet
+	routes        map[routeThreatKey]int
+}
+
+type routeThreatKey struct {
+	from, to Vector
+	civilian bool
+}
+
+// A single route search reads an immutable report snapshot, often testing the
+// same corridor at many warp speeds. Never retain these results between searches.
+func scopedRouteThreatCache(p *Player) func() {
+	index := p.routeThreatIndex
+	previous := index.routes
+	index.routes = make(map[routeThreatKey]int)
+	return func() { index.routes = previous }
 }
 
 func hostileOrbitalBase(p *Player, point Vector) bool {

@@ -46,7 +46,7 @@ func (t *turnGenerator) mergeCompatibleCombatFleets() {
 }
 
 func canGroupCombatFleet(fleet *Fleet, role string) bool {
-	if (role != "patrol" && role != "escort") || fleet.Delete || fleet.Starbase || !fleet.Spec.HasWeapons || len(fleet.Tokens) != 1 || len(fleet.Waypoints) == 0 || fleet.RepeatOrders || fleet.struckMinefield {
+	if role != "escort" || fleet.Delete || fleet.Starbase || !fleet.Spec.HasWeapons || len(fleet.Tokens) != 1 || len(fleet.Waypoints) == 0 || fleet.RepeatOrders || fleet.struckMinefield {
 		return false
 	}
 	// These tags can safely be shared when their values match. Other tags

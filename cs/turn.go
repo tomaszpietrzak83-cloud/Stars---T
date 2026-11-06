@@ -97,6 +97,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.resolveAutomaticTankers()
 	t.shareOpportunisticFuel()
 	t.unloadOpportunisticInfrastructure()
+	t.migrateLegacyLandings()
 	t.fleetDesignMaintenance()
 	t.refreshSlowPreyOrders()
 	t.planFleetAssemblies()
@@ -179,6 +180,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.randomPlanetaryChange()
 	t.captureScorePopulations()
 	t.scanScoutReconContacts()
+	t.scanLandingContacts()
 	t.mergePatrolRendezvous()
 	t.mergeCompatibleCombatFleets()
 	t.fleetBattle()
@@ -194,6 +196,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.fleetRemoteMine() // remote mine for normal miners
 	t.fleetUnload()
 	t.fleetColonize() // colonize wp1 after arriving at a planet
+	t.resolveLandingDrops()
 	t.resolveAutomaticInvasions()
 	t.resolveColonistDrops()
 	t.planTerraformingWorlds()
@@ -448,8 +451,20 @@ func (t *turnGenerator) resolveColonistDrops() {
 			if attacker.Race.Spec.InnateMining {
 				planet.Mines = innateMines(attacker.Race.Spec.InnateMinesFactor, planet.GetPopulation())
 			}
-			if len(attacker.ProductionPlans) > 0 {
+			redAutomaticColony := false
+			if inv.colonization && !greenColonyTarget(attacker, planet) {
+				for _, fleet := range inv.fleets {
+					if colonizationMode(attacker.Automation.FleetRoles[fleet.Num]) != "" {
+						redAutomaticColony = true
+						break
+					}
+				}
+			}
+			if !redAutomaticColony && len(attacker.ProductionPlans) > 0 {
 				attacker.ProductionPlans[0].Apply(planet)
+			}
+			if redAutomaticColony && terraformedPlanetQuality(attacker, planet) > 0 {
+				queueMinimumTerraforming(planet)
 			}
 			if inv.colonization {
 				t.log.Debug("colonized planet",
@@ -692,7 +707,7 @@ func (t *turnGenerator) fleetColonize() {
 
 			planet := t.game.getPlanet(wp.TargetNum)
 			if planet.Owned() {
-				if planet.OwnedBy(player.Num) && colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && player.CanAutomateColonizer(fleet) {
+				if suitableColony(player, planet) && colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && player.CanAutomateColonizer(fleet) {
 					planet.Cargo.Colonists += fleet.Cargo.Colonists
 					fleet.Cargo.Colonists = 0
 					delete(fleet.Tags, "maintenance-pending")

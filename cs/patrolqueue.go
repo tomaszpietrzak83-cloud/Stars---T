@@ -15,8 +15,15 @@ type patrolMission struct {
 
 func patrolColonyDeadline(p *Player, f *Fleet) (bool, int) {
 	for _, planet := range p.PlanetIntels {
-		if planet != nil && planet.OwnedBy(p.Num) && planet.Position == f.Position && patrolReportedBomber(p, f) {
-			return true, 0
+		if planet != nil && planet.OwnedBy(p.Num) && planet.Position == f.Position {
+			if patrolReportedBomber(p, f) {
+				return true, 0
+			}
+			// A transport already over our colony can unload an invasion even
+			// when stationary. Use reported capacity, never hidden enemy cargo.
+			if patrolReportedTransport(p, f) || patrolReportedCombatant(p, f) {
+				return false, 0
+			}
 		}
 	}
 	if planet := patrolDefendedColony(p, f); planet != nil {

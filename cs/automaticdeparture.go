@@ -19,6 +19,12 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			wp := fleet.Waypoints[1]
+			if op := readLandingOperation(fleet); op != nil && op.Phase == "assault" && !t.landingOrbitClear(player, fleet, op) {
+				op.Phase = "scan"
+				saveLandingOperation(fleet, op)
+				holdAutomaticFleet(player, fleet, "Landing cancelled before departure: orbital reconnaissance or protection changed")
+				continue
+			}
 			if player.Automation.FleetRoles[fleet.Num] == "freighter" && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() {
 				if hostileOrbitalBase(player, wp.Position) {
 					t.releaseEscorts(player, fleet)
@@ -50,6 +56,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 			}
 			if player.Automation.FleetRoles[fleet.Num] == "patrol" {
 				if !t.patrolDepartureConfirmed(player, fleet) {
+					t.rememberBlockedPatrolDeparture(player, fleet)
 					holdAutomaticFleet(player, fleet, "Departure cancelled: reported encounter exceeds the confirmed combat force")
 					continue
 				}
@@ -66,7 +73,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				}
 				continue
 			}
-			allowThreat := fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			allowThreat := landingScout(player, fleet) || readLandingOperation(fleet) != nil && readLandingOperation(fleet).Phase == "assault" || fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
 			if job := logisticsWork(fleet); !allowThreat && job != nil && job.Kind == "invade" && !job.BombingStage && job.Position == wp.Position && convoyThreat(player, fleet, wp.Position) > 0 {
 				allowThreat = t.deliveryEscortReady(player, fleet, wp.Position)
 			}

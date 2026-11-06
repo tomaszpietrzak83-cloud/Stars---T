@@ -50,3 +50,48 @@ func TestStandaloneRouteIndexIsScopedAndWithdrawalMatchesReference(t *testing.T)
 	p.FleetIntels[0].Position = Vector{1000, 1000}
 	require.Zero(t, knownRouteThreat(p, Vector{}, Vector{40, 0}), "a completed route search must not freeze an old report position")
 }
+
+func TestRouteThreatCachePreservesModesMarginsAndScope(t *testing.T) {
+	u := logisticsUniverse(t)
+	p := u.Player(1)
+	p.FleetIntels = []*Fleet{patrolTestEnemy(100)}
+	rng := rand.New(rand.NewSource(71))
+	cleanupIndex := scopedRouteThreatIndex(p)
+	defer cleanupIndex()
+	cleanupCache := scopedRouteThreatCache(p)
+	for _, margin := range []int{20, 80, 150} {
+		p.Automation.EscortMarginLY = margin
+		for _, civilian := range []bool{false, true} {
+			// Reuse this exact key after changing the margin: old results must
+			// be invalidated along with the underlying report index.
+			from, to := Vector{0, 35}, Vector{200, 35}
+			require.Equal(t, uncachedRouteThreat(p, from, to, civilian), routeThreat(p, from, to, civilian))
+		}
+		for n := 0; n < 300; n++ {
+			from, to := Vector{rng.Intn(200), rng.Intn(200)}, Vector{rng.Intn(200), rng.Intn(200)}
+			for _, civilian := range []bool{false, true} {
+				want := uncachedRouteThreat(p, from, to, civilian)
+				require.Equal(t, want, routeThreat(p, from, to, civilian))
+				require.Equal(t, want, routeThreat(p, from, to, civilian))
+			}
+		}
+	}
+	require.NotEmpty(t, p.routeThreatIndex.routes)
+	cleanupCache()
+	require.Nil(t, p.routeThreatIndex.routes, "one search must not retain corridor results for the next search")
+}
+
+func TestRouteThreatCacheBoundsMemoryWithoutChangingAnswers(t *testing.T) {
+	u := logisticsUniverse(t)
+	p := u.Player(1)
+	p.FleetIntels = []*Fleet{patrolTestEnemy(100)}
+	cleanupIndex := scopedRouteThreatIndex(p)
+	defer cleanupIndex()
+	cleanupCache := scopedRouteThreatCache(p)
+	defer cleanupCache()
+	for n := 0; n < 4200; n++ {
+		from, to := Vector{}, Vector{n, n / 4}
+		require.Equal(t, uncachedRouteThreat(p, from, to, false), routeThreat(p, from, to, false))
+	}
+	require.LessOrEqual(t, len(p.routeThreatIndex.routes), 4096)
+}

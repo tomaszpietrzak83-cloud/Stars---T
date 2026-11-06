@@ -61,18 +61,18 @@ func TestFutureTerraformingWorldsAreExplicitOptInExceptClaimAdjuster(t *testing.
 		}
 	}
 	require.NotNil(t, world)
-	require.Positive(t, colonyPlanetQuality(p, world))
+	require.Positive(t, prospectivePlanetQuality(p, world))
 	p.Automation.ServeTerraformingWorlds = false
-	require.Zero(t, colonyPlanetQuality(p, world))
+	require.Negative(t, prospectivePlanetQuality(p, world))
 	p.Race.Spec.Instaforming = true
-	require.Positive(t, colonyPlanetQuality(p, world))
+	require.Positive(t, prospectivePlanetQuality(p, world))
 }
 func TestExplicitStartLocationsWorkWithoutOpponents(t *testing.T) {
 	for _, tc := range []struct {
 		mode string
 		want int
 	}{{"center", 1}, {"edge", 0}} {
-		ug := newPlacementGenerator(PlayerPositionsModerate, 1, Vector{1000, 1000}, newIntRandom(0, 1), Vector{30, 500}, Vector{500, 500}, Vector{800, 500})
+		ug := newPlacementGenerator(PlayerPositionsModerate, 1, Vector{1000, 1000}, newIntRandom(0, 1), Vector{30, 500}, Vector{500, 500}, Vector{925, 500})
 		ug.HostStartPosition = tc.mode
 		positions, err := ug.getPlayerPlanets()
 		require.NoError(t, err)

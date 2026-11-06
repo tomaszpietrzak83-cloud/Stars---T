@@ -9,6 +9,8 @@ func (t *turnGenerator) splitAutomaticCombatPools() {
 		return
 	}
 	for _, player := range t.game.Players {
+		t.reconcilePatrolJobs(player)
+		t.planUrgentPatrolDefence(player)
 		for _, fleet := range slices.Clone(t.game.getFleets(player.Num)) {
 			role := player.Automation.FleetRoles[fleet.Num]
 			if (role != "patrol" && role != "escort") || fleet.Spec.TotalShips <= 1 || !fleet.Idle() || !patrolAvailable(player, fleet) || readPatrolJob(fleet).Leader != 0 || fleet.GetTag(bomberBorrowTag) != "" || fleet.GetTag(patrolSupportTag) != "" || readAutomaticFuelRequest(fleet) != nil {

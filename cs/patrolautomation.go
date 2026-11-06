@@ -32,7 +32,9 @@ type patrolJob struct {
 
 func readPatrolJob(f *Fleet) patrolJob {
 	var job patrolJob
-	_ = json.Unmarshal([]byte(f.GetTag(patrolTag)), &job)
+	if raw := f.GetTag(patrolTag); raw != "" {
+		_ = json.Unmarshal([]byte(raw), &job)
+	}
 	return job
 }
 func savePatrolJob(f *Fleet, job patrolJob) {
@@ -164,7 +166,7 @@ func patrolCanAttack(player *Player, fleet *Fleet) bool {
 		return player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, patrolInterceptPosition(enemy), 1).Ready
 	}
 	if player.patrolEvaluator != nil && job.Leader == fleet.Num && enemy != nil && !patrolNeedsRecon(player, enemy) && fleet.Spec.TotalShips >= job.RequiredShips {
-		result := player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, patrolInterceptPosition(enemy), 1)
+		result := patrolFleetEvaluator(player, fleet).assess(player, []*Fleet{fleet}, enemy, patrolInterceptPosition(enemy), 1)
 		if result.Ready {
 			applyPatrolBattlePlan(player, fleet, result.Tactic)
 		}
@@ -176,6 +178,9 @@ func patrolAvailable(player *Player, f *Fleet) bool {
 	return f.GetTag(containmentTag) == "" && patrolOperational(player, f)
 }
 func patrolOperational(player *Player, f *Fleet) bool {
+	if landingManaged(f) {
+		return false
+	}
 	if f.GetTag(recaptureAssaultTag) != "" {
 		return false
 	}
@@ -302,7 +307,7 @@ func (t *turnGenerator) patrolPursuitSafe(fleet *Fleet, position Vector, remaini
 	player := t.game.getPlayer(fleet.PlayerNum)
 	if player.Automation.FleetRoles[fleet.Num] == "patrol" && player.patrolEvaluator != nil {
 		if enemy := patrolTacticalEnemy(player, fleet); enemy != nil {
-			result := player.patrolEvaluator.assess(player, []*Fleet{fleet}, enemy, position, 1)
+			result := patrolFleetEvaluator(player, fleet).assess(player, []*Fleet{fleet}, enemy, position, 1)
 			if !result.Ready {
 				return false
 			}
@@ -341,6 +346,10 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 	job := readPatrolJob(leader)
 	enemy := patrolEnemy(player, job)
 	if enemy == nil || !patrolAvailable(player, leader) {
+		t.releasePatrol(player, leader)
+		return
+	}
+	if declinedPatrolTarget(leader, enemy, t.game.Year) {
 		t.releasePatrol(player, leader)
 		return
 	}
@@ -478,6 +487,7 @@ func (t *turnGenerator) advancePatrol(player *Player, leader *Fleet) {
 func (t *turnGenerator) planPatrolAutomation() {
 	for _, player := range t.game.Players {
 		t.reconcilePatrolJobs(player)
+		t.planUrgentPatrolDefence(player)
 		fleets := []*Fleet{}
 		for _, fleet := range t.game.getFleets(player.Num) {
 			delete(fleet.Tags, patrolMineSweepTag)
@@ -506,6 +516,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 		})
 		for _, fleet := range fleets {
 			job := readPatrolJob(fleet)
+			if defencePatrolCommitted(player, fleet) {
+				continue
+			}
 			if fleet.GetTag(recaptureAssaultTag) != "" {
 				continue
 			}
@@ -560,6 +573,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 			enemies := sortedPatrolTargets(player, fleet)
 			assigned := false
 			for _, enemy := range enemies {
+				if player.patrolEvaluator != nil && enemy != nil && player.patrolEvaluator.Deferred[priorityFleetKey(enemy.PlayerNum, enemy.Num)] {
+					continue
+				}
 				if enemy == nil || enemy.Delete || enemy.Starbase || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || (!priorityFleet(player, enemy) && slowPreySupport(player, enemy) == nil && !(player.patrolEvaluator != nil && slowPatrolPrey(player, enemy) && fleet.Position.DistanceTo(enemy.Position) <= 300) && fleet.Position.DistanceTo(enemy.Position) > 150 && !patrolDefenceReachable(player, fleet, enemy) && !patrolGateReachable(player, fleet, enemy)) {
 					continue
 				}
@@ -641,6 +657,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 					savePatrolJob(member, job)
 				}
 				t.advancePatrol(player, fleet)
+				if readPatrolJob(fleet).Leader == 0 {
+					continue
+				}
 				assigned = true
 				break
 			}
@@ -744,6 +763,10 @@ func reportedScoutsOnly(p *Player, enemy *Fleet) bool {
 // battle as one token stack rather than several independent single-ship fleets.
 func (t *turnGenerator) mergePatrolRendezvous() {
 	for _, p := range t.automaticPlayers() {
+		if p.patrolEvaluator != nil {
+			// Only the launch planner may merge a combat-ready local formation.
+			continue
+		}
 		fleets := slices.Clone(t.game.getFleets(p.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
 		for _, a := range fleets {

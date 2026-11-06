@@ -27,7 +27,7 @@ func (t *turnGenerator) availableFuelNetworkDonors(player *Player, group []*Flee
 	return donors
 }
 
-func (t *turnGenerator) assistedColonyTarget(player *Player, fleet *Fleet, mode string, claimed map[int]int) (*Planet, *expeditionRoute) {
+func (t *turnGenerator) assistedColonyTarget(player *Player, fleet *Fleet, mode string, claimed map[int]int, green bool) (*Planet, *expeditionRoute) {
 	if len(t.availableFuelNetworkDonors(player, []*Fleet{fleet})) == 0 {
 		return nil, nil
 	}
@@ -41,8 +41,7 @@ func (t *turnGenerator) assistedColonyTarget(player *Player, fleet *Fleet, mode 
 		return nil, nil
 	}
 	for _, planet := range player.PlanetIntels {
-		quality := colonyPlanetQuality(player, planet)
-		if quality <= 0 || claimed[planet.Num] != 0 {
+		if !availableColonyPlanet(planet) || greenColonyTarget(player, planet) != green || claimed[planet.Num] != 0 && claimed[planet.Num] != fleet.Num {
 			continue
 		}
 		distance := fleet.Position.DistanceTo(planet.Position)
@@ -50,7 +49,8 @@ func (t *turnGenerator) assistedColonyTarget(player *Player, fleet *Fleet, mode 
 		if turns > 50 {
 			continue
 		}
-		score := colonyAutoScore(quality, turns)
+		quality := colonyTargetQuality(player, planet)
+		score := colonyTargetScore(quality, turns)
 		switch mode {
 		case "nearest":
 			score = -distance
@@ -78,7 +78,7 @@ func (t *turnGenerator) assistedColonyTarget(player *Player, fleet *Fleet, mode 
 		}
 		score := candidate.score
 		if mode == "auto" {
-			score = colonyAutoScore(colonyPlanetQuality(player, planet), planned.Turns)
+			score = colonyTargetScore(colonyTargetQuality(player, planet), planned.Turns)
 		}
 		if chosen == nil || score > best || score == best && planned.Turns < route.Turns {
 			chosen, route, best = planet, planned, score

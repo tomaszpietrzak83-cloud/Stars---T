@@ -1,0 +1,137 @@
+Turn generation performance and failure handling — 2026-11-06
+
+Scope and safety
+Only craig-stars sources were edited. Runtime tests use audit backups copied again
+into test-owned temporary directories. Input SHA-256 is checked after each test.
+No personal database is opened by these diagnostics, no live turn is submitted,
+and no live server is restarted. Native candidate is staged separately in
+ dist/turn-speed-1106/stars-local.exe.
+
+Reliability
+- A failed full-game load after entering GeneratingTurn now sets
+  GeneratingTurnError. Missing full-game results return errNotFound instead of
+  passing nil onward. A second state-write failure is retained with errors.Join.
+- Parallel AI workers clear SubmittedTurn before planning, return errors annotated
+  with game/player, join all workers, and aggregate errors in input order.
+  Failed AI planning stops before the database transaction and result archive.
+  Universe creation also propagates AI errors and rolls back its transaction.
+- Tests inject read failure, missing result, state-write failure and partial AI
+  mutation; check unchanged year/players/fleets/planets and successful retry.
+  A separate test checks multiple workers' errors and host-game rollback.
+
+Performance changes (no rules or thresholds changed)
+- Separate orders/result archive phase timings from simulation.
+- Frontier scoring indexes current assignments once per invocation rather than
+  decoding all fleet tags again for every candidate. Fleet summation order stays
+  the same, so floating-point scoring/tie order is preserved.
+- Solo patrol assignment indexes claimed targets once per invocation.
+- Route search rejects legs already exceeding MaxTurns before threat/fuel work,
+  using precisely the prior bound and preserving gate travel times.
+- Threat values for the same directional corridor and civilian/combat mode are
+  reused only during a single route search. Margin rebuild clears values; entries
+  are bounded to 4096 and the prior cache is restored on return. Nothing survives
+  into a subsequent search. No simulation random number call was added/removed.
+
+Evidence so far
+- Full go test -buildvcs=false ./... ./cs/... PASS, including server 141.754 s and
+  cs 120.168 s (tests/builds overlapped; not performance measurements).
+- 160 seeded route comparisons against the exact pre-change route search PASS,
+  using an audit-only Go overlay (no reference copy shipped in production).
+- Svelte check 0 errors/0 warnings; native/WASM/static UI builds PASS.
+- Compiled native/static UI smoke PASS on isolated 18896/15196 ports, disposable
+  copied game remains year 2454. Local login, compiled entries, served WASM hash
+  and authenticated GetGame checked. Both smoke processes were stopped.
+- Profiles and private state snapshots remain under ../audit-results/ and must
+  not be published. Diagnostic profiles overlapped builds/tests; use the separate
+  clean series for elapsed-time comparison.
+
+
+
+Completed clean timing series (no profiler, builds or other tests launched by this
+chat during the series; existing user processes were not stopped)
+Input backup/year           Before       After       Reduction
+landing-30-input / 2479      288.287 s    101.327 s      64.85%
+patrol-early / 2454           13.299 s     12.800 s       3.75%
+One measured turn per version per input in this clean series, not medians or a
+universal speed guarantee. All four runs pass and verify the input backup hash.
+The test copies the backup before timing; the timer includes full-game loading,
+orders archive, simulation, AI orders, database persistence and result archive.
+Post-turn state export/comparison is outside the timer.
+
+Large-input phase times, seconds (before -> after)
+load                 7.119 -> 4.302
+orders archive       0.527 -> 0.451
+simulation         272.690 -> 88.782
+AI orders            0.196 -> 0.130
+database save        7.363 -> 7.262
+result archive       0.388 -> 0.395
+
+Main bottleneck is patrol planning, not AI or storage on this input. Separate
+CPU profiles show patrol planning 168.54 -> 40.55 cumulative CPU seconds and
+route planning 96.65 -> 35.04. These overlapping stacks must not be added.
+The profiles overlapped other validation work and are diagnostic, not the source
+of the clean-series speedup claim. Remaining work includes patrol route searches
+and scanning; no additional speculative changes were made.
+
+State equivalence and its limit
+- Compare every exported player (including AI reports), fleet, planet, starbase,
+  wormhole, salvage, minefield, packet and trader, plus the game record.
+- Normalize createdAt/updatedAt bookkeeping timestamps, shipDesignIntels ordering
+  and ordering within consecutive PlayerDiscovery messages, as in the previous
+  performance audit. No physical state, commands or fuel-resume tags are ignored.
+- Small input: 33 players, 2617 fleets, 2744 planets and 292 bases; ZERO normalized
+  differences, including all other object groups.
+- Large input: 33 players, 8492 fleets, 2744 planets and 1027 bases. Eleven fleets
+  differ only in tags.automatic-fuel-resume. ALL other normalized fields match.
+- Repeating the unchanged baseline independently also differs in that tag for
+  seven fleets. Thus whole-state determinism already fails before these changes;
+  do not claim byte-identical or fully identical large-game outputs.
+- Code inspection points to the unordered `for num := range blocked` loop in
+  enforceAutomaticDeparture: releaseTankerCustomers can restore another blocked
+  fleet's orders before/after its resume tag is captured. This is a plausible
+  mechanism consistent with the baseline repetition, not a newly fixed rule.
+  The loop and its behavior were deliberately left unchanged in production.
+- 160 seeded route comparisons against the exact original route function PASS.
+  Threat-cache tests compare exact reference values across combat/civilian mode,
+  margin changes, reuse, cleanup and capacity eviction. All full suites pass.
+
+Artifacts and installation status
+- Native: dist/turn-speed-1106/stars-local.exe
+  SHA256 f1ae9eeb4f718f7f23d292bdb22993f4e80d81a89ce471f5a22e31c75b7d7403
+- WASM: dist/turn-speed-1106/cs.wasm
+  SHA256 2865e6b473f7bccf5ef9e2242a1456d5a6c3df27ff76bf393c6d3260684d5c35
+- Compiled UI: dist/turn-speed-1106/frontend-build
+- The stage contains SHA256SUMS.txt. The repository checksum list reflects its
+  actual Windows executable and rebuilt source WASM. The existing Windows
+  executable was NOT replaced and the personal server was NOT restarted.
+  The running launcher serves an immutable .runtime/ui copy; no running UI was
+  switched. No publishing, installation or personal game mutation was performed.
+
+Private evidence (excluded from publication)
+../audit-results/turn-{baseline,final}-clean-1106/{phases.log,state.jsonl.gz}
+../audit-results/turn-{baseline,final}-small-1106/{phases.log,state.jsonl.gz}
+../audit-results/turn-baseline-repeat-comparison.log
+../audit-results/turn-clean-comparison.log and turn-small-comparison.log
+../audit-results/turn-full-tests-1106.log, turn-focused-1106.log
+../audit-results/turnroute-differential-1106.log and turnroute-overlay-1106.json
+../audit-results/turn-ui-{check,build}-1106.log, turn-smoke-1106.log
+
+Backup SHA256, unchanged throughout all tests:
+landing-30-input.db:
+611ad4b6743cb5c36bb0785d536dfe3cb4ef0ed6716c501c0315baf8fe7ca5ca
+patrol-early-2454-input.db:
+c4bf183c7b017644cfdd21df678e63d4b7bc83d074f1d89d8521f43d470dcac8
+
+DEPLOYED after explicit user approval and resume, 2026-11-06
+The existing turn finished before deployment: game 14 year 2494 WaitingForPlayers.
+Installed the verified stage to windows/stars-local.exe and dist/stars-local.exe,
+WASM and compiled UI; restarted only this project's backend and frontend.
+Running backend PID 4396, UI PID 10124; UI root .runtime/ui/47abf1be042aadd8.
+Native and UI hashes match the tested stage. HTTP ping and compiled UI return 200.
+All 20 database tables have identical row counts and content hashes before/after;
+year 2494 and WaitingForPlayers are unchanged. No turn-generation request sent.
+The first comparison falsely failed because Python tuples were compared to JSON
+lists; correcting this diagnostic representation confirmed every table unchanged.
+SQLite backup: ../audit-results/turn-deploy-1106/before.db. Exact table hashes and
+instance metadata are in that private directory. No restore or save edit performed.
+This deployment entry supersedes the earlier staged/not-installed status.

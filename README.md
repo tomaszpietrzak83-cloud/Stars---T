@@ -100,7 +100,7 @@ Rebuilding preserves the current delivery and funded return. Investigation of th
 
 ## Version 0.4.7
 
-New-game options include brief explanations. Edge starts prefer a planet around 5% of the map width or height from the nearest border. Saved setup restores victory thresholds, selected criteria and race choices; Reset to defaults updates the whole form.
+New-game options include brief explanations. Edge starts prefer a planet within 3–7% of the map width or height from the nearest border. Saved setup restores victory thresholds, selected criteria and race choices; Reset to defaults updates the whole form.
 
 Planet and fleet side-panel sections can be collapsed independently and remember their state. Scouts with penetrating scanners plan shared observation stops to cover several planets without entering orbit, while reserving fuel for the return. Enemy-colony refresh and incoming-fleet reconnaissance use actual scanner range and reported motion; equipment discovery still follows the race's normal rules. Verification: [docs/AUDIT-0.4.7.txt](docs/AUDIT-0.4.7.txt).
 

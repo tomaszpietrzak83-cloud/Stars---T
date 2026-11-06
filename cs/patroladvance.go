@@ -63,6 +63,25 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 	}
 	candidates := []patrolFrontCandidate{}
 	unit := max(1, patrolPower(f)/max(1, f.Spec.TotalShips))
+	// During candidate scoring no fleet changes. Decode and filter assignments
+	// once, preserving fleet order within each target (including float sums).
+	type frontKey struct {
+		owner, target int
+		kind          MapObjectType
+	}
+	assigned := make(map[frontKey][]*Fleet)
+	for _, other := range t.game.getFleets(p.Num) {
+		if other == f || !patrolOperational(p, other) || p.Automation.FleetRoles[other.Num] != "patrol" || readPatrolJob(other).Leader != 0 {
+			continue
+		}
+		var front patrolFront
+		if json.Unmarshal([]byte(other.GetTag(patrolFrontTag)), &front) == nil {
+			key := frontKey{front.Owner, front.Target, front.Type}
+			assigned[key] = append(assigned[key], other)
+		}
+	}
+	var previous patrolFront
+	hasPrevious := json.Unmarshal([]byte(f.GetTag(patrolFrontTag)), &previous) == nil
 	appendCandidate := func(obj MapObject, center Vector, standOff, pressure float64) {
 		var anchor *Planet
 		nearest := math.Inf(1)
@@ -84,18 +103,13 @@ func (t *turnGenerator) advancePatrolFront(p *Player, f *Fleet) bool {
 		}
 		c := patrolFrontCandidate{patrolFront: patrolFront{Owner: obj.PlayerNum, Target: obj.Num, Type: obj.Type, Position: position}, name: obj.Name, center: center, distance: f.Position.DistanceTo(position), pressure: pressure, anchor: anchor}
 		allocated := 0.0
-		for _, other := range t.game.getFleets(p.Num) {
-			if other == f || !patrolOperational(p, other) || p.Automation.FleetRoles[other.Num] != "patrol" || readPatrolJob(other).Leader != 0 {
-				continue
-			}
-			var front patrolFront
-			if json.Unmarshal([]byte(other.GetTag(patrolFrontTag)), &front) == nil && front.Owner == c.Owner && front.Target == c.Target && front.Type == c.Type && (len(other.Waypoints) > 1 || other.Position.DistanceTo(position) < 100) {
+		for _, other := range assigned[frontKey{c.Owner, c.Target, c.Type}] {
+			if len(other.Waypoints) > 1 || other.Position.DistanceTo(position) < 100 {
 				allocated += float64(patrolPower(other)) / float64(unit)
 			}
 		}
 		c.score = (100 + c.distance) * (1 + allocated) / max(1, pressure)
-		var previous patrolFront
-		if json.Unmarshal([]byte(f.GetTag(patrolFrontTag)), &previous) == nil && previous.Owner == c.Owner && previous.Target == c.Target && previous.Type == c.Type {
+		if hasPrevious && previous.Owner == c.Owner && previous.Target == c.Target && previous.Type == c.Type {
 			c.score *= .8
 		}
 		candidates = append(candidates, c)

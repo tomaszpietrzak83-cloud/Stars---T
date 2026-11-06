@@ -23,6 +23,11 @@ type patrolEvaluator struct {
 	cache               map[[32]byte]patrolAssessment
 	Work, Battles, Hits int
 	Limit               int
+	Deferred            map[string]bool
+	DefencePlanned      bool
+	PlanningDefence     bool
+	DefenceMembers      map[int]bool
+	DefenceChecks       *patrolEvaluator
 }
 
 func (t *turnGenerator) startPatrolEvaluation() {

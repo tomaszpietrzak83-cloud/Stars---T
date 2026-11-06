@@ -52,7 +52,7 @@ func (e *completionEstimate) GetProductionWithEstimates(rules *Rules, player *Pl
 	copy(items, planet.ProductionQueue)
 
 	if len(items) == 0 {
-		return items, planet.Spec.ResourcesPerYear, nil
+		return items, planet.Spec.ResourcesPerYearAvailable, nil
 	}
 
 	// the player spec is computed at turn generation time, but when updating planets we won't have it

@@ -43,7 +43,12 @@ func (t *turnGenerator) recoverLoadedDelivery(p *Player, f *Fleet) *logisticsJob
 	}
 	if f.Cargo.Colonists == 0 && f.carriesInfrastructure() {
 		c := readInfrastructure(f)
-		if dest := t.game.getPlanet(c.Destination); dest != nil && dest.OwnedBy(p.Num) {
+		dest := t.game.getPlanet(c.Destination)
+		if !suitableColony(p, dest) {
+			dest = t.passengerDestination(p, f, c.Origin)
+		}
+		if dest != nil {
+			t.alignDeliveryInfrastructure(f, dest)
 			return &logisticsJob{Kind: "return", TargetNum: dest.Num, DeliveryNum: dest.Num, Position: dest.Position}
 		}
 	}

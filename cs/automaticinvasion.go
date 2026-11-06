@@ -194,6 +194,9 @@ func (t *turnGenerator) resolveAutomaticInvasions() {
 	for _, player := range t.game.Players {
 		arrivals := map[int][]*Fleet{}
 		for _, fleet := range t.game.getFleets(player.Num) {
+			if landingManaged(fleet) {
+				continue
+			}
 			job := logisticsWork(fleet)
 			if job == nil || job.Kind != "invade" || job.BombingStage || fleet.Delete || fleet.InAutomaticSafety() || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "freighter" || fleet.Position != job.Position || t.armedEnemyAt(player, fleet.Position) {
 				continue

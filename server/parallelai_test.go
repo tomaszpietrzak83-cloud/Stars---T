@@ -41,7 +41,7 @@ func TestParallelAIEquivalentOnCopiedGame(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, cs.NewGamer().ComputeSpecs(g))
 		start := time.Now()
-		runner.processAITurnsWorkers(g, workers)
+		require.NoError(t, runner.processAITurnsWorkers(g, workers))
 		elapsed := time.Since(start)
 		// Timestamps on new designs are bookkeeping, not AI decisions.
 		raw, err := json.Marshal(g)
@@ -98,7 +98,7 @@ func TestParallelAIFixtureKeepsOrdersDeterministic(t *testing.T) {
 		g.TechStore = &cs.StaticTechStore
 		g.Rules.SetTechStore(&cs.StaticTechStore)
 		require.NoError(t, cs.NewGamer().ComputeSpecs(&g))
-		runner.processAITurnsWorkers(&g, workers)
+		require.NoError(t, runner.processAITurnsWorkers(&g, workers))
 		out := []any{}
 		for _, p := range g.Players {
 			if p.AIControlled {
