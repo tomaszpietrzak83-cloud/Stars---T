@@ -192,6 +192,7 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 // return reserves for every member prevent a convoy from spending its escort's fuel.
 func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position Vector, target MapObjectTarget, policy automaticRoutePolicy) *expeditionRoute {
 	defer scopedRouteThreatIndex(player)()
+	defer scopedRouteThreatCache(player)()
 	if len(fleets) == 0 {
 		return nil
 	}
@@ -376,6 +377,15 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 				choices = append(choices, StargateWarpSpeed)
 			}
 			for _, speed := range choices {
+				// Reject an over-budget leg before checking threats or fuel. The
+				// same bound used below does not depend on those calculations.
+				turns := times[at] + 1
+				if speed != StargateWarpSpeed {
+					turns = times[at] + max(1, int(math.Ceil(distance/fleets[0].StrategicSpeed(speed))))
+				}
+				if policy.MaxTurns > 0 && turns > policy.MaxTurns {
+					continue
+				}
 				safe := automaticFleetLegSafe(rules, player, fleets[0], positions[at], positions[next], speed, policy.AllowThreat)
 				if speed == StargateWarpSpeed {
 					safe = automaticLegSafe(rules, player, positions[next], positions[next], 1, policy.AllowThreat)
@@ -404,13 +414,6 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 					costTotal += cost
 				}
 				if !valid {
-					continue
-				}
-				turns := times[at] + 1
-				if speed != StargateWarpSpeed {
-					turns = times[at] + max(1, int(math.Ceil(distance/fleets[0].StrategicSpeed(speed))))
-				}
-				if policy.MaxTurns > 0 && turns > policy.MaxTurns {
 					continue
 				}
 				if score(turns, used[at]+costTotal) < score(times[next], used[next]) || score(turns, used[at]+costTotal) == score(times[next], used[next]) && (turns < times[next] || policy.HighestWarp && speed > speeds[next]) {

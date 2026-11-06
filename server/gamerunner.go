@@ -71,12 +71,14 @@ type gameRunner struct {
 	dbConn DBConnection
 	client cs.Gamer
 	config config.Config
+	// Optional per-runner planner override for failure-injection tests.
+	aiTurn func(*cs.FullGame, *cs.Player, cs.PlayerMapObjects, []int) error
 }
 
 func NewGameRunner(dbConn DBConnection, config config.Config) GameRunner {
 	// game runner runs in its own context. we don't want client request cancellations
 	// to stop db calls from executing when setting error states
-	return &gameRunner{context.Background(), dbConn, cs.NewGamer(), config}
+	return &gameRunner{ctx: context.Background(), dbConn: dbConn, client: cs.NewGamer(), config: config}
 }
 
 func timeTrack(start time.Time, name string) {
@@ -920,7 +922,8 @@ func (gr *gameRunner) GenerateTurn(gameID int64) (TurnGenerationCheckResult, err
 	fullGame, err := gr.loadGame(readWriteClient, gameID)
 
 	if err != nil {
-		return TurnNotGenerated, err
+		stateErr := readWriteClient.UpdateGameState(gr.ctx, gameID, cs.GameStateGeneratingTurnError)
+		return TurnNotGenerated, errors.Join(err, stateErr)
 	}
 
 	if err := gr.generateTurn(readWriteClient, fullGame); err != nil {
@@ -939,6 +942,9 @@ func (gr *gameRunner) loadGame(db DBReadClient, gameID int64) (*cs.FullGame, err
 	if err != nil {
 		return nil, fmt.Errorf("load game %d: %w", gameID, err)
 	}
+	if fullGame == nil {
+		return nil, fmt.Errorf("load game %d: %w", gameID, errNotFound)
+	}
 
 	return fullGame, nil
 }
@@ -953,17 +959,19 @@ func (gr *gameRunner) generateUniverse(fullGame *cs.FullGame) error {
 
 	// ai processing
 	fullGame.Universe = universe
-	gr.processAITurns(fullGame)
+	if err := gr.processAITurns(fullGame); err != nil {
+		return err
+	}
 
 	fullGame.State = cs.GameStateWaitingForPlayers
 	return nil
 }
 
 // process an ai player's turns
-func (gr *gameRunner) processAITurns(g *cs.FullGame) {
-	gr.processAITurnsWorkers(g, runtime.GOMAXPROCS(0))
+func (gr *gameRunner) processAITurns(g *cs.FullGame) error {
+	return gr.processAITurnsWorkers(g, runtime.GOMAXPROCS(0))
 }
-func (gr *gameRunner) processAITurnsWorkers(g *cs.FullGame, workers int) {
+func (gr *gameRunner) processAITurnsWorkers(g *cs.FullGame, workers int) error {
 	victors := []int{}
 	for _, p := range g.Players {
 		if p.Victor && !p.AIControlled {
@@ -971,6 +979,7 @@ func (gr *gameRunner) processAITurnsWorkers(g *cs.FullGame, workers int) {
 		}
 	}
 	type job struct {
+		index   int
 		p       *cs.Player
 		objects cs.PlayerMapObjects
 	}
@@ -978,11 +987,18 @@ func (gr *gameRunner) processAITurnsWorkers(g *cs.FullGame, workers int) {
 	// Owner indices and slices are prepared before any worker mutates its own ships.
 	for _, p := range g.Players {
 		if p.AIControlled {
-			jobs = append(jobs, job{p, g.Universe.GetPlayerMapObjects(p.Num)})
+			jobs = append(jobs, job{len(jobs), p, g.Universe.GetPlayerMapObjects(p.Num)})
 		}
 	}
 	input := make(chan job)
 	failures := make(chan any, len(jobs))
+	errs := make([]error, len(jobs))
+	process := gr.aiTurn
+	if process == nil {
+		process = func(g *cs.FullGame, p *cs.Player, objects cs.PlayerMapObjects, victors []int) error {
+			return ai.NewAIPlayer(g.Game, g.TechStore, p, objects, victors...).ProcessTurn()
+		}
+	}
 	var wg sync.WaitGroup
 	for range min(max(1, workers), len(jobs)) {
 		wg.Add(1)
@@ -995,9 +1011,10 @@ func (gr *gameRunner) processAITurnsWorkers(g *cs.FullGame, workers int) {
 							failures <- failure
 						}
 					}()
-					computer := ai.NewAIPlayer(g.Game, g.TechStore, j.p, j.objects, victors...)
-					if err := computer.ProcessTurn(); err != nil {
-						slog.Error("AI process turn error", slog.Any("error", err), slog.Int64("GameID", g.ID), slog.Int("PlayerNum", j.p.Num))
+					j.p.SubmittedTurn = false
+					if err := process(g, j.p, j.objects, victors); err != nil {
+						errs[j.index] = fmt.Errorf("AI turn game %d player %d: %w", g.ID, j.p.Num, err)
+						return
 					}
 					j.p.SubmittedTurn = true
 				}()
@@ -1015,6 +1032,7 @@ func (gr *gameRunner) processAITurnsWorkers(g *cs.FullGame, workers int) {
 		panic(failure)
 	default:
 	}
+	return errors.Join(errs...)
 }
 
 // generate a turn for a game
@@ -1044,6 +1062,7 @@ func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGa
 		_ = readWriteClient.UpdateGameState(gr.ctx, fullGame.ID, cs.GameStateWaitingForPlayers)
 		return fmt.Errorf("archive submitted turn: %w", err)
 	}
+	phase("orders archive")
 	// if everyone submitted their turn, generate a new turn
 	if err := gr.client.GenerateTurn(fullGame.Game, fullGame.Universe, fullGame.Players); err != nil {
 		// update the state so it's clear we got an error during turn generation
@@ -1056,7 +1075,10 @@ func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGa
 
 	phase("simulation")
 	// ai processing
-	gr.processAITurns(fullGame)
+	if err := gr.processAITurns(fullGame); err != nil {
+		stateErr := readWriteClient.UpdateGameState(gr.ctx, fullGame.ID, cs.GameStateGeneratingTurnError)
+		return errors.Join(err, stateErr)
+	}
 	phase("AI orders")
 
 	// save the game and update the game state
@@ -1096,6 +1118,7 @@ func (gr *gameRunner) generateTurn(readWriteClient DBClient, fullGame *cs.FullGa
 
 	phase("database commit")
 	gr.archiveTurnResult(fullGame)
+	phase("result archive")
 	return nil
 
 }

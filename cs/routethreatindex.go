@@ -37,11 +37,18 @@ type routeThreatIndex struct {
 	routes        map[routeThreatKey]int
 }
 
-// The report index is already scoped to an immutable planning snapshot. Warp
-// and fuel searches repeatedly ask about the same geometric corridor.
 type routeThreatKey struct {
 	from, to Vector
 	civilian bool
+}
+
+// A single route search reads an immutable report snapshot, often testing the
+// same corridor at many warp speeds. Never retain these results between searches.
+func scopedRouteThreatCache(p *Player) func() {
+	index := p.routeThreatIndex
+	previous := index.routes
+	index.routes = make(map[routeThreatKey]int)
+	return func() { index.routes = previous }
 }
 
 func hostileOrbitalBase(p *Player, point Vector) bool {
