@@ -94,8 +94,34 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	if urgent {
 		maxChecks = 96
 	}
+	if urgent && !result.Ready && len(candidates) > 8 {
+		pool := []*Fleet{leader}
+		for _, candidate := range candidates[:min(maxChecks, len(candidates))] {
+			pool = append(pool, candidate.fleet)
+		}
+		if ready, assessment := readyPatrolPrefix(p, pool, enemy, point, &checks, maxChecks); ready != nil {
+			group, result = ready, assessment
+			reserveShips = (patrolFormationShips(group)*5 + 3) / 4
+			n := len(group)
+			for n < len(pool) && patrolFormationShips(pool[:n]) < reserveShips {
+				n++
+			}
+			if n > len(group) && checks < maxChecks && p.patrolEvaluator.Work < p.patrolEvaluator.Limit {
+				checks++
+				if reserve := p.patrolEvaluator.assess(p, pool[:n], enemy, point, 1); reserve.Ready {
+					group, result = pool[:n], reserve
+				}
+			}
+		}
+	}
 	for _, candidate := range candidates {
+		if result.Ready && urgent && reserveShips > 0 && patrolFormationShips(group) >= reserveShips {
+			break
+		}
 		support, route := candidate.fleet, candidate.route
+		if slices.Contains(group, support) {
+			continue
+		}
 		if checks >= maxChecks || p.patrolEvaluator.Work >= p.patrolEvaluator.Limit {
 			break
 		}
