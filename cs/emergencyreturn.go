@@ -3,39 +3,10 @@ package cs
 const emergencyReturnTag = "emergency-return"
 const emergencyRiskTag = "emergency-return-risk"
 
-// A threat at the starting point must not make every possible escape illegal.
-// Permit only corridors whose distance from every relevant threat increases
-// monotonically; approaching or crossing another threat remains forbidden.
+// A threatened starting point must not prevent departure to an unoccupied
+// destination. Passing a reported enemy does not initiate a native battle.
 func knownWithdrawalRoute(p *Player, from, to Vector) bool {
-	movement := to.Subtract(from).ToFloat64()
-	if movement.LengthSquared() == 0 {
-		return false
-	}
-	seen := false
-	margin := p.Automation.escortMarginAsFloat()
-	positions := []Vector{}
-	if index := p.routeThreatIndex; index != nil && index.built && index.margin == p.Automation.escortMargin() {
-		for _, threat := range index.threats {
-			positions = append(positions, threat.position)
-		}
-	} else {
-		for _, enemy := range p.FleetIntels {
-			if enemy != nil && !enemy.Delete && enemy.ReportAge == 0 && enemy.PlayerNum != p.Num && !p.IsFriend(enemy.PlayerNum) && patrolReportedCombatant(p, enemy) {
-				positions = append(positions, enemy.Position)
-			}
-		}
-	}
-	for _, position := range positions {
-		if segmentDistance(position, from, to) > margin {
-			continue
-		}
-		seen = true
-		start := from.Subtract(position).ToFloat64()
-		if from.DistanceTo(position) > margin || start.X*movement.X+start.Y*movement.Y < 0 || to.DistanceTo(position) <= from.DistanceTo(position) {
-			return false
-		}
-	}
-	return seen
+	return from != to && knownRouteThreat(p, from, from) > 0 && knownRouteThreat(p, from, to) == 0
 }
 func (t *turnGenerator) routeEmergencyReturn(p *Player, f *Fleet) bool {
 	var best *expeditionRoute

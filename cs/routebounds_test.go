@@ -21,13 +21,10 @@ func TestRouteBoundsPreserveExactThreatGeometry(t *testing.T) {
 			threat.end = threat.position
 		}
 		if i%11 == 0 {
-			to = threat.position.Add(Vector{X: 3})
+			to = threat.next.Add(Vector{X: 3})
 		}
 		for _, civilian := range []bool{false, true} {
-			want := segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach
-			if civilian {
-				want = segmentDistance(to, threat.position, threat.next) <= 3
-			}
+			want := to.DistanceTo(threat.next) <= 3
 			if got := threat.threatensRoute(from, to, civilian); got != want {
 				t.Fatalf("case %d civilian=%v: got %v want %v: %+v %v %v", i, civilian, got, want, threat, from, to)
 			}

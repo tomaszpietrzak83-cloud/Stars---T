@@ -49,23 +49,37 @@ func automaticFleetLegSafe(rules *Rules, player *Player, fleet *Fleet, from, to 
 	return automaticRouteLegSafe(rules, player, from, to, warp, allowThreat, civilianTraffic(player, fleet), automaticMinesweeper(player, fleet), fleet.StrategicSpeed(warp))
 }
 
+// Check the next end-of-year position and the intended destination, not the
+// swept corridor. Native battles happen after movement at shared positions.
+// Routes are reconsidered next year using fresh public reports.
 func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp int, allowThreat, civilian, sweep bool, strategicSpeed ...float64) bool {
 	step := float64(warp * warp)
 	if len(strategicSpeed) > 0 {
 		step = strategicSpeed[0]
 	}
-	if !allowThreat && routeThreat(player, from, to, civilian) > 0 && (civilian || !knownWithdrawalRoute(player, from, to)) {
-		return false
-	}
-	if civilian && !allowThreat && from.DistanceTo(to) > step {
-		stop := from.ToFloat64().Add(to.Subtract(from).Normalized().Scale(step)).ToInt(true)
-		if stop != to && routeThreat(player, from, stop, true) > 0 {
+	if !allowThreat {
+		if routeThreat(player, from, to, civilian) > 0 {
+			return false
+		}
+		stop := automaticTurnEnd(from, to, step)
+		if stop != to && routeThreat(player, from, stop, civilian) > 0 {
 			return false
 		}
 	}
 	return automaticMineLegSafe(rules, player, from, to, warp, step, sweep)
 }
 
+// Match the native movement engine's final sub-light-year snap and rounding.
+func automaticTurnEnd(from, to Vector, step float64) Vector {
+	distance := from.DistanceTo(to)
+	if distance <= step || distance-step < 1 {
+		return to
+	}
+	if step <= 0 {
+		return from
+	}
+	return from.ToFloat64().Add(to.Subtract(from).Normalized().Scale(step)).ToInt(true)
+}
 func fullCargoBudget(fleet *Fleet) *Fleet {
 	copy := *fleet
 	if fleet.Spec.CargoCapacity > fleet.CargoMass() {
@@ -271,6 +285,13 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 	// bound. Reject impossible deadlines BEFORE planning a return-fuel route,
 	// which can itself search many minefield detours. Preserve boundary cases.
 	if !hasGates && policy.MaxTurns > 0 && start.DistanceTo(position) > float64(policy.MaxTurns)*fleets[0].StrategicSpeed(maxWarp)+1e-9 {
+		return nil
+	}
+	// A gate elsewhere in the empire does not make every destination reachable
+	// this turn. Even with unrestricted gate links, reaching an entry gate,
+	// jumping, and leaving an exit gate costs time. Ignore fuel, mines, gate
+	// range and connectivity here: this is an optimistic lower bound only.
+	if hasGates && policy.MaxTurns > 0 && automaticGateTurnLowerBound(player, fleets, stations, start, position, maxWarp) > policy.MaxTurns {
 		return nil
 	}
 	reserve := make([]int, len(fleets))
@@ -553,4 +574,47 @@ func deliveryReturnBudget(p *Player, f *Fleet, position Vector) *Fleet {
 	}
 	delete(copy.Tags, infrastructureCargoTag)
 	return &copy
+}
+
+func automaticGateTurnLowerBound(player *Player, fleets []*Fleet, stations []*Planet, from, to Vector, maxWarp int) int {
+	infinity := int(^uint(0) >> 2)
+	step := fleets[0].StrategicSpeed(maxWarp)
+	travel := func(a, b Vector) int {
+		if a == b {
+			return 0
+		}
+		if step <= 0 {
+			return infinity
+		}
+		return max(0, int(math.Ceil((a.DistanceTo(b)-1e-9)/step)))
+	}
+	best := travel(from, to)
+	entry, exit := infinity, infinity
+	selfJumping := true
+	for _, fleet := range fleets {
+		selfJumping = selfJumping && fleet.Spec.CanJump
+	}
+	if selfJumping {
+		entry = 0 // onboard jump gates need no departure station
+	}
+	for _, station := range stations {
+		if automaticGateCompatible(player, fleets, station) {
+			exit = min(exit, travel(station.Position, to))
+		}
+		// In a mixed convoy only ordinary ships need the source gate's
+		// mass/cargo limits; onboard jump gates use the destination alone.
+		canEnter := station.Spec.HasStargate && station.Spec.SafeRange > 0
+		for _, fleet := range fleets {
+			if !fleet.Spec.CanJump {
+				canEnter = canEnter && automaticGateCompatible(player, []*Fleet{fleet}, station)
+			}
+		}
+		if canEnter {
+			entry = min(entry, travel(from, station.Position))
+		}
+	}
+	if entry < infinity && exit < infinity {
+		best = min(best, entry+1+exit)
+	}
+	return best
 }

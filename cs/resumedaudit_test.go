@@ -48,7 +48,7 @@ func TestScoutSectorStaysAtBusyBirthBaseAndSurplusCoversOtherBase(t *testing.T) 
 }
 func mustSector(f *Fleet) int { n, _ := strconv.Atoi(f.GetTag(patrolSectorTag)); return n }
 
-func TestMovingBomberGuardHasNarrowObservedCorridor(t *testing.T) {
+func TestMovingBomberGuardOnlyThreatensPredictedArrival(t *testing.T) {
 	u := logisticsUniverse(t)
 	p := u.Player(1)
 	p.PlanetIntels = []*Planet{u.Planet("Home")}
@@ -60,9 +60,10 @@ func TestMovingBomberGuardHasNarrowObservedCorridor(t *testing.T) {
 	p.FleetIntels = []*Fleet{f}
 	require.True(t, observedBombardmentGuard(p, f))
 	require.Zero(t, knownRouteThreat(p, Vector{30, 20}, Vector{60, 20}))
-	require.Positive(t, knownRouteThreat(p, Vector{30, -10}, Vector{30, 10}))
+	require.Zero(t, knownRouteThreat(p, Vector{30, -10}, Vector{30, 10}), "crossing the course is not contact")
+	require.Positive(t, knownRouteThreat(p, Vector{30, -10}, Vector{24, 0}), "predicted arrival remains occupied")
 	f.Spec.Bomber = false
-	require.Positive(t, knownRouteThreat(p, Vector{30, 20}, Vector{60, 20}))
+	require.Zero(t, knownRouteThreat(p, Vector{30, 20}, Vector{60, 20}), "combat ships do not create an interception corridor either")
 }
 
 func TestAutomaticGateCompatibilityRejectsHeavyHullsAndCargo(t *testing.T) {

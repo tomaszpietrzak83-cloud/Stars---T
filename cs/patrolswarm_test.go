@@ -234,7 +234,7 @@ func TestBombardmentLocalCoverAndRemoteWarning(t *testing.T) {
 	}
 }
 
-func TestBomberEscapeRejectsAStationaryPackAtTheExit(t *testing.T) {
+func TestBomberEscapeDoesNotInventPursuitByStationaryPack(t *testing.T) {
 	u := swarmUniverse(t)
 	p, f, e := u.Player(1), u.Fleet("Local A"), u.Fleet("Threat")
 	p.Automation.FleetRoles[f.Num] = "bomber"
@@ -243,9 +243,8 @@ func TestBomberEscapeRejectsAStationaryPackAtTheExit(t *testing.T) {
 	eReport.Position = Vector{100, 0}
 	eReport.WarpSpeed = 0
 	eReport.Heading = VectorFloat64{}
-	closest, ending, _ := reportedEscapeSeparation(p, f, Vector{80, 0})
-	require.LessOrEqual(t, closest, 3.0)
-	require.LessOrEqual(t, ending, 3.0, "an idle enemy can intercept an escape endpoint within known maximum engine reach")
+	ending := reportedEscapeSeparation(p, f, Vector{80, 0})
+	require.Equal(t, 20.0, ending, "a stationary report does not imply a pursuit of our exit")
 }
 
 func TestBombardingGuardDoesNotInventPursuitOfEscapingBombers(t *testing.T) {
@@ -267,11 +266,10 @@ func TestBombardingGuardDoesNotInventPursuitOfEscapingBombers(t *testing.T) {
 	p.PlanetIntels = append(p.PlanetIntels, &Planet{MapObject: MapObject{PlayerNum: p.Num, Position: report.Position, Num: 88}})
 	require.True(t, stationaryBombardmentGuard(p, report))
 	require.Empty(t, bomberWarningReports(p, f))
-	closest, ending, _ := reportedEscapeSeparation(p, f, Vector{80, 0})
-	require.Greater(t, closest, 3.0)
+	ending := reportedEscapeSeparation(p, f, Vector{80, 0})
 	require.Greater(t, ending, 3.0, "escape may pass outside a committed stationary siege")
-	closest, _, _ = reportedEscapeSeparation(p, f, report.Position)
-	require.LessOrEqual(t, closest, 3.0, "the occupied orbit itself is still dangerous")
+	ending = reportedEscapeSeparation(p, f, report.Position)
+	require.LessOrEqual(t, ending, 3.0, "the occupied orbit itself is still dangerous")
 	report.WarpSpeed = 7
 	report.Heading = VectorFloat64{X: -1}
 	require.False(t, stationaryBombardmentGuard(p, report))

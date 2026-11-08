@@ -45,7 +45,8 @@ func TestCivilianTrafficKeepsMandatoryEscortAndRechecksCourse(t *testing.T) {
 	require.Len(t, transport.Waypoints, 1)
 	u.Run((*turnGenerator).planLogisticsAutomation)
 	require.GreaterOrEqual(t, len(transport.Waypoints), 2)
-	enemy.Heading = destination.Subtract(enemy.Position).Normalized()
+	enemy.Position = destination.Add(Vector{X: 36})
+	enemy.Heading = VectorFloat64{X: -1}
 	u.Run((*turnGenerator).enforceAutomaticDeparture)
 	require.Len(t, transport.Waypoints, 1)
 }
@@ -66,7 +67,8 @@ func TestScoutTrafficAvoidsConvergingCourseAndMines(t *testing.T) {
 	p.MinefieldIntels = []*Minefield{{MapObject: MapObject{PlayerNum: 2, Position: survey.Position}, MinefieldType: MinefieldTypeStandard, NumMines: 100, Detonate: true}}
 	require.Nil(t, scoutEconomicalLeg(&u.Game.Rules, p, scout, survey))
 	p.MinefieldIntels = nil
-	enemy.Heading = survey.Position.Subtract(enemy.Position).Normalized()
+	enemy.Position = survey.Position.Add(Vector{X: 36})
+	enemy.Heading = VectorFloat64{X: -1}
 	require.Nil(t, scoutEconomicalLeg(&u.Game.Rules, p, scout, survey))
 }
 

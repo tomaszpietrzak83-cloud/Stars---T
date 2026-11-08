@@ -1,6 +1,6 @@
 package cs
 
-// Only armed, fresh reports participate in corridor checks. Thousands of
+// Only armed, fresh reports participate in arrival checks. Thousands of
 // harmless scout/cargo reports are classified once during an orders phase.
 type indexedRouteThreat struct {
 	position Vector
@@ -11,12 +11,9 @@ type indexedRouteThreat struct {
 }
 
 func (threat indexedRouteThreat) threatensRoute(from, to Vector, civilian bool) bool {
-	if civilian {
-		// Passing a fleet in space does not initiate orbital combat. A stop on
-		// its reported position or course can still bring the ships together.
-		return routeBoundsOverlap(to, to, threat.position, threat.next, 3) && segmentDistance(to, threat.position, threat.next) <= 3
-	}
-	return routeBoundsOverlap(from, to, threat.position, threat.end, threat.reach) && segmentSegmentDistance(threat.position, threat.end, from, to) <= threat.reach
+	// Crossing either fleet's course is not combat. Only their predicted
+	// end-of-year meeting matters; retain the existing 3 ly report tolerance.
+	return routeBoundsOverlap(to, to, threat.next, threat.next, 3) && to.DistanceTo(threat.next) <= 3
 }
 
 // Disjoint expanded bounding boxes cannot contain segments within reach.
@@ -29,13 +26,7 @@ func routeBoundsOverlap(a, b, c, d Vector, reach float64) bool {
 }
 
 func routeThreatReport(p *Player, intel *Fleet, margin float64) indexedRouteThreat {
-	reach := min(margin, max(20, intel.observedStrategicSpeed()+5))
-	end, next := intel.Position, patrolInterceptPosition(intel)
-	if observedBombardmentGuard(p, intel) {
-		reach = min(reach, 3)
-		end = next
-	}
-	return indexedRouteThreat{position: intel.Position, end: end, next: next, reach: reach}
+	return indexedRouteThreat{position: intel.Position, next: patrolInterceptPosition(intel)}
 }
 
 type routeThreatIndex struct {

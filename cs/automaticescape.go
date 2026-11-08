@@ -2,35 +2,18 @@ package cs
 
 import "math"
 
-// Evaluate simultaneous motion from reports, not hidden enemy destinations.
-func reportedEscapeSeparation(player *Player, fleet *Fleet, position Vector) (closest, ending, starting float64) {
-	closest, ending, starting = math.Inf(1), math.Inf(1), math.Inf(1)
-	ours := position.Subtract(fleet.Position)
+// Evaluate the end of movement from public heading/speed. Do not invent an
+// enemy pursuit toward every possible escape point or reject mid-turn passing.
+func reportedEscapeSeparation(player *Player, fleet *Fleet, position Vector) float64 {
+	ending := math.Inf(1)
 	for _, enemy := range player.FleetIntels {
 		if enemy == nil || enemy.Delete || enemy.ReportAge != 0 || enemy.PlayerNum == player.Num || player.IsFriend(enemy.PlayerNum) || !patrolReportedCombatant(player, enemy) {
 			continue
 		}
-		ev := enemy.Heading.Scale(enemy.observedStrategicSpeed())
-		if civilianFleet(player, fleet) && player.patrolEvaluator != nil && !stationaryBombardmentGuard(player, enemy) {
-			// Escape must not lead into another stationary armed pack. Budget a
-			// possible interception of this endpoint at publicly known max speed.
-			distance := enemy.Position.DistanceTo(position)
-			ev = position.Subtract(enemy.Position).Normalized().Scale(min(distance, reportedMaximumSpeed(player, enemy)))
-		}
-		dx, dy := float64(enemy.Position.X-fleet.Position.X), float64(enemy.Position.Y-fleet.Position.Y)
-		starting = min(starting, math.Hypot(dx, dy))
-		vx, vy := ev.X-float64(ours.X), ev.Y-float64(ours.Y)
-		at := 0.0
-		den := vx*vx + vy*vy
-		if den > 0 {
-			at = max(0, min(1, -(dx*vx+dy*vy)/den))
-		}
-		closest = min(closest, math.Hypot(dx+vx*at, dy+vy*at))
-		ending = min(ending, math.Hypot(dx+vx, dy+vy))
+		ending = min(ending, position.DistanceTo(patrolInterceptPosition(enemy)))
 	}
-	return closest, ending, starting
+	return ending
 }
-
 func (t *turnGenerator) planOpenSpaceEscape(player *Player, fleet *Fleet) *expeditionRoute {
 	best := -math.MaxFloat64
 	var chosen *expeditionRoute
@@ -46,8 +29,8 @@ func (t *turnGenerator) planOpenSpaceEscape(player *Player, fleet *Fleet) *exped
 				if position == fleet.Position || fleet.Position.DistanceTo(position) > fleet.StrategicSpeed(speed) || !automaticLegSafe(&t.game.Rules, player, fleet.Position, position, speed, true, fleet.StrategicSpeed(speed)) {
 					continue
 				}
-				closest, ending, starting := reportedEscapeSeparation(player, fleet, position)
-				if closest <= 3 && (starting > 3 || closest < starting-0.01) || ending <= max(3, starting+1) {
+				ending := reportedEscapeSeparation(player, fleet, position)
+				if ending <= 3 {
 					continue
 				}
 				reserve := automaticReturnFuel(&t.game.Rules, player, fleet, position, expeditionStations(player, fleet), true)
@@ -55,7 +38,7 @@ func (t *turnGenerator) planOpenSpaceEscape(player *Player, fleet *Fleet) *exped
 				if !enough {
 					continue
 				}
-				score := closest*10 + ending - float64(burned)/float64(max(1, fleet.Spec.FuelCapacity))
+				score := ending - float64(burned)/float64(max(1, fleet.Spec.FuelCapacity))
 				if score > best {
 					best = score
 					target := MapObjectTarget{}

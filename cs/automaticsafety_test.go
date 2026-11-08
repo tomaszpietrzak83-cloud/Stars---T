@@ -35,10 +35,10 @@ func TestAutomaticRepairReturnsWholeFleetAndResumes(t *testing.T) {
 	u.Run((*turnGenerator).planAutomaticSafety)
 	require.False(t, f.InAutomaticSafety())
 }
-func TestInterceptionUsesFreshVisibleCourseAndSimultaneousApproach(t *testing.T) {
+func TestInterceptionUsesFreshVisibleEndOfYearMeeting(t *testing.T) {
 	u := colonizerUniverse(t)
 	p, f := u.Player(1), u.Fleet("Colony Ship")
-	enemy := &Fleet{MapObject: MapObject{PlayerNum: 2, Position: Vector{20, 0}, ReportAge: 0}, WarpSpeed: 5, Heading: VectorFloat64{-1, 0}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true, PowerRating: 100}}}
+	enemy := &Fleet{MapObject: MapObject{PlayerNum: 2, Position: Vector{25, 0}, ReportAge: 0}, WarpSpeed: 5, Heading: VectorFloat64{-1, 0}, Spec: FleetSpec{ShipDesignSpec: ShipDesignSpec{HasWeapons: true, PowerRating: 100}}}
 	p.FleetIntels = []*Fleet{enemy}
 	require.Positive(t, interceptionThreat(p, f))
 	enemy.Heading = VectorFloat64{1, 0}
@@ -62,12 +62,12 @@ func TestKnownDesignReportsTriggerEvasionWithoutPrivateFleetSpecs(t *testing.T) 
 	p.FleetIntels = []*Fleet{enemy}
 	p.ShipDesignIntels = []*ShipDesign{{Num: 8, PlayerNum: 2, Hull: Destroyer.Name, Slots: []ShipDesignSlot{{Quantity: 1}}, Spec: ShipDesignSpec{PowerRating: 100}}}
 	u.Run((*turnGenerator).refreshAutomaticFuelIntel)
-	require.Greater(t, knownRouteThreat(p, f.Position, f.Position), 0)
+	require.Zero(t, knownRouteThreat(p, f.Position, f.Position), "the enemy leaves our current position behind")
 	require.Greater(t, interceptionThreat(p, f), 0)
 	u.Run((*turnGenerator).planAutomaticSafety)
 	require.True(t, f.InAutomaticSafety())
 	require.Len(t, f.Waypoints, 2)
-	require.NotEqual(t, u.Planet("Home").Position, f.Waypoints[1].Position, "do not run through the pursuer on the way to a dock")
+	require.NotEqual(t, u.Planet("Home").Position, f.Waypoints[1].Position, "do not stop at the predicted enemy destination")
 	require.Contains(t, f.GetTag(fuelStatusTag), "open space")
 	u.Run((*turnGenerator).fleetMove)
 	p.FleetIntels = nil

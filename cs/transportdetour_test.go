@@ -32,7 +32,7 @@ func TestLoadedDeliveryUsesSafeDetourInsteadOfWaitingForEscort(t *testing.T) {
 		job := &logisticsJob{Kind: kind, TargetNum: target.Num, DeliveryNum: target.Num, Position: target.Position}
 		saveLogisticsWork(f, job)
 		u.Run((*turnGenerator).refreshAutomaticFuelIntel, func(tg *turnGenerator) {
-			require.Positive(t, knownRouteThreat(p, f.Position, target.Position))
+			require.Zero(t, knownRouteThreat(p, f.Position, target.Position), "the fleet is only passed; the minefield still requires a detour")
 			route := planAutomaticRoute(&u.Game.Rules, p, []*Fleet{f}, target.Position, target.ToTarget(), automaticRoutePolicy{})
 			require.NotNil(t, route, "a funded minefield detour must exist")
 			require.False(t, route.WaitForFuel)

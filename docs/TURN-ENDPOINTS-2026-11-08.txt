@@ -1,0 +1,96 @@
+Turn generation and endpoint threat policy - 2026-11-08
+
+Workspace access
+Project Stars! is registered at D:/Developer/Stars. A separate old Stars project
+still points to C:/Users/Tomek/Documents/Developer/Stars! and was not changed.
+Ordinary command execution initially did not respond even outside the project.
+After the user added D:/Developer to Avast exceptions, ordinary reads worked
+(approximately0.28s). The agent did not change antivirus settings or folder ACLs.
+D: maps to TOSHIBA HDWD120 SATA HDD; the machine also has a PNY NVMe SSD.
+This is a plausible contributor to slow database/file operations, not a measured
+explanation for all simulation CPU time. Current timing overlaps interactive
+use, builds and diagnostics and is not an isolated benchmark.
+
+Observed current game, read-only logs
+2506->2507: simulation560.650s, AI2.005s, database62.593s, archives1.531s.
+2507->2508: simulation1897.655s, AI15.905s, commit587.307s, result archive1.274s.
+Neither live turn was submitted by this audit.
+
+Fresh diagnostic
+Copied immutable 2507 orders archive to ../audit-results/turn-1108/2507-orders.json.gz.
+TestCopiedTurnPerformance simulates in memory only. Archives omit AI reports and
+use a fixed diagnostic RNG seed, so this is not an exact replay of the live turn.
+Original45-second profile: planAutomaticRoute26.09 CPU s; automaticReturnFuel11.69s;
+knownWithdrawalRoute5.62s (10.29% samples). These nested costs are not additive.
+The original diagnostic was deliberately stopped after collecting the sample;
+no full baseline duration or complete-state equality is claimed.
+The new45-second sample contains no knownWithdrawalRoute samples. Remaining
+hotspots include route search, mine safety and return-fuel calculation.
+This is not a whole-turn percentage speedup comparison.
+Endpoint-only diagnostic exceeded20minutes in recursive route/return-fuel search.
+The final version with gate-aware deadline pruning completed in163.100855s
+(test163.88s),33players,12336fleets,2744planets. This comparison is diagnostic,
+not a controlled live-turn benchmark; archives omit AI reports. No claim of
+whole-state equality to the old threat policy, which intentionally changed.
+
+User-approved behavior change
+Initially requested faster turns with unchanged rules. User subsequently approved
+assessing threats at end-of-movement positions instead of rejecting passed enemy
+fleets, explicitly acknowledging that route choices would change.
+Native combat resolves after movement at a shared position; a planet is optional.
+This task did not edit battle, mining, fuel-consumption or production rules.
+Concurrent recycling and edge-start changes from other work were preserved.
+
+Implementation
+- All route roles assess reported enemy predicted arrivals, retaining existing3ly
+  report tolerance, fresh-report/diplomacy filters and hostile-base checks.
+- Check the next annual stop as well as the intended destination; use native
+  sub-light-year arrival snapping. Reconsider routes yearly from public reports.
+- Cache arrival threat independently of departure point within existing scopes.
+- Avoidance/escape no longer treats crossing paths as combat or invents a pursuit
+  by each stationary enemy toward every possible escape point.
+- Preserve patrol attacks confirmed by the native combat evaluator instead of
+  cancelling them with the simpler emergency power ratio.
+- Mine avoidance, fuel reserves, landing clearance and mandatory escorts remain.
+- Existing uncommitted server/shipproduction.go and its test were preserved.
+- Gate-aware optimistic travel-time lower bound rejects impossible deadlines
+  before expensive fuel-reserve searches. It allows onboard gates, mixed fleets,
+  appropriate entry/exit mass limits and direct flight. It ignores fuel/mines and
+  gate connectivity constraints to avoid overestimating minimum travel time.
+
+Verification
+Full final engine suite PASS: ../audit-results/turn-1108/engine-final-tests.log.
+Targeted regressions PASS: endpoint-focused-tests.log and endpoint-regressions.log.
+Native movement/battle regression: crossing routes -> no battle; shared endpoint
+in deep space -> actual battle. All six automation roles have meeting tests.
+Tests also cover the first annual stop, fractional arrival, mines, escorts,
+fresh reports, geometry, native patrol merge/kill/disperse and no imagined chase.
+Final gate-aware full engine suite PASS: gate-engine-tests.log.
+Gate regressions and192 independent reference-route comparisons PASS:
+gate-bound-final-tests.log. Server suite PASS551.675s before pure gate pruning;
+the100-turn test excluded here already passed in the earlier root-suite run.
+Final copied diagnostic PASS: simulation-gate-final.log.
+Native and WASM builds PASS. UI build initially hit EPERM cleaning generated
+output; retry PASS (gate-ui-build-retry.log). Prior UI check:0errors/0warnings.
+Final isolated runtime smoke PASS: smoke.log (native authenticated GetGame,
+compiled HTML/modules and served WASM matching rebuilt module). Cold HDD-copy
+reads previously timed out; warmed-copy final GetGame took25.24s. One smoke
+attempt using legacy PowerShell5.1 failed readiness despite backend HTTP200;
+the normal PowerShell7 run passed. These are not turn timings.
+
+Deployment completed13:28 local time. Stage native installed to windows/dist,
+hash manifest updated, running native hash and immutable UI index verified,
+both HTTP endpoints200. Backup: ../audit-results/turn-1108/deployment-final/before.db.
+All20 database table contents identical across new-backend startup while browser
+proxy was stopped; game14 remains2508 WaitingForPlayers. No personal turn generated.
+An older pending build from concurrent work was preserved as pending-before-final.exe.
+Earlier installation attempt reverted after detecting a pending build, which the
+launcher then consumed; this final integrated deployment supersedes that state.
+The earlier all-table snapshot differed after independent browser-created games;
+no database rollback occurred. Final backup reflects the current user's database.
+
+Commit scope
+The endpoint/performance source, regression tests and this report are committed
+separately from concurrent colonization, minesweeping, recycling and setup work.
+Shared compiled release artifacts remain in the working tree for a later
+integrated release commit; the deployed build described above is unchanged.

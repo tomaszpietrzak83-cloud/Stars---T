@@ -219,7 +219,9 @@ func TestBombardmentEscortDoesNotBlockPassingCivilianRoute(t *testing.T) {
 	require.Zero(t, knownRouteThreat(p, Vector{0, 0}, Vector{40, 0}))
 	require.Positive(t, knownRouteThreat(p, Vector{0, 0}, planet.Position), "entering the occupied orbit can still cause native combat")
 	enemy.WarpSpeed = 6
-	require.Positive(t, knownRouteThreat(p, Vector{0, 0}, Vector{40, 0}), "a moving formation must be treated as mobile again")
+	require.Zero(t, knownRouteThreat(p, Vector{0, 0}, Vector{40, 0}), "speed without an approaching course does not imply a meeting")
+	enemy.Position, enemy.Heading = Vector{76, 0}, VectorFloat64{X: -1}
+	require.Positive(t, knownRouteThreat(p, Vector{0, 0}, Vector{40, 0}), "a predicted meeting remains dangerous")
 }
 
 func TestLegacyEscortSelectionBecomesPatrol(t *testing.T) {

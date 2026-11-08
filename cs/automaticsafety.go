@@ -27,57 +27,20 @@ func fleetDamagePercent(fleet *Fleet) int {
 	return worst
 }
 
-// Use only fresh visible courses, never hidden enemy orders. Closest approach
-// checks simultaneous movement during this turn instead of crossing lines alone.
+// Use visible reports to assess a meeting after movement, never a mid-turn
+// closest approach. Landing clearance still has its separate orbital checks.
 func interceptionThreat(player *Player, fleet *Fleet) int {
-	if player.Automation.FleetRoles[fleet.Num] == "freighter" {
-		point := fleet.Position
-		if len(fleet.Waypoints) > 1 {
-			wp := fleet.Waypoints[1]
-			point = wp.Position
-			if d := fleet.Position.DistanceTo(point); wp.WarpSpeed != StargateWarpSpeed && d > fleet.StrategicSpeed(wp.WarpSpeed) {
-				point = fleet.Position.ToFloat64().Add(point.Subtract(fleet.Position).Normalized().Scale(fleet.StrategicSpeed(wp.WarpSpeed))).ToInt(true)
-			}
-		}
-		present, incoming := landingOrbitalReports(player, point)
-		threat := 0
-		for _, enemy := range append(present, incoming...) {
-			threat = min(1_000_000_000, threat+patrolReportedPower(player, enemy))
-		}
-		return threat
-	}
-	ours := VectorFloat64{}
+	point := fleet.Position
 	if len(fleet.Waypoints) > 1 {
 		wp := fleet.Waypoints[1]
-		speed := min(fleet.StrategicSpeed(wp.WarpSpeed), fleet.Position.DistanceTo(wp.Position))
-		ours = wp.Position.Subtract(fleet.Position).Normalized().Scale(speed)
-	}
-	threat := 0
-	for _, enemy := range player.FleetIntels {
-		if enemy == nil || enemy.Delete || player.IsFriend(enemy.PlayerNum) || enemy.ReportAge != 0 || !patrolReportedCombatant(player, enemy) || enemy.WarpSpeed < 1 || enemy.WarpSpeed > 10 {
-			continue
-		}
-		speed := enemy.observedStrategicSpeed()
-		ev := enemy.Heading.Scale(speed)
-		dx, dy := float64(enemy.Position.X-fleet.Position.X), float64(enemy.Position.Y-fleet.Position.Y)
-		vx, vy := ev.X-ours.X, ev.Y-ours.Y
-		den := vx*vx + vy*vy
-		if den == 0 {
-			if math.Hypot(dx, dy) <= 3 {
-				threat = min(1_000_000_000, threat+patrolReportedPower(player, enemy))
-			}
-			continue
-		}
-		at := -(dx*vx + dy*vy) / den
-		if at < 0 || at > 1 {
-			continue
-		}
-		if math.Hypot(dx+vx*at, dy+vy*at) <= 3 {
-			threat = min(1_000_000_000, threat+patrolReportedPower(player, enemy))
+		point = wp.Position
+		if wp.WarpSpeed != StargateWarpSpeed {
+			point = automaticTurnEnd(fleet.Position, point, fleet.StrategicSpeed(wp.WarpSpeed))
 		}
 	}
-	return threat
+	return routeThreat(player, point, point, false)
 }
+
 func (t *turnGenerator) planAutomaticSafety() {
 	for _, player := range t.game.Players {
 		for _, fleet := range t.game.getFleets(player.Num) {
@@ -124,6 +87,11 @@ func (t *turnGenerator) planAutomaticSafety() {
 			}
 			role := player.Automation.FleetRoles[fleet.Num]
 			canStand := role != "scout" && colonizationMode(role) == "" && defenders > threat*3/2
+			// A planned attack already uses the native combat evaluator. Do not
+			// cancel a confirmed win with the coarse emergency power ratio.
+			if role == "patrol" && threat > 0 && !canStand && patrolCanAttack(player, fleet) {
+				canStand = true
+			}
 			if role == "minesweeper" || fleetHasDedicatedMinesweeper(player, fleet) {
 				canStand = false
 			}
@@ -178,7 +146,7 @@ func (t *turnGenerator) planAutomaticSafety() {
 			var chosen *Planet
 			var route *expeditionRoute
 			for _, planet := range expeditionStations(player, fleet) {
-				// Retreat must be permitted out of the currently threatened corridor.
+				// Retreat must leave the predicted meeting point.
 				if intercepted && planet.Position == fleet.Position {
 					continue
 				}
@@ -198,12 +166,12 @@ func (t *turnGenerator) planAutomaticSafety() {
 						if distance := fleet.Position.DistanceTo(point); distance > fleet.StrategicSpeed(wp.WarpSpeed) {
 							point = fleet.Position.ToFloat64().Add(point.Subtract(fleet.Position).Normalized().Scale(fleet.StrategicSpeed(wp.WarpSpeed))).ToInt(true)
 						}
-						closest, ending, _ := reportedEscapeSeparation(player, fleet, point)
-						if closest <= 3 || ending <= 3 {
+						ending := reportedEscapeSeparation(player, fleet, point)
+						if ending <= 3 {
 							continue
 						}
 					}
-					if interceptionThreat(player, &probe) > 0 || knownRouteThreat(player, fleet.Position, fleet.Position) > 0 && !knownWithdrawalRoute(player, fleet.Position, candidate.Waypoints[1].Position) {
+					if interceptionThreat(player, &probe) > 0 {
 						continue
 					}
 				}

@@ -129,8 +129,8 @@ func (t *turnGenerator) civilianFirstLegSafe(p *Player, f *Fleet, route *expedit
 		}
 	}
 	probe := *f
-	closest, ending, _ := reportedEscapeSeparation(p, &probe, point)
-	return closest > 3 && ending > 3
+	ending := reportedEscapeSeparation(p, &probe, point)
+	return ending > 3
 }
 
 // Relocate the whole maintenance rendezvous, including server-owned queue

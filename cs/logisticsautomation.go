@@ -243,8 +243,7 @@ func takeMinerals(fleet *Fleet, cargo *Cargo) int {
 }
 
 // All long-range threat information comes from the player's own intel.
-// The configured corridor is capped by a reported enemy's one-turn reach;
-// distant ships must not freeze otherwise useful civilian routes.
+// Public end-of-year positions determine possible contact, not swept corridors.
 func knownRouteThreat(player *Player, from, to Vector) int {
 	return routeThreat(player, from, to, false)
 }
@@ -292,11 +291,8 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 				index.threats = append(index.threats, threat)
 			}
 		}
-		key := routeThreatKey{from: from, to: to, civilian: civilian}
-		if civilian {
-			// Civilian threats depend on the arrival point, not the corridor.
-			key.from = Vector{}
-		}
+		// Arrival threat is independent of the departure point for every role.
+		key := routeThreatKey{to: to, civilian: civilian}
 		if value, ok := index.routes[key]; ok {
 			return value
 		}
