@@ -12,6 +12,39 @@ Open the game at `http://localhost:5173`. The launcher signs into the local game
 
 The source is Go and Svelte/TypeScript. Developers need the Go version from `go.mod`, Node.js 22.17 or newer, and a CGO-capable C compiler. Run `npm ci` in `frontend`; build `wasm/main.go` using `GOOS=js GOARCH=wasm CGO_ENABLED=0` into `frontend/src/lib/wasm/cs.wasm`; run `npm run build` in `frontend`; build the native server with CGO into `windows/stars-local.exe`. The committed edition can be played without rebuilding.
 
+## Screenshots
+
+From **Embers Beyond Eridanus**, year 2484.
+
+### Galaxy overview
+
+![Galaxy map with fleet routes and the annual resource production overlay](docs/screenshots/galaxy-overview.png)
+
+### Ship production
+
+![Ship production screen showing capacity and estimated completion by base](docs/screenshots/ship-production.png)
+
+### Fleet automation
+
+![Fleet automation list showing assigned roles and current orders](docs/screenshots/fleet-automation.png)
+
+<details>
+<summary>More views of the campaign</summary>
+
+#### Habitability map
+
+![Galaxy map showing planet habitability and fleet routes](docs/screenshots/galaxy-habitability.png)
+
+#### Colony research automation
+
+![Automatic colony research tax settings and debris collection options](docs/screenshots/colony-research-automation.png)
+
+#### Yearly statistics
+
+![Yearly history of ships built, destroyed and lost, plus production, research and mining](docs/screenshots/yearly-statistics.png)
+
+</details>
+
 ## Version 0.6.12
 
 Gatling-only designs automatically clear minefields and withdraw from space combat. Bomber safety now includes refit and replacement rendezvous; exposed yards defer vulnerable construction before reported raids while preserving paid orders. Combat forecasts also check lost tonnage and protect civilian ships separately. The map has a saved fleet-route visibility button. Production highlights are green for this-turn completion and blue for later completion. Battle hits show destroyed ship counts in yellow beside shield and armor damage.
