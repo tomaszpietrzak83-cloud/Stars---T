@@ -30,6 +30,9 @@ func patrolOpportunityScore(p *Player, f, enemy *Fleet) float64 {
 		inside = 0
 	}
 	score := (1 + distance) * (1 + min(300, inside)/100)
+	if urgentPatrolTarget(p, enemy) {
+		return score * 1e-11
+	}
 	if priorityFleet(p, enemy) {
 		return score * 1e-9
 	}

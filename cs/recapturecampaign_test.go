@@ -50,25 +50,28 @@ func runNativeRecaptureCampaign(t *testing.T, pending bool) {
 		b.SetTag(bomberTag, string(raw))
 	}
 	u.Game.Rules.ResetSeed(4231)
-	refreshed, cleared, bombed := false, false, false
+	refreshed, cleared, bombed, jointCapture := false, false, false, false
 	for n := 0; n < 14 && target.PlayerNum != p.Num; n++ {
 		prior := target.Cargo.Colonists
+		baseBefore := target.Spec.HasStarbase
 		u.GenerateTurn()
 		refreshed = refreshed || p.GetPlanetIntel(target.Num).ReportAge == 0
 		cleared = cleared || !target.Spec.HasStarbase
+		jointCapture = jointCapture || baseBefore && !target.Spec.HasStarbase && target.PlayerNum == p.Num
 		bombed = bombed || target.PlayerNum != p.Num && target.Cargo.Colonists < prior
 		if pending && target.PlayerNum != p.Num {
 			require.False(t, b.InDesignMaintenance(), "a pending retirement must not interrupt ongoing bombardment")
 			require.Equal(t, target.Num, bomberGoal(b), "arrival must retain the mission identity")
 		}
 		t.Logf("RECAPTURE_NATIVE year=%d owner=%d base=%v population=%d reportAge=%d", u.Game.Year, target.PlayerNum, target.Spec.HasStarbase, target.GetPopulation(), p.GetPlanetIntel(target.Num).ReportAge)
-		t.Logf("LANDING carrier=%v cargo=%v tags=%v",u.Fleet("Carrier").Position,u.Fleet("Carrier").Cargo,u.Fleet("Carrier").Tags)
+		t.Logf("LANDING carrier=%v cargo=%v tags=%v", u.Fleet("Carrier").Position, u.Fleet("Carrier").Cargo, u.Fleet("Carrier").Tags)
 	}
 	require.True(t, refreshed)
 	require.True(t, cleared)
-	require.True(t, bombed)
+	require.True(t, bombed || jointCapture, "bombardment softens the target unless separate fleets can clear the base and land together")
 	require.Equal(t, p.Num, target.PlayerNum, "fresh reconnaissance must lead through base destruction and bombing to a native landing")
 	require.Positive(t, target.Cargo.Colonists)
+	require.False(t, u.Fleet("Carrier").Spec.HasWeapons, "orbital assault did not merge warships into the carrier")
 	if pending {
 		u.GenerateTurn()
 		require.True(t, b.InDesignMaintenance() || b.Delete, "maintenance resumes after the target is captured")

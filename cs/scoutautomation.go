@@ -66,6 +66,7 @@ func (t *turnGenerator) planScoutAutomation() {
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
 		colonyRecon := t.planRecaptureReconnaissance(player, fleets)
+		minelayerWatch := t.planMinelayerScouts(player, fleets, colonyRecon)
 		if player.patrolEvaluator != nil {
 			// Give contact duties to the available scouts with the shortest public
 			// travel estimate; funded native routes are still required per task.
@@ -115,7 +116,7 @@ func (t *turnGenerator) planScoutAutomation() {
 			if landingManaged(fleet) || fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || player.Automation.FleetRoles[fleet.Num] != "scout" || fleet.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
-			if colonyRecon[fleet.Num] {
+			if colonyRecon[fleet.Num] || minelayerWatch[fleet.Num] {
 				continue
 			}
 			if fleet.GetTag(preyWatchTag) != "" {

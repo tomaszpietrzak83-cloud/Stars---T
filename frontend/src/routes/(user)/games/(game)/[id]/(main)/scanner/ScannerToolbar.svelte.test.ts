@@ -91,6 +91,26 @@ async function layout(width: number, shareMap: boolean, selectedWaypointIndex = 
 	loaded.afterLoad();
 	expect(loaded.showFleetRoutes).toBe(false);
 	expect(routesButton.getAttribute('aria-pressed')).toBe('false');
+	const combatButton = navbar.querySelector<HTMLButtonElement>(
+		'button[aria-label="Combat Fleets Only"]'
+	)!;
+	expect(combatButton).not.toBeNull();
+	expect(combatButton.getAttribute('aria-pressed')).toBe('false');
+	combatButton.click();
+	await tick();
+	expect(settings.showCombatFleetsOnly).toBe(true);
+	expect(combatButton.getAttribute('aria-pressed')).toBe('true');
+	const hideCombatButton = navbar.querySelector<HTMLButtonElement>(
+		'button[aria-label="Hide Combat Fleets"]'
+	)!;
+	hideCombatButton.click();
+	await tick();
+	expect(hideCombatButton.getAttribute('aria-pressed')).toBe('true');
+	expect(combatButton.getAttribute('aria-pressed')).toBe('false');
+	combatButton.click();
+	await tick();
+	expect(hideCombatButton.getAttribute('aria-pressed')).toBe('false');
+	expect(combatButton.getAttribute('aria-pressed')).toBe('true');
 	deleteButton?.click();
 	const result = {
 		stage,
@@ -115,10 +135,12 @@ describe('ScannerToolbar', () => {
 		{ width: 820, shareMap: false, stage: 'views' },
 		{ width: 834, shareMap: false, stage: 'views' },
 		{ width: 834, shareMap: true, stage: 'views' },
-		// Six views fit with ordinary filters; ally filters need a little more width.
-		{ width: 1024, shareMap: false, stage: 'full' },
+		// The two combat filters and the ally filters need extra width.
+		{ width: 1024, shareMap: false, stage: 'views' },
+		{ width: 1120, shareMap: false, stage: 'full' },
 		{ width: 1024, shareMap: true, stage: 'views' },
-		{ width: 1120, shareMap: true, stage: 'full' },
+		{ width: 1120, shareMap: true, stage: 'views' },
+		{ width: 1220, shareMap: true, stage: 'full' },
 		// the toolbar over the scanner, next to a two column command pane
 		{ width: 780, shareMap: false, stage: 'views' },
 		{ width: 520, shareMap: false, stage: 'menu' },
@@ -144,7 +166,7 @@ describe('ScannerToolbar', () => {
 
 	it.each([false, true])('never overflows, shareMap=%s', async (shareMap) => {
 		const stages: Stage[] = [];
-		for (let width = 340; width <= 1160; width += 6) {
+		for (let width = 340; width <= 1220; width += 6) {
 			const result = await layout(width, shareMap);
 			expect(result.overflow, `overflowed at ${width} (${result.stage})`).toBeLessThanOrEqual(0);
 			stages.push(result.stage);

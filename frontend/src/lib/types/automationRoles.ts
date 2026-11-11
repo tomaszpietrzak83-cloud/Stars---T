@@ -53,7 +53,7 @@ export function automationRoles(fleet: Fleet, designs: ShipDesign[] = [], curren
 	}
 	if ((spec?.miningRate ?? 0) > 0) roles.push({ value: 'miner', label: 'Automatic remote mining' });
 	if ((spec?.terraformRate ?? 0) > 0)
-		roles.push({ value: 'terraformer', label: 'Automatic terraforming' });
+		roles.push({ value: 'terraformer', label: 'Terraform allied planets' });
 	if ((spec?.cargoCapacity ?? 0) > 0)
 		roles.push({ value: 'freighter', label: 'Automatic transport' });
 	if (spec?.bomber)
@@ -73,8 +73,18 @@ export function automationRoles(fleet: Fleet, designs: ShipDesign[] = [], curren
 	return roles;
 }
 export function automationStatus(fleet: Fleet): string {
+	const status = currentAutomationStatus(fleet);
+	const sweep = fleet.mapObject?.tags?.['last-mine-sweep'];
+	return sweep ? `${status}. ${sweep}.` : status;
+}
+
+function currentAutomationStatus(fleet: Fleet): string {
 	const tags = fleet.mapObject?.tags ?? {};
+	try {
+		if (tags['automatic-safety']) return JSON.parse(tags['automatic-safety']).status ?? 'Mission paused for safety';
+	} catch { /* older save */ }
 	if (tags['automatic-fuel-status']) return tags['automatic-fuel-status'];
+	if (tags['patrol-mine-sweep']) return tags['patrol-mine-sweep'];
 	for (const key of [
 		'automatic-trader',
 		'automatic-patrol',

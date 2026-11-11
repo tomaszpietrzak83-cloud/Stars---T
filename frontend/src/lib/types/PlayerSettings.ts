@@ -50,6 +50,8 @@ export class PlayerSettings implements FilterOptions {
 
 	// filters
 	showIdleFleetsOnly = false;
+	showCombatFleetsOnly = false;
+	hideCombatFleets = false;
 	filterMyDesigns = false;
 	filterAllyDesigns = false;
 	filterEnemyDesigns = false;

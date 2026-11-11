@@ -28,6 +28,9 @@ func TestMaintenanceReportsAllFleetsOncePerTurn(t *testing.T) {
 	require.NoError(t, u.turn.generateTurn())
 	messages := maintenanceMessages(p)
 	require.Len(t, messages, 1)
+	require.Equal(t, PlayerMessageShipUpgrades, messages[0].Type)
+	require.NotEqual(t, PlayerMessageInfo, messages[0].Type)
+	require.NotEqual(t, PlayerMessageFleetBuilt, messages[0].Type)
 	require.Contains(t, messages[0].Text, "Scrapped 5 ships (5 x Sword1)")
 	require.Contains(t, messages[0].Text, "Built 5 replacement ships (5 x Sword2)")
 	for _, m := range p.Messages {

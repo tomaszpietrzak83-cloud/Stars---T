@@ -368,7 +368,7 @@ func TestLostFuelDockDoesNotRevealForeignPlanetData(t *testing.T) {
 func TestIdleEscortCanRescueScoutWithoutAbandoningAssignedConvoy(t *testing.T) {
 	u := tankerUniverse(t)
 	p, scout, escort := u.Player(1), u.Fleet("Customer"), u.Fleet("Tanker")
-	scout.Position = Vector{180, 0}
+	scout.Position = Vector{60, 0} // a nearby rescue within the three-turn limit
 	p.Automation.FleetRoles[scout.Num] = "scout"
 	p.Automation.FleetRoles[escort.Num] = "escort"
 	escort.SetTag(escortTag, "99")

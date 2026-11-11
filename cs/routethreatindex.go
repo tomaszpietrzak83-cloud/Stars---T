@@ -4,13 +4,28 @@ package cs
 // harmless scout/cargo reports are classified once during an orders phase.
 type indexedRouteThreat struct {
 	position Vector
-	end      Vector
 	next     Vector
-	reach    float64
+	heading  VectorFloat64
+	speed    float64
 	power    int
 }
 
-func (threat indexedRouteThreat) threatensRoute(from, to Vector, civilian bool) bool {
+func (threat indexedRouteThreat) threatensRoute(p *Player, to Vector, civilian bool) bool {
+	if civilian {
+		if threat.position == to || threat.next == to {
+			return true
+		}
+		if threat.speed <= 0 {
+			return false
+		}
+		delta := to.Subtract(threat.position).ToFloat64()
+		along := delta.X*threat.heading.X + delta.Y*threat.heading.Y
+		cross := delta.X*threat.heading.Y - delta.Y*threat.heading.X
+		// A ship can stop early at a planet on its observed course. Allow
+		// less than one light-year for coordinate rounding and arrival snap.
+		return along > 0 && along < threat.speed+1 && cross > -0.71 && cross < 0.71 &&
+			p.getPlanetIntelAt(to) != nil
+	}
 	// Crossing either fleet's course is not combat. Only their predicted
 	// end-of-year meeting matters; retain the existing 3 ly report tolerance.
 	return routeBoundsOverlap(to, to, threat.next, threat.next, 3) && to.DistanceTo(threat.next) <= 3
@@ -25,8 +40,11 @@ func routeBoundsOverlap(a, b, c, d Vector, reach float64) bool {
 		float64(min(c.Y, d.Y)) <= float64(max(a.Y, b.Y))+reach
 }
 
-func routeThreatReport(p *Player, intel *Fleet, margin float64) indexedRouteThreat {
-	return indexedRouteThreat{position: intel.Position, next: patrolInterceptPosition(intel)}
+func routeThreatReport(intel *Fleet) indexedRouteThreat {
+	return indexedRouteThreat{
+		position: intel.Position, next: patrolInterceptPosition(intel),
+		heading: intel.Heading.Normalized(), speed: intel.observedStrategicSpeed(),
+	}
 }
 
 type routeThreatIndex struct {

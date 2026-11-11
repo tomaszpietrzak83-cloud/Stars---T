@@ -38,7 +38,10 @@ func interceptionThreat(player *Player, fleet *Fleet) int {
 			point = automaticTurnEnd(fleet.Position, point, fleet.StrategicSpeed(wp.WarpSpeed))
 		}
 	}
-	return routeThreat(player, point, point, false)
+	job := logisticsWork(fleet)
+	civilian := civilianTraffic(player, fleet) && !landingManaged(fleet) &&
+		(job == nil || job.Kind != "invade" && job.Kind != "invade-load")
+	return routeThreat(player, point, point, civilian)
 }
 
 func (t *turnGenerator) planAutomaticSafety() {
@@ -86,14 +89,23 @@ func (t *turnGenerator) planAutomaticSafety() {
 				}
 			}
 			role := player.Automation.FleetRoles[fleet.Num]
-			canStand := role != "scout" && colonizationMode(role) == "" && defenders > threat*3/2
+			canStand := role != "scout" && (colonizationMode(role) == "" || landingManaged(fleet)) && defenders > threat*3/2
 			// A planned attack already uses the native combat evaluator. Do not
 			// cancel a confirmed win with the coarse emergency power ratio.
-			if role == "patrol" && threat > 0 && !canStand && patrolCanAttack(player, fleet) {
+			if role == "patrol" && threat > 0 && !canStand && (readPatrolJob(fleet).reliefActive(t.game.Year) || patrolCanAttack(player, fleet)) {
 				canStand = true
 			}
 			if role == "minesweeper" || fleetHasDedicatedMinesweeper(player, fleet) {
 				canStand = false
+			}
+			if op := readLandingOperation(fleet); op != nil && op.Phase == "assault" && len(fleet.Waypoints) == 2 {
+				target := player.GetPlanetIntel(op.Target)
+				if target != nil && fleet.Waypoints[1].Position == target.Position && t.landingOrbitClear(player, fleet, op) {
+					canStand = true
+				}
+			}
+			if t.landingEscortDepartureConfirmed(player, fleet) {
+				canStand = true
 			}
 			if controlledBombardment {
 				canStand = defenseReady
@@ -121,6 +133,7 @@ func (t *turnGenerator) planAutomaticSafety() {
 			if !active && !needsRepair && !intercepted {
 				continue
 			}
+			delete(fleet.Tags, patrolMineSweepTag)
 			if !active {
 				job.Orders = fleet.FleetOrders
 				job.Orders.Waypoints = slices.Clone(fleet.Waypoints)
@@ -206,8 +219,11 @@ func (t *turnGenerator) planAutomaticSafety() {
 			}
 			if route == nil {
 				holdAutomaticFleet(player, fleet, "Retreat waiting for a reachable repair dock")
-				requestAutomaticRescue(player, fleet, true)
-				job.Status = "Retreat needs tanker assistance"
+				job.Status = "Mission paused: no safe route to a dock; fuel is not necessarily the obstacle"
+				if fleet.Fuel < fleet.Spec.FuelCapacity {
+					requestAutomaticRescue(player, fleet, true)
+					job.Status += "; seeking a fuel rendezvous within 3 turns"
+				}
 				if role == "bomber" && player.patrolEvaluator != nil {
 					job.Status = "No confirmed funded escape corridor; DD protection/reconnaissance and fuel assistance required"
 				}
@@ -215,6 +231,9 @@ func (t *turnGenerator) planAutomaticSafety() {
 				applyExpeditionRoute(player, fleet, route)
 				t.protectEvadingBomber(player, fleet)
 				job.Status = fmt.Sprintf("%s: whole fleet returning to %s (%d%% worst ship damage)", job.Kind, chosen.Name, damage)
+				if job.Kind == "evade" {
+					job.Status = fmt.Sprintf("Mission paused: predicted hostile contact; withdrawing to %s", chosen.Name)
+				}
 				if chosen.Position == fleet.Position {
 					holdAutomaticFleet(player, fleet, job.Status)
 				}
@@ -246,6 +265,7 @@ func (t *turnGenerator) resumeCompletedEvades() {
 			delete(f.Tags, safetyTag)
 			delete(f.Tags, repairTankerTag)
 			delete(f.Tags, fuelStatusTag)
+			delete(f.Tags, fuelRequestTag)
 			f.FleetOrders = job.Orders
 			f.Waypoints = slices.Clone(job.Orders.Waypoints)
 			if len(f.Waypoints) > 0 {

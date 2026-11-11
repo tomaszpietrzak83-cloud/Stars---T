@@ -12,6 +12,7 @@ const tankerJobTag = "automatic-tanker"
 const tankerAwaitTag = "awaiting-tanker"
 const fuelResumeTag = "automatic-fuel-resume"
 const fuelAwaitResumeTag = "automatic-tanker-resume"
+const maxTankerMeetingTurns = 3
 
 type automaticFuelRequest struct {
 	OneWay        bool            `json:"oneWay,omitempty"`
@@ -82,8 +83,12 @@ func assemblyLeaderCanAdvance(player *Player, fleet *Fleet) bool {
 	return ok && plan.LeaderFleetNum == fleet.Num
 }
 func requestAutomaticRescue(player *Player, fleet *Fleet, force ...bool) {
-	// Even a full tank can be stranded outside the direct dock range. A forced
-	// request may find intermediate mobile fuel stops rather than a top-up here.
+	// A local delivery cannot help a full tank. Intermediate stops belong to
+	// route planning, not an urgent tanker request at the current position.
+	if fleet.Fuel >= fleet.Spec.FuelCapacity {
+		delete(fleet.Tags, fuelRequestTag)
+		return
+	}
 	if fleet.Spec.FuelCapacity > 0 && (fleet.Fuel*4 < fleet.Spec.FuelCapacity || len(force) > 0 && force[0]) {
 		saveAutomaticFuelRequest(fleet, automaticFuelRequest{Destination: fleet.Position, Members: []int{fleet.Num}, Urgent: true})
 	}
@@ -163,7 +168,14 @@ func convoyMembers(player *Player, fleet *Fleet, all []*Fleet) []*Fleet {
 func (t *turnGenerator) guardAutomaticFuel() {
 	for _, player := range t.automaticPlayers() {
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if fundedPatrolRallyWaypoints(&t.game.Rules, player, fleet, t.game.Year) {
+			job := readPatrolJob(fleet)
+			if job.Provisional && job.Leader != 0 && job.Rally == fleet.Position && job.RendezvousBy >= t.game.Year && knownRouteThreat(player, fleet.Position, fleet.Position) == 0 {
+				continue
+			}
+			if job.reliefActive(t.game.Year) || fundedPatrolRallyWaypoints(&t.game.Rules, player, fleet, t.game.Year) {
+				continue
+			}
+			if fundedColonizerWaypoints(&t.game.Rules, player, fleet) {
 				continue
 			}
 			if fundedTraderWaypoints(&t.game.Rules, player, fleet) || (readTankerJob(fleet) != nil && readTankerJob(fleet).TargetNum > 0) || (fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet)) || fuelNetworkManaged(fleet) || !isAutomaticFleet(player, fleet) || player.Automation.FleetRoles[fleet.Num] == "tanker" || fleet.GetTag(escortTag) != "" || fleet.GetTag(tankerAwaitTag) != "" {
@@ -183,6 +195,12 @@ func (t *turnGenerator) guardAutomaticFuel() {
 				if readAutomaticFuelRequest(fleet) == nil {
 					requestAutomaticRescue(player, fleet)
 				}
+				continue
+			}
+			if op := readLandingOperation(fleet); op != nil && op.Phase == "assault" && t.landingOrbitClear(player, fleet, op) {
+				continue // Keep the coordinated one-turn arrival; check actual fuel before departure.
+			}
+			if t.landingEscortDepartureConfirmed(player, fleet) {
 				continue
 			}
 			goal := fleet.Waypoints[1]
@@ -212,7 +230,7 @@ func (t *turnGenerator) guardAutomaticFuel() {
 			}
 			if fleet.GetTag(frontierPatrolTag) != "" || fleet.GetTag(escortStagingTag) != "" {
 				policy.EconomicalPatrol = true
-				policy.MaxWarp = 6
+				policy.MaxWarp = economicalPatrolMaxWarp(player, fleet)
 				policy.MinWarp = 1
 				policy.MaxTurns = 20
 			}
@@ -335,7 +353,7 @@ func (t *turnGenerator) releaseTankerCustomers(player *Player, tanker *Fleet, jo
 
 func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *automaticTankerJob) bool {
 	members := t.tankerMembers(player, job)
-	if len(members) == 0 {
+	if len(members) == 0 || !patrolFuelMeetingAllowed(player, tanker, members, job.Position) {
 		return false
 	}
 	needsFuel := false
@@ -350,7 +368,7 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 			return false
 		}
 	}
-	if meeting := t.movingFuelMeeting(player, tanker, members, job.DeliveryFuel, job.AllowThreat || job.Urgent); meeting != nil {
+	if meeting := t.movingFuelMeeting(player, tanker, members, job.DeliveryFuel, job.AllowThreat || job.Urgent); meeting != nil && patrolFuelMeetingAllowed(player, tanker, members, meeting.point) {
 		for _, member := range members {
 			if !isAutomaticFleet(player, member) || member.GetTag(tankerAwaitTag) != strconv.Itoa(tanker.Num) {
 				return false
@@ -362,7 +380,7 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 			applyExpeditionRoute(player, member, meeting.receiver)
 			member.SetTag(fuelStatusTag, "Moving economically toward a mutual fuel meeting")
 		}
-		job.Status = fmt.Sprintf("Both fleets approaching the fuel meeting at %s using economical engine speeds", job.Position.String())
+		job.Status = fmt.Sprintf("Fuel delivery to fleet #%d at %s: meeting in %d turns", job.TargetNum, job.Position.String(), max(meeting.receiver.Turns, meeting.donor.Turns))
 		return true
 	}
 	receiverRoute := planAutomaticRoute(&t.game.Rules, player, members, job.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: job.AllowThreat || job.Urgent, RefuelRendezvous: true, EmergencyReturn: job.Urgent, MaxTurns: 10000})
@@ -375,7 +393,7 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 		}
 	}
 	route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{tanker}, job.Position, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: combatAutonomy(player, tanker), DeliveryFuel: []int{job.DeliveryFuel}})
-	if route == nil {
+	if route == nil || max(route.Turns, receiverRoute.Turns) > maxTankerMeetingTurns {
 		return false // Release the rendezvous; both ships can withdraw instead of freezing.
 	}
 	applyExpeditionRoute(player, tanker, route)
@@ -387,11 +405,65 @@ func (t *turnGenerator) routeTankerJob(player *Player, tanker *Fleet, job *autom
 		applyExpeditionRoute(player, member, receiverRoute)
 		member.SetTag(fuelStatusTag, "Travelling to agreed fuel rendezvous")
 	}
-	job.Status = fmt.Sprintf("Rendezvous with fleet #%d at %s", job.TargetNum, job.Position.String())
+	job.Status = fmt.Sprintf("Fuel delivery to fleet #%d at %s: meeting in %d turns", job.TargetNum, job.Position.String(), max(route.Turns, receiverRoute.Turns))
 	return true
 }
 
+func (t *turnGenerator) clearInvalidPatrolFuelDeliveries() {
+	for _, p := range t.automaticPlayers() {
+		for _, f := range t.game.getFleets(p.Num) {
+			if p.Automation.FleetRoles[f.Num] != "patrol" {
+				continue
+			}
+			job := readTankerJob(f)
+			if job == nil || job.TargetNum == 0 && f.Spec.TotalShips == 1 {
+				continue
+			}
+			if f.Spec.TotalShips == 1 && patrolFuelMeetingAllowed(p, f, t.tankerMembers(p, job), job.Position) && len(job.Members) == 1 {
+				continue
+			}
+			t.releaseTankerCustomers(p, f, job)
+			delete(f.Tags, tankerJobTag)
+			if !f.Delete && !f.InDesignMaintenance() && !f.InAutomaticSafety() && !fuelNetworkManaged(f) {
+				holdAutomaticFleet(p, f, "Patrol fuel delivery released; available for combat")
+			}
+		}
+	}
+}
+
+func patrolFuelAreaClear(p *Player, f *Fleet, point Vector) bool {
+	if knownRouteThreat(p, point, point) > 0 {
+		return false
+	}
+	reach := max(36, f.StrategicSpeed(patrolFreeWarp(p, f)))
+	for _, enemy := range p.FleetIntels {
+		if enemy == nil || enemy.Delete || enemy.ReportAge != 0 || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) {
+			continue
+		}
+		if enemy.Position.DistanceTo(point) <= reach && (patrolReportedBomber(p, enemy) || urgentPatrolTarget(p, enemy)) {
+			return false
+		}
+	}
+	return true
+}
+
+func openSpaceFuelMeeting(p *Player, point Vector) bool {
+	for _, planet := range p.PlanetIntels {
+		if planet != nil && planet.Position == point {
+			return false
+		}
+	}
+	return true
+}
+
+func patrolFuelMeetingAllowed(p *Player, donor *Fleet, members []*Fleet, point Vector) bool {
+	return p.Automation.FleetRoles[donor.Num] != "patrol" ||
+		donor.Spec.TotalShips == 1 && len(members) == 1 && members[0].Spec.TotalShips == 1 && openSpaceFuelMeeting(p, point) &&
+			patrolFuelAreaClear(p, donor, donor.Position) && patrolFuelAreaClear(p, donor, members[0].Position) && patrolFuelAreaClear(p, donor, point)
+}
+
 func (t *turnGenerator) planAutomaticTankers() {
+	t.clearInvalidPatrolFuelDeliveries()
 	for _, player := range t.automaticPlayers() {
 		fleets := slices.Clone(t.game.getFleets(player.Num))
 		slices.SortFunc(fleets, func(a, b *Fleet) int { return a.Num - b.Num })
@@ -441,6 +513,13 @@ func (t *turnGenerator) planAutomaticTankers() {
 				}
 				return 1
 			}
+			slowA, slowB := automaticMaxWarp(player, a) < 5, automaticMaxWarp(player, b) < 5
+			if slowA != slowB {
+				if slowA {
+					return -1
+				}
+				return 1
+			}
 			return a.Fuel*max(1, b.Spec.FuelCapacity) - b.Fuel*max(1, a.Spec.FuelCapacity)
 		})
 		for _, tanker := range fleets {
@@ -452,11 +531,9 @@ func (t *turnGenerator) planAutomaticTankers() {
 			}
 			if player.Automation.FleetRoles[tanker.Num] == "patrol" && readTankerJob(tanker) == nil {
 				patrol := readPatrolJob(tanker)
-				if patrol.Leader != 0 {
-					enemy := patrolEnemy(player, patrol)
-					if patrol.Grouped || patrol.Leader != tanker.Num || enemy != nil && tanker.Position.DistanceTo(enemy.Position) <= 30 {
-						continue
-					}
+				if defencePatrolCommitted(player, tanker) || patrol.Leader != 0 && patrolEnemy(player, patrol) != nil ||
+					tanker.Fuel < tanker.Spec.FuelCapacity || !patrolFuelAreaClear(player, tanker, tanker.Position) {
+					continue
 				}
 			}
 			if job := readTankerJob(tanker); job != nil {
@@ -516,6 +593,11 @@ func (t *turnGenerator) planAutomaticTankers() {
 					continue
 				}
 				positions := []Vector{customer.Position, {(customer.Position.X + tanker.Position.X) / 2, (customer.Position.Y + tanker.Position.Y) / 2}, tanker.Position}
+				if player.Automation.FleetRoles[tanker.Num] == "patrol" && !openSpaceFuelMeeting(player, customer.Position) {
+					for _, offset := range []Vector{{1, 0}, {-1, 0}, {0, 1}, {0, -1}} {
+						positions = append(positions, customer.Position.Add(offset))
+					}
+				}
 				networkNode := false
 				if hub := readTankerJob(tanker); hub != nil && hub.Stage == "patrol" {
 					networkNode = true
@@ -534,6 +616,9 @@ func (t *turnGenerator) planAutomaticTankers() {
 					}
 				}
 				for _, position := range positions {
+					if !patrolFuelMeetingAllowed(player, tanker, group, position) {
+						continue
+					}
 					if position == tanker.Position && position != customer.Position {
 						continue
 					}
@@ -568,6 +653,9 @@ func (t *turnGenerator) planAutomaticTankers() {
 						continue
 					}
 					eta := max(receiverRoute.Turns, deliveryRoute.Turns)
+					if eta > maxTankerMeetingTurns {
+						continue
+					}
 					if !request.Urgent {
 						full := make([]*Fleet, len(group))
 						for i, f := range group {
@@ -631,6 +719,11 @@ func (t *turnGenerator) planAutomaticTankers() {
 				writeTankerJob(tanker, &automaticTankerJob{Status: "Available; refilling or awaiting a useful fuel request"})
 			}
 		}
+		for _, customer := range requests {
+			if customer.GetTag(tankerAwaitTag) == "" && !fuelNetworkManaged(customer) && readAutomaticFuelRequest(customer) != nil {
+				customer.SetTag(fuelStatusTag, "Fuel help unassigned: no suitable tanker rendezvous within 3 turns; no distant tanker reserved")
+			}
+		}
 	}
 }
 
@@ -643,7 +736,7 @@ func (t *turnGenerator) resolveAutomaticTankers() {
 				continue
 			}
 			members := t.tankerMembers(player, job)
-			if len(members) == 0 || t.armedEnemyAt(player, job.Position) {
+			if len(members) == 0 || !patrolFuelMeetingAllowed(player, tanker, members, job.Position) || t.armedEnemyAt(player, job.Position) {
 				continue
 			}
 			ready := true
@@ -684,7 +777,13 @@ func (t *turnGenerator) resolveAutomaticTankers() {
 				next.Position = job.Anchor
 				next.Status = "Returning to network area and regenerating fuel"
 			}
-			writeTankerJob(tanker, next)
+			if player.Automation.FleetRoles[tanker.Num] == "patrol" {
+				delete(tanker.Tags, tankerJobTag)
+				tanker.SetTag(patrolReturnHuntTag, strconv.Itoa(t.game.Year+2))
+				holdAutomaticFleet(player, tanker, "Fuel delivered; hunting on the way back to friendly territory")
+			} else {
+				writeTankerJob(tanker, next)
+			}
 			player.Messages = append(player.Messages, PlayerMessage{Type: PlayerMessageInfo, Text: fmt.Sprintf("%s delivered %d fuel to %s and retained fuel to reach a dock.", tanker.Name, delivered, members[0].Name)})
 		}
 	}
@@ -695,7 +794,7 @@ func automaticFuelDonor(player *Player, fleet *Fleet) bool {
 		return false
 	}
 	role := player.Automation.FleetRoles[fleet.Num]
-	return role == "tanker" || role == "patrol" || role == "escort" && fleet.GetTag(escortTag) == "" && fleet.GetTag(bomberBorrowTag) == "" && !player.FleetInActiveAssembly(fleet)
+	return role == "tanker" || role == "patrol" && fleet.Spec.TotalShips == 1 || role == "escort" && fleet.GetTag(escortTag) == "" && fleet.GetTag(bomberBorrowTag) == "" && !player.FleetInActiveAssembly(fleet)
 }
 
 func fuelSupportForRole(p *Player, f *Fleet) bool {
@@ -710,5 +809,5 @@ func fuelSupportForRole(p *Player, f *Fleet) bool {
 	return false
 }
 func fuelAssistanceUseful(p *Player, f *Fleet, request *automaticFuelRequest) bool {
-	return request != nil && (request.Urgent || fuelSupportForRole(p, f))
+	return request != nil && (!request.Urgent || f.Fuel < f.Spec.FuelCapacity) && (request.Urgent || fuelSupportForRole(p, f))
 }

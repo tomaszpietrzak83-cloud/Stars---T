@@ -33,6 +33,13 @@ type planetScorePopulation struct {
 }
 
 func newTurnGenerator(game *FullGame) turnGenerator {
+	planetOnlyAI := make(map[int]bool)
+	for _, p := range game.Players {
+		planetOnlyAI[p.Num] = p.AIControlled && len(p.Automation.FleetRoles) == 0
+	}
+	for _, p := range game.Players {
+		p.planetOnlyAI = planetOnlyAI
+	}
 	turnLogger := slog.Default().With(
 		slog.Int64("GameID", game.ID),
 		slog.String("GameName", game.Name),
@@ -83,6 +90,7 @@ func (t *turnGenerator) generateTurn() error {
 
 	// wp0 tasks
 	t.fleetInit()
+	t.clearInvalidPatrolFuelDeliveries()
 	t.restoreBorrowedManualFleets()
 	for _, player := range t.game.Players {
 		fleets := t.game.getFleets(player.Num)
@@ -102,6 +110,7 @@ func (t *turnGenerator) generateTurn() error {
 	t.releaseColonizerFuelDetours()
 	t.releaseUnreachablePatrolSupport()
 	t.releaseCombatCruiseNetworks()
+	t.separateLegacyLandingEscorts()
 	t.prepareRadiatingTransports()
 	t.advanceFuelNetworks()
 	t.resolveAutomaticTankers()
@@ -724,6 +733,15 @@ func (t *turnGenerator) fleetColonize() {
 
 			planet := t.game.getPlanet(wp.TargetNum)
 			if planet.Owned() {
+				if colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && player.CanAutomateColonizer(fleet) {
+					job := readColonizationJob(fleet)
+					if job == nil {
+						job = &colonizationJob{Mode: colonizationMode(player.Automation.FleetRoles[fleet.Num])}
+					}
+					if t.deliverArrivedColonizer(player, fleet, planet, job) {
+						continue
+					}
+				}
 				if suitableColony(player, planet) && colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && player.CanAutomateColonizer(fleet) {
 					planet.Cargo.Colonists += fleet.Cargo.Colonists
 					fleet.Cargo.Colonists = 0
@@ -3436,6 +3454,8 @@ func (t *turnGenerator) fleetSweepMines() {
 	// fleets and starbases sweep
 	for _, fleet := range append(t.game.Fleets, t.game.Starbases...) {
 		if !fleet.Delete && fleet.Spec.MineSweep > 0 {
+			sweptTotal := 0
+			fieldsSwept := 0
 			fleetPlayer := t.game.getPlayer(fleet.PlayerNum)
 			for _, minefield := range t.game.Minefields {
 				// don't sweep dead fields
@@ -3460,6 +3480,8 @@ func (t *turnGenerator) fleetSweepMines() {
 					}
 
 					messager.fleetMinefieldSwept(fleetPlayer, fleet, minefield, numSwept)
+					sweptTotal += numSwept
+					fieldsSwept++
 					messager.fleetMinefieldSwept(minefieldPlayer, fleet, minefield, numSwept)
 
 					t.log.Debug("fleet swept mines",
@@ -3474,6 +3496,9 @@ func (t *turnGenerator) fleetSweepMines() {
 						continue
 					}
 				}
+			}
+			if sweptTotal > 0 || automaticMinesweeper(fleetPlayer, fleet) {
+				fleet.SetTag("last-mine-sweep", fmt.Sprintf("Year %d result: %d mines removed from %d fields", t.game.Year, sweptTotal, fieldsSwept))
 			}
 		}
 	}
@@ -3535,6 +3560,14 @@ func (t *turnGenerator) fleetRemoteTerraform() {
 		planetPlayer := t.game.getPlayer(planet.PlayerNum)
 		deterraform := fleet.willAttack(player, planet.PlayerNum)
 		friend := player.IsFriend(planet.PlayerNum)
+		if player.Automation.FleetRoles[fleet.Num] == "terraformer" {
+			// Assistance must never turn into an attack after capture or a
+			// diplomatic change, even while movement is paused for fuel/safety.
+			if !t.terraformWork(player, planet) {
+				continue
+			}
+			deterraform = false
+		}
 
 		// A hostile starbase protects the planet from orbital adjusters.
 		if !friend && (!deterraform || planet.Spec.HasStarbase) {

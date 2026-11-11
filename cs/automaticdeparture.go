@@ -9,16 +9,24 @@ import (
 // Waypoint-zero loads/transfers run after mission planning. Recheck the actual
 // fuel and cargo just before movement, and stop the whole convoy on a shortfall.
 func (t *turnGenerator) enforceAutomaticDeparture() {
+	t.separateLegacyLandingEscorts()
 	for _, player := range t.automaticPlayers() {
 		// Departure checks change orders and fuel reservations, not intel. Reuse
 		// one current report index across all return-fuel and convoy checks.
 		defer scopedRouteThreatIndex(player)()
 		blocked := map[int]bool{}
+		relief := t.patrolReliefDepartures(player)
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if !isAutomaticFleet(player, fleet) || len(fleet.Waypoints) < 2 {
+			if relief[fleet.Num] || !isAutomaticFleet(player, fleet) || len(fleet.Waypoints) < 2 {
 				continue
 			}
 			wp := fleet.Waypoints[1]
+			landingCover := t.landingEscortDepartureConfirmed(player, fleet)
+			if job := logisticsWork(fleet); job != nil && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() &&
+				(unsafeCivilianDestination(player, fleet, job, job.Position) || unsafeCivilianDestination(player, fleet, job, wp.Position)) {
+				t.abandonUnsafeCivilianDelivery(player, fleet)
+				continue
+			}
 			if op := readLandingOperation(fleet); op != nil && op.Phase == "assault" && !t.landingOrbitClear(player, fleet, op) {
 				op.Phase = "scan"
 				saveLandingOperation(fleet, op)
@@ -26,7 +34,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				continue
 			}
 			if player.Automation.FleetRoles[fleet.Num] == "freighter" && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() {
-				if hostileOrbitalBase(player, wp.Position) {
+				if op := readLandingOperation(fleet); hostileOrbitalBase(player, wp.Position) && (op == nil || op.Phase != "assault") {
 					t.releaseEscorts(player, fleet)
 					holdAutomaticFleet(player, fleet, "Freighter awaits confirmed orbital base destruction")
 					continue
@@ -55,7 +63,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				}
 			}
 			if player.Automation.FleetRoles[fleet.Num] == "patrol" {
-				if !t.patrolDepartureConfirmed(player, fleet) {
+				if !landingCover && !t.patrolDepartureConfirmed(player, fleet) {
 					t.rememberBlockedPatrolDeparture(player, fleet)
 					holdAutomaticFleet(player, fleet, "Departure cancelled: reported encounter exceeds the confirmed combat force")
 					continue
@@ -73,7 +81,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				}
 				continue
 			}
-			allowThreat := landingScout(player, fleet) || readLandingOperation(fleet) != nil && readLandingOperation(fleet).Phase == "assault" || fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			allowThreat := landingCover || landingScout(player, fleet) || readLandingOperation(fleet) != nil && readLandingOperation(fleet).Phase == "assault" || fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
 			if job := logisticsWork(fleet); !allowThreat && job != nil && job.Kind == "invade" && !job.BombingStage && job.Position == wp.Position && convoyThreat(player, fleet, wp.Position) > 0 {
 				allowThreat = t.deliveryEscortReady(player, fleet, wp.Position)
 			}
@@ -102,7 +110,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				if networkReserve, managed := t.fuelNetworkDepartureReserve(player, fleet); managed {
 					reserve = networkReserve
 				}
-				if fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet) {
+				if fundedColonizerWaypoints(&t.game.Rules, player, fleet) || fundedEmergencyReturn(&t.game.Rules, player, fleet) || fundedScoutWaypoints(&t.game.Rules, player, fleet) || fundedLogisticsWaypoints(&t.game.Rules, player, fleet) {
 					reserve = 0
 				}
 				if job := readScoutRecon(fleet); scoutReconActive(player, fleet) && job != nil && !job.Watching {
@@ -182,5 +190,16 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				}
 			}
 		}
+		// Recheck after fuel and route guards have actually held or rerouted
+		// escorts. A previously scheduled arrival may no longer be funded.
+		for _, fleet := range t.game.getFleets(player.Num) {
+			if op := readLandingOperation(fleet); op != nil && op.Phase == "assault" && len(fleet.Waypoints) > 1 &&
+				!t.landingOrbitClear(player, fleet, op) {
+				op.Phase = "scan"
+				saveLandingOperation(fleet, op)
+				holdAutomaticFleet(player, fleet, "Landing held before movement: escort cannot reach the orbit this turn")
+			}
+		}
+
 	}
 }

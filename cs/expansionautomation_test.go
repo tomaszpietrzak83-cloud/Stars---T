@@ -71,7 +71,7 @@ func TestExplicitStartLocationsWorkWithoutOpponents(t *testing.T) {
 	for _, tc := range []struct {
 		mode string
 		want int
-	}{{"center", 1}, {"edge", 0}} {
+	}{{"center", 1}, {"edge", 2}} {
 		ug := newPlacementGenerator(PlayerPositionsModerate, 1, Vector{1000, 1000}, newIntRandom(0, 1), Vector{30, 500}, Vector{500, 500}, Vector{925, 500})
 		ug.HostStartPosition = tc.mode
 		positions, err := ug.getPlayerPlanets()

@@ -29,10 +29,10 @@ func (t *turnGenerator) movingFuelMeeting(p *Player, donor *Fleet, members []*Fl
 	rc := 10
 	for _, f := range members {
 		rw = min(rw, freeRendezvousWarp(p, f))
-		rc = min(rc, min(6, automaticMaxWarp(p, f)))
+		rc = min(rc, economicalPatrolMaxWarp(p, f))
 	}
 	dw := freeRendezvousWarp(p, donor)
-	dc := min(6, automaticMaxWarp(p, donor))
+	dc := economicalPatrolMaxWarp(p, donor)
 	from := members[0].Position
 	var best *movingFuelMeeting
 	score := math.Inf(1)
@@ -49,6 +49,9 @@ func (t *turnGenerator) movingFuelMeeting(p *Player, donor *Fleet, members []*Fl
 		receiver := planAutomaticRoute(&t.game.Rules, p, members, point, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: allowThreat, RefuelRendezvous: true, EconomicalPatrol: true, MaxWarp: pair[0], MinWarp: 1, MaxTurns: 20})
 		delivery := planAutomaticRoute(&t.game.Rules, p, []*Fleet{donor}, point, MapObjectTarget{}, automaticRoutePolicy{AllowThreat: combatAutonomy(p, donor), DeliveryFuel: []int{amount}, EconomicalPatrol: true, MaxWarp: pair[1], MinWarp: 1, MaxTurns: 20})
 		if receiver == nil || delivery == nil || receiver.WaitForFuel || delivery.WaitForFuel {
+			continue
+		}
+		if max(receiver.Turns, delivery.Turns) > maxTankerMeetingTurns {
 			continue
 		}
 		capacity := donor.Spec.FuelCapacity

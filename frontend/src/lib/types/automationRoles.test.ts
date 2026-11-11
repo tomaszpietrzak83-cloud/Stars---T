@@ -1,7 +1,19 @@
 import { create } from '@bufbuild/protobuf';
 import { expect, it } from 'vitest';
 import { FleetSchema, ShipDesignSpecSchema } from './cs-proto.js';
-import { automationRoles, dedicatedMinesweeper, designAutoRole } from './automationRoles.js';
+import { automationRoles, automationStatus, dedicatedMinesweeper, designAutoRole } from './automationRoles.js';
+
+it('shows interrupted sweeping as paused and keeps the measured result separate', () => {
+	const fleet = create(FleetSchema, { mapObject: { tags: {
+		'automatic-safety': JSON.stringify({ status: 'Mission paused: predicted hostile contact' }),
+		'automatic-fuel-status': 'Approaching a field',
+		'patrol-mine-sweep': 'Inside reported field',
+		'last-mine-sweep': 'Year 2508 result: 0 mines removed from 0 fields'
+	} } });
+	expect(automationStatus(fleet)).toContain('Mission paused');
+	expect(automationStatus(fleet)).not.toContain('Approaching');
+	expect(automationStatus(fleet)).toContain('Year 2508 result: 0 mines removed');
+});
 
 const spec = () =>
 	create(ShipDesignSpecSchema, {

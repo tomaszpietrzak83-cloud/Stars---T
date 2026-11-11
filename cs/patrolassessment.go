@@ -93,7 +93,8 @@ func (e *patrolEvaluator) assessEncounter(p *Player, own []*Fleet, reports []*Fl
 	return e.assessFormations(p, own, reports, point, horizon, true)
 }
 
-func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*Fleet, point Vector, horizon float64, merge bool) patrolAssessment {
+func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*Fleet, point Vector, horizon float64, merge bool, clearOrbit ...bool) patrolAssessment {
+	strict := len(clearOrbit) > 0 && clearOrbit[0]
 	for _, planet := range p.PlanetIntels {
 		if planet != nil && planet.PlayerNum != p.Num && planet.Owned() && !p.IsFriend(planet.PlayerNum) && planet.Spec.HasStarbase && point.DistanceTo(planet.Position) <= 3 {
 			included := slices.ContainsFunc(reports, func(f *Fleet) bool {
@@ -110,7 +111,7 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		unknown = unknown || unknownFleetEquipment(p, report)
 	}
 	if unknown {
-		if count >= 8 {
+		if strict || count >= 8 {
 			return patrolAssessment{Reason: "Scout equipment reconnaissance required"}
 		}
 		// Preserve the user's small-unknown-contact rule. No invented hidden model
@@ -173,7 +174,7 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 			orbit = planet
 		}
 	}
-	raw, _ := json.Marshal([]any{inputs, point, horizon, merge, p.Race, p.TechLevels, p.BattlePlans, stocks.ToMineral(), orbit, e.rules.BattleRules, e.rules.RepairRates})
+	raw, _ := json.Marshal([]any{inputs, point, horizon, merge, strict, p.Race, p.TechLevels, p.BattlePlans, stocks.ToMineral(), orbit, e.rules.BattleRules, e.rules.RepairRates})
 	key := sha256.Sum256(raw)
 	if result, ok := e.cache[key]; ok {
 		e.Hits++
@@ -232,7 +233,7 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 				e.Work += work
 				e.Battles++
 				outcome := model.run(tactic, ep, int64(17011+seed*997))
-				if !outcome.safe(model.ownShips, model.ownValue, model.ownMass) || !merge && outcome.CivilianLost > 0 {
+				if !outcome.safe(model.ownShips, model.ownValue, model.ownMass) || !merge && outcome.CivilianLost > 0 || strict && (outcome.DangerAfter > 0 || outcome.BombersAfter > 0 || outcome.StarbasesAfter > 0) {
 					return patrolAssessment{Reason: "Native forecast: ineffective mission, unsafe tonnage exchange, civilian losses or own count/value/mass loss exceeds 5%"}
 				}
 				result.LostShips = max(result.LostShips, outcome.LostShips)

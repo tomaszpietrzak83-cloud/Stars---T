@@ -19,10 +19,12 @@ import {
 } from '#lib/types/cs-proto.js';
 import type { CommandedFleet } from '#lib/types/Fleet.js';
 import {
+	filterCombatFleet,
 	filterFleet,
 	filterMinefield,
 	filterNote,
 	getVisibleShipCount,
+	type CombatTech,
 	type FilterOptions
 } from '#lib/types/Filter.js';
 import {
@@ -257,13 +259,14 @@ export function buildWaypointPaths(
 	settings: PlayerSettings,
 	commandedFleet: CommandedFleet | undefined,
 	// the commanded fleet's waypoints from before a waypoint drag started, while one is being dragged
-	dragOrigin?: Waypoint[]
+	dragOrigin?: Waypoint[],
+	tech?: CombatTech
 ): WaypointPath[] {
 	if (settings.showFleetRoutes === false) return [];
 	const paths: WaypointPath[] = universe.fleets
 		.filter(
 			(f) =>
-				(equal(commandedFleet, f) || filterFleet(player, f, settings, universe)) &&
+				filterFleet(player, f, settings, universe, tech) &&
 				f.mapObject?.num !== commandedFleet?.mapObject.num &&
 				(f.fleetOrders?.waypoints?.length ?? 0) > 1
 		)
@@ -273,7 +276,11 @@ export function buildWaypointPaths(
 		});
 
 	// draw the commanded fleet's path last so it's on top
-	if (commandedFleet && commandedFleet.fleetOrders.waypoints.length > 1) {
+	if (
+		commandedFleet &&
+		commandedFleet.fleetOrders.waypoints.length > 1 &&
+		filterCombatFleet(player, commandedFleet, settings, universe, tech)
+	) {
 		// like Stars!, leave the old path showing during a drag so the player can see what they're changing
 		if (dragOrigin && dragOrigin.length > 1) {
 			paths.push({
@@ -356,7 +363,8 @@ export function buildPlanets(
 	settings: PlayerSettings,
 	commandedMapObject: MapObjectLike | undefined,
 	commandedPlanet: CommandedPlanet | undefined,
-	colors: ScannerColors
+	colors: ScannerColors,
+	tech?: CombatTech
 ): PlanetDraw[] {
 	const resourceValues = new Map<number, number>();
 	let maxResources = 0;
@@ -375,7 +383,7 @@ export function buildPlanets(
 			.getMapObjectsByPosition(position)
 			.filter((mo) => mo.mapObject?.type === MapObjectType.FLEET);
 		const orbitingVisible = orbiting.filter((f) =>
-			filterFleet(player, f as Fleet, settings, universe)
+			filterFleet(player, f as Fleet, settings, universe, tech)
 		);
 
 		const commanded =
@@ -477,7 +485,10 @@ export function buildPlanets(
 				0
 			);
 			if (value) {
-				const { enemies, friends } = getEnemiesAndFriends(orbiting, player);
+				const { enemies, friends } = getEnemiesAndFriends(
+					settings.showCombatFleetsOnly || settings.hideCombatFleets ? orbitingVisible : orbiting,
+					player
+				);
 				draw.count = { value, color: colors.orbit.text[orbitKind(enemies, friends)] };
 			}
 		}
@@ -663,12 +674,16 @@ export function buildFleets(
 	player: CommandedPlayer,
 	settings: PlayerSettings,
 	commandedFleet: CommandedFleet | undefined,
-	colors: ScannerColors
+	colors: ScannerColors,
+	tech?: CombatTech
 ): FleetDraw[] {
 	const fleets = universe
 		.getAllFleets()
 		.filter((f) => !f.orbitingPlanetNum)
-		.filter((f) => equal(commandedFleet, f) || filterFleet(player, f, settings, universe));
+		.filter((f) =>
+			(!settings.showCombatFleetsOnly && !settings.hideCombatFleets && equal(commandedFleet, f)) ||
+			filterFleet(player, f, settings, universe, tech)
+		);
 
 	const draws: FleetDraw[] = fleets.map((fleet) => ({
 		fleet,

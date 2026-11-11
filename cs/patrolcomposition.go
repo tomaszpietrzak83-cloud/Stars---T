@@ -67,7 +67,7 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 	}
 	candidates := []candidate{}
 	for _, f := range t.game.getFleets(p.Num) {
-		if f == leader || !patrolAvailable(p, f) || (!slices.Contains(existing, f) && !patrolSupportCanLeave(p, f, enemy)) || !compatiblePatrolPlans(leader, f) || f.Position.DistanceTo(point) > 400 {
+		if f == leader || !patrolAvailable(p, f) || (!slices.Contains(existing, f) && (!patrolSupportCanLeave(p, f, enemy) || job.Minelayer && (readPatrolJob(f).Leader != 0 || localPatrolReserve(f, t.game.Year)))) || !compatiblePatrolPlans(leader, f) || f.Position.DistanceTo(point) > 400 {
 			continue
 		}
 		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, leader.Position, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: 8, AllowThreat: knownWithdrawalRoute(p, f.Position, leader.Position)})
@@ -203,6 +203,7 @@ func (t *turnGenerator) advanceAssessedPatrol(p *Player, leader, enemy *Fleet, j
 			}
 			next := readPatrolJob(f)
 			next.Leader, next.Enemy, next.Target, next.LeaderID = leader.Num, enemy.PlayerNum, enemy.Num, leader.ID
+			next.Minelayer = job.Minelayer
 			savePatrolJob(f, next)
 		}
 	}

@@ -1565,11 +1565,10 @@ func (fleet *Fleet) colonizePlanet(rules *Rules, player *Player, planet *Planet)
 // In deep space, each type of mineral decays 10%, or 10kT per year, whichever is higher. Salvage deposited on planets does not decay.
 // Scrapping: (from help file)
 //
-// A ship scrapped at a starbase deposits 80% of the original minerals on the planet, or 90% of the minerals and 70% of the resources if the LRT 'Ultimate Recycling' is selected.
+// A ship scrapped at a starbase deposits 80% of the original minerals on the planet, or 90% of the minerals and 80% of the resources if the LRT 'Ultimate Recycling' is selected.
 // A ship scrapped at a planet with no starbase leaves 33% of the original minerals on the planet, or 45% of the minerals if the LRT Ultimate Recycling is selected.
-// Wih UR the resources recovered is:
-// (resources the ship costs * resources on the planet)/(resources the ship cost + resources on the planet)
-// The maximum recoverable resources occurs when the cost of the scrapped ship equals the resources produced at the planet where it is scrapped.
+// UR recovers 35% of resource cost without a starbase. Recovery is independent
+// of planetary output and adds across fleets as a one-time production credit.
 //
 // A ship scrapped in space leaves no minerals behind.
 // When a ship design is deleted, all such ships vanish leaving nothing behind. (moral: scrap before you delete!)
@@ -1579,14 +1578,11 @@ func (fleet *Fleet) getScrapAmount(rules *Rules, player *Player, planet *Planet,
 	scrappedCost := fleet.Spec.Cost
 	scrapMineralFactor := rules.ScrapMineralAmount
 	scrapResourceFactor := rules.ScrapResourceAmount
-	extraResources := 0
-	planetResources := 0
 
 	if planet != nil {
 		if colonize {
 			scrapMineralFactor = rules.ScrapColonizeAmount
 		} else {
-			planetResources = planet.Spec.ResourcesPerYear + planet.bonusResources
 			// UR races get resources when scrapping (not colonizing)
 			if planet.Spec.HasStarbase {
 				// scrapping over a planet with a starbase, calculate bonus minerals and resources
@@ -1607,10 +1603,7 @@ func (fleet *Fleet) getScrapAmount(rules *Rules, player *Player, planet *Planet,
 	scrappedCost = MultiplyCost(scrappedCost, scrapMineralFactor)
 
 	if scrapResourceFactor > 0 {
-		// Formula for calculating resources: (Current planet production * Extra resources)/(Current planet production + Extra Resources)
-		extraResources = int(float64(fleet.Spec.Cost.Resources)*scrapResourceFactor + .5) // add 0.5 to round up
-		extraResources = int(float64(planetResources*extraResources) / float64(planetResources+extraResources))
-		scrappedCost.Resources = extraResources
+		scrappedCost.Resources = int(float64(fleet.Spec.Cost.Resources)*scrapResourceFactor + .5)
 	} else {
 		scrappedCost.Resources = 0
 	}

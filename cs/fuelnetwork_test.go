@@ -129,7 +129,7 @@ func TestStrandedFleetCanRequestHelpWithMoreThanQuarterTank(t *testing.T) {
 	delete(customer.Tags, fuelRequestTag)
 	customer.Fuel = customer.Spec.FuelCapacity
 	requestAutomaticRescue(u.Player(1), customer, true)
-	require.NotNil(t, readAutomaticFuelRequest(customer), "full fuel can still need intermediate stops to reach a dock")
+	require.Nil(t, readAutomaticFuelRequest(customer), "full tanks need route planning, not a local fuel delivery")
 }
 
 func TestNetworkOneWayColonizationNeedsNoDestinationDock(t *testing.T) {

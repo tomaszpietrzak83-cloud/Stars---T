@@ -11,9 +11,9 @@ func TestEdgeStartPrefersFivePercentInsetOnRectangularMaps(t *testing.T) {
 	for _, size := range []Vector{{1000, 1000}, {2000, 1000}} {
 		for _, points := range [][]Vector{
 			{{1, 500}, {size.X / 20, 500}, {size.X / 2, 500}},
-			{{size.X / 2, 1}, {size.X / 2, 50}, {size.X / 2, 500}},
+			{{size.X / 2, 1}, {size.X / 2, size.X / 20}, {size.X / 2, 500}},
 			{{size.X - 1, 500}, {size.X - size.X/20, 500}, {size.X / 2, 500}},
-			{{size.X / 2, 999}, {size.X / 2, 950}, {size.X / 2, 500}},
+			{{size.X / 2, 999}, {size.X / 2, size.Y - size.X/20}, {size.X / 2, 500}},
 		} {
 			ug := newPlacementGenerator(PlayerPositionsModerate, 1, size, newIntRandom(0), points...)
 			ug.HostStartPosition = "edge"

@@ -203,7 +203,7 @@ func TestColonizerAtDestinationDoesNotWaitForUnnecessaryFuel(t *testing.T) {
 	require.Equal(t, p.Num, u.Planet("Near").PlayerNum)
 }
 
-func TestBestColonizerReplacesUnreachableReservationWithReachableWorld(t *testing.T) {
+func TestBestColonizerKeepsUnreachableMissionWithoutReservingWorld(t *testing.T) {
 	u := colonizerUniverse(t)
 	p, f := u.Player(1), u.Fleet("Colony Ship")
 	p.Automation.FleetRoles[f.Num] = "colonizer:best"
@@ -220,12 +220,13 @@ func TestBestColonizerReplacesUnreachableReservationWithReachableWorld(t *testin
 	near := u.Planet("Near")
 	near.Position = f.Position
 	u.Run((*turnGenerator).planColonizationAutomation)
-	require.Equal(t, near.Num, readColonizationJob(f).TargetNum)
-	require.Equal(t, WaypointTaskColonize, f.Waypoints[len(f.Waypoints)-1].Task)
+	require.Equal(t, far.Num, readColonizationJob(f).TargetNum)
+	require.False(t, colonizerTravelling(p, f, readColonizationJob(f)))
+	require.NotNil(t, readAutomaticFuelRequest(f))
 	require.Equal(t, "colonizer:best", p.Automation.FleetRoles[f.Num])
 }
 
-func TestColonizationRejectsRoutesLongerThanFiftyTurns(t *testing.T) {
+func TestColonizationRejectsRoutesLongerThanTwentyFiveYears(t *testing.T) {
 	u := colonizerUniverse(t)
 	p, f := u.Player(1), u.Fleet("Colony Ship")
 	p.Automation.FleetRoles[f.Num] = "colonizer:best"
@@ -239,7 +240,7 @@ func TestColonizationRejectsRoutesLongerThanFiftyTurns(t *testing.T) {
 	f.Spec.Engine.MaxSafeSpeed = 5
 	f.Spec.Engine.IdealSpeed = 5
 	far := u.Planet("Far")
-	far.Position = Vector{1275, 0}
+	far.Position = Vector{650, 0}
 	require.Nil(t, planAutomaticRoute(&u.Game.Rules, p, []*Fleet{f}, far.Position, far.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true}))
 	u.Run((*turnGenerator).planColonizationAutomation)
 	require.Equal(t, u.Planet("Near").Num, readColonizationJob(f).TargetNum)
@@ -260,7 +261,7 @@ func TestColonizerUnloadsAtAlreadyOwnedTargetAndKeepsRole(t *testing.T) {
 			require.Zero(t, f.Cargo.Colonists)
 			require.Equal(t, before+load, planet.Cargo.Colonists)
 			require.Equal(t, "colonizer:auto", p.Automation.FleetRoles[f.Num])
-			require.Equal(t, "load", readColonizationJob(f).Kind)
+			require.Equal(t, "passengers", readColonizationJob(f).Kind)
 			if retire {
 				tg := newTurnGenerator(u.Game)
 				require.True(t, tg.maintenanceNeeded(p, f))
@@ -275,7 +276,7 @@ func TestAutomaticColonizersUseRedWorldsOnlyAsFallback(t *testing.T) {
 	red, green := u.Planet("Near"), u.Planet("Far")
 	red.Hab, red.BaseHab = Hab{100, 100, 100}, Hab{100, 100, 100}
 	p.Automation.FleetRoles[fleet.Num] = "colonizer:nearest"
-	p.Automation.PriorityPlanets = map[int]bool{red.Num: true}
+	p.Automation.PriorityPlanets = map[int]bool{}
 
 	u.Run((*turnGenerator).planColonizationAutomation)
 	require.Equal(t, green.Num, readColonizationJob(fleet).TargetNum)

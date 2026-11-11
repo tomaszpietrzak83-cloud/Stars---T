@@ -92,6 +92,9 @@ func (s *planetService) QueueShipProduction(ctx context.Context, req *connect.Re
 		if hash != req.Msg.ExpectedSourceHash {
 			return connect.NewError(connect.CodeAborted, fmt.Errorf("production changed since the preview; refresh the allocation"))
 		}
+		// The planner computes the race spec on a copy. Saving orders runs its
+		// own production forecast, which also needs the race's alchemy cost.
+		p.Race.Spec = cs.ComputeRaceSpec(&p.Race, &g.Rules)
 		plan, err := cs.PlanEmpireShipProduction(&g.Rules, p, planets, int(req.Msg.DesignNum), int(req.Msg.Quantity), req.Msg.AutoRole, req.Msg.FillThisYear)
 		if err != nil {
 			return connect.NewError(connect.CodeInvalidArgument, err)

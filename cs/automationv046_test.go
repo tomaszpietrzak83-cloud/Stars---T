@@ -48,7 +48,7 @@ func TestFuelMeetingMovesBothFleetsAtFreeSpeeds(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, donor, client := u.Player(1), u.Fleet("Escort"), u.Fleet("Transport")
 	p.Automation.FleetRoles[donor.Num] = "patrol"
-	client.Position = Vector{20, 0}
+	client.Position = Vector{4, 0} // free warp 1 can meet within three turns
 	client.OrbitingPlanetNum = 0
 	client.Fuel = 1
 	client.SetTag(tankerAwaitTag, strconv.Itoa(donor.Num))
@@ -64,7 +64,7 @@ func TestFuelMeetingMovesBothFleetsAtFreeSpeeds(t *testing.T) {
 	require.LessOrEqual(t, client.Waypoints[1].WarpSpeed, freeRendezvousWarp(p, client))
 	u.Run((*turnGenerator).fleetMove)
 	require.Greater(t, donor.Position.X, 0)
-	require.Less(t, client.Position.X, 20)
+	require.Less(t, client.Position.X, 4)
 	require.GreaterOrEqual(t, donor.Fuel, beforeDonor)
 	require.GreaterOrEqual(t, client.Fuel, beforeClient)
 }

@@ -1,6 +1,11 @@
 package cs
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"math"
+	"slices"
+)
 
 // This doctrine follows equipment, never the player's project name. Multiple
 // Gatling Guns are allowed, but any other weapon/bomb makes a different design.
@@ -95,14 +100,127 @@ func (t *turnGenerator) prepareDedicatedMinesweepers() {
 	}
 }
 
+const minesweeperTargetTag = "minesweeper-target"
+const minesweeperTerritoryBand = 50.0
+
+func minefieldAssignmentKey(field *Minefield) string {
+	return fmt.Sprintf("%d:%d", field.PlayerNum, field.Num)
+}
+
+// Only known colonies anchor the front; enemy territory never attracts a sweep.
+func minesweeperTerritoryDistance(p *Player, field *Minefield) float64 {
+	distance := math.Inf(1)
+	for _, planet := range p.PlanetIntels {
+		if planet != nil && !planet.Delete && (planet.PlayerNum == p.Num || (planet.PlayerNum > 0 && p.IsFriend(planet.PlayerNum))) {
+			distance = min(distance, max(0, planet.Position.DistanceTo(field.Position)-field.Radius()))
+		}
+	}
+	if math.IsInf(distance, 1) {
+		return 0
+	}
+	return distance
+}
+
+func reportedHostileMinefield(p *Player, m *Minefield) bool {
+	return m != nil && !m.Delete && m.NumMines > 0 && !m.Detonate && m.PlayerNum != p.Num && !p.IsFriend(m.PlayerNum)
+}
+
 func (t *turnGenerator) planMinesweeperAutomation() {
 	for _, p := range t.automaticPlayers() {
+		available := []*Fleet{}
 		for _, f := range t.game.getFleets(p.Num) {
-			if p.Automation.FleetRoles[f.Num] != "minesweeper" || f.Delete || f.Starbase || f.InDesignMaintenance() || f.InAutomaticSafety() || f.GetTag("maintenance-pending") != "" || p.FleetInActiveAssembly(f) || fuelNetworkManaged(f) || f.GetTag(tankerAwaitTag) != "" {
+			if !automaticMinesweeper(p, f) || f.Delete || f.Starbase || f.InDesignMaintenance() || f.InAutomaticSafety() || f.GetTag("maintenance-pending") != "" || p.FleetInActiveAssembly(f) || fuelNetworkManaged(f) || f.GetTag(tankerAwaitTag) != "" {
 				continue
 			}
+			delete(f.Tags, patrolMineSweepTag)
 			setMinesweeperBattlePlan(p, f)
-			if t.patrolSweepObstacle(p, f) {
+			t.surveyMinesweeperField(p, f)
+			available = append(available, f)
+		}
+		fields := slices.DeleteFunc(slices.Clone(p.MinefieldIntels), func(m *Minefield) bool {
+			return !reportedHostileMinefield(p, m)
+		})
+		slices.SortFunc(fields, func(a, b *Minefield) int {
+			da, db := minesweeperTerritoryDistance(p, a), minesweeperTerritoryDistance(p, b)
+			if da < db {
+				return -1
+			}
+			if da > db {
+				return 1
+			}
+			if a.PlayerNum != b.PlayerNum {
+				return a.PlayerNum - b.PlayerNum
+			}
+			return a.Num - b.Num
+		})
+		assigned := map[int]bool{}
+		// Finish the nearest known 50-ly band before opening the next one.
+		if len(fields) > 0 {
+			start := 0
+			band := math.Floor(minesweeperTerritoryDistance(p, fields[start]) / minesweeperTerritoryBand)
+			end := start + 1
+			for end < len(fields) && math.Floor(minesweeperTerritoryDistance(p, fields[end])/minesweeperTerritoryBand) == band {
+				end++
+			}
+			reserved := map[string][]sweepArrival{}
+			// Preserve a working assignment, including across save/reload.
+			for _, f := range available {
+				for _, field := range fields[start:end] {
+					key := minefieldAssignmentKey(field)
+					if len(reserved[key]) != 0 || f.GetTag(minesweeperTargetTag) != key {
+						continue
+					}
+					if route := t.minesweeperFieldRoute(p, f, field); route != nil {
+						t.applyMinesweeperRoute(p, f, field, route)
+						assigned[f.Num] = true
+						reserved[key] = append(reserved[key], newSweepArrival(&t.game.Rules, p, field, f, route))
+						break
+					}
+				}
+			}
+			for _, field := range fields[start:end] {
+				key := minefieldAssignmentKey(field)
+				if len(reserved[key]) != 0 {
+					continue
+				}
+				candidates := slices.Clone(available)
+				slices.SortFunc(candidates, func(a, b *Fleet) int {
+					da, db := a.Position.DistanceTo(field.Position), b.Position.DistanceTo(field.Position)
+					if da < db {
+						return -1
+					}
+					if da > db {
+						return 1
+					}
+					return a.Num - b.Num
+				})
+				for _, f := range candidates {
+					if assigned[f.Num] {
+						continue
+					}
+					if route := t.minesweeperFieldRoute(p, f, field); route != nil {
+						t.applyMinesweeperRoute(p, f, field, route)
+						assigned[f.Num] = true
+						reserved[key] = append(reserved[key], newSweepArrival(&t.game.Rules, p, field, f, route))
+						break
+					}
+				}
+			}
+			for _, field := range fields[start:end] {
+				key := minefieldAssignmentKey(field)
+				group := reserved[key]
+				if len(group) != 0 && field.NumMines > group[0].capacity {
+					t.reinforceMinefield(p, field, group, available, assigned)
+				}
+			}
+		}
+		for _, f := range available {
+			if assigned[f.Num] {
+				continue
+			}
+			delete(f.Tags, minesweeperTargetTag)
+			if len(assigned) > 0 {
+				holdAutomaticFleet(p, f, "Minesweeper reserve: no safe reinforcement would shorten clearing in the current band")
 				continue
 			}
 			var best *expeditionRoute
@@ -114,9 +232,13 @@ func (t *turnGenerator) planMinesweeperAutomation() {
 			}
 			if best != nil {
 				applyExpeditionRoute(p, f, best)
-				f.SetTag(fuelStatusTag, "Minesweeper returning to a safe fuel dock; no reachable hostile field")
+				status := "No reported hostile minefields; returning to a dock, not sweeping"
+				if len(fields) > 0 {
+					status = "Nearest territory clearing band is unreachable with current fuel or route; returning to a dock"
+				}
+				f.SetTag(fuelStatusTag, status)
 			} else {
-				holdAutomaticFleet(p, f, "Minesweeper: no confirmed safe field route; awaiting fuel assistance")
+				holdAutomaticFleet(p, f, "Minesweeper idle: no feasible route to a reported hostile field or dock")
 				requestAutomaticRescue(p, f, true)
 			}
 		}

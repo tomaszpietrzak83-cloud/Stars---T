@@ -250,11 +250,39 @@ func knownRouteThreat(player *Player, from, to Vector) int {
 
 func civilianTraffic(player *Player, fleet *Fleet) bool {
 	role := player.Automation.FleetRoles[fleet.Num]
-	return role == "freighter" || role == "scout" && !fleet.InDesignMaintenance() && !fleet.InAutomaticSafety()
+	return role == "freighter" || colonizerPassengerCarrier(player, fleet) || role == "scout" && !fleet.InDesignMaintenance() && !fleet.InAutomaticSafety()
 }
 
 func transitRouteThreat(player *Player, fleet *Fleet, from, to Vector) int {
 	return routeThreat(player, from, to, civilianTraffic(player, fleet))
+}
+
+func unsafeCivilianDestination(player *Player, fleet *Fleet, job *logisticsJob, position Vector) bool {
+	if op := readLandingOperation(fleet); job.Kind == "landing-assault" && op != nil && op.Phase == "assault" {
+		return false
+	} // Rechecked with its arriving escort before movement.
+
+	return civilianTraffic(player, fleet) &&
+		job.Kind != "invade" && job.Kind != "invade-load" && routeThreat(player, fleet.Position, position, true) > 0
+}
+
+func (t *turnGenerator) abandonUnsafeCivilianDelivery(player *Player, fleet *Fleet) {
+	delete(fleet.Tags, logisticsTag)
+	delete(fleet.Tags, deliveryProgressTag)
+	delete(fleet.Tags, fuelRequestTag)
+	t.releaseEscorts(player, fleet)
+	var retreat logisticsJob
+	if t.withdrawEmptyFreighter(player, fleet, &retreat) {
+		saveLogisticsWork(fleet, &retreat)
+		return
+	}
+	holdAutomaticFleet(player, fleet, "Transport assignment cancelled: destination has an undefended orbital threat")
+}
+
+func defendedCivilianDestination(player *Player, position Vector, threat int) bool {
+	planet := player.getPlanetIntelAt(position)
+	return planet != nil && planet.OwnedBy(player.Num) && planet.Starbase != nil &&
+		!planet.Starbase.Delete && planet.Starbase.Spec.HasWeapons && patrolPower(planet.Starbase) >= threat
 }
 
 func convoyThreat(player *Player, fleet *Fleet, to Vector) int {
@@ -286,7 +314,7 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 				if intel == nil || intel.Delete || intel.ReportAge != 0 || intel.PlayerNum == player.Num || player.IsFriend(intel.PlayerNum) || !patrolReportedCombatant(player, intel) {
 					continue
 				}
-				threat := routeThreatReport(player, intel, float64(index.margin))
+				threat := routeThreatReport(intel)
 				threat.power = patrolReportedPower(player, intel)
 				index.threats = append(index.threats, threat)
 			}
@@ -298,9 +326,12 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 		}
 		total := 0
 		for _, threat := range index.threats {
-			if threat.threatensRoute(from, to, civilian) {
+			if threat.threatensRoute(player, to, civilian) {
 				total = min(1_000_000_000, total+threat.power)
 			}
+		}
+		if civilian && total > 0 && defendedCivilianDestination(player, to, total) {
+			total = 0
 		}
 		if index.routes != nil {
 			if len(index.routes) >= 4096 {
@@ -322,10 +353,13 @@ func uncachedRouteThreat(player *Player, from, to Vector, civilian bool) int {
 		if intel == nil || intel.Delete || intel.ReportAge != 0 || intel.PlayerNum == player.Num || player.IsFriend(intel.PlayerNum) || !patrolReportedCombatant(player, intel) {
 			continue
 		}
-		report := routeThreatReport(player, intel, player.Automation.escortMarginAsFloat())
-		if report.threatensRoute(from, to, civilian) {
+		report := routeThreatReport(intel)
+		if report.threatensRoute(player, to, civilian) {
 			threat = min(1_000_000_000, threat+patrolReportedPower(player, intel))
 		}
+	}
+	if civilian && threat > 0 && defendedCivilianDestination(player, to, threat) {
+		return 0
 	}
 	return threat
 }
@@ -392,16 +426,6 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 		holdAutomaticFleet(player, fleet, job.Status)
 		return
 	}
-	if minimum == 0 && civilianTraffic(player, fleet) && reportedHostileOrbit(player, job.Position) == nil && transitRouteThreat(player, fleet, fleet.Position, job.Position) > 0 {
-		t.releaseEscorts(player, fleet)
-		if t.withdrawEmptyFreighter(player, fleet, job) {
-			return
-		}
-		job.Status = "Waiting for the destination to clear"
-		holdAutomaticFleet(player, fleet, job.Status)
-		return
-	}
-
 	threat := int(math.Ceil(float64(convoyThreat(player, fleet, job.Position)) * float64(player.Automation.escortStrength()) / 100))
 	if (job.Kind == "planet" || job.Kind == "passengers" || job.Kind == "invade-load") && fleet.Position == job.Position && job.DeliveryNum != 0 {
 		if dest := t.game.getPlanet(job.DeliveryNum); dest != nil {
@@ -620,6 +644,10 @@ func (t *turnGenerator) planLogisticsAutomation() {
 			if job != nil && job.Kind == "settle" {
 				destination := t.passengerDestination(player, fleet, job.DeliveryNum)
 				if destination == nil {
+					if unsafeCivilianDestination(player, fleet, job, job.Position) {
+						t.abandonUnsafeCivilianDelivery(player, fleet)
+						continue
+					}
 					job.Status = "Waiting for a suitable colony with room for passengers"
 					routeAutomatically(&t.game.Rules, player, fleet, fleet.Position, MapObjectTarget{}, 0)
 					saveLogisticsWork(fleet, job)
@@ -632,7 +660,8 @@ func (t *turnGenerator) planLogisticsAutomation() {
 				var nearest *Planet
 				best := math.Inf(1)
 				for _, planet := range t.game.Planets {
-					if planet.OwnedBy(player.Num) && ((planet.Spec.HasStarbase && planet.Spec.DockCapacity != 0) || job.DeliveryNum == planet.Num) {
+					if planet.OwnedBy(player.Num) && ((planet.Spec.HasStarbase && planet.Spec.DockCapacity != 0) || job.DeliveryNum == planet.Num) &&
+						!unsafeCivilianDestination(player, fleet, job, planet.Position) {
 						if job.DeliveryNum != 0 && planet.Num != job.DeliveryNum {
 							continue
 						}
@@ -745,6 +774,16 @@ func (t *turnGenerator) planLogisticsAutomation() {
 				target = source.MapObject.ToTarget()
 			} else {
 				target = MapObjectTarget{TargetType: MapObjectTypeSalvage, TargetNum: job.TargetNum, TargetPosition: job.Position}
+			}
+			if unsafeCivilianDestination(player, fleet, job, job.Position) {
+				t.abandonUnsafeCivilianDelivery(player, fleet)
+				continue
+			}
+			if job.Kind == "planet" || job.Kind == "passengers" {
+				if dest := t.game.getPlanet(job.DeliveryNum); dest != nil && unsafeCivilianDestination(player, fleet, job, dest.Position) {
+					t.abandonUnsafeCivilianDelivery(player, fleet)
+					continue
+				}
 			}
 			t.prepareConvoy(player, fleet, job, target)
 			saveLogisticsWork(fleet, job)
@@ -900,6 +939,10 @@ func (t *turnGenerator) dispatchReadyLogistics() {
 			}
 			destination := t.game.getPlanet(job.DeliveryNum)
 			if destination == nil {
+				continue
+			}
+			if unsafeCivilianDestination(p, f, job, destination.Position) {
+				t.abandonUnsafeCivilianDelivery(p, f)
 				continue
 			}
 			if len(f.Waypoints) > 1 && f.Waypoints[1].Position == destination.Position {

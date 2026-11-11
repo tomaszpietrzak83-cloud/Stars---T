@@ -1,0 +1,30 @@
+COLONIZER MISSION POLICY — 2026-11-08
+
+Implemented user clarification, superseding recommendations in the earlier audit:
+- New colony assignments: maximum 25 years, funded by onboard fuel and known fixed docks. No assistedColonyTarget fallback and no tanker acceleration dependency when selecting a new target.
+- Committed target survives mode/priority changes and temporary loss of a route. A newer ownership scan may cancel it. Retain a funded, safe itinerary instead of replanning dock detours every year. Slow funded continuation is allowed for an existing mission beyond the new-assignment limit.
+- Reserve targets only for real colony voyages; safety/refit/idle tags alone do not reserve planets.
+- Defer maintenance while a colony delivery, landing or retirement is active. Recover loaded legacy colonizers from unstarted refit returns without undoing already committed replacements.
+- Physical arrival at an unexpectedly hostile inhabited planet performs a normal ground invasion and retains the hull. Friendly planets and orbital bases retain ordinary protections; owned planets accept delivery, including red worlds.
+- After delivery, judge continued service by a funded empty return to a real starbase within 25 years, not by engine name/free warp. Long-return ships deliver remaining people and head to the nearest reachable starbase by travel time for recycling; request nearby fuel support on long returns.
+- Idle reusable colony ships carry passengers only, can join coordinated landings, keep current passenger deliveries until completed, and can return to colonization. Restore colony roles after merging/splitting a landing force, including cancellation with passengers still aboard.
+- Keep red-world fallback and existing CA terraforming mechanics. No new compulsory reconnaissance delay. Existing scans remain usable, with normal arrival handling for unexpected ownership.
+- Updated colony descriptions and current status ordering; safety is shown ahead of stale colony text.
+
+Validation:
+- Focused colony, landing, maintenance, fuel and passenger regressions PASS.
+- New mission tests cover persistent goal, deferred/legacy refit, live reservation, occupied-world invasion with retained hull, travel-time retirement, landing recruitment, role restoration and funded-route guard.
+- Copied private 2507 archive check PASS without generating a turn: fleets247/283 retain Thalassa/Rhea Gate; fleet190 receives a physical route carrying its 250kT passengers to Kant before retirement. The unassisted route is108 years with current fuel, so a route is not a promise of quick recovery; long return requests nearby fuel help.
+- Whole cs run initially failed four old tanker expectations during parallel tanker-policy work. All remaining cs tests PASS (83.745s), then those four tests PASS after their parallel updates (3.449s). No claim that the original failing command passed.
+- Frontend check: zero errors/warnings. Windows, WASM and compiled UI builds PASS.
+- Isolated fresh-database smoke: native API, compiled UI and served WASM all HTTP200.
+- Newer shared pending executable also checked separately: API200 and new colony policy strings present.
+
+Deployment state:
+Running windows/stars-local.exe was left untouched. Shared dist/stars-local.pending.exe already contains this implementation alongside parallel work and is consumed by Play-Windows.ps1 on next launch. Newer pending build was preserved, not overwritten by this task's older build.
+Verified pending SHA256: 4642161ca745c0f04dbddfb30ad0480f9ddd01b17be09d4baea9498312d235d4
+windows/SHA256SUMS.txt describes the actual installed Windows file and current WASM file.
+No personal database was modified, no live turn generated, no server restarted, no Git push performed.
+
+Evidence: ../audit-results/colonization-2026-11-08/{archive-tests.txt,engine-except-concurrent-tanker-tests.txt,tanker-recheck-final.txt,frontend-check.txt,native-build.txt,wasm-build.txt,frontend-build.txt,smoke-result.txt,pending-smoke-result.txt}.
+Private archives/test databases stay outside publication.

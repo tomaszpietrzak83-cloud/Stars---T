@@ -21,7 +21,11 @@ function response(quantity: number) {
 		year: 2400,
 		yards: [
 			{
-				planet: { mapObject: { num: 1, name: 'Alpha' } },
+				planet: {
+					mapObject: { num: 1, name: 'Alpha' },
+					spec: { resourcesPerYear: 99, resourcesPerYearAvailable: 72 },
+					cargo: { ironium: 11, boranium: 22, germanium: 33 }
+				},
 				capacityThisYear: 2,
 				thisYearQuantity: Math.min(2, quantity),
 				laterQuantity: Math.max(0, quantity - 4),
@@ -100,4 +104,13 @@ it('keeps the preview available but prevents writes in read-only mode', async ()
 		.element(page.getByRole('button', { name: 'Queue ships', exact: true }))
 		.toBeDisabled();
 	expect(context.queueShipProduction).not.toHaveBeenCalled();
+});
+
+it('links to the planet queue and shows its production budget and mineral stock', async () => {
+	render(EmpireShipProduction);
+	const row = page.getByRole('row').filter({ has: page.getByRole('link', { name: 'Alpha' }) });
+	await expect.element(row.getByRole('link', { name: 'Alpha' }))
+		.toHaveAttribute('href', '/games/1/planets/1/production');
+	await expect.element(row.getByRole('cell', { name: '72', exact: true })).toBeVisible();
+	await expect.element(row.getByRole('cell', { name: '11 / 22 / 33', exact: true })).toBeVisible();
 });

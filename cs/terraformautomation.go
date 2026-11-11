@@ -21,9 +21,36 @@ func readTerraformJob(f *Fleet) *terraformJob {
 	return &job
 }
 
-// Only owned colonies are selected: automatic terraforming never starts a war.
-func terraformWork(player *Player, planet *Planet) bool {
-	return planet != nil && planet.OwnedBy(player.Num) && NewTerraformer().GetBestTerraform(planet, player, player) != nil
+// Orbital assistance is for other players marked as friends, never our own
+// colonies. Probe a real step so instaformed or capped worlds cannot trap a fleet.
+func (t *turnGenerator) terraformWork(player *Player, planet *Planet) bool {
+	if planet == nil || !planet.Owned() || planet.OwnedBy(player.Num) || !player.IsFriend(planet.PlayerNum) {
+		return false
+	}
+	owner := t.game.getPlayer(planet.PlayerNum)
+	if owner == nil {
+		return false
+	}
+	probe := *planet
+	result := NewTerraformer().TerraformOneStep(&probe, owner, player, false)
+	return result.Terraformed() && Abs(owner.Race.HabCenter().Get(result.Type)-probe.Hab.Get(result.Type)) < Abs(owner.Race.HabCenter().Get(result.Type)-planet.Hab.Get(result.Type))
+}
+
+func (t *turnGenerator) terraformTarget(player *Player, fleet *Fleet, num int) *Planet {
+	if num != None && fleet.OrbitingPlanetNum == num {
+		return t.game.getPlanet(num)
+	}
+	intel := player.GetPlanetIntel(num)
+	if intel == nil || intel.ReportAge == ReportAgeUnexplored {
+		return nil
+	}
+	// Foreign reports contain current/base conditions, but not the stored
+	// terraformed amount. Reconstruct it without changing the player's report.
+	planet := *intel
+	if owner := t.game.getPlayer(planet.PlayerNum); owner != nil && !owner.Race.Spec.Instaforming {
+		planet.TerraformedAmount = planet.Hab.Subtract(planet.BaseHab)
+	}
+	return &planet
 }
 func (t *turnGenerator) planTerraformAutomation() {
 	for _, player := range t.automaticPlayers() {
@@ -47,15 +74,19 @@ func (t *turnGenerator) planTerraformAutomation() {
 			} else {
 				assigned[job.PlanetNum]--
 			}
-			chosen := t.game.getPlanet(job.PlanetNum)
-			if !terraformWork(player, chosen) {
+			chosen := t.terraformTarget(player, fleet, job.PlanetNum)
+			if !t.terraformWork(player, chosen) {
 				chosen = nil
 			}
 			// Keep an assignment until its available terraforming is finished.
 			if chosen == nil {
 				best := -1.0
-				for _, planet := range t.game.Planets {
-					if !terraformWork(player, planet) {
+				for _, intel := range player.PlanetIntels {
+					if intel == nil || intel.ReportAge == ReportAgeUnexplored {
+						continue
+					}
+					planet := t.terraformTarget(player, fleet, intel.Num)
+					if !t.terraformWork(player, planet) {
 						continue
 					}
 					route := t.planAutomaticMission(player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{})
@@ -63,8 +94,9 @@ func (t *turnGenerator) planTerraformAutomation() {
 						continue
 					}
 					probe := *planet
-					NewTerraformer().TerraformOneStep(&probe, player, player, false)
-					gain := max(1, player.Race.GetPlanetHabitability(probe.Hab)-player.Race.GetPlanetHabitability(planet.Hab))
+					owner := t.game.getPlayer(planet.PlayerNum)
+					NewTerraformer().TerraformOneStep(&probe, owner, player, false)
+					gain := max(1, owner.Race.GetPlanetHabitability(probe.Hab)-owner.Race.GetPlanetHabitability(planet.Hab))
 					score := float64(gain) * (1 + float64(planet.Cargo.Colonists)/1000) / float64((route.Turns+1)*(1+assigned[planet.Num]))
 					if score > best {
 						best, chosen = score, planet
@@ -73,8 +105,8 @@ func (t *turnGenerator) planTerraformAutomation() {
 			}
 			if chosen == nil {
 				job.PlanetNum = 0
-				holdAutomaticFleet(player, fleet, "Waiting for an owned colony with available terraforming")
-				job.Status = "No reachable colony needs terraforming"
+				holdAutomaticFleet(player, fleet, "Waiting for an allied colony with available terraforming")
+				job.Status = "No reachable allied colony needs terraforming"
 				expeditionRefuel(&t.game.Rules, player, fleet)
 			} else {
 				job.PlanetNum = chosen.Num
@@ -86,7 +118,7 @@ func (t *turnGenerator) planTerraformAutomation() {
 					job.Status = "Refuelling for terraforming assignment"
 				} else {
 					applyExpeditionRoute(player, fleet, route)
-					job.Status = fmt.Sprintf("Terraforming assignment: %s", chosen.Name)
+					job.Status = fmt.Sprintf("Allied terraforming assignment: %s", chosen.Name)
 					if fleet.Position == chosen.Position {
 						fleet.Waypoints = []Waypoint{{Position: fleet.Position, MapObjectTarget: chosen.MapObject.ToTarget()}}
 						job.Status = fmt.Sprintf("Terraforming %s until no further improvement is available", chosen.Name)

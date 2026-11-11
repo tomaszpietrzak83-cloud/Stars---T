@@ -204,3 +204,43 @@ func TestEmpireProductionReclaimsTemporaryBoostCapacityForNextOrder(t *testing.T
 	require.NoError(t, err)
 	require.Equal(t, baseline.ThisYear, next.ThisYear)
 }
+
+func TestEmpireProductionSkipsYardWithMultiyearManualOrders(t *testing.T) {
+	u := shipProductionUniverse(t)
+	p, alpha := u.Player(1), u.Planet("Alpha")
+	d := p.Designs[0]
+	rules := &u.Game.Rules
+	free, err := PlanEmpireShipProduction(rules, p, u.Game.Planets, d.Num, MaxShipProductionOrder, "manual", true)
+	require.NoError(t, err)
+	require.Positive(t, free.ThisYear)
+
+	for _, tc := range []struct {
+		name     string
+		kind     QueueItemType
+		quantity int
+		blocked  bool
+	}{
+		{"manual backlog", QueueItemTypeFactory, 100, true},
+		{"short manual queue", QueueItemTypeFactory, 1, false},
+		{"auto orders", QueueItemTypeAutoFactories, 100, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			alpha.ProductionQueue = []ProductionQueueItem{{Type: tc.kind, Quantity: tc.quantity}}
+			plan, err := PlanEmpireShipProduction(rules, p, u.Game.Planets, d.Num, free.ThisYear+1, "manual", false)
+			require.NoError(t, err)
+			for _, yard := range plan.Yards {
+				if yard.Planet.Num != alpha.Num {
+					require.Positive(t, yard.ThisYear+yard.Later)
+					continue
+				}
+				if tc.blocked {
+					require.Zero(t, yard.Capacity+yard.ThisYear+yard.Later)
+					require.Equal(t, "Existing non-Auto orders extend beyond this year", yard.Reason)
+					require.Equal(t, alpha.ProductionQueue, yard.Planet.ProductionQueue)
+				} else {
+					require.Positive(t, yard.ThisYear)
+				}
+			}
+		})
+	}
+}

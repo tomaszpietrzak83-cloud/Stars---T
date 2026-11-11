@@ -39,7 +39,7 @@
 			case GR:
 				return 'Your race takes a holistic approach to research. Only half of the resources dedicated to research will be applied to the currently selected field, but 15% of the amount will be applied to all other fields (for a total of 125%).';
 			case UR:
-				return 'When you scrap a fleet at a starbase, you will recover 90% of the minerals and up to 70% of the resources used to produce the fleet, avaliable for use in production the following year. Scrapping at a planet will yield half the amount of minerals and resources. Note that these resources are not additive and depend on the yearly production of the planet in question.';
+				return 'Scrapping a fleet at your starbase recovers 90% of its mineral cost and 80% of its production resources. Scrapping at a planet without a starbase recovers 45% of its mineral cost and 35% of its production resources. The planet’s yearly production does not affect the recovery.';
 			case NRSE:
 				return 'You will not be able to build the Radiating Hydro-Ram Scoop, Sub-Galactic Fuel Scoop, Trans-Galactic Fuel Scoop, Trans-Galactic Super Scoop, Trans-Galactic Mizer Scoop or the Galaxy Scoop. You will be able to build the Interspace-10 engine, which, though expensive, can safely travel at warp 10 much earlier than other engines.';
 			case OBRM:

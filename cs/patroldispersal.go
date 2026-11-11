@@ -1,6 +1,10 @@
 package cs
 
-import "slices"
+import (
+	"math"
+	"slices"
+	"strconv"
+)
 
 // A reinforcement request is a fresh assessment on the next planning pass,
 // not ownership of hunters while no viable attack exists.
@@ -47,7 +51,33 @@ func (t *turnGenerator) assignSoloPatrol(p *Player, f *Fleet) bool {
 	return t.assignSoloPatrolWithRecon(p, f, func(enemy *Fleet) bool { return patrolNeedsRecon(p, enemy) })
 }
 
+const patrolReturnHuntTag = "patrol-return-hunt"
+
+func (t *turnGenerator) patrolReturnHunt(p *Player, f *Fleet) bool {
+	until, _ := strconv.Atoi(f.GetTag(patrolReturnHuntTag))
+	if until < t.game.Year || atOwnFuelDock(p, f) {
+		delete(f.Tags, patrolReturnHuntTag)
+		return false
+	}
+	if t.assignSoloPatrol(p, f) {
+		return true
+	}
+	return t.returnPatrolToFuel(p, f)
+}
+
 func (t *turnGenerator) assignSoloPatrolWithRecon(p *Player, f *Fleet, needsRecon func(*Fleet) bool) bool {
+	homeDistance := func(point Vector) float64 {
+		distance := math.Inf(1)
+		for _, world := range t.game.getPlanets(p.Num) {
+			distance = min(distance, point.DistanceTo(world.Position))
+		}
+		return distance
+	}
+	homeward := f.GetTag(patrolReturnHuntTag) != ""
+	currentHomeDistance := math.Inf(1)
+	if homeward {
+		currentHomeDistance = homeDistance(f.Position)
+	}
 	// Assignments stay unchanged until this function selects a target and
 	// returns. Build the occupied-target set once, not once per enemy report.
 	claimed := make(map[[2]int]bool)
@@ -68,6 +98,9 @@ func (t *turnGenerator) assignSoloPatrolWithRecon(p *Player, f *Fleet, needsReco
 			continue
 		}
 		point := patrolInterceptPosition(enemy)
+		if homeward && (patrolReportedCombatant(p, enemy) || homeDistance(point) >= currentHomeDistance) {
+			continue
+		}
 		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, AllowThreat: true, MaxTurns: 2, MinWarp: automaticCruiseWarp(p, f)})
 		if route == nil || route.WaitForFuel {
 			continue
@@ -114,4 +147,112 @@ func (t *turnGenerator) screenPatrolRally(p *Player, f *Fleet, by int) bool {
 		return true
 	}
 	return false
+}
+
+// Fill the nearest-to-full tanks with fuel left after every ship's return
+// reserve. SplitAll distributes fuel first; this step conserves that total.
+func (t *turnGenerator) balanceDispersedPatrolFuel(p *Player, ships []*Fleet) {
+	if len(ships) < 2 || !patrolFuelAreaClear(p, ships[0], ships[0].Position) {
+		return
+	}
+	ships = slices.Clone(ships)
+	reserves := map[*Fleet]int{}
+	for _, f := range ships {
+		if f.Delete || f.Spec.TotalShips != 1 || f.Position != ships[0].Position || p.Automation.FleetRoles[f.Num] != "patrol" {
+			continue
+		}
+		reserve := automaticReturnFuel(&t.game.Rules, p, f, f.Position, expeditionStations(p, f), false)
+		if f.Fuel >= reserve {
+			reserves[f] = reserve
+		}
+	}
+	ships = slices.DeleteFunc(ships, func(f *Fleet) bool { _, ok := reserves[f]; return !ok })
+	slices.SortStableFunc(ships, func(a, b *Fleet) int { return (a.Spec.FuelCapacity - a.Fuel) - (b.Spec.FuelCapacity - b.Fuel) })
+	for i, receiver := range ships {
+		need := receiver.Spec.FuelCapacity - receiver.Fuel
+		if need <= 0 {
+			continue
+		}
+		surplus := 0
+		for _, f := range ships[i+1:] {
+			surplus += f.Fuel - reserves[f]
+		}
+		if surplus < need {
+			break
+		}
+		for j := len(ships) - 1; j > i && need > 0; j-- {
+			f := ships[j]
+			amount := min(need, f.Fuel-reserves[f])
+			receiver.Fuel += amount
+			f.Fuel -= amount
+			need -= amount
+			f.ComputeFuelUsage(p)
+		}
+		receiver.ComputeFuelUsage(p)
+	}
+}
+
+const patrolSectorReserveTag = "patrol-sector-reserve"
+
+// After relief, leave half the local force for one additional turn if an
+// enemy bomber was recently reported at a nearby friendly colony.
+func (t *turnGenerator) retainPatrolSectorReserve(p *Player, stack *Fleet) *Fleet {
+	if t.ordersOnly || stack.Spec.TotalShips < 8 || stack.CargoMass() > 0 || fuelNetworkReserved(stack) {
+		return nil
+	}
+	recent := false
+	for _, memory := range p.Automation.PatrolMemory {
+		if t.game.Year-memory.Seen > 2 || p.IsFriend(memory.Enemy) || stack.Position.DistanceTo(memory.Position) > max(80, 2*stack.StrategicSpeed(patrolFreeWarp(p, stack))) {
+			continue
+		}
+		bomber := false
+		for _, num := range memory.Designs {
+			if design := p.GetShipDesignIntel(memory.Enemy, num); design != nil {
+				if hull := StaticTechStore.GetHull(design.Hull); hull != nil && hull.Class == ShipClassBomber {
+					bomber = true
+					break
+				}
+			}
+		}
+		if !bomber {
+			continue
+		}
+		for _, world := range t.game.getPlanets(p.Num) {
+			if world.Position == memory.Position {
+				recent = true
+				break
+			}
+		}
+		if recent {
+			break
+		}
+	}
+	if !recent {
+		return nil
+	}
+	spare := []ShipToken{}
+	left := stack.Spec.TotalShips / 2
+	for _, token := range stack.Tokens {
+		if left == 0 {
+			break
+		}
+		token.Quantity = min(left, token.Quantity)
+		spare = append(spare, token)
+		left -= token.Quantity
+	}
+	child, err := (&orders{}).splitFleetTokens(&t.game.Rules, p, t.game.getFleets(p.Num), stack, spare)
+	if err != nil {
+		return nil
+	}
+	p.InheritAutomaticRole(stack, child)
+	p.Automation.FleetRoles[child.Num] = "patrol"
+	stack.SetTag(patrolSectorReserveTag, strconv.Itoa(t.game.Year+1))
+	t.game.Fleets = append(t.game.Fleets, child)
+	_ = t.game.Universe.addFleet(child)
+	return child
+}
+
+func localPatrolReserve(f *Fleet, year int) bool {
+	until, err := strconv.Atoi(f.GetTag(patrolSectorReserveTag))
+	return err == nil && until >= year
 }

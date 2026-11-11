@@ -61,6 +61,7 @@ func TestKnownDesignReportsTriggerEvasionWithoutPrivateFleetSpecs(t *testing.T) 
 	enemy := &Fleet{MapObject: MapObject{Num: 9, PlayerNum: 2, Position: Vector{25, 0}}, WarpSpeed: 5, Heading: VectorFloat64{X: -1}, Tokens: []ShipToken{{DesignNum: 8, Quantity: 1}}}
 	p.FleetIntels = []*Fleet{enemy}
 	p.ShipDesignIntels = []*ShipDesign{{Num: 8, PlayerNum: 2, Hull: Destroyer.Name, Slots: []ShipDesignSlot{{Quantity: 1}}, Spec: ShipDesignSpec{PowerRating: 100}}}
+	u.Planet("Home").Starbase.Spec.HasWeapons = false
 	u.Run((*turnGenerator).refreshAutomaticFuelIntel)
 	require.Zero(t, knownRouteThreat(p, f.Position, f.Position), "the enemy leaves our current position behind")
 	require.Greater(t, interceptionThreat(p, f), 0)

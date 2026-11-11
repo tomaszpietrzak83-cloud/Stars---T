@@ -41,6 +41,9 @@ func bomberWarningReports(p *Player, f *Fleet) []*Fleet {
 			continue
 		}
 		distance := f.Position.DistanceTo(e.Position)
+		if p.planetOnlyAI[e.PlayerNum] && f.Position.DistanceTo(patrolInterceptPosition(e)) > 3 {
+			continue
+		}
 		if stationaryBombardmentGuard(p, e) && distance > 3 {
 			continue
 		}

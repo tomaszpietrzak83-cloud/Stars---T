@@ -53,17 +53,8 @@
 		loading = true;
 		failed = false;
 		try {
-			const [mine, open] = await Promise.all([
-				gameClient.getGames({ open: false }),
-				gameClient.getGames({ open: true })
-			]);
+			const mine = await gameClient.getGames({ open: false });
 			games = mine.games;
-			openGames = open.games
-				.filter(
-					(g) =>
-						g.game?.hostId !== BigInt($me.id) && !g.players.some((p) => p.userId === BigInt($me.id))
-				)
-				.sort(sorter);
 		} catch (e) {
 			failed = true;
 			addError(e as ConnectError);
@@ -71,7 +62,26 @@
 			loading = false;
 		}
 	}
-	onMount(loadGames);
+
+	// Public lobbies must never delay (or hide) the user's saved games.
+	async function loadOpenGames() {
+		if ($me.isGuest()) return;
+		try {
+			const open = await gameClient.getGames({ open: true });
+			openGames = open.games
+				.filter(
+					(g) =>
+						g.game?.hostId !== BigInt($me.id) && !g.players.some((p) => p.userId === BigInt($me.id))
+				)
+				.sort(sorter);
+		} catch (e) {
+			addError(e as ConnectError);
+		}
+	}
+	onMount(() => {
+		void loadGames();
+		void loadOpenGames();
+	});
 
 	function removeGame(game: GameWithPlayers) {
 		games = games.filter((g) => g.game?.id !== game.game?.id);
@@ -106,7 +116,7 @@
 			<h1 class="text-3xl font-bold">Games</h1>
 			<p class="text-base-content/70 mt-1">
 				{loading
-					? 'Loading your galaxies…'
+					? 'Loading saved game list…'
 					: `${newTurnGames.length} multiplayer ${newTurnGames.length === 1 ? 'turn' : 'turns'} ready to play`}
 			</p>
 		</div>

@@ -248,6 +248,7 @@ const (
 	PlayerMessagePlanetColonizeContested
 	PlayerMessagePlanetBuiltNote
 	PlayerMessagePlayerMail
+	PlayerMessageShipUpgrades
 )
 
 func newMessage(messageType PlayerMessageType) PlayerMessage {

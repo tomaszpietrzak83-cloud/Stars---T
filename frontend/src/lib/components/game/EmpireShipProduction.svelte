@@ -198,7 +198,7 @@
 				>{plan.assignedQuantity - plan.thisYearQuantity} later</span
 			>
 			{#if plan.unassignedQuantity}<span class="text-warning"
-					>{plan.unassignedQuantity} cannot be scheduled within 100 years</span
+					>{plan.unassignedQuantity} could not be assigned to eligible yards within 100 years</span
 				>{/if}
 		</div>
 		{#if !plan.yards.length}<p>No owned bases are available.</p>{/if}
@@ -206,13 +206,33 @@
 			<table class="table table-sm" aria-label="Shipyard allocation">
 				<thead
 					><tr
-						><th>Base</th><th>Free this year</th><th>Green batch</th><th>Blue batch</th><th
+						><th>Base</th><th>Queue resources</th><th>I/B/G on hand (kT)</th><th>Free this year</th><th>Green batch</th><th>Blue batch</th><th
 							>Completion</th
 						><th>Status</th></tr
 					></thead
 				><tbody>
-					{#each plan.yards as yard (yard.planet?.mapObject?.num)}<tr>
-							<td>{yard.planet?.mapObject?.name}</td><td>{yard.capacityThisYear}</td>
+					{#each plan.yards as yard (yard.planet?.mapObject?.num)}
+						{@const planet = yard.planet}
+						{@const mapObject = planet?.mapObject}
+						<tr>
+							<td>
+								{#if mapObject}
+									<a class="cs-link" href={`/games/${$game.id}/planets/${mapObject.num}/production`}>
+										{mapObject.name}
+									</a>
+								{/if}
+							</td>
+							<td>{planet?.spec?.resourcesPerYearAvailable ?? '—'}</td>
+							<td class="whitespace-nowrap">
+								{#if planet?.cargo}
+									<span class="text-ironium">{planet.cargo.ironium}</span> /
+									<span class="text-boranium">{planet.cargo.boranium}</span> /
+									<span class="text-germanium">{planet.cargo.germanium}</span>
+								{:else}
+									—
+								{/if}
+							</td>
+							<td>{yard.capacityThisYear}</td>
 							<td class="text-success font-bold" data-type="current-year-ships"
 								>{yard.thisYearQuantity || '—'}</td
 							>

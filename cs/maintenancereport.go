@@ -69,7 +69,7 @@ func (t *turnGenerator) reportShipMaintenance() {
 			parts = append(parts, fmt.Sprintf("%d other fleet rebuilds reached 70%% regrouping", len(r.progress)))
 		}
 		if len(parts) > 0 {
-			p.Messages = append(p.Messages, PlayerMessage{Type: PlayerMessageInfo, Text: fmt.Sprintf("Ship upgrades and retirements (%d): %s.", t.game.Year, strings.Join(parts, "; "))})
+			p.Messages = append(p.Messages, PlayerMessage{Type: PlayerMessageShipUpgrades, Text: fmt.Sprintf("Ship upgrades and retirements (%d): %s.", t.game.Year, strings.Join(parts, "; "))})
 		}
 	}
 	t.maintenanceReports = nil

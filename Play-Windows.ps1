@@ -69,9 +69,15 @@ try{
  $oldPort=$env:STARS_HTTP_PORT;$oldBackend=$env:STARS_LOCAL_BACKEND;$oldWebRoot=$env:STARS_WEB_ROOT
  try{$env:STARS_WEB_ROOT=$uiRoot;$env:STARS_HTTP_PORT='5173';$env:STARS_LOCAL_BACKEND='http://127.0.0.1:8080';$frontend=Start-Process -FilePath $nodeExe -ArgumentList ('"'+$webScript+'"') -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $logs 'frontend.out.log') -RedirectStandardError (Join-Path $logs 'frontend.err.log')}finally{$env:STARS_HTTP_PORT=$oldPort;$env:STARS_LOCAL_BACKEND=$oldBackend;$env:STARS_WEB_ROOT=$oldWebRoot}
  $ready=$false
- for($attempt=0;$attempt -lt 60;$attempt++){
+ # A first launch after an update may back up and migrate a large save database.
+ # Do not kill that one-time work after the old ~15 second readiness window.
+ $startupDeadline=[DateTime]::UtcNow.AddMinutes(3)
+ $startupNotice=[DateTime]::UtcNow.AddSeconds(5)
+ $noticeShown=$false
+ while([DateTime]::UtcNow -lt $startupDeadline){
   if($backend.HasExited -or $frontend.HasExited){throw 'The game could not start. Check tmp/launch logs.'}
   try{if((Invoke-WebRequest 'http://127.0.0.1:5173/local-ready' -UseBasicParsing -TimeoutSec 1).Content -eq 'stars-local-singleplayer'){$probe=[Net.Sockets.TcpClient]::new('127.0.0.1',8080);$probe.Dispose();$ready=$true;break}}catch{}
+  if(!$noticeShown -and [DateTime]::UtcNow -ge $startupNotice){Write-Host 'Preparing the game database. The first start after an update can take longer.';$noticeShown=$true}
   Start-Sleep -Milliseconds 250
  }
  if(!$ready){throw 'Local game startup timed out.'}

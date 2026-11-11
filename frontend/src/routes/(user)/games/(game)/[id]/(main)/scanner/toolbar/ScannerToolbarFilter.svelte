@@ -6,6 +6,7 @@
 	import FilterEnemyDesigns from './FilterEnemyDesigns.svelte';
 	import FilterFleetCounts from './FilterFleetCounts.svelte';
 	import FilterFleetRoutes from './FilterFleetRoutes.svelte';
+	import FilterCombatFleets from './FilterCombatFleets.svelte';
 	import FilterIdleFleets from './FilterIdleFleets.svelte';
 	import FilterMinefields from './FilterMinefields.svelte';
 	import FilterMyDesigns from './FilterMyDesigns.svelte';
@@ -52,6 +53,12 @@
 	<div class="size-10"><FilterFleetRoutes/></div>
 	<div class="size-10">
 		<FilterIdleFleets />
+	</div>
+	<div class="size-10">
+		<FilterCombatFleets />
+	</div>
+	<div class="size-10">
+		<FilterCombatFleets hide />
 	</div>
 	<FilterMyDesigns />
 	{#if shareMap}

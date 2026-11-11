@@ -3,6 +3,7 @@ package cs
 import (
 	"fmt"
 	"math"
+	"slices"
 	"sort"
 	"strconv"
 )
@@ -15,10 +16,19 @@ const patrolSectorTag = "patrol-sector"
 // Stable fuel bases anchor patrol coverage. The first assignment favors the
 // ship's local base; uncovered sectors receive surplus ships, not every ship.
 func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
-	if p.Automation.FleetRoles[f.Num] == "patrol" {
-		return t.advancePatrolFront(p, f)
-	}
+	role := p.Automation.FleetRoles[f.Num]
+	territorial := role == "patrol"
 	owned := t.game.getPlanets(p.Num)
+	if territorial {
+		// Keep the option to scout the frontier when there is only one home
+		// sector or this is the player's only available patrol.
+		peers := t.game.getFleets(p.Num)
+		if len(owned) < 2 || !slices.ContainsFunc(peers, func(other *Fleet) bool {
+			return other != f && p.Automation.FleetRoles[other.Num] == "patrol" && patrolOperational(p, other)
+		}) {
+			return t.advancePatrolFront(p, f)
+		}
+	}
 	bases := []*Planet{}
 	for _, planet := range owned {
 		if planet.Spec.HasStarbase || usefulFreePatrolMovement(p, f) {
@@ -29,14 +39,16 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 		bases = owned
 	}
 	if len(bases) == 0 {
-		return false
+		return territorial && t.advancePatrolFront(p, f)
 	}
 	sort.Slice(bases, func(i, j int) bool { return bases[i].Num < bases[j].Num })
 	sector, _ := strconv.Atoi(f.GetTag(patrolSectorTag))
+	if territorial && f.GetTag(patrolFrontTag) != "" {
+		sector = 0
+	}
 	counts := map[int]int{}
-	role := p.Automation.FleetRoles[f.Num]
 	for _, other := range t.game.getFleets(p.Num) {
-		if other == f || other.Delete || p.Automation.FleetRoles[other.Num] != role {
+		if other == f || other.Delete || p.Automation.FleetRoles[other.Num] != role || territorial && (other.GetTag(frontierPatrolTag) == "" || other.GetTag(patrolFrontTag) != "" || readPatrolJob(other).Leader != 0 || !patrolOperational(p, other)) {
 			continue
 		}
 		n, _ := strconv.Atoi(other.GetTag(patrolSectorTag))
@@ -93,7 +105,7 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 			priorities[closest.Num]++
 		}
 	}
-	if !localEnemy {
+	if territorial || !localEnemy {
 		var uncovered *Planet
 		cost := math.Inf(1)
 		for _, base := range bases {
@@ -102,6 +114,9 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 			}
 			missingCoverage := counts[anchor.Num] >= 1 && counts[base.Num] == 0
 			priorityCoverage := priorities[base.Num] > 0 && float64(counts[base.Num]+1)/float64(1+priorities[base.Num]) < float64(counts[anchor.Num]+1)/float64(1+priorities[anchor.Num])
+			if territorial && f.Position.DistanceTo(base.Position) > max(100, 2*f.StrategicSpeed(automaticMaxWarp(p, f))) {
+				continue
+			}
 			if !missingCoverage && !priorityCoverage {
 				continue
 			}
@@ -115,7 +130,12 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 			anchor = uncovered
 		}
 	}
-	changed := sector != anchor.Num
+	if territorial && counts[anchor.Num] > 0 {
+		// A sector already assigned to a free hunter can spare this fleet.
+		// Keep hunters near unguarded friendly worlds before opening a front.
+		return t.advancePatrolFront(p, f)
+	}
+	changed := sector != anchor.Num || territorial && f.GetTag(patrolFrontTag) != ""
 	f.SetTag(patrolSectorTag, strconv.Itoa(anchor.Num))
 	if !changed && f.GetTag(frontierPatrolTag) != "" && len(f.Waypoints) > 1 {
 		return true
@@ -137,11 +157,12 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 		pos.Y += int(math.Round(24 * math.Sin(angle)))
 		target = MapObjectTarget{}
 	}
-	route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, pos, target, automaticRoutePolicy{EconomicalPatrol: true, MaxWarp: min(6, automaticMaxWarp(p, f)), MinWarp: 1, MaxTurns: 20, AllowThreat: combatAutonomy(p, f)})
+	route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, pos, target, automaticRoutePolicy{EconomicalPatrol: true, MaxWarp: economicalPatrolMaxWarp(p, f), MinWarp: 1, MaxTurns: 20, AllowThreat: combatAutonomy(p, f)})
 	if route == nil || route.WaitForFuel {
 		delete(f.Tags, frontierPatrolTag)
-		return false
+		return territorial && t.advancePatrolFront(p, f)
 	}
+	delete(f.Tags, patrolFrontTag)
 	applyExpeditionRoute(p, f, route)
 	f.SetTag(frontierPatrolTag, "Patrolling sector around "+anchor.Name+"; fuel, repairs and local defense available")
 	return true

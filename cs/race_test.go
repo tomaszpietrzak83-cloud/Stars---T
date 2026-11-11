@@ -160,7 +160,7 @@ func Test_computeRaceSpec(t *testing.T) {
 				ScrapMineralOffset:             .45 - (1.0 / 3),
 				ScrapMineralOffsetStarbase:     .9 - (1.0 / 3),
 				ScrapResourcesOffset:           .35,
-				ScrapResourcesOffsetStarbase:   .7,
+				ScrapResourcesOffsetStarbase:   .8,
 				ShieldStrengthFactor:           1,
 				ShipsVanishInVoid:              true,
 				StarbaseCostFactor:             1,

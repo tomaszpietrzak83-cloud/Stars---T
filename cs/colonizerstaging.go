@@ -60,7 +60,12 @@ func (t *turnGenerator) stageColonizerForBombing(p *Player, f *Fleet, job *colon
 			seen[num] = true
 		}
 	}
-	sort.Slice(candidates, func(i, j int) bool { return candidates[i].Num < candidates[j].Num })
+	sort.Slice(candidates, func(i, j int) bool {
+		if a, b := expansionPriority(p, candidates[i]), expansionPriority(p, candidates[j]); a != b {
+			return a > b
+		}
+		return candidates[i].Num < candidates[j].Num
+	})
 	for _, target := range candidates {
 		clearance := t.estimatedBombingClearance(p, target)
 		if clearance == 0 || prospectivePlanetQuality(p, target) <= 0 {

@@ -59,7 +59,7 @@ func (t *turnGenerator) passengerDestination(player *Player, fleet *Fleet, prefe
 	stalled := false
 	if fleet.Cargo.Colonists > 0 && preferred != 0 {
 		dest := t.game.getPlanet(preferred)
-		if suitableColony(player, dest) {
+		if suitableColony(player, dest) && routeThreat(player, fleet.Position, dest.Position, true) == 0 {
 			stalled = t.deliveryStalled(fleet, dest)
 			room := populationTarget(dest, max(35, colonyPopulationPercent(player, dest))) - dest.Cargo.Colonists
 			if !stalled && (room > 0 || fleet.Cargo.ToMineral().Total() > 0 || fleet.carriesInfrastructure()) {
@@ -73,7 +73,8 @@ func (t *turnGenerator) passengerDestination(player *Player, fleet *Fleet, prefe
 		if stalled && planet.Num == preferred {
 			continue
 		}
-		if !suitableColony(player, planet) || populationTarget(planet, colonyPopulationPercent(player, planet))-planet.Cargo.Colonists-incoming[planet.Num] <= 0 {
+		if !suitableColony(player, planet) || populationTarget(planet, colonyPopulationPercent(player, planet))-planet.Cargo.Colonists-incoming[planet.Num] <= 0 ||
+			routeThreat(player, fleet.Position, planet.Position, true) > 0 {
 			continue
 		}
 		if planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{MinWarp: automaticCruiseWarp(player, fleet)}) == nil {

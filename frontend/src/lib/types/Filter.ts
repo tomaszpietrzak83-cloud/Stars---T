@@ -1,3 +1,5 @@
+import type { TechService } from '#lib/services/TechService.js';
+import { HullSlotTypeWeapon } from './Consts';
 import type { DesignFinder } from '#lib/services/Universe.js';
 import {
 	MapObjectType,
@@ -12,6 +14,8 @@ import type { CommandedPlayer } from './Player';
 
 export type FilterOptions = {
 	showIdleFleetsOnly?: boolean;
+	showCombatFleetsOnly?: boolean;
+	hideCombatFleets?: boolean;
 	filterMyDesigns?: boolean;
 	filterAllyDesigns?: boolean;
 	filterEnemyDesigns?: boolean;
@@ -99,13 +103,65 @@ export function getShipClass(design: ShipDesign | undefined): ShipClass {
 	return design?.spec?.shipClass || ShipClass.UTILITY;
 }
 
+export type CombatTech = Pick<TechService, 'getHull' | 'getHullComponent'>;
+
+function isCombatFleet(
+	player: CommandedPlayer,
+	fleet: Fleet,
+	designs: DesignFinder,
+	tech?: CombatTech
+): boolean {
+	const playerNum = fleet.mapObject?.playerNum;
+	if (playerNum === player.num && fleet.spec?.shipDesignSpec?.hasWeapons) {
+		return true;
+	}
+
+	return fleet.tokens.some((token) => {
+		if (token.quantity <= 0) return false;
+		const design = designs.getDesign(playerNum, token.designNum);
+		if (!design) return false;
+		if (design.spec?.hasWeapons) return true;
+		const hull = tech?.getHull(design.hull);
+		const acceptsWeapon = (type: number) => (type & HullSlotTypeWeapon) !== 0;
+		if (playerNum !== player.num && !design.slots.length) {
+			return hull?.slots.some((slot) => slot.capacity > 0 && acceptsWeapon(slot.type)) ?? false;
+		}
+
+		// Foreign intel carries the revealed components but does not populate hasWeapons.
+		return design.slots.some((slot) => {
+			if (!slot.hullComponent || slot.quantity <= 0) return false;
+			const component = tech?.getHullComponent(slot.hullComponent);
+			if (component) return component.power > 0;
+			const hullSlot = hull?.slots[slot.hullSlotIndex - 1];
+			return playerNum !== player.num && !!hullSlot && acceptsWeapon(hullSlot.type);
+		});
+	});
+}
+
+export function filterCombatFleet(
+	player: CommandedPlayer,
+	fleet: Fleet,
+	options: FilterOptions,
+	designs: DesignFinder,
+	tech?: CombatTech
+): boolean {
+	return (
+		(!options.showCombatFleetsOnly && !options.hideCombatFleets) ||
+		isCombatFleet(player, fleet, designs, tech) === !!options.showCombatFleetsOnly
+	);
+}
+
 // true if this fleet should be shown with these filters
 export function filterFleet(
 	player: CommandedPlayer,
 	fleet: Fleet,
 	options: FilterOptions,
-	designs: DesignFinder
+	designs: DesignFinder,
+	tech?: CombatTech
 ): boolean {
+	if (!filterCombatFleet(player, fleet, options, designs, tech)) {
+		return false;
+	}
 	if (!filterIdleFleet(player, fleet, options.showIdleFleetsOnly ?? false)) {
 		return false;
 	}

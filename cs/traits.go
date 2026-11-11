@@ -642,7 +642,7 @@ func urSpec() LRTSpec {
 		ScrapMineralOffset:           .45 - (1.0 / 3),
 		ScrapMineralOffsetStarbase:   .9 - .8,
 		ScrapResourcesOffset:         .35,
-		ScrapResourcesOffsetStarbase: .7,
+		ScrapResourcesOffsetStarbase: .8,
 	}
 }
 

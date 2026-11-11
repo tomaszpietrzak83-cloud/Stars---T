@@ -16,7 +16,8 @@
 		type Waypoint,
 		type WaypointDest
 	} from '#lib/types/cs-proto.js';
-	import { filterFleet, filterNote } from '#lib/types/Filter.js';
+	import { techs } from '#lib/services/Stores.js';
+	import { filterCombatFleet, filterFleet, filterNote } from '#lib/types/Filter.js';
 	import { emptyMapObject, type MapObjectLike, type Position } from '#lib/types/MapObject.js';
 	import { distance, emptyVector, equal } from '#lib/types/Vector.js';
 	import { clone, create } from '@bufbuild/protobuf';
@@ -582,7 +583,7 @@
 
 		if (
 			found?.mapObject?.type === MapObjectType.FLEET &&
-			!filterFleet($player, found as Fleet, $settings, $universe)
+			!filterFleet($player, found as Fleet, $settings, $universe, $techs)
 		) {
 			// this object we clicked is filtered out, don't do anything
 			return;
@@ -762,7 +763,7 @@
 		let mo = found;
 		if (
 			mo?.mapObject?.type === MapObjectType.FLEET &&
-			!filterFleet($player, mo as Fleet, $settings, $universe)
+			!filterFleet($player, mo as Fleet, $settings, $universe, $techs)
 		) {
 			// this fleet is filtered out, the player can't see what they tapped
 			mo = undefined;
@@ -852,10 +853,13 @@
 
 	// data used by the scanner is derived from the universe/commandedFleet stores
 	// when they update, our data updates
-	const data = derivedStore([universe, commandedFleet, player, settings], ([u, f, p, s]) => [
+	const data = derivedStore([universe, commandedFleet, player, settings, techs], ([u, f, p, s, tech]) => [
 		// add mapobject waypoints
 		...(f?.getWaypointMapObjects(u) || []),
-		...u.getAllFleets().filter((f) => f.orbitingPlanetNum === None),
+		...u.getAllFleets().filter((f) =>
+			f.orbitingPlanetNum === None &&
+			filterCombatFleet(p, f, s, u, tech)
+		),
 		...u.mysteryTraders,
 		...u.salvages,
 		...u.wormholes,

@@ -18,7 +18,7 @@
 	import type { OnCancel, OnOk } from '#lib/services/Events.js';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { techs } from '#lib/services/Stores.js';
-	import { divide } from '#lib/types/Cost.js';
+	import { divide, total } from '#lib/types/Cost.js';
 	import { CommandedPlanet } from '#lib/types/Planet.js';
 	import {
 		getAutoAlchemyDescription,
@@ -257,11 +257,19 @@
 	}
 
 	async function getPercentComplete(item: ProductionQueueItem): Promise<number> {
-		if (!hasQuantity(item.type) || (item.allocated?.resources ?? 0) === 0) {
+		if (!hasQuantity(item.type) || total(item.allocated) === 0) {
 			return 0;
 		}
 
 		const costOfOne = await getCost(item, queueItems.indexOf(item));
+		if (item.type === QueueItemType.STARBASE) {
+			// Contributions remain useful even while another material is missing.
+			const funded = Object.keys(costOfOne).reduce((sum, key) => {
+				const resource = key as keyof typeof costOfOne;
+				return sum + Math.min(item.allocated?.[resource] ?? 0, costOfOne[resource] ?? 0);
+			}, 0);
+			return total(costOfOne) > 0 ? funded / total(costOfOne) : 0;
+		}
 		const percent = divide(item.allocated ?? {}, costOfOne);
 
 		// if we are mineral or resource constrained, report the percent complete based on the lowest.
@@ -415,16 +423,18 @@
 	}
 
 	async function next() {
+		if (!onNext) return;
 		planet.planetOrders.productionQueue = queueItems;
 		planet.planetOrders.contributesOnlyLeftoverToResearch = contributesOnlyLeftoverToResearch;
-		await onNext?.();
+		await onNext();
 		await resetQueue();
 	}
 
 	async function prev() {
+		if (!onPrev) return;
 		planet.planetOrders.productionQueue = queueItems;
 		planet.planetOrders.contributesOnlyLeftoverToResearch = contributesOnlyLeftoverToResearch;
-		await onPrev?.();
+		await onPrev();
 		await resetQueue();
 	}
 
@@ -775,12 +785,16 @@
 					</label>
 				</div>
 				<div class="w-1/2 flex flex-row flex-wrap justify-between sm:justify-end">
-					<div class="w-1/2 md:w-auto md:grow">
-						<button class="btn btn-sm btn-outline btn-secondary w-full" onclick={prev}>Prev</button>
-					</div>
-					<div class="w-1/2 md:w-auto md:grow">
-						<button class="btn btn-sm btn-outline btn-secondary w-full" onclick={next}>Next</button>
-					</div>
+					{#if onPrev}
+						<div class="w-1/2 md:w-auto md:grow">
+							<button class="btn btn-sm btn-outline btn-secondary w-full" onclick={prev}>Prev</button>
+						</div>
+					{/if}
+					{#if onNext}
+						<div class="w-1/2 md:w-auto md:grow">
+							<button class="btn btn-sm btn-outline btn-secondary w-full" onclick={next}>Next</button>
+						</div>
+					{/if}
 					<div class="w-1/2 md:w-auto md:grow">
 						<button onclick={cancel} class="btn btn-sm btn-outline btn-secondary w-full"
 							>Cancel</button

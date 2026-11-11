@@ -186,6 +186,23 @@ func TestEEERecyclingWithAndWithoutUR(t *testing.T) {
 	}
 }
 
+func TestUltimateRecyclingRecoveryIgnoresPlanetProduction(t *testing.T) {
+	u := logisticsUniverse(t)
+	player, fleet, yard := u.Player(1), u.Fleet("Escort"), u.Planet("Home")
+	require.True(t, yard.Spec.HasStarbase)
+	player.Race.WithLRT(UR)
+	player.Race.Spec = ComputeRaceSpec(&player.Race, &rules)
+	fleet.Spec.Cost = Cost{Ironium: 100, Resources: 100}
+
+	for _, production := range []int{0, 100, 1000} {
+		yard.Spec.ResourcesPerYear = production
+		require.Equal(t, Cost{Ironium: 90, Resources: 80}, fleet.getScrapAmount(&rules, player, yard, false))
+	}
+
+	yard.Spec.HasStarbase = false
+	require.Equal(t, Cost{Ironium: 45, Resources: 35}, fleet.getScrapAmount(&rules, player, yard, false))
+}
+
 func TestEEEExtractionAndResearchHaveGameplayEffects(t *testing.T) {
 	u := newTestUniverse(t, remoteMiningScenario("Mine", 0, DesignPotatoBug, WaypointTaskRemoteMining, JoaT))
 	p, mine := u.Player(1), u.Planet("Mine")

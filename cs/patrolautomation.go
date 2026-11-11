@@ -12,6 +12,9 @@ const patrolTag = "automatic-patrol"
 const patrolSupportTag = "patrol-support-role"
 
 type patrolJob struct {
+	Minelayer      bool        `json:"minelayer,omitempty"`
+	ReliefStaging  bool        `json:"reliefStaging,omitempty"`
+	ReliefYear     int         `json:"reliefYear,omitempty"`
 	Provisional    bool        `json:"provisional,omitempty"`
 	Rally          Vector      `json:"rally,omitzero"`
 	RequiredShips  int         `json:"requiredShips,omitempty"`
@@ -209,7 +212,7 @@ func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 		if readPatrolJob(member).Leader != leader.Num {
 			continue
 		}
-		if job.Grouped && !member.Delete && !member.InDesignMaintenance() && member.Spec.TotalShips > 1 {
+		if job.Grouped && !member.Delete && !member.InDesignMaintenance() && member.Spec.TotalShips > 1 && patrolFuelAreaClear(player, member, member.Position) {
 			stacks = append(stacks, member)
 		}
 		delete(member.Tags, patrolTag)
@@ -223,13 +226,19 @@ func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 		}
 	}
 	for _, stack := range stacks {
-		children, err := NewOrderer().SplitAll(&t.game.Rules, player, t.game.getFleets(player.Num), stack)
+		dispersing := stack
+		if len(job.SupportDesigns) == 0 {
+			if spare := t.retainPatrolSectorReserve(player, stack); spare != nil {
+				dispersing = spare
+			}
+		}
+		children, err := NewOrderer().SplitAll(&t.game.Rules, player, t.game.getFleets(player.Num), dispersing)
 		if err == nil {
 			for _, child := range children {
 				t.game.Fleets = append(t.game.Fleets, child)
 				_ = t.game.Universe.addFleet(child)
 			}
-			for _, child := range append([]*Fleet{stack}, children...) {
+			for _, child := range append([]*Fleet{dispersing}, children...) {
 				delete(child.Tags, patrolTag)
 				delete(child.Tags, patrolSupportTag)
 				player.Automation.FleetRoles[child.Num] = "patrol"
@@ -240,6 +249,7 @@ func (t *turnGenerator) releasePatrol(player *Player, leader *Fleet) {
 					}
 				}
 			}
+			t.balanceDispersedPatrolFuel(player, append([]*Fleet{dispersing}, children...))
 		}
 	}
 }
@@ -248,7 +258,7 @@ func (t *turnGenerator) patrolRoute(player *Player, fleet *Fleet, position Vecto
 	policy := automaticRoutePolicy{AllowThreat: true, Fast: attack, MaxTurns: 20, MinWarp: automaticCruiseWarp(player, fleet)}
 	if !attack {
 		policy.EconomicalPatrol = true
-		policy.MaxWarp = 6
+		policy.MaxWarp = economicalPatrolMaxWarp(player, fleet)
 		policy.MinWarp = 1
 	}
 	route := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, position, MapObjectTarget{}, policy)
@@ -288,7 +298,7 @@ func (t *turnGenerator) returnPatrolToFuel(player *Player, fleet *Fleet) bool {
 func (t *turnGenerator) preparePatrolPursuits() {
 	for _, player := range t.game.Players {
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if !patrolAvailable(player, fleet) || !patrolCanAttack(player, fleet) || len(fleet.Waypoints) != 2 {
+			if !patrolAvailable(player, fleet) || readPatrolJob(fleet).reliefActive(t.game.Year) || !patrolCanAttack(player, fleet) || len(fleet.Waypoints) != 2 {
 				continue
 			}
 			enemy := patrolTacticalEnemy(player, fleet)
@@ -501,6 +511,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 	for _, player := range t.game.Players {
 		t.reconcilePatrolJobs(player)
 		t.planUrgentPatrolDefence(player)
+		t.planMinelayerInterceptions(player)
 		fleets := []*Fleet{}
 		for _, fleet := range t.game.getFleets(player.Num) {
 			delete(fleet.Tags, patrolMineSweepTag)
@@ -537,7 +548,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 				continue
 			}
 			job := readPatrolJob(fleet)
-			if defencePatrolCommitted(player, fleet) {
+			if job.Minelayer || defencePatrolCommitted(player, fleet) {
 				continue
 			}
 			if fleet.GetTag(recaptureAssaultTag) != "" {
@@ -590,6 +601,9 @@ func (t *turnGenerator) planPatrolAutomation() {
 		})
 		for _, fleet := range fleets {
 			if !patrolAvailable(player, fleet) || readPatrolJob(fleet).Leader != 0 || fleet.Fuel < fleet.Spec.FuelCapacity/4 && !nearbyPatrolContact(player, fleet, 100) && !usefulFreePatrolMovement(player, fleet) || readAutomaticFuelRequest(fleet) != nil && readAutomaticFuelRequest(fleet).Urgent {
+				continue
+			}
+			if player.patrolEvaluator != nil && fleet.GetTag(patrolReturnHuntTag) != "" && t.patrolReturnHunt(player, fleet) {
 				continue
 			}
 			enemies := sortedPatrolTargets(player, fleet)
@@ -688,6 +702,10 @@ func (t *turnGenerator) planPatrolAutomation() {
 			if assigned {
 				continue
 			}
+			if localPatrolReserve(fleet, t.game.Year) {
+				holdAutomaticFleet(player, fleet, "Holding a local patrol reserve after orbital relief")
+				continue
+			}
 			if player.Automation.FleetRoles[fleet.Num] == "escort" {
 				continue
 			}
@@ -774,6 +792,7 @@ func reportedScoutsOnly(p *Player, enemy *Fleet) bool {
 func (t *turnGenerator) mergePatrolRendezvous() {
 	for _, p := range t.automaticPlayers() {
 		if p.patrolEvaluator != nil {
+			t.mergeArrivedPatrolRelief(p)
 			// Only the launch planner may merge a combat-ready local formation.
 			continue
 		}

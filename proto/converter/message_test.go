@@ -31,6 +31,19 @@ func Test_message_newSpecsRoundTrip(t *testing.T) {
 	}
 }
 
+func Test_shipUpgradeMessageRoundTrip(t *testing.T) {
+	message := cs.PlayerMessage{Type: cs.PlayerMessageShipUpgrades, Text: "Ship upgrades and retirements (2508): Completed 2 fleet rebuilds."}
+	pb := C.ConvertCSPlayer(&cs.Player{Messages: []cs.PlayerMessage{message}}).Messages[0]
+	require.Equal(t, v1.PlayerMessageType_PLAYER_MESSAGE_TYPE_SHIP_UPGRADES, pb.Type)
+	for _, marshal := range []func() ([]byte, error){func() ([]byte, error) { return proto.Marshal(pb) }, pb.MarshalVT} {
+		data, err := marshal()
+		require.NoError(t, err)
+		decoded := &v1.PlayerMessage{}
+		require.NoError(t, decoded.UnmarshalVT(data))
+		require.Equal(t, message, C.ConvertPlayer(&v1.Player{Race: &v1.Race{}, Messages: []*v1.PlayerMessage{decoded}}).Messages[0])
+	}
+}
+
 func Test_message_invasionCountsRoundTrip(t *testing.T) {
 	for _, messageType := range []cs.PlayerMessageType{cs.PlayerMessageFleetInvadedPlanet, cs.PlayerMessagePlanetInvaded} {
 		for _, counts := range []struct{ attackers, defenders, killedByDefenses int }{{12000, 10000, 1200}, {0, 0, 0}} {

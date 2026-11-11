@@ -192,7 +192,7 @@ func (t *turnGenerator) planSlowPreyObservers() {
 					if used[f.Num] || f.Delete || p.Automation.FleetRoles[f.Num] != "scout" || !scoutReconEligible(p, f) || f.InAutomaticSafety() || f.InDesignMaintenance() || scoutHasRetirement(p, f) || fuelNetworkManaged(f) || f.GetTag(tankerAwaitTag) != "" || p.FleetInActiveAssembly(f) || f.GetTag(priorityReconTag) != "" {
 						continue
 					}
-					if existing := readScoutRecon(f); existing != nil && !existing.Watching {
+					if existing := readScoutRecon(f); existing != nil && (!existing.Watching || existing.Minelayer) {
 						continue
 					}
 					rangeAvailable := scoutFleetScanRadius(f, enemy)

@@ -12,7 +12,7 @@ func (t *turnGenerator) refreshScoutReconOrders() {
 				continue
 			}
 			report := p.GetFleetIntel(job.Enemy, job.Target)
-			valid := report != nil && !report.Delete && report.ReportAge == 0 && (job.Watching || unknownFleetEquipment(p, report))
+			valid := report != nil && !report.Delete && (report.ReportAge == 0 && (job.Watching || unknownFleetEquipment(p, report)) || job.Minelayer && trackableMinelayer(p, report))
 			if valid && len(job.Designs) > 0 {
 				for _, token := range report.Tokens {
 					if !slices.Contains(job.Designs, token.DesignNum) {

@@ -30,6 +30,8 @@
 </script>
 
 <article
+	data-sveltekit-preload-data="off"
+	data-sveltekit-preload-code="off"
 	class="card bg-base-200 border border-base-300 min-w-0"
 	class:border-l-4={attention}
 	class:border-l-accent={attention}

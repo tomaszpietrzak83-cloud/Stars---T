@@ -28,6 +28,9 @@ func TestColonizerCarriesOnlyPassengersAndResumesColonization(t *testing.T) {
 	u.Planet("Far").PlayerNum = Unowned
 	u.Planet("Far").Cargo.Colonists = 0
 	u.Run((*turnGenerator).planColonizationAutomation)
+	require.Equal(t, "passengers", readColonizationJob(f).Kind, "finish the current delivery first")
+	delete(f.Tags, logisticsTag) // completed delivery releases the current job
+	u.Run((*turnGenerator).planColonizationAutomation)
 	require.Equal(t, "colonize", readColonizationJob(f).Kind)
 	require.Nil(t, logisticsWork(f))
 	require.Equal(t, WaypointTaskColonize, f.Waypoints[len(f.Waypoints)-1].Task)

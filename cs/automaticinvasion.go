@@ -21,7 +21,7 @@ func invasionCandidate(p *Player, planet *Planet) bool {
 	copyPlayer := *p
 	copyPlayer.Automation.ServeTerraformingWorlds = false
 	quality := prospectivePlanetQuality(&copyPlayer, planet)
-	return quality >= 50 || p.Automation.PriorityPlanets[planet.Num] && quality > 0
+	return quality >= 50 || terraformedPlanetQuality(p, planet) > 75 || p.Automation.PriorityPlanets[planet.Num] && quality > 0
 }
 func (t *turnGenerator) findAutomaticInvasion(player *Player, fleet *Fleet) *logisticsJob {
 	return t.findInvasionTransfer(player, fleet, false)

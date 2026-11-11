@@ -223,12 +223,12 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 	for _, fleet := range fleets {
 		if isAutomaticFleet(player, fleet) && policy.MaxTurns == 0 && !policy.EmergencyReturn {
 			policy.MaxTurns = 20
+			if colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" {
+				policy.MaxTurns = colonizationMaxYears
+			}
 		}
 		if !policy.EmergencyReturn && !policy.EconomicalPatrol && (player.Automation.FleetRoles[fleet.Num] == "scout" || player.Automation.FleetRoles[fleet.Num] == "patrol" || passengerCruiseFleet(fleet) || colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "") {
 			policy.MinWarp = max(policy.MinWarp, automaticCruiseWarp(player, fleet))
-			if colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" {
-				policy.MaxTurns = 50
-			}
 		}
 	}
 	if policy.ReturnTurnsLimit == 0 && len(fleets) == 1 {
@@ -522,6 +522,12 @@ func holdAutomaticFleet(player *Player, fleet *Fleet, status string) {
 }
 
 func automaticReturnLimit(player *Player, fleet *Fleet, target MapObjectTarget) int {
+	// Sweeping requires safe warp within mines. A twelve-turn return deadline
+	// must not reject a fuel-feasible outward mission merely because its reserve
+	// is conservatively computed at safe warp for the whole trip.
+	if automaticMinesweeper(player, fleet) {
+		return 0
+	}
 	if fleet.GetTag(escortStagingTag) != "" {
 		return 20
 	}

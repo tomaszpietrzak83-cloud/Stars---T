@@ -33,6 +33,24 @@ func (c *costCalculate) StarbaseUpgradeCostForPlayer(rules *Rules, player *Playe
 	if err != nil || !design.Spec.Starbase || !newDesign.Spec.Starbase {
 		return normal, err
 	}
+	if player.Race.HasLRT(UR) {
+		oldCost, err := c.GetDesignCost(rules, player.TechLevels, player.Race.Spec, design)
+		if err != nil {
+			return Cost{}, err
+		}
+		newCost, err := c.GetDesignCost(rules, player.TechLevels, player.Race.Spec, newDesign)
+		if err != nil {
+			return Cost{}, err
+		}
+		// Reserve the recovery against this replacement only. Keeping the old
+		// station operational until completion must not mint spendable scrap each year.
+		base := Fleet{Spec: FleetSpec{Cost: oldCost}}
+		yard := Planet{}
+		yard.Spec.HasStarbase = true
+		credit := base.getScrapAmount(rules, player, &yard, false)
+		recycled := newCost.Subtract(credit).MinZero()
+		normal = Cost{min(normal.Ironium, recycled.Ironium), min(normal.Boranium, recycled.Boranium), min(normal.Germanium, recycled.Germanium), min(normal.Resources, recycled.Resources)}
+	}
 	// Check history before recalculating complete blueprint costs.
 	if _, ok := rapidDesignUpgradeRecovery(player, design, newDesign, Cost{}); !ok {
 		return normal, nil

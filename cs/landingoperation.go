@@ -75,7 +75,7 @@ func (t *turnGenerator) migrateLegacyLandings() {
 
 func landingBaseRequested(p *Player, num int, fleets []*Fleet) bool {
 	for _, f := range fleets {
-		if op := readLandingOperation(f); op != nil && !f.Delete && p.Automation.FleetRoles[f.Num] == "freighter" && op.Target == num && op.Phase == "base" {
+		if op := readLandingOperation(f); op != nil && !f.Delete && landingTransport(p, f) && op.Target == num && op.Phase == "base" {
 			return true
 		}
 	}
@@ -102,7 +102,10 @@ func (t *turnGenerator) landingMembers(p *Player, leader *Fleet) []*Fleet {
 }
 
 func landingAvailable(p *Player, f *Fleet) bool {
-	if job := logisticsWork(f); p.Automation.FleetRoles[f.Num] == "freighter" && job != nil && job.Kind != "invade" && job.Kind != "invade-load" && job.Kind != "landing-reserve" && job.Kind != "salvage" {
+	if landingTransport(p, f) && f.Spec.Radiating {
+		return false
+	}
+	if job := logisticsWork(f); landingTransport(p, f) && job != nil && job.Kind != "invade" && job.Kind != "invade-load" && job.Kind != "landing-reserve" && job.Kind != "salvage" {
 		return false // an assigned civilian delivery is not an idle transport
 	}
 	// An empty collector is working, not idle. Let a known, still valid debris
@@ -129,12 +132,12 @@ func (t *turnGenerator) landingPickups(p *Player, target *Planet, rally Vector, 
 	// minutes before any ship could be assigned.
 	candidates := []landingPickup{}
 	for _, f := range t.game.getFleets(p.Num) {
-		if p.Automation.FleetRoles[f.Num] != "freighter" || !landingAvailable(p, f) || !automaticPassengersAllowed(p, f) || f.carriesInfrastructure() || f.Cargo.ToMineral().Total() > 0 {
+		if !landingTransport(p, f) || !landingAvailable(p, f) || !automaticPassengersAllowed(p, f) || f.carriesInfrastructure() || f.Cargo.ToMineral().Total() > 0 {
 			continue
 		}
 		job := logisticsWork(f)
 		if f.Cargo.Colonists > 0 {
-			if job != nil && (job.Kind == "invade" || job.Kind == "landing-reserve") {
+			if colonizerPassengerCarrier(p, f) || job != nil && (job.Kind == "invade" || job.Kind == "landing-reserve") {
 				candidates = append(candidates, landingPickup{fleet: f, score: f.Position.DistanceTo(rally) - 2000000})
 			}
 			continue
@@ -234,7 +237,7 @@ func (t *turnGenerator) startLandingOperation(p *Player, handled map[int]bool) *
 		}
 		role := p.Automation.FleetRoles[f.Num]
 		legacyLoaded := logisticsWork(f) != nil && logisticsWork(f).Kind == "landing-reserve" && f.Cargo.Colonists > 0
-		if role == "freighter" && automaticPassengersAllowed(p, f) && (f.CargoMass() == 0 || legacyLoaded) && f.Spec.CargoCapacity > 0 && (anchor == nil || f.Num < anchor.Num) {
+		if landingTransport(p, f) && automaticPassengersAllowed(p, f) && (f.CargoMass() == 0 || legacyLoaded || colonizerPassengerCarrier(p, f)) && f.Spec.CargoCapacity > 0 && (anchor == nil || f.Num < anchor.Num) {
 			anchor = f
 		}
 		if (role == "patrol" || role == "escort") && patrolAvailable(p, f) && readPatrolJob(f).Leader == 0 {
@@ -251,11 +254,8 @@ func (t *turnGenerator) startLandingOperation(p *Player, handled map[int]bool) *
 		}
 	}
 	slices.SortFunc(targets, func(a, b *Planet) int {
-		if p.Automation.PriorityPlanets[a.Num] != p.Automation.PriorityPlanets[b.Num] {
-			if p.Automation.PriorityPlanets[a.Num] {
-				return -1
-			}
-			return 1
+		if rank := expansionPriority(p, b) - expansionPriority(p, a); rank != 0 {
+			return rank
 		}
 		da, db := anchor.Position.DistanceTo(a.Position), anchor.Position.DistanceTo(b.Position)
 		if da < db {
@@ -402,12 +402,30 @@ func (t *turnGenerator) mergeLandingGroup(p *Player, leader *Fleet, group []*Fle
 		return true
 	}
 	for _, f := range group {
+		if landingTransport(p, leader) && (!landingTransport(p, f) || f.Spec.Radiating) {
+			return false
+		}
 		if f.Position != leader.Position || f.InDesignMaintenance() || fuelNetworkReserved(f) {
 			return false
 		}
 	}
+	colonyRoles := map[int]string{}
+	_ = json.Unmarshal([]byte(leader.GetTag("landing-colonizer-roles")), &colonyRoles)
+	for _, f := range group {
+		if role := p.Automation.FleetRoles[f.Num]; colonizationMode(role) != "" {
+			for _, token := range f.Tokens {
+				if token.design != nil && token.design.Spec.Colonizer {
+					colonyRoles[token.DesignNum] = role
+				}
+			}
+		}
+	}
 	if _, err := NewOrderer().Merge(&t.game.Rules, p, group); err != nil {
 		return false
+	}
+	if len(colonyRoles) > 0 {
+		data, _ := json.Marshal(colonyRoles)
+		leader.SetTag("landing-colonizer-roles", string(data))
 	}
 	for _, f := range group[1:] {
 		t.game.deleteFleet(f)
@@ -421,7 +439,7 @@ func (t *turnGenerator) mergeLandingGroup(p *Player, leader *Fleet, group []*Fle
 // halfway through the year is not a battle in the native movement engine.
 func landingOrbitalReports(p *Player, point Vector) (present, incoming []*Fleet) {
 	for _, e := range p.FleetIntels {
-		if e == nil || e.Delete || e.Starbase || e.PlayerNum == p.Num || p.IsFriend(e.PlayerNum) || e.ReportAge > 1 || !patrolReportedCombatant(p, e) {
+		if e == nil || e.Delete || e.Starbase || e.PlayerNum == p.Num || p.IsFriend(e.PlayerNum) || e.ReportAge > 1 || !(patrolReportedCombatant(p, e) || patrolReportedBomber(p, e)) {
 			continue
 		}
 		if e.Position == point {
@@ -444,26 +462,75 @@ func landingOrbitalReports(p *Player, point Vector) (present, incoming []*Fleet)
 
 func (t *turnGenerator) landingOrbitClear(p *Player, leader *Fleet, op *landingOperation) bool {
 	target := p.GetPlanetIntel(op.Target)
-	if target == nil || target.Spec.HasStarbase || op.Base || op.ScanYear == 0 || t.game.Year-op.ScanYear > 1 {
+	if target == nil || leader.Spec.Radiating {
 		return false
 	}
-	present, incoming := landingOrbitalReports(p, target.Position)
-	// Incoming warships require patrols ALREADY on station, not a promise of
-	// escorts arriving with vulnerable transports during the same year.
+	return t.landingOrbitSafeWith(p, leader, op, target, t.landingArrivingCover(p, leader, target))
+}
+
+func (t *turnGenerator) landingArrivingCover(p *Player, leader *Fleet, target *Planet) []*Fleet {
 	cover := []*Fleet{}
 	for _, f := range t.game.getFleets(p.Num) {
-		if !f.Delete && f.Position == target.Position && f.Spec.HasWeapons && (p.Automation.FleetRoles[f.Num] == "patrol" || p.Automation.FleetRoles[f.Num] == "escort") && (len(f.Waypoints) <= 1 || f.Waypoints[1].Position == target.Position) {
+		role := p.Automation.FleetRoles[f.Num]
+		if f == leader || f.Delete || !f.Spec.HasWeapons || role != "patrol" && role != "escort" ||
+			f.InAutomaticSafety() || f.InDesignMaintenance() {
+			continue
+		}
+		if f.Position == target.Position && (len(f.Waypoints) <= 1 || f.Waypoints[1].Position == target.Position) {
+			cover = append(cover, f)
+			continue
+		}
+		if f.GetTag(landingMemberTag) != strconv.Itoa(leader.Num) || f.GetTag("automatic-landing-screen") == "" || len(f.Waypoints) != 2 {
+			continue
+		}
+		wp := f.Waypoints[1]
+		if wp.Position == target.Position && (wp.WarpSpeed == StargateWarpSpeed || wp.WarpSpeed > 0 && f.Position.DistanceTo(wp.Position) <= f.StrategicSpeed(wp.WarpSpeed)) {
 			cover = append(cover, f)
 		}
 	}
-	if len(incoming) > 0 && len(cover) == 0 {
+	return cover
+}
+
+func (t *turnGenerator) landingOrbitSafeWith(p *Player, leader *Fleet, op *landingOperation, target *Planet, cover []*Fleet) bool {
+	reports, known := t.landingEncounterReports(p, op, target)
+	if leader.Spec.Radiating || !known {
 		return false
 	}
-	if len(present)+len(incoming) == 0 {
+	if len(reports) == 0 {
 		return true
 	}
-	group := append([]*Fleet{leader}, cover...)
-	return t.defensiveEvaluator(p).assessFormations(p, group, append(present, incoming...), target.Position, 1, false).Ready
+	if len(cover) == 0 {
+		return false
+	}
+	evaluator := t.defensiveEvaluator(p)
+	if !evaluator.assessFormations(p, cover, reports, target.Position, 1, false, true).Ready {
+		return false
+	}
+	result := evaluator.assessFormations(p, append([]*Fleet{leader}, cover...), reports, target.Position, 1, false, true)
+	if result.Ready {
+		for _, guard := range cover {
+			applyPatrolBattlePlan(p, guard, result.Tactic)
+		}
+	}
+	return result.Ready
+}
+
+func (t *turnGenerator) landingEncounterReports(p *Player, op *landingOperation, target *Planet) ([]*Fleet, bool) {
+	if op.ScanYear == 0 || t.game.Year-op.ScanYear > 1 {
+		return nil, false
+	}
+	present, incoming := landingOrbitalReports(p, target.Position)
+	reports := append(present, incoming...)
+	if target.Spec.HasStarbase {
+		base := reportedRecaptureBase(p, target, true)
+		if base == nil {
+			return nil, false
+		}
+		reports = append(reports, base)
+	} else if op.Base {
+		return nil, false
+	}
+	return reports, true
 }
 
 func (t *turnGenerator) landingTargetClaimed(p *Player, num int) bool {
@@ -509,11 +576,14 @@ func (t *turnGenerator) planLandingOperationsForPriority(landingsFirst bool) {
 			}
 			handled[op.Target] = true
 			target := p.GetPlanetIntel(op.Target)
-			if p.Automation.FleetRoles[leader.Num] != "freighter" || p.Automation.DisablePassengerTransport || target == nil || target.PlayerNum != op.Owner || p.IsFriend(target.PlayerNum) || op.Phase == "landed" || op.Phase == "cancelled" || t.game.Year-op.Started > 30 {
+			if !landingTransport(p, leader) || p.Automation.DisablePassengerTransport || target == nil || target.PlayerNum != op.Owner || p.IsFriend(target.PlayerNum) || op.Phase == "landed" || op.Phase == "cancelled" || t.game.Year-op.Started > 30 {
 				t.finishLandingOperation(p, leader, op)
 				continue
 			}
 			if leader.InAutomaticSafety() || leader.InDesignMaintenance() {
+				continue
+			}
+			if !t.separateLegacyLandingEscort(p, leader, op) {
 				continue
 			}
 			t.reinforceLandingOperation(p, leader, op, target)
@@ -708,7 +778,12 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 			ready = false
 			continue
 		}
-		if role == "freighter" {
+		if landingTransport(p, f) {
+			if f.Spec.Radiating {
+				holdAutomaticFleet(p, f, "Landing held: transport has a radiating engine")
+				ready = false
+				continue
+			}
 			job := logisticsWork(f)
 			if job != nil && job.Kind == "landing-load" {
 				source := t.game.getPlanet(job.TargetNum)
@@ -764,7 +839,7 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 			if f.GetTag("automatic-landing-screen") != "" {
 				t.routeLanding(p, f, target.Position, target.ToTarget(), true, 1)
 				if f.Position != target.Position {
-					ready = false
+					guards = append(guards, f)
 				}
 				continue
 			}
@@ -813,6 +888,9 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 	}
 	if op.Phase != "gather" && (op.Base || target.Spec.HasStarbase) {
 		op.Phase = "base"
+		if ready && leader.Cargo.Colonists >= op.Need && t.tryLandingArrival(p, leader, op, target, members) {
+			return
+		}
 		local := []*Fleet{}
 		for _, guard := range guards {
 			if guard.Position == op.Rally {
@@ -860,39 +938,54 @@ func (t *turnGenerator) advanceLandingOperation(p *Player, leader *Fleet, op *la
 		}
 		return
 	}
-	group := append([]*Fleet{leader}, guards...)
-	// Assess before mutation; only physically present forces are counted.
-	probe := *leader
-	for _, f := range guards {
-		probe.Tokens = append(slices.Clone(probe.Tokens), f.Tokens...)
+	t.tryLandingArrival(p, leader, op, target, members)
+}
+
+func (t *turnGenerator) tryLandingArrival(p *Player, leader *Fleet, op *landingOperation, target *Planet, members []*Fleet) bool {
+	// Each ship keeps its own engines, passengers and route. Evaluate the
+	// arrival as distinct fleets, including escorts already on the orbit.
+	transportRoute := planAutomaticRoute(&t.game.Rules, p, []*Fleet{leader}, target.Position, target.ToTarget(), automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: 1})
+	if transportRoute == nil || transportRoute.WaitForFuel || transportRoute.NetworkRequest != nil || transportRoute.Turns > 1 {
+		return false
 	}
-	probe.Spec = ComputeFleetSpec(&t.game.Rules, p, &probe)
-	if !t.landingOrbitClear(p, &probe, op) {
-		present, incoming := landingOrbitalReports(p, target.Position)
-		if len(incoming) > 0 && len(guards) > 0 && op.ScanYear > 0 && t.game.Year-op.ScanYear <= 1 && t.defensiveEvaluator(p).assessFormations(p, guards, append(present, incoming...), target.Position, 1, false).Ready {
-			for _, guard := range guards {
+	cover := []*Fleet{}
+	routes := map[*Fleet]*expeditionRoute{}
+	for _, guard := range members {
+		if guard == leader || !guard.Spec.HasWeapons || guard.Cargo.Colonists > 0 || guard.InAutomaticSafety() || guard.InDesignMaintenance() {
+			continue
+		}
+		role := p.Automation.FleetRoles[guard.Num]
+		if role != "patrol" && role != "escort" || defencePatrolCommitted(p, guard) {
+			continue
+		}
+		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{guard}, target.Position, target.ToTarget(), automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: 1})
+		if route == nil || route.WaitForFuel || route.NetworkRequest != nil || route.Turns > 1 {
+			continue
+		}
+		routes[guard] = route
+		cover = append(cover, guard)
+	}
+	if !t.landingOrbitSafeWith(p, leader, op, target, cover) {
+		// A safe escort can clear the orbit first when adding the loaded
+		// transport makes the encounter unsafe.
+		reports, known := t.landingEncounterReports(p, op, target)
+		if known && len(reports) > 0 && len(cover) > 0 && t.defensiveEvaluator(p).assessFormations(p, cover, reports, target.Position, 1, false, true).Ready {
+			for _, guard := range cover {
 				guard.SetTag("automatic-landing-screen", "true")
-				t.routeLanding(p, guard, target.Position, target.ToTarget(), true, 1)
+				applyExpeditionRoute(p, guard, routes[guard])
 			}
 		}
 		holdAutomaticFleet(p, leader, "Landing held: scout report, hostile orbit or incoming warships")
-		return
+		return false
 	}
-	route := planAutomaticRoute(&t.game.Rules, p, group, target.Position, target.ToTarget(), automaticRoutePolicy{AllowThreat: true, Fast: true, MaxTurns: 1})
-	if route == nil || route.WaitForFuel || route.Turns > 1 {
-		return
-	}
-	for _, f := range guards {
-		for _, tok := range f.Tokens {
-			op.EscortDesigns[tok.DesignNum] = true
-		}
-	}
-	if !t.mergeLandingGroup(p, leader, group) {
-		return
+	for _, guard := range cover {
+		guard.SetTag("automatic-landing-screen", "true")
+		applyExpeditionRoute(p, guard, routes[guard])
 	}
 	op.Phase = "assault"
-	saveLogisticsWork(leader, &logisticsJob{Kind: "landing-assault", TargetNum: target.Num, DeliveryNum: target.Num, Position: target.Position, Status: "Coordinated landing: transports and patrols merged"})
-	t.routeLanding(p, leader, target.Position, target.ToTarget(), true, 1)
+	saveLogisticsWork(leader, &logisticsJob{Kind: "landing-assault", TargetNum: target.Num, DeliveryNum: target.Num, Position: target.Position, Status: "Coordinated landing with separate patrol and transport fleets"})
+	applyExpeditionRoute(p, leader, transportRoute)
+	return true
 }
 
 // Contact is recorded before battle, so a scout can transmit a base warning
@@ -960,11 +1053,11 @@ func (t *turnGenerator) resolveLandingDrops() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
 			op := readLandingOperation(f)
-			if op == nil || op.Phase != "assault" || f.Delete || f.Cargo.Colonists <= 0 {
+			if op == nil || op.Phase != "assault" || f.Delete || f.Spec.Radiating || f.Cargo.Colonists <= 0 {
 				continue
 			}
 			target := t.game.getPlanet(op.Target)
-			if target == nil || f.Position != target.Position || target.Spec.HasStarbase || t.armedEnemyAt(p, f.Position) {
+			if target == nil || f.Position != target.Position || target.Spec.HasStarbase || t.landingHostileAt(p, f.Position) {
 				continue
 			}
 			if target.PlayerNum == p.Num {
@@ -990,13 +1083,14 @@ func (t *turnGenerator) resolveLandingDrops() {
 }
 
 func (t *turnGenerator) finishLandingOperation(p *Player, leader *Fleet, op *landingOperation) {
-	if op.Phase == "landed" && !t.ordersOnly {
+	if !t.ordersOnly && (op.Phase == "landed" || op.Phase == "cancelled" && (leader.GetTag("landing-colonizer-roles") != "" || colonizationMode(p.Automation.FleetRoles[leader.Num]) != "")) {
 		defer t.disperseEmptyLandingTransports(p, leader)
 	}
 	for _, f := range t.landingMembers(p, leader) {
 		delete(f.Tags, landingMemberTag)
 		delete(f.Tags, landingOperationTag)
 		delete(f.Tags, "automatic-landing-screen")
+		restorePatrolBattlePlan(p, f)
 		delete(f.Tags, logisticsTag)
 		if isAutomaticFleet(p, f) {
 			holdAutomaticFleet(p, f, "Landing operation finished; resuming automatic duties")

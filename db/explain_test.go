@@ -85,7 +85,7 @@ func Test_client_explainQuery(t *testing.T) {
 			want: []string{
 				// TODO: use index
 				"SCAN g",
-				"SEARCH players USING INDEX idx_players_gameid_num (game_id=?) LEFT-JOIN",
+				"SEARCH players USING COVERING INDEX idx_players_game_listing (game_id=?) LEFT-JOIN",
 			},
 		},
 		{
@@ -101,7 +101,7 @@ func Test_client_explainQuery(t *testing.T) {
 				"SEARCH g USING INDEX idx_games_hostid_gameid (host_id=?)",
 				"SEARCH g USING INTEGER PRIMARY KEY (rowid=?)",
 				"SEARCH p USING COVERING INDEX idx_players_userid_gameid (user_id=?)",
-				"SEARCH players USING INDEX idx_players_gameid_num (game_id=?) LEFT-JOIN",
+				"SEARCH players USING COVERING INDEX idx_players_game_listing (game_id=?) LEFT-JOIN",
 			},
 		},
 	}

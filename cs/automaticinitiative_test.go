@@ -100,7 +100,7 @@ func TestRescuerApproachesSlowScoutAndPreservesFuelConservation(t *testing.T) {
 	p, customer, donor := u.Player(1), u.Fleet("Customer"), u.Fleet("Tanker")
 	p.Automation.FleetRoles[customer.Num] = "scout"
 	p.Automation.FleetRoles[donor.Num] = "escort"
-	customer.Position = Vector{180, 0}
+	customer.Position = Vector{60, 0} // a nearby rescue within the three-turn limit
 	saveAutomaticFuelRequest(customer, automaticFuelRequest{Destination: customer.Position, Members: []int{customer.Num}, Urgent: true})
 	before := customer.Fuel + donor.Fuel
 	u.Run((*turnGenerator).planAutomaticTankers)

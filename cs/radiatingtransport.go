@@ -14,7 +14,7 @@ func automaticPassengersAllowed(p *Player, f *Fleet) bool {
 func (t *turnGenerator) prepareRadiatingTransports() {
 	for _, p := range t.automaticPlayers() {
 		for _, f := range t.game.getFleets(p.Num) {
-			if f.Delete || automaticPassengersAllowed(p, f) {
+			if f.Delete || readLandingOperation(f) != nil || automaticPassengersAllowed(p, f) {
 				continue
 			}
 			previous := logisticsWork(f)

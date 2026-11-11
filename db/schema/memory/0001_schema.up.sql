@@ -536,6 +536,11 @@ CREATE UNIQUE INDEX idx_users_discord_id_unique ON users (discord_id)
 WHERE
   discord_id <> '';
 
+CREATE INDEX idx_players_game_listing ON players (
+  game_id, id, updated_at, user_id, name, num, ready, ai_controlled,
+  ai_difficulty, submitted_turn, color, victor, archived, guest
+);
+
 CREATE VIEW
   game_players AS
 SELECT

@@ -14,12 +14,14 @@ func TestPriorityLandingAcceptsHabitableExplicitTarget(t *testing.T) {
 	target.Hab = u.Planet("Home").Hab
 	for grav := 0; grav <= 100; grav++ {
 		target.Hab.Grav = grav
-		if q := prospectivePlanetQuality(p, target); q > 0 && q < 50 {
+		target.BaseHab = target.Hab
+		if q := prospectivePlanetQuality(p, target); q > 0 && q < 50 && terraformedPlanetQuality(p, target) <= 75 {
 			break
 		}
 	}
 	require.Greater(t, prospectivePlanetQuality(p, target), 0)
 	require.Less(t, prospectivePlanetQuality(p, target), 50)
+	require.LessOrEqual(t, terraformedPlanetQuality(p, target), 75, "this fixture tests the manual override for an ordinary-potential world")
 	require.False(t, invasionColony(p, target))
 	p.Automation.PriorityPlanets = map[int]bool{target.Num: true}
 	require.True(t, invasionColony(p, target), "an explicitly selected habitable colony must not retain the ordinary 50-percent cutoff")

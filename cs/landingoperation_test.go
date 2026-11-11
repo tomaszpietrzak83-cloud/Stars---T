@@ -84,8 +84,8 @@ func TestLandingOperationLoadsMergesScansAndDropsOver250K(t *testing.T) {
 	target.Spec.DefenseCoverage = .1
 	u.Run((*turnGenerator).planLandingOperations)
 	require.Equal(t, "assault", readLandingOperation(leader).Phase)
-	require.True(t, u.Fleet("Cover").Delete, "patrols physically merge into the loaded fleet")
-	require.True(t, leader.Spec.HasWeapons)
+	require.False(t, u.Fleet("Cover").Delete, "the patrol keeps its own fleet")
+	require.False(t, leader.Spec.HasWeapons)
 	u.Run((*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove, (*turnGenerator).fleetBattle, (*turnGenerator).resolveLandingDrops, (*turnGenerator).resolveColonistDrops)
 	require.Equal(t, 1, target.PlayerNum)
 	require.True(t, p.Automation.OccupationSupport[target.Num], "native conquest requests civilian reinforcement")
@@ -486,4 +486,81 @@ func TestLandingReservationsUseAlternativePopulationSources(t *testing.T) {
 		sources[j.TargetNum] = true
 	}
 	require.Len(t, sources, 2, "one claimed source must not leave another transport idle while another colony can fill it")
+}
+
+func TestRadiatingLandingEscortFightsSeparatelyInNativeTurn(t *testing.T) {
+	for _, legacy := range []bool{false, true} {
+		t.Run(fmt.Sprintf("legacy=%t", legacy), func(t *testing.T) {
+			u := landingOperationUniverse(t)
+			p := u.Player(1)
+			leader, guard, scout, enemy := u.Fleet("Transport0"), u.Fleet("Cover"), u.Fleet("Scout"), u.Fleet("Enemy")
+			target := u.Planet("Target")
+			target.Position = Vector{30, 0}
+			target.Cargo.Colonists = 40
+			intel := *target
+			p.PlanetIntels = []*Planet{u.Planet("Home"), &intel}
+			p.Automation.FleetRoles = map[int]string{leader.Num: "freighter", guard.Num: "patrol", scout.Num: "scout"}
+			p.Race.ImmuneRad = false
+			p.Race.Spec.HabCenter.Rad = 0
+			leader.Cargo.Colonists = 400
+			guard.Tokens[0].Quantity = 30
+			d := p.GetDesign(guard.Tokens[0].DesignNum)
+			for i := range d.Slots {
+				if d.Slots[i].HullSlotIndex == 1 {
+					d.Slots[i].HullComponent = RadiatingHydroRamScoop.Name
+				} else if d.Slots[i].HullSlotIndex == 2 || d.Slots[i].HullSlotIndex == 3 {
+					d.Slots[i].HullComponent = DeltaTorpedo.Name
+				}
+			}
+			spec, err := ComputeShipDesignSpec(&u.Game.Rules, p.TechLevels, p.Race.Spec, d)
+			require.NoError(t, err)
+			d.Spec = spec
+			require.NoError(t, u.Game.computeSpecs())
+			guard.Fuel = guard.Spec.FuelCapacity
+			require.True(t, guard.Spec.Radiating)
+			require.False(t, leader.Spec.Radiating)
+			enemyDesign := u.Player(2).GetDesign(enemy.Tokens[0].DesignNum)
+			enemyDesign.Slots = []ShipDesignSlot{{HullSlotIndex: 1, HullComponent: QuickJump5.Name, Quantity: 1}, {HullSlotIndex: 2, HullComponent: XRayLaser.Name, Quantity: 1}}
+			require.NoError(t, u.Game.computeSpecs())
+			enemy.Position = target.Position
+			enemy.Waypoints = []Waypoint{{Position: target.Position}}
+			p.discoverer.discoverDesign(enemy.Tokens[0].design, true)
+			p.discoverer.discoverFleet(enemy, true)
+			require.Positive(t, u.Game.Year)
+			reports := []*Fleet{p.GetFleetIntel(2, enemy.Num)}
+			t.Logf("escort forecast=%+v combined forecast=%+v", u.turn.defensiveEvaluator(p).assessFormations(p, []*Fleet{guard}, reports, target.Position, 1, false, true), u.turn.defensiveEvaluator(p).assessFormations(p, []*Fleet{leader, guard}, reports, target.Position, 1, false, true))
+			op := &landingOperation{Target: target.Num, Owner: 2, Need: 400, Rally: leader.Position, Scout: scout.Num, Started: u.Game.Year, ScanYear: u.Game.Year, Phase: "scan"}
+			scout.SetTag(landingMemberTag, fmt.Sprint(leader.Num))
+			if legacy {
+				op.EscortDesigns = map[int]bool{guard.Tokens[0].DesignNum: true}
+				op.Phase = "assault"
+				_, err := NewOrderer().Merge(&u.Game.Rules, p, []*Fleet{leader, guard})
+				require.NoError(t, err)
+				u.Game.deleteFleet(guard)
+				require.True(t, leader.Spec.Radiating)
+			} else {
+				guard.SetTag(landingMemberTag, fmt.Sprint(leader.Num))
+			}
+			saveLandingOperation(leader, op)
+			u.GenerateTurn()
+			t.Logf("transport pos=%v tags=%v", leader.Position, leader.Tags)
+			require.Equal(t, 1, target.PlayerNum)
+			require.Equal(t, target.Position, leader.Position)
+			require.False(t, leader.Spec.Radiating)
+			require.Zero(t, leader.Cargo.Colonists)
+			require.True(t, enemy.Delete)
+			for _, m := range p.Messages {
+				require.NotEqual(t, PlayerMessageFleetRadiatingEngineDieoff, m.Type)
+			}
+			found := false
+			for _, f := range u.Game.getFleets(1) {
+				if !f.Delete && f.Position == target.Position && f.Spec.Radiating && f.Spec.HasWeapons {
+					require.Zero(t, f.Cargo.Colonists)
+					found = true
+				}
+			}
+			require.True(t, found, "a distinct radiating guard arrived in the same turn")
+			require.NotEmpty(t, p.BattleRecords)
+		})
+	}
 }

@@ -2,7 +2,7 @@
 	import FuelRouteDetails from './FuelRouteDetails.svelte';
 	import TransportPolicySettings from './TransportPolicySettings.svelte';
 	import { clone, create } from '@bufbuild/protobuf';
-	import { automationRoles, normalizeAutomaticRole } from '#lib/types/automationRoles.js';
+	import { automationRoles, automationStatus, normalizeAutomaticRole } from '#lib/types/automationRoles.js';
 	import { rangeSelection } from '#lib/types/rangeSelection.js';
 	import { readable } from 'svelte/store';
 	import ResearchTaxSettings from './ResearchTaxSettings.svelte';
@@ -192,6 +192,7 @@
 	);
 	function status(fleet: Fleet): string {
 		const tags = fleet.mapObject?.tags ?? {};
+		if (tags['automatic-safety'] || tags['patrol-mine-sweep'] || tags['last-mine-sweep']) return automationStatus(fleet);
 		if (tags['automatic-fuel-status']) return tags['automatic-fuel-status'];
 		try {
 			if (tags['automatic-tanker'])
@@ -204,6 +205,7 @@
 		if (tags['scout-job'] && automation.fleetRoles[fleet.mapObject!.num] === 'scout')
 			return tags['scout-job'];
 		for (const key of [
+			'automatic-safety',
 			'patrol-containment',
 			'automatic-patrol',
 			'design-maintenance',
@@ -211,7 +213,6 @@
 			'mining-job',
 			'colonization-job',
 			'terraform-job',
-			'automatic-safety',
 			'bomber-orders'
 		]) {
 			try {
@@ -325,12 +326,21 @@
 	</p>
 	<p class="text-sm my-2">
 		Colony ships offer Nearest, Farthest, Best world and Auto modes. Auto balances known
-		habitability against engine-aware travel time. All colonization modes require a fuel-checked
-		cruise-speed route taking at most 50 turns; unreachable reservations are replaced by another
-		eligible target. Targets are reserved to prevent duplicates. Stacks split into individual colony
+		habitability against engine-aware travel time.
+		New targets follow this order: your marked priorities, planets with more than 75% potential
+		using currently available terraforming, then other planets. The same order guides future
+		landings on enemy worlds. An already committed colony voyage keeps its destination.
+		All colonization modes require a fuel-checked
+		route taking at most 25 years using onboard fuel and real fixed bases. A committed ship keeps its
+		original destination unless a newer scan confirms occupation; nearby scout help is optional.
+		Only ships actually travelling reserve targets. Stacks split into individual colony
 		ships; mixed fleets must be separated first because colonization consumes the entire fleet.
 		Colony ships fill their holds with settlers from owned colonies, leaving at least half their
 		population and 5,000 people behind.
+		Maintenance waits until the current mission ends. Unexpected occupied worlds receive a normal
+		ground landing where permitted. Surviving ships with a funded return within 25 years may carry
+		only colonists, join landings and resume colonization; long-return ships head for recycling after
+		delivery. Nearby patrols may share fuel. Red worlds remain eligible after green worlds.
 	</p>
 	<fieldset class="border border-base-300 rounded-md p-3 my-3">
 		<legend class="font-semibold">Automation settings</legend>

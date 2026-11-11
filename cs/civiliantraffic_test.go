@@ -93,6 +93,51 @@ func TestCivilianTrafficChecksActualMovementStop(t *testing.T) {
 	require.True(t, automaticFleetLegSafe(&u.Game.Rules, p, transport, transport.Position, Vector{75, 0}, 6, false))
 }
 
+func TestCivilianDestinationRequiresOrbitalContact(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, transport, destination := u.Player(1), u.Fleet("Transport"), u.Planet("Home")
+	p.PlanetIntels = []*Planet{destination}
+	destination.Starbase = nil
+	enemy := patrolTestEnemy(100)
+	p.FleetIntels = []*Fleet{enemy}
+	enemy.Position = destination.Position.Add(Vector{X: 2})
+	threat := func() int {
+		return transitRouteThreat(p, transport, transport.Position, destination.Position)
+	}
+	require.Zero(t, threat(), "nearby stationary contact does not occupy orbit")
+	enemy.Position = destination.Position.Add(Vector{X: 30, Y: 2})
+	enemy.Heading = VectorFloat64{X: -1}
+	enemy.WarpSpeed = 6
+	require.Zero(t, threat(), "a parallel approach misses the planet")
+	enemy.Position.Y = destination.Position.Y
+	require.Positive(t, threat(), "the planet lies on course within one year")
+	enemy.Position.X = destination.Position.X + 40
+	require.Zero(t, threat(), "the fleet cannot reach the planet this year")
+	enemy.Position = destination.Position
+	require.Positive(t, threat(), "a fleet already in orbit is a risk")
+	guard := patrolTestEnemy(1000)
+	guard.PlayerNum, guard.Starbase = p.Num, true
+	destination.Starbase = guard
+	require.Zero(t, threat(), "the owned armed base can repel the fleet")
+	enemy.Spec.PowerRating = 10000
+	require.Positive(t, threat(), "the enemy can overwhelm the base")
+}
+
+func TestUnsafeCivilianDepartureAbandonsJobAndKeepsCargo(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, transport, destination := u.Player(1), u.Fleet("Transport"), u.Planet("Home")
+	enemy := patrolTestEnemy(100000)
+	enemy.Position = destination.Position
+	p.FleetIntels = []*Fleet{enemy}
+	transport.Cargo.Colonists = 12
+	saveLogisticsWork(transport, &logisticsJob{Kind: "settle", DeliveryNum: destination.Num, Position: destination.Position})
+	transport.Waypoints = append(transport.Waypoints[:1], NewPlanetWaypoint(destination.Position, destination.Num, destination.Name, 6))
+	u.Run((*turnGenerator).enforceAutomaticDeparture)
+	require.Nil(t, logisticsWork(transport))
+	require.Len(t, transport.Waypoints, 1)
+	require.Equal(t, 12, transport.Cargo.Colonists)
+}
+
 func TestGalleonWaitsForScoutScanThenLandsWithEscort(t *testing.T) {
 	galleon := ShipDesign{Name: "Landing carrier", Hull: Galleon.Name, Slots: []ShipDesignSlot{
 		{HullComponent: SubGalacticFuelScoop.Name, HullSlotIndex: 1, Quantity: 4},

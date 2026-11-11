@@ -4,6 +4,7 @@
   settings change, and the canvas is redrawn at most once per animation frame.
  -->
 <script lang="ts">
+	import { techs } from '#lib/services/Stores.js';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import type { Waypoint } from '#lib/types/cs-proto.js';
 	import type { MapObjectLike } from '#lib/types/MapObject.js';
@@ -62,16 +63,16 @@
 	let packetDests = $derived(buildPacketDests($universe, $commandedPlanet));
 	let routeDests = $derived(buildRouteDests($universe, $commandedPlanet));
 	let waypointPaths = $derived(
-		buildWaypointPaths($universe, $player, $settings, $commandedFleet, dragOrigin)
+		buildWaypointPaths($universe, $player, $settings, $commandedFleet, dragOrigin, $techs)
 	);
 	let planets = $derived(
 		colors
-			? buildPlanets($universe, $player, $settings, $commandedMapObject, $commandedPlanet, colors)
+			? buildPlanets($universe, $player, $settings, $commandedMapObject, $commandedPlanet, colors, $techs)
 			: []
 	);
 	let planetsByNum = $derived(new Map(planets.map((p) => [p.planet.mapObject?.num ?? 0, p])));
 	let fleets = $derived(
-		colors ? buildFleets($universe, $player, $settings, $commandedFleet, colors) : []
+		colors ? buildFleets($universe, $player, $settings, $commandedFleet, colors, $techs) : []
 	);
 	let wormholeLinks = $derived(buildWormholeLinks($universe));
 	let notes = $derived(buildNotes($universe, $settings));

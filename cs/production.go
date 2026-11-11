@@ -250,7 +250,7 @@ type buildItemResult struct {
 func (p *producer) produce() (productionResult, error) {
 	planet := p.planet
 	result := productionResult{}
-	available := Cost{Resources: planet.Spec.ResourcesPerYearAvailable}.AddMineral(planet.Cargo.ToMineral())
+	available := Cost{Resources: planet.Spec.ResourcesPerYearAvailable + planet.bonusResources}.AddMineral(planet.Cargo.ToMineral())
 	if p.maintainShips != nil {
 		p.maintainShips(&available)
 	}
@@ -433,6 +433,8 @@ func (p *producer) produce() (productionResult, error) {
 
 	// any leftover resources go back to the player for research
 	result.leftoverResources = available.Resources
+	// Recycling is a one-time production credit, not recurring annual output.
+	planet.bonusResources = 0
 	return result, nil
 }
 
@@ -516,6 +518,11 @@ func (p *producer) buildItem(item ProductionQueueItem, cost Cost, quantity int, 
 		} else {
 			// put what we have toward the next one
 			paid = p.allocatePartialBuild(cost, funds)
+			if item.Type == QueueItemTypeStarbase && p.player.Race.HasLRT(UR) {
+				// Store each contribution independently, including resources during
+				// a mineral shortage, until the replacement is fully funded.
+				paid = Cost{min(cost.Ironium, funds.Ironium), min(cost.Boranium, funds.Boranium), min(cost.Germanium, funds.Germanium), min(cost.Resources, funds.Resources)}
+			}
 			*available = funds.Subtract(paid)
 			if !mineralBlocked || !alchemy {
 				break

@@ -80,6 +80,31 @@ func insertShipProduction(p *Planet, d *ShipDesign, n int, role, window string) 
 	p.ProductionQueue = slices.Insert(p.ProductionQueue, at, item)
 }
 
+// A yard with existing concrete orders left after one year is reserved for
+// those orders. Recurring Auto entries do not count toward that backlog.
+func hasShipyardBacklog(r *Rules, p *Player, original *Planet) (bool, error) {
+	concrete := func(item ProductionQueueItem) bool {
+		return !item.Type.IsAuto() && item.Quantity > 0
+	}
+	if !slices.ContainsFunc(original.ProductionQueue, concrete) {
+		return false, nil
+	}
+
+	planet := productionPlanetCopy(original)
+	planet.ProductionQueue = slices.DeleteFunc(planet.ProductionQueue, func(item ProductionQueueItem) bool {
+		// Explicit alchemy can supply minerals to the concrete item after it.
+		return !concrete(item) &&
+			(item.Type != QueueItemTypeAutoMineralAlchemy || item.GetTag(starbaseBoostTag) != "")
+	})
+	planet.mine(r, planet.Spec.MiningOutput, min(planet.Mines, planet.Spec.MaxPossibleMines))
+	producer := newProducer(slog.Default(), r, planet, p)
+	producer.estimating = true
+	if _, err := producer.produce(); err != nil {
+		return false, err
+	}
+	return slices.ContainsFunc(planet.ProductionQueue, concrete), nil
+}
+
 // Native mining/production on private copies, tracking only the added candidate.
 // One simulation supplies a cumulative capacity curve; no per-ship forecasting.
 func productionCapacity(r *Rules, p *Player, original *Planet, d *ShipDesign, limit, years int, optimize bool) ([]int, error) {
@@ -212,6 +237,10 @@ func PlanEmpireShipProduction(r *Rules, player *Player, planets []*Planet, desig
 			planet.Spec = ComputePlanetSpec(r, &local, planet)
 			if !planet.CanBuild(d.Spec.Mass) {
 				yard.Reason = "This base cannot build this hull mass"
+			} else if busy, err := hasShipyardBacklog(r, &local, planet); err != nil {
+				yard.Reason = err.Error()
+			} else if busy {
+				yard.Reason = "Existing non-Auto orders extend beyond this year"
 			} else {
 				profile, err := productionCapacity(r, &local, planet, d, MaxShipProductionOrder, 1, false)
 				if err != nil {

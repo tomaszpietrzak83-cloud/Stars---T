@@ -94,6 +94,9 @@ func patrolTargetPriorityWithDeadline(p *Player, f *Fleet, approaching, bombing 
 	if approaching && deadline < 1000 && patrolReportedBomber(p, f) {
 		return -3
 	}
+	if deadline <= 2 && patrolReportedTransport(p, f) {
+		return -3
+	}
 	if priorityFleet(p, f) {
 		return -2
 	}

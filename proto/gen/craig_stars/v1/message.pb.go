@@ -7,12 +7,11 @@
 package craig_starsv1
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -218,6 +217,7 @@ const (
 	PlayerMessageType_PLAYER_MESSAGE_TYPE_PLANET_COLONIZE_CONTESTED                          PlayerMessageType = 126
 	PlayerMessageType_PLAYER_MESSAGE_TYPE_PLANET_BUILT_NOTE                                  PlayerMessageType = 127
 	PlayerMessageType_PLAYER_MESSAGE_TYPE_PLAYER_MAIL                                        PlayerMessageType = 128
+	PlayerMessageType_PLAYER_MESSAGE_TYPE_SHIP_UPGRADES                                      PlayerMessageType = 129
 )
 
 // Enum value maps for PlayerMessageType.
@@ -352,6 +352,7 @@ var (
 		126: "PLAYER_MESSAGE_TYPE_PLANET_COLONIZE_CONTESTED",
 		127: "PLAYER_MESSAGE_TYPE_PLANET_BUILT_NOTE",
 		128: "PLAYER_MESSAGE_TYPE_PLAYER_MAIL",
+		129: "PLAYER_MESSAGE_TYPE_SHIP_UPGRADES",
 	}
 	PlayerMessageType_value = map[string]int32{
 		"PLAYER_MESSAGE_TYPE_UNSPECIFIED":                                        0,
@@ -483,6 +484,7 @@ var (
 		"PLAYER_MESSAGE_TYPE_PLANET_COLONIZE_CONTESTED":                          126,
 		"PLAYER_MESSAGE_TYPE_PLANET_BUILT_NOTE":                                  127,
 		"PLAYER_MESSAGE_TYPE_PLAYER_MAIL":                                        128,
+		"PLAYER_MESSAGE_TYPE_SHIP_UPGRADES":                                      129,
 	}
 )
 
@@ -1565,7 +1567,7 @@ const file_craig_stars_v1_message_proto_rawDesc = "" +
 	"$PLAYER_MESSAGE_TARGET_TYPE_MINEFIELD\x10\x04\x12-\n" +
 	")PLAYER_MESSAGE_TARGET_TYPE_MYSTERY_TRADER\x10\x05\x12-\n" +
 	")PLAYER_MESSAGE_TARGET_TYPE_MINERAL_PACKET\x10\x06\x12%\n" +
-	"!PLAYER_MESSAGE_TARGET_TYPE_BATTLE\x10\a*\xbc2\n" +
+	"!PLAYER_MESSAGE_TARGET_TYPE_BATTLE\x10\a*\xe42\n" +
 	"\x11PlayerMessageType\x12#\n" +
 	"\x1fPLAYER_MESSAGE_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18PLAYER_MESSAGE_TYPE_INFO\x10\x01\x12\x1d\n" +
@@ -1696,7 +1698,8 @@ const file_craig_stars_v1_message_proto_rawDesc = "" +
 	")PLAYER_MESSAGE_TYPE_PLANET_CLIMATE_CHANGE\x10}\x121\n" +
 	"-PLAYER_MESSAGE_TYPE_PLANET_COLONIZE_CONTESTED\x10~\x12)\n" +
 	"%PLAYER_MESSAGE_TYPE_PLANET_BUILT_NOTE\x10\x7f\x12$\n" +
-	"\x1fPLAYER_MESSAGE_TYPE_PLAYER_MAIL\x10\x80\x01*\xf4\x02\n" +
+	"\x1fPLAYER_MESSAGE_TYPE_PLAYER_MAIL\x10\x80\x01\x12&\n" +
+	"!PLAYER_MESSAGE_TYPE_SHIP_UPGRADES\x10\x81\x01*\xf4\x02\n" +
 	"\x13CargoTransferStatus\x12%\n" +
 	"!CARGO_TRANSFER_STATUS_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bCARGO_TRANSFER_STATUS_OWNED\x10\x01\x12\x1f\n" +

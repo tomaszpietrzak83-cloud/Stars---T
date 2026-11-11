@@ -1,11 +1,42 @@
 package cs
 
-import "slices"
+import (
+	"encoding/json"
+	"slices"
+)
 
 // Completed armies return useful individual holds to civilian logistics rather
 // than waiting for one colony to fill a huge merged fleet again.
 func (t *turnGenerator) disperseEmptyLandingTransports(p *Player, leader *Fleet) {
-	if leader.Delete || leader.CargoMass() != 0 || leader.Spec.TotalShips < 2 || leader.Spec.HasWeapons || p.Automation.FleetRoles[leader.Num] != "freighter" {
+	colonyGroup := leader.GetTag("landing-colonizer-roles") != "" || colonizationMode(p.Automation.FleetRoles[leader.Num]) != ""
+	if leader.Delete || leader.CargoMass() != 0 && !colonyGroup || leader.Spec.HasWeapons || !landingTransport(p, leader) {
+		return
+	}
+	roles := map[int]string{}
+	_ = json.Unmarshal([]byte(leader.GetTag("landing-colonizer-roles")), &roles)
+	restore := func(f *Fleet) {
+		delete(f.Tags, "landing-colonizer-roles")
+		if !p.CanAutomateColonizer(f) {
+			p.Automation.FleetRoles[f.Num] = "freighter"
+			delete(f.Tags, colonizationTag)
+			return
+		}
+		role := roles[f.Tokens[0].DesignNum]
+		if role == "" {
+			role = p.Automation.FleetRoles[f.Num]
+		}
+		if colonizationMode(role) == "" {
+			role = "colonizer:best"
+		}
+		p.Automation.FleetRoles[f.Num] = role
+		if f.Cargo.Colonists > 0 {
+			writeColonizationJob(f, &colonizationJob{Mode: colonizationMode(role), Kind: "passengers", Status: "Landing cancelled; retaining passengers for colonist transport or a new colony"})
+			return
+		}
+		t.completedColonizerTask(p, f, &colonizationJob{Mode: colonizationMode(role)})
+	}
+	if leader.Spec.TotalShips < 2 {
+		restore(leader)
 		return
 	}
 	children, err := NewOrderer().SplitAll(&t.game.Rules, p, t.game.getFleets(p.Num), leader)
@@ -17,7 +48,9 @@ func (t *turnGenerator) disperseEmptyLandingTransports(p *Player, leader *Fleet)
 		_ = t.game.Universe.addFleet(child)
 		p.Automation.FleetRoles[child.Num] = "freighter"
 		holdAutomaticFleet(p, child, "Landing completed; transport available for colony support")
+		restore(child)
 	}
+	restore(leader)
 }
 
 // A failed occupation can still be useful, but never send tiny or mostly
@@ -47,6 +80,9 @@ func (t *turnGenerator) retargetBlockedLanding(p *Player, leader *Fleet, op *lan
 		candidates = append(candidates, target)
 	}
 	slices.SortFunc(candidates, func(a, b *Planet) int {
+		if rank := expansionPriority(p, b) - expansionPriority(p, a); rank != 0 {
+			return rank
+		}
 		da, db := leader.Position.DistanceTo(a.Position), leader.Position.DistanceTo(b.Position)
 		if da < db {
 			return -1

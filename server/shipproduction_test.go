@@ -150,3 +150,49 @@ func TestShipProductionAPIRollsBackEveryYardOnSaveFailure(t *testing.T) {
 	require.ErrorContains(t, err, "second-yard save failure")
 	require.JSONEq(t, before, productionQueues(t, c, ctx, g.ID))
 }
+
+func TestShipProductionAPIQueuesAtMineralLimitedYardsWithAlchemy(t *testing.T) {
+	database, ctx, g, design := productionAPIFixture(t)
+	c := database.NewReadWriteClient()
+	planets, err := c.GetPlanetsForPlayer(ctx, g.ID, 1)
+	require.NoError(t, err)
+	ship := g.Players[0].GetDesign(design)
+	require.Positive(t, ship.Spec.Cost.ToMineral().Total())
+	for _, planet := range planets {
+		// Fund the existing ship so it is not a multi-year backlog. The
+		// two new ships still need minerals from alchemy.
+		planet.Cargo = cs.Cargo{
+			Colonists: 5000,
+			Ironium:   ship.Spec.Cost.Ironium,
+			Boranium:  ship.Spec.Cost.Boranium,
+			Germanium: ship.Spec.Cost.Germanium,
+		}
+		planet.Mines = 0
+		planet.ProductionQueue = []cs.ProductionQueueItem{
+			{Type: cs.QueueItemTypeAutoMineralAlchemy, Quantity: 1},
+			*cs.NewProductionQueueItemShip(1, ship),
+		}
+		require.NoError(t, c.SavePlanet(ctx, planet))
+	}
+	service := NewPlanetServiceHandler(database)
+	req := &v1.ShipProductionRequest{GameId: g.ID, DesignNum: int32(design), Quantity: 2}
+	preview, err := service.PreviewShipProduction(ctx, connect.NewRequest(req))
+	require.NoError(t, err)
+	require.Equal(t, req.Quantity, preview.Msg.AssignedQuantity)
+	req.ExpectedSourceHash = preview.Msg.SourceHash
+
+	applied, err := service.QueueShipProduction(ctx, connect.NewRequest(req))
+	require.NoError(t, err)
+	require.Equal(t, req.Quantity, applied.Msg.AssignedQuantity)
+	queued, err := c.GetPlanetsForPlayer(ctx, g.ID, 1)
+	require.NoError(t, err)
+	total := 0
+	for _, planet := range queued {
+		for _, item := range planet.ProductionQueue {
+			if item.Type == cs.QueueItemTypeShipToken && item.DesignNum == design {
+				total += item.Quantity
+			}
+		}
+	}
+	require.Equal(t, 4, total)
+}

@@ -158,14 +158,31 @@ func (t *turnGenerator) maintenanceNeeded(player *Player, fleet *Fleet) bool {
 	return t.pendingReplacements(player, readMaintenance(fleet))
 }
 func (t *turnGenerator) fleetDesignMaintenance() {
+	deferredSweepers := map[*Fleet]bool{}
 	for _, p := range t.automaticPlayers() {
 		p.NormalizeDesignMaintenance(p.DesignMaintenance)
+		t.deferMinesweeperRebuilds(p, deferredSweepers)
 	}
 	for _, fleet := range t.game.Fleets {
 		if fleet.Delete || fleet.Starbase {
 			continue
 		}
 		player := t.game.getPlayer(fleet.PlayerNum)
+		if deferredSweepers[fleet] {
+			delete(fleet.Tags, "maintenance-pending")
+			continue
+		}
+		if colonizerHasTask(player, fleet) {
+			// Recover loaded legacy colonizers recalled by older maintenance rules.
+			if work := readMaintenance(fleet); work != nil && work.Stage != "scrap" && work.Stage != "rally" && !t.pendingReplacements(player, work) {
+				delete(fleet.Tags, maintenanceTag)
+				delete(fleet.Tags, replacementGroupTag)
+			}
+			if t.maintenanceNeeded(player, fleet) {
+				fleet.SetTag("maintenance-pending", "Colonizer finishes its current delivery or landing before maintenance")
+			}
+			continue
+		}
 		if fleet.InAutomaticSafety() {
 			// Safety temporarily suspends refit without losing its group or mission.
 			continue
@@ -178,7 +195,7 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 		}
 		// Finished automatic ships can work independently. Transports will
 		// regroup with their landing army rather than wait for other shipyards.
-		if work := readMaintenance(fleet); work != nil && work.Stage == "rally" && (work.OriginalRole == "patrol" || work.OriginalRole == "freighter") && !hasMaintenanceTargets(player, fleet) {
+		if work := readMaintenance(fleet); work != nil && work.Stage == "rally" && (work.OriginalRole == "patrol" || work.OriginalRole == "freighter" || work.OriginalRole == "minesweeper") && !hasMaintenanceTargets(player, fleet) {
 			delete(fleet.Tags, maintenanceTag)
 			delete(fleet.Tags, replacementGroupTag)
 			delete(fleet.Tags, "maintenance-pending")
@@ -196,11 +213,18 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 		if len(player.DesignMaintenance) == 0 && !fleet.InDesignMaintenance() {
 			continue
 		}
+		if !fleet.InDesignMaintenance() && player.Automation.FleetRoles[fleet.Num] == "patrol" &&
+			fleet.Spec.TotalShips > 1 && t.maintenanceNeeded(player, fleet) && (localPatrolReserve(fleet, t.game.Year) || patrolReserveNeeded(player, fleet)) {
+			// Keep the queued rebuild for a later turn. Local battle readiness
+			// must not disappear when an entire pack is due for replacement.
+			delete(fleet.Tags, "maintenance-pending")
+			continue
+		}
 		if !fleet.InDesignMaintenance() && t.maintenanceNeeded(player, fleet) {
 			delivery := logisticsWork(fleet)
 			taskPending := false
 			if job := readTerraformJob(fleet); job != nil && player.Automation.FleetRoles[fleet.Num] == "terraformer" {
-				taskPending = terraformWork(player, t.game.getPlanet(job.PlanetNum))
+				taskPending = t.terraformWork(player, t.terraformTarget(player, fleet, job.PlanetNum))
 			}
 			if job := readMiningJob(fleet); job != nil && player.Automation.FleetRoles[fleet.Num] == "miner" {
 				taskPending = t.game.Year < job.ArrivedYear+miningMinimumStay
@@ -449,4 +473,18 @@ func validateRetiredQueueEdits(p *Player, existing, incoming []ProductionQueueIt
 		}
 	}
 	return nil
+}
+
+func patrolReserveNeeded(p *Player, f *Fleet) bool {
+	reach := max(80, 2*f.StrategicSpeed(patrolFreeWarp(p, f)))
+	for _, enemy := range p.FleetIntels {
+		if enemy == nil || enemy.Delete || enemy.ReportAge != 0 || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) ||
+			f.Position.DistanceTo(enemy.Position) > reach || !patrolReportedBomber(p, enemy) {
+			continue
+		}
+		if bombing, _ := patrolColonyDeadline(p, enemy); bombing {
+			return true
+		}
+	}
+	return false
 }

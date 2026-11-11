@@ -183,7 +183,7 @@ func TestArmedCargoHullUsesOnlyFreeSpaceAfterBattle(t *testing.T) {
 	}
 }
 
-func TestMineralPickupWaitsOutsideOccupiedOwnOrbitWithoutBorrowingPatrol(t *testing.T) {
+func TestMineralPickupAbandonsOccupiedOwnOrbitWithoutBorrowingPatrol(t *testing.T) {
 	for _, auto := range []bool{false, true} {
 		t.Run(fmt.Sprint(auto), func(t *testing.T) {
 			u := passengerUniverse(t)
@@ -199,11 +199,8 @@ func TestMineralPickupWaitsOutsideOccupiedOwnOrbitWithoutBorrowingPatrol(t *test
 			saveLogisticsWork(f, &logisticsJob{Kind: "planet", TargetNum: source.Num, Position: source.Position, DeliveryNum: dest.Num, Load: Mineral{Ironium: f.Spec.CargoCapacity}})
 			u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).resolveLogisticsAutomation, (*turnGenerator).dispatchReadyLogistics)
 			require.Zero(t, f.CargoMass())
+			require.Nil(t, logisticsWork(f))
 			require.Empty(t, e.GetTag(escortTag))
-			p.FleetIntels = nil
-			u.Run((*turnGenerator).planLogisticsAutomation, (*turnGenerator).resolveLogisticsAutomation, (*turnGenerator).dispatchReadyLogistics)
-			require.Positive(t, f.Cargo.Ironium)
-			require.Greater(t, len(f.Waypoints), 1)
 		})
 	}
 }

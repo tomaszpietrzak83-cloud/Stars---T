@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"slices"
 )
 
 const scoutReconTag = "scout-recon"
 
 type scoutReconJob struct {
+	Minelayer     bool `json:"minelayer,omitempty"`
 	Enemy, Target int
 	Designs       []int  `json:"designs,omitempty"`
 	Watching      bool   `json:"watching,omitempty"`
@@ -210,6 +212,10 @@ func (t *turnGenerator) planScoutRecon(p *Player, f *Fleet) bool {
 		claimed := false
 		for _, other := range t.game.getFleets(p.Num) {
 			job := readScoutRecon(other)
+			if other != f && !other.Delete && job != nil && job.Minelayer && job.Enemy == enemy.PlayerNum && job.Target == enemy.Num {
+				claimed = true
+				break
+			}
 			if other != f && scoutReconActive(p, other) && !other.Delete && !other.InDesignMaintenance() && !other.InAutomaticSafety() && other.GetTag("maintenance-pending") == "" && job != nil && !job.Watching && job.Enemy == enemy.PlayerNum && (job.Target == enemy.Num || unknownDesignOverlap(p, enemy, p.GetFleetIntel(job.Enemy, job.Target))) {
 				// A remote lower-priority copy of this design cannot reserve
 				// reconnaissance while its counterpart bombards our colony.
@@ -293,15 +299,35 @@ func (t *turnGenerator) scanScoutReconContacts() {
 			if p.discoverer == nil {
 				p.discoverer = newDiscoverer(t.log, p)
 			}
-			for _, token := range enemy.Tokens {
-				p.discoverer.discoverDesign(token.design, p.Race.Spec.DiscoverDesignOnScan || f.Position.DistanceTo(enemy.Position) <= 1)
+			contact := f.Position.DistanceTo(enemy.Position) <= 1
+			p.discoverPatrolReconFleet(enemy, contact)
+			if contact && !job.Watching {
+				// One contact can identify the already reported escorts in
+				// the same orbit. The scout must actually reach each fleet.
+				for _, report := range slices.Clone(p.FleetIntels) {
+					if report == nil || report.Delete || report.Starbase || report.ReportAge != 0 ||
+						report.Position.DistanceTo(enemy.Position) > 3 || report.PlayerNum == p.Num || p.IsFriend(report.PlayerNum) ||
+						report.PlayerNum == job.Enemy && report.Num == job.Target || !unknownFleetEquipment(p, report) {
+						continue
+					}
+					other := t.game.getFleet(report.PlayerNum, report.Num)
+					if other != nil && !other.Delete && f.Position.DistanceTo(other.Position) <= 1 {
+						p.discoverPatrolReconFleet(other, true)
+					}
+				}
 			}
-			p.discoverer.discoverFleet(enemy, false)
 			if !job.Watching && !unknownFleetEquipment(p, p.GetFleetIntel(enemy.PlayerNum, enemy.Num)) {
 				delete(f.Tags, scoutReconTag)
 			}
 		}
 	}
+}
+
+func (p *Player) discoverPatrolReconFleet(enemy *Fleet, contact bool) {
+	for _, token := range enemy.Tokens {
+		p.discoverer.discoverDesign(token.design, p.Race.Spec.DiscoverDesignOnScan || contact)
+	}
+	p.discoverer.discoverFleet(enemy, false)
 }
 
 // A lone ordinary scout is no reason to abandon exploration. A report with an

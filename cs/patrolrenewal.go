@@ -75,7 +75,7 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 	for i := range policies {
 		policies[i] = automaticRoutePolicy{Fast: true, EconomicalPatrol: !urgent, MaxTurns: 20}
 	}
-	if job.RendezvousBy == 0 {
+	if job.RendezvousBy == 0 && !urgent {
 		candidates = slices.DeleteFunc(candidates, func(v Vector) bool {
 			for _, f := range group {
 				if v == f.Position {
@@ -96,7 +96,9 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 	if chosen.GatherTurns > 2 {
 		return false
 	}
-	if !synchronizePatrolRally(&t.game.Rules, p, group, target, chosen) {
+	// A safe relief point can receive nearby ships early. The fixed deadline
+	// still governs the rest of the formation.
+	if !urgent && !synchronizePatrolRally(&t.game.Rules, p, group, target, chosen) {
 		return false
 	}
 	if job.RendezvousBy == 0 {
@@ -106,9 +108,11 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 	}
 	ok := applyPatrolRally(p, leader, job, group, chosen.Routes)
 	if ok {
-		t.patrolGatheringCleanup(p, leader, enemy, job, group)
+		if !job.ReliefStaging {
+			t.patrolGatheringCleanup(p, leader, enemy, job, group)
+		}
 		for _, f := range group {
-			if len(f.Waypoints) < 2 && !t.screenPatrolRally(p, f, job.RendezvousBy) {
+			if len(f.Waypoints) < 2 && !urgent && !t.screenPatrolRally(p, f, job.RendezvousBy) {
 				return false
 			}
 		}

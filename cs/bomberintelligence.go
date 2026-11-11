@@ -83,6 +83,12 @@ func bomberChaseThreat(p *Player, f *Fleet) int {
 		if enemy == nil || enemy.Delete || enemy.PlayerNum == p.Num || p.IsFriend(enemy.PlayerNum) || enemy.ReportAge != 0 || !patrolReportedCombatant(p, enemy) {
 			continue
 		}
+		// The built-in AI targets planets, not passing fleets. A possible
+		// change of course is not a pursuit order; actual arrivals are checked
+		// separately by interceptionThreat.
+		if p.planetOnlyAI[enemy.PlayerNum] {
+			continue
+		}
 		distance := f.Position.DistanceTo(enemy.Position)
 		speed := max(0, enemy.observedStrategicSpeed())
 		toward := f.Position.Subtract(enemy.Position).Normalized()

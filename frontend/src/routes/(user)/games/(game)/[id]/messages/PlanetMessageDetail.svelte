@@ -424,7 +424,8 @@
 	{/if}
 	{#if message.spec?.cost?.resources}
 		&nbsp;Ultimate Recycling has also made {message.spec.cost.resources} resources available for immediate
-		use (less if other ships were scrapped here this year).
+		use in this planet's production queue. Recovery from other ships adds to this amount.
+		This is a one-time credit, not an increase in yearly production.
 	{/if}
 {:else if message.type === PlayerMessageType.PLAYER_TECH_LEVEL_GAINED_SCRAP_FLEET}
 	In the process of {message.spec?.name} being scrapped above {planetName}, you have gained a level

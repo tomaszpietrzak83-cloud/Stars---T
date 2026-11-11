@@ -537,7 +537,7 @@ retryFullPlacement:
 		if ug.HostStartPosition == "edge" || ug.HostStartPosition == "center" {
 			score := func(p pxy) int {
 				if ug.HostStartPosition == "edge" {
-					// Prefer stars within the 3–7% band along the nearest edge.
+					// Prefer stars 4–10% of the map width from the nearest edge.
 					return edgeStartScore(Vector{p.x, p.y}, ug.area)
 				}
 				return distSquared(p.x, p.y, width/2, height/2)
@@ -681,9 +681,8 @@ retryFullPlacement:
 }
 
 func edgeStartScore(position, area Vector) int {
-	distance := 100 * min(position.X*area.Y, (area.X-position.X)*area.Y, position.Y*area.X, (area.Y-position.Y)*area.X)
-	span := area.X * area.Y
-	return max(0, 3*span-distance, distance-7*span)
+	distance := 100 * min(position.X, area.X-position.X, position.Y, area.Y-position.Y)
+	return max(0, 4*area.X-distance, distance-10*area.X)
 }
 
 func (ug *universeGenerator) generatePlanets() error {
@@ -705,7 +704,7 @@ func (ug *universeGenerator) generatePlanets() error {
 	// place planets in the universe
 	borderInset := ug.Rules.BorderInset
 	if ug.HostStartPosition == "edge" {
-		borderInset = min(borderInset, max(0, 3*min(ug.area.X, ug.area.Y)/100-10))
+		borderInset = min(borderInset, max(0, 4*ug.area.X/100-10))
 	}
 	var positions []Vector
 	for attempt := 0; attempt < 8; attempt++ {
@@ -725,6 +724,12 @@ func (ug *universeGenerator) generatePlanets() error {
 		}) {
 			break
 		}
+	}
+
+	if ug.HostStartPosition == "edge" && !slices.ContainsFunc(positions, func(pos Vector) bool {
+		return edgeStartScore(pos, ug.area) == 0
+	}) {
+		return fmt.Errorf("could not place an edge homeworld 4–10%% of map width from the nearest edge")
 	}
 
 	// in case we don't have quite as many planets as we thought

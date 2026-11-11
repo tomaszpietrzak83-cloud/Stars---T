@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { TechService } from '#lib/services/TechService.js';
+import { create } from '@bufbuild/protobuf';
+import { ShipDesignSchema } from './cs-proto';
 import type { DesignFinder } from '#lib/services/Universe.js';
 import { PlayerRelation, ShipClass, type Fleet, type Minefield, type ShipDesign } from './cs-proto';
 import {
@@ -95,6 +98,45 @@ describe('design filters', () => {
 		const options = { filterAllyDesigns: true, filterAllyShipClasses: [ShipClass.WARSHIP] };
 		expect(getVisibleShipCount(player, ally, options, designs)).toBe(3);
 		expect(getVisibleShipCount(player, enemy, options, designs)).toBe(5);
+	});
+});
+
+describe('combat fleet filter', () => {
+	const tech = new TechService();
+	const options = { showCombatFleetsOnly: true };
+	const scoutSlot = (hullComponent: string, quantity: number) => ({
+		hullComponent,
+		quantity,
+		hullSlotIndex: 3
+	});
+
+	it.each([
+		['own scout with an empty slot', 1, 'Scout', [scoutSlot('', 0)], false],
+		['own scout with a gun', 1, 'Scout', [scoutSlot('Gatling Gun', 1)], true],
+		['own scout without equipment data', 1, 'Scout', [], false],
+		['foreign scout with unrevealed equipment', 2, 'Scout', [], true],
+		['foreign freighter with unrevealed equipment', 3, 'Small Freighter', [], false],
+		['foreign scout with a revealed empty slot', 3, 'Scout', [scoutSlot('', 0)], false],
+		['foreign scout with a revealed fuel tank', 3, 'Scout', [scoutSlot('Fuel Tank', 1)], false],
+		['foreign scout with a revealed gun', 3, 'Scout', [scoutSlot('Gatling Gun', 1)], true],
+		['foreign scout with an unidentified part', 3, 'Scout', [scoutSlot('Unknown part', 1)], true]
+	] as const)('%s', (_label, owner, hull, slots, visible) => {
+		const design = create(ShipDesignSchema, { hull, slots: [...slots] });
+		const finder = { ...designs, getDesign: () => design };
+		const candidate = fleet(owner, { designNum: 1, quantity: 1 });
+		expect(filterFleet(player, candidate, options, finder, tech)).toBe(visible);
+		expect(filterFleet(player, candidate, { hideCombatFleets: true }, finder, tech)).toBe(!visible);
+	});
+
+	it('checks every design in a mixed fleet and ignores absent ships', () => {
+		const finder = {
+			...designs,
+			getDesign: (_owner: number | undefined, num: number | undefined) =>
+				create(ShipDesignSchema, { hull: num === 1 ? 'Small Freighter' : 'Scout' })
+		};
+		const freighter = { designNum: 1, quantity: 3 };
+		expect(filterFleet(player, fleet(3, freighter, { designNum: 2, quantity: 1 }), options, finder, tech)).toBe(true);
+		expect(filterFleet(player, fleet(3, freighter, { designNum: 2, quantity: 0 }), options, finder, tech)).toBe(false);
 	});
 });
 

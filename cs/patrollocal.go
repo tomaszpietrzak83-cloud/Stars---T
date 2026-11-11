@@ -73,6 +73,7 @@ func (t *turnGenerator) launchLocalPatrol(p *Player, oldLeader, enemy *Fleet, jo
 		// rendezvous; its deadline must not inherit this finished gathering.
 		job.RendezvousBy, job.GatheringSince = 0, 0
 		job.Rally, job.CleanupUsed = Vector{}, false
+		job.ReliefStaging = false
 		job.CleanupEnemy, job.CleanupTarget = 0, 0
 		job.Status = "Intercepting " + enemy.Name + " with local wolf pack; <=5% sampled count/value losses"
 		savePatrolJob(leader, *job)

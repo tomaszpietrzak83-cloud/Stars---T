@@ -11,13 +11,14 @@ import (
 const colonizationTag = "colonization-job"
 
 type colonizationJob struct {
-	TargetNum   int     `json:"targetNum"`
-	Mode        string  `json:"mode"`
-	Kind        string  `json:"kind"`
-	Quality     int     `json:"quality,omitempty"`
-	TravelYears int     `json:"travelYears,omitempty"`
-	Score       float64 `json:"score,omitempty"`
-	Status      string  `json:"status"`
+	TargetNum    int     `json:"targetNum"`
+	Mode         string  `json:"mode"`
+	Kind         string  `json:"kind"`
+	Quality      int     `json:"quality,omitempty"`
+	TravelYears  int     `json:"travelYears,omitempty"`
+	Score        float64 `json:"score,omitempty"`
+	Status       string  `json:"status"`
+	AssignedYear int     `json:"assignedYear,omitempty"`
 }
 
 func colonizationMode(role string) string {
@@ -52,6 +53,14 @@ func (player *Player) CanAutomateColonizer(fleet *Fleet) bool {
 }
 func colonizationOneWay(player *Player, fleet *Fleet, goal Waypoint) bool {
 	job := readColonizationJob(fleet)
+	if colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && job != nil && player.CanAutomateColonizer(fleet) {
+		if job.Kind == "retire" && goal.Task == WaypointTaskScrapFleet {
+			return true
+		}
+		if job.Kind == "deliver-retire" && goal.TargetType == MapObjectTypePlanet && goal.TargetNum == job.TargetNum {
+			return true
+		}
+	}
 	return colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && job != nil && job.Kind == "colonize" && goal.TargetType == MapObjectTypePlanet && goal.TargetNum == job.TargetNum && goal.Task == WaypointTaskColonize && fleet.Cargo.Colonists > 0 && player.CanAutomateColonizer(fleet)
 }
 func availableColonyPlanet(planet *Planet) bool {
@@ -85,7 +94,7 @@ func colonyAutoScore(quality, travelYears int) float64 {
 func (t *turnGenerator) splitAutomaticColonizers(player *Player) {
 	for _, fleet := range slices.Clone(t.game.getFleets(player.Num)) {
 		role := player.Automation.FleetRoles[fleet.Num]
-		if fleet.GetTag("maintenance-pending") != "" || fuelNetworkManaged(fleet) || colonizationMode(role) == "" || fleet.InDesignMaintenance() || !player.CanAutomateColonizer(fleet) || fleet.Spec.TotalShips <= 1 {
+		if landingManaged(fleet) || fuelNetworkManaged(fleet) || colonizationMode(role) == "" || fleet.InDesignMaintenance() || !player.CanAutomateColonizer(fleet) || fleet.Spec.TotalShips <= 1 {
 			continue
 		}
 		children, err := NewOrderer().SplitAll(&t.game.Rules, player, t.game.getFleets(player.Num), fleet)
@@ -161,12 +170,15 @@ func (t *turnGenerator) planColonizationAutomation() {
 		}
 		// Reserve valid existing assignments before a newly built ship chooses.
 		for _, fleet := range fleets {
-			if job := readColonizationJob(fleet); job != nil && job.Kind == "colonize" && !fleet.Delete && colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && availableColonyPlanet(player.GetPlanetIntel(job.TargetNum)) && claimed[job.TargetNum] == 0 {
+			if job := readColonizationJob(fleet); colonizerTravelling(player, fleet, job) && colonizationMode(player.Automation.FleetRoles[fleet.Num]) != "" && availableColonyPlanet(player.GetPlanetIntel(job.TargetNum)) && claimed[job.TargetNum] == 0 {
 				claimed[job.TargetNum] = fleet.Num
 			}
 		}
 		for _, fleet := range fleets {
 			mode := colonizationMode(player.Automation.FleetRoles[fleet.Num])
+			if landingManaged(fleet) {
+				continue
+			}
 			if mode != "" && !fleet.Delete && !player.CanAutomateColonizer(fleet) {
 				holdAutomaticFleet(player, fleet, "Automatic colonization remains enabled: waiting for an unmixed colony-ship fleet")
 				writeColonizationJob(fleet, &colonizationJob{Mode: mode, Status: "Waiting for colony ships only; automatic role remains enabled"})
@@ -175,12 +187,50 @@ func (t *turnGenerator) planColonizationAutomation() {
 			if mode == "" {
 				delete(fleet.Tags, colonizationTag)
 			}
-			if fleet.GetTag("maintenance-pending") != "" || fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || mode == "" || !player.CanAutomateColonizer(fleet) {
+			if fuelNetworkManaged(fleet) || fleet.InAutomaticSafety() || fleet.Delete || fleet.Starbase || fleet.InDesignMaintenance() || mode == "" || !player.CanAutomateColonizer(fleet) {
 				continue
 			}
 			job := readColonizationJob(fleet)
 			if job == nil {
 				job = &colonizationJob{Mode: mode}
+			}
+			if job.Kind == "retire" {
+				t.retireColonizer(player, fleet, job)
+				continue
+			}
+			if job.Kind == "deliver-retire" {
+				t.deliverRetiringColonizer(player, fleet, job)
+				continue
+			}
+			// Finish an assigned passenger delivery before selecting another world.
+			if job.Kind == "passengers" && logisticsWork(fleet) != nil {
+				continue
+			}
+			if job.Kind == "passengers" && fleet.Cargo.Colonists == 0 {
+				if _, home := t.colonizerReturn(player, fleet, colonizationMaxYears); home == nil {
+					job.Kind = "retire"
+					t.retireColonizer(player, fleet, job)
+					continue
+				}
+			}
+			// A committed colony is retained across mode/priority changes and route
+			// problems. Only a newer ownership report cancels it before arrival.
+			if job.Kind == "colonize" && job.TargetNum != 0 && fleet.Cargo.Colonists > 0 {
+				if target := player.GetPlanetIntel(job.TargetNum); target != nil {
+					if !target.Owned() || target.ReportAge > 1 && (job.AssignedYear == 0 || t.game.Year-target.ReportAge <= job.AssignedYear) {
+						t.continueColonizerMission(player, fleet, job, target)
+						if colonizerTravelling(player, fleet, job) {
+							claimed[job.TargetNum] = fleet.Num
+						} else if claimed[job.TargetNum] == fleet.Num {
+							delete(claimed, job.TargetNum)
+						}
+						continue
+					}
+				}
+				if claimed[job.TargetNum] == fleet.Num {
+					delete(claimed, job.TargetNum)
+				}
+				job.TargetNum, job.Kind = 0, "passengers"
 			}
 			topUp := false
 			if fleet.Cargo.Colonists < fleet.Spec.CargoCapacity {
@@ -199,47 +249,49 @@ func (t *turnGenerator) planColonizationAutomation() {
 			}
 			var chosen *Planet
 			var route *expeditionRoute
-			for _, green := range []bool{true, false} {
-				if job.Mode == mode && job.Kind == "colonize" && (player.Automation.PriorityPlanets[job.TargetNum] || len(player.Automation.PriorityPlanets) == 0) {
-					if candidate := player.GetPlanetIntel(job.TargetNum); availableColonyPlanet(candidate) && greenColonyTarget(player, candidate) == green && (claimed[candidate.Num] == 0 || claimed[candidate.Num] == fleet.Num) {
-						route = planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, candidate.Position, candidate.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true})
-						if route != nil {
-							chosen = candidate
+			for _, priorityBand := range []int{2, 1, 0} {
+				for _, green := range []bool{true, false} {
+					if job.Mode == mode && job.Kind == "colonize" && (player.Automation.PriorityPlanets[job.TargetNum] || len(player.Automation.PriorityPlanets) == 0) {
+						if candidate := player.GetPlanetIntel(job.TargetNum); availableColonyPlanet(candidate) && greenColonyTarget(player, candidate) == green && (claimed[candidate.Num] == 0 || claimed[candidate.Num] == fleet.Num) {
+							route = planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, candidate.Position, candidate.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true})
+							if route != nil {
+								chosen = candidate
+							}
 						}
 					}
-				}
-				if chosen == nil {
-					best := -math.MaxFloat64
-					bestQuality := 0
-					bestDistance := 0.0
-					for _, planet := range player.PlanetIntels {
-						if !availableColonyPlanet(planet) || greenColonyTarget(player, planet) != green || claimed[planet.Num] != 0 && claimed[planet.Num] != fleet.Num {
-							continue
-						}
-						candidate := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true})
-						if candidate == nil {
-							continue
-						}
-						quality := colonyTargetQuality(player, planet)
-						distance := fleet.Position.DistanceTo(planet.Position)
-						score := colonyTargetScore(quality, candidate.Turns)
-						switch mode {
-						case "nearest":
-							score = -distance
-						case "farthest":
-							score = distance
-						case "best":
-							score = float64(quality)
-						}
-						priority, currentPriority := player.Automation.PriorityPlanets[planet.Num], chosen != nil && player.Automation.PriorityPlanets[chosen.Num]
-						better := chosen == nil || priority && !currentPriority || priority == currentPriority && (score > best || score == best && (candidate.Turns < route.Turns || candidate.Turns == route.Turns && (quality > bestQuality || quality == bestQuality && (distance < bestDistance || distance == bestDistance && planet.Num < chosen.Num))))
-						if better {
-							chosen, route, best, bestQuality, bestDistance = planet, candidate, score, quality, distance
+					if chosen == nil {
+						best := -math.MaxFloat64
+						bestQuality := 0
+						bestDistance := 0.0
+						for _, planet := range player.PlanetIntels {
+							if !availableColonyPlanet(planet) || expansionPriority(player, planet) != priorityBand || greenColonyTarget(player, planet) != green || claimed[planet.Num] != 0 && claimed[planet.Num] != fleet.Num {
+								continue
+							}
+							candidate := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true})
+							if candidate == nil {
+								continue
+							}
+							quality := colonyTargetQuality(player, planet)
+							distance := fleet.Position.DistanceTo(planet.Position)
+							score := colonyTargetScore(quality, candidate.Turns)
+							switch mode {
+							case "nearest":
+								score = -distance
+							case "farthest":
+								score = distance
+							case "best":
+								score = float64(quality)
+							}
+							priority, currentPriority := player.Automation.PriorityPlanets[planet.Num], chosen != nil && player.Automation.PriorityPlanets[chosen.Num]
+							better := chosen == nil || priority && !currentPriority || priority == currentPriority && (score > best || score == best && (candidate.Turns < route.Turns || candidate.Turns == route.Turns && (quality > bestQuality || quality == bestQuality && (distance < bestDistance || distance == bestDistance && planet.Num < chosen.Num))))
+							if better {
+								chosen, route, best, bestQuality, bestDistance = planet, candidate, score, quality, distance
+							}
 						}
 					}
-				}
-				if chosen == nil {
-					chosen, route = t.assistedColonyTarget(player, fleet, mode, claimed, green)
+					if chosen != nil {
+						break
+					}
 				}
 				if chosen != nil {
 					break
@@ -249,26 +301,35 @@ func (t *turnGenerator) planColonizationAutomation() {
 				delete(claimed, job.TargetNum)
 			}
 			if chosen == nil {
+				if _, home := t.colonizerReturn(player, fleet, colonizationMaxYears); home == nil && fleet.Cargo.Colonists > 0 {
+					job.Kind = "deliver-retire"
+					t.deliverRetiringColonizer(player, fleet, job)
+					continue
+				}
 				if t.stageColonizerForBombing(player, fleet, job) {
 					continue
 				}
 				job.TargetNum = 0
 				job.Mode = mode
 				job.Kind = "passengers"
-				job.Status = "No reachable unclaimed colony: carrying passengers until a new world becomes available"
+				job.Quality, job.TravelYears, job.Score = 0, 0, 0
+				job.Status = "No unclaimed colony within 25 years using onboard fuel and fixed bases; available for colonist-only transport and landings"
 				if logisticsWork(fleet) == nil {
 					holdAutomaticFleet(player, fleet, job.Status)
 				}
 				writeColonizationJob(fleet, job)
 				continue
 			}
+			if fleet.Cargo.Colonists == 0 {
+				t.loadColonizer(player, fleet, job)
+				writeColonizationJob(fleet, job)
+				continue
+			}
 			delete(fleet.Tags, logisticsTag)
 			t.releaseEscorts(player, fleet)
 			job.TargetNum, job.Mode, job.Kind = chosen.Num, mode, "colonize"
+			job.AssignedYear = t.game.Year
 			claimed[chosen.Num] = fleet.Num
-			if faster := t.planAutomaticMission(player, []*Fleet{fleet}, chosen.Position, chosen.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true, MaxTurns: 50}); faster != nil {
-				route = faster
-			}
 			job.Quality = colonyTargetQuality(player, chosen)
 			if route == nil {
 				job.Status = "Holding colony reservation: waiting for fuel or a safe route"
@@ -283,7 +344,7 @@ func (t *turnGenerator) planColonizationAutomation() {
 					fleet.Waypoints[last].MapObjectTarget = chosen.MapObject.ToTarget()
 					fleet.Waypoints[last].Task = WaypointTaskColonize
 				}
-				job.Status = fmt.Sprintf("Colonizing %s - habitability %d%%, ETA %d years, auto score %.1f", chosen.Name, job.Quality, route.Turns, job.Score)
+				job.Status = fmt.Sprintf("Committed to %s; %s selection, habitability %d%%, ETA %d years; onboard fuel/fixed bases", chosen.Name, mode, job.Quality, route.Turns)
 				if route.WaitForFuel {
 					job.Status = "Refuelling before colonizing " + chosen.Name
 				}
@@ -327,16 +388,10 @@ func (t *turnGenerator) unloadArrivedColonizers() {
 				continue
 			}
 			planet := t.game.getPlanet(job.TargetNum)
-			if !suitableColony(p, planet) || f.Position != planet.Position {
+			if planet == nil || !planet.Owned() || f.Position != planet.Position {
 				continue
 			}
-			planet.Cargo.Colonists += f.Cargo.Colonists
-			f.Cargo.Colonists = 0
-			f.Waypoints = []Waypoint{{Position: f.Position}}
-			delete(f.Tags, "maintenance-pending")
-			job.Kind = "load"
-			job.Status = "Settlers delivered to an already owned colony; collecting a new load or retiring"
-			writeColonizationJob(f, job)
+			t.deliverArrivedColonizer(p, f, planet, job)
 		}
 	}
 }
