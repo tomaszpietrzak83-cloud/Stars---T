@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import PlanetViewStateHab from './PlanetViewStateHab.svelte';
+	import PlanetViewStateInfluence from './PlanetViewStateInfluence.svelte';
 	import PlanetViewStateMineralConc from './PlanetViewStateMineralConc.svelte';
 	import PlanetViewStatesNormal from './PlanetViewStateNormal.svelte';
 	import PlanetViewStatePopulation from './PlanetViewStatePopulation.svelte';
@@ -37,23 +38,26 @@
 	{#if !hideViews}
 		<div class="menu-title">Planet View</div>
 		<div class="flex flex-row justify-center w-full">
-			<div class="size-10">
+			<div class="size-9">
 				<PlanetViewStatesNormal />
 			</div>
-			<div class="size-10">
+			<div class="size-9">
 				<PlanetViewStateSurfaceMinerals />
 			</div>
-			<div class="size-10">
+			<div class="size-9">
 				<PlanetViewStateMineralConc />
 			</div>
-			<div class="size-10">
+			<div class="size-9">
 				<PlanetViewStateHab />
 			</div>
-			<div class="size-10">
+			<div class="size-9">
 				<PlanetViewStatePopulation />
 			</div>
-			<div class="size-10">
+			<div class="size-9">
 				<PlanetViewStateResources />
+			</div>
+			<div class="size-9">
+				<PlanetViewStateInfluence />
 			</div>
 		</div>
 	{/if}

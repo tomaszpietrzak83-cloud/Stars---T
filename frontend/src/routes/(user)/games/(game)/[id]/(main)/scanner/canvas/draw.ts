@@ -14,7 +14,7 @@ import {
 	type Position
 } from '#lib/types/MapObject.js';
 import type { CommandedPlayer } from '#lib/types/Player.js';
-import type { PlayerSettings } from '#lib/types/PlayerSettings.js';
+import { PlanetViewState, type PlayerSettings } from '#lib/types/PlayerSettings.js';
 import { getDisplayColor, getStrokeColor } from '#lib/utils/colorUtils.js';
 import {
 	headingAngle,
@@ -31,6 +31,7 @@ import {
 } from './scene';
 import type { ScannerView, ScreenPoint } from './view';
 import { fixedScannerColors, type ScannerColors } from './colors';
+import type { buildInfluenceLayer } from './influence';
 
 const nameFont = 'bold 12px Arial, Helvetica, sans-serif';
 const countFont = 'bold 10px Arial, Helvetica, sans-serif';
@@ -53,6 +54,7 @@ export type ScannerFrame = {
 	universe: Universe;
 	player: CommandedPlayer;
 	settings: PlayerSettings;
+	influence?: ReturnType<typeof buildInfluenceLayer>;
 	scanners: ScannerCircle[];
 	minefields: MinefieldDraw[];
 	packetDests: DestLine[];
@@ -76,7 +78,11 @@ export function drawScanner(ctx: CanvasRenderingContext2D, view: ScannerView, fr
 	ctx.fillStyle = colors.background;
 	ctx.fillRect(0, 0, view.width, view.height);
 
-	drawScanners(ctx, view, frame);
+	if (frame.settings.planetViewState === PlanetViewState.Influence) {
+		frame.influence?.draw(ctx, view);
+	} else {
+		drawScanners(ctx, view, frame);
+	}
 	drawMinefields(ctx, view, frame);
 	drawDestLines(ctx, view, frame.packetDests, colors.packetDestLine);
 	if (frame.settings.showFleetRoutes !== false) {

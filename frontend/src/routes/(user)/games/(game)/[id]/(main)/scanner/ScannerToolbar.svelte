@@ -18,6 +18,7 @@
 		ChatBubbleBottomCenterText,
 		Envelope,
 		Funnel,
+		GlobeAlt,
 		MagnifyingGlass,
 		Trash
 	} from '@steeze-ui/heroicons';
@@ -52,7 +53,7 @@
 
 	// each planet view and filter button is this wide
 	const itemWidth = 40;
-	const viewCount = 6;
+	const viewCount = 7;
 	// toolbar padding and the dividers between groups
 	const paddingWidth = 34;
 	// add waypoint and messages, plus delete waypoint while a waypoint that can be deleted is selected
@@ -148,6 +149,8 @@
 								<Population class="size-6 " />
 							{:else if $settings.planetViewState == PlanetViewState.Resources}
 								<Resources class="size-6 text-[#87cefa]" />
+							{:else if $settings.planetViewState == PlanetViewState.Influence}
+								<Icon src={GlobeAlt} class="size-6" />
 							{:else}
 								<PlanetWithStarbase class="size-6 " />
 							{/if}

@@ -511,7 +511,9 @@ function setNormal(
 ) {
 	// green for us, gray for unexplored, white for explored
 	let fill = colors.planet.unexplored;
-	if (planet.mapObject?.playerNum === player.num) {
+	if (settings.planetViewState === PlanetViewState.Influence && planet.mapObject?.playerNum) {
+		fill = universe.getPlayerColor(planet.mapObject.playerNum);
+	} else if (planet.mapObject?.playerNum === player.num) {
 		fill = colors.planet.owned;
 	} else if (planet.mapObject?.playerNum) {
 		fill = getDisplayColor(planet.mapObject.playerNum, player, universe, settings);

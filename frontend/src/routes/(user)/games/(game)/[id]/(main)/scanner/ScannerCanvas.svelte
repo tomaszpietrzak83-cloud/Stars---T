@@ -8,10 +8,12 @@
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import type { Waypoint } from '#lib/types/cs-proto.js';
 	import type { MapObjectLike } from '#lib/types/MapObject.js';
+	import { PlanetViewState } from '#lib/types/PlayerSettings.js';
 	import type { ZoomTransform } from 'd3-zoom';
 	import { onDestroy } from 'svelte';
 	import { readScannerColors, type ScannerColors } from './canvas/colors';
 	import { drawScanner, type ScannerFrame } from './canvas/draw';
+	import { buildInfluenceLayer } from './canvas/influence';
 	import {
 		buildFleets,
 		buildMinefields,
@@ -58,6 +60,8 @@
 	let dpr = $state(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1);
 
 	// scene data, rebuilt only when what it depends on changes
+	let showingInfluence = $derived($settings.planetViewState === PlanetViewState.Influence);
+	let influence = $derived(showingInfluence ? buildInfluenceLayer($universe) : undefined);
 	let scanners = $derived(buildScanners($universe, $player, $settings));
 	let minefields = $derived(buildMinefields($universe, $player, $settings));
 	let packetDests = $derived(buildPacketDests($universe, $commandedPlanet));
@@ -103,6 +107,7 @@
 					universe: $universe,
 					player: $player,
 					settings: $settings,
+					influence,
 					scanners,
 					minefields,
 					packetDests,

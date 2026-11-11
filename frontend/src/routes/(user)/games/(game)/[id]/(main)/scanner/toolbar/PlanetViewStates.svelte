@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { HTMLAttributes } from 'svelte/elements';
 	import PlanetViewStateHab from './PlanetViewStateHab.svelte';
+	import PlanetViewStateInfluence from './PlanetViewStateInfluence.svelte';
 	import PlanetViewStateMineralConc from './PlanetViewStateMineralConc.svelte';
 	import PlanetViewStatesNormal from './PlanetViewStateNormal.svelte';
 	import PlanetViewStatePopulation from './PlanetViewStatePopulation.svelte';
@@ -28,5 +29,8 @@
 	</li>
 	<li class="size-10">
 		<PlanetViewStateResources />
+	</li>
+	<li class="size-10">
+		<PlanetViewStateInfluence />
 	</li>
 </ul>

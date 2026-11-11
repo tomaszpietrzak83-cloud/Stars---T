@@ -76,6 +76,13 @@ async function layout(width: number, shareMap: boolean, selectedWaypointIndex = 
 			.planetViewState
 	).toBe(PlanetViewState.Resources);
 	expect(resourceButton!.getAttribute('aria-current')).toBe('true');
+	const influenceButton = navbar.querySelector<HTMLButtonElement>(
+		'button[aria-label="Territorial influence"]'
+	)!;
+	expect(influenceButton.getAttribute('aria-pressed')).toBe('false');
+	influenceButton.click();
+	await tick();
+	expect(influenceButton.getAttribute('aria-pressed')).toBe('true');
 	const routesButton = navbar.querySelector<HTMLButtonElement>(
 		'button[aria-label="Fleet routes"]'
 	)!;
@@ -137,14 +144,14 @@ describe('ScannerToolbar', () => {
 		{ width: 834, shareMap: true, stage: 'views' },
 		// The two combat filters and the ally filters need extra width.
 		{ width: 1024, shareMap: false, stage: 'views' },
-		{ width: 1120, shareMap: false, stage: 'full' },
+		{ width: 1180, shareMap: false, stage: 'full' },
 		{ width: 1024, shareMap: true, stage: 'views' },
 		{ width: 1120, shareMap: true, stage: 'views' },
 		{ width: 1220, shareMap: true, stage: 'full' },
 		// the toolbar over the scanner, next to a two column command pane
 		{ width: 780, shareMap: false, stage: 'views' },
 		{ width: 520, shareMap: false, stage: 'menu' },
-		{ width: 580, shareMap: false, stage: 'views' },
+		{ width: 620, shareMap: false, stage: 'views' },
 		{ width: 400, shareMap: false, stage: 'menu' }
 	])('$width wide, shareMap=$shareMap shows $stage', async ({ width, shareMap, stage }) => {
 		const result = await layout(width, shareMap);
@@ -166,7 +173,7 @@ describe('ScannerToolbar', () => {
 
 	it.each([false, true])('never overflows, shareMap=%s', async (shareMap) => {
 		const stages: Stage[] = [];
-		for (let width = 340; width <= 1220; width += 6) {
+		for (let width = 340; width <= 1280; width += 6) {
 			const result = await layout(width, shareMap);
 			expect(result.overflow, `overflowed at ${width} (${result.stage})`).toBeLessThanOrEqual(0);
 			stages.push(result.stage);
