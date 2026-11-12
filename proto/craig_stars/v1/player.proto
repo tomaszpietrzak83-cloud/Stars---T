@@ -267,6 +267,19 @@ message StatisticsCounters {
  int64 mines_built = 22;
  int64 defenses_built = 23;
  int64 minerals_salvaged = 24;
+ map<string, HullStatistics> hulls = 25;
+ int64 ironium_salvaged = 26;
+ int64 boranium_salvaged = 27;
+ int64 germanium_salvaged = 28;
+}
+
+message HullStatistics {
+ int64 ships_destroyed = 1;
+ int64 destroyed_tonnage = 2;
+ int64 ships_lost = 3;
+ int64 lost_tonnage = 4;
+ int64 ships_built = 5;
+ int64 built_tonnage = 6;
 }
 
 message TransportPolicy {

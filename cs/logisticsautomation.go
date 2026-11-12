@@ -814,7 +814,7 @@ func (t *turnGenerator) collectBattleSalvage() {
 			// losses. Leave navigation and the fleet's role to its existing orders.
 			for _, fleet := range record.fleets {
 				if fleet.PlayerNum == player.Num && !fleet.Delete && !fleet.Starbase && fleet.Position == record.Position && fleet.Spec.HasWeapons && fleet.CargoMass() < fleet.Spec.CargoCapacity && !fleet.InDesignMaintenance() {
-					player.accounting(t.game.Year).MineralsSalvaged += int64(takeMinerals(fleet, &salvage.Cargo))
+					t.recoverSalvage(player, fleet, salvage)
 				}
 			}
 			if salvage.Cargo.ToMineral().Total() == 0 {
@@ -855,7 +855,7 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 			case "salvage":
 				salvage := t.game.getSalvage(job.TargetNum)
 				if salvage != nil && !salvage.Delete && salvage.Position == fleet.Position {
-					takeMinerals(fleet, &salvage.Cargo)
+					t.recoverSalvage(player, fleet, salvage)
 					if salvage.Cargo.ToMineral().Total() == 0 {
 						t.game.deleteSalvage(salvage)
 					}

@@ -2080,7 +2080,9 @@ func (t *turnGenerator) planetProduction() error {
 			player.Stats.FleetsBuilt++
 			player.Stats.TokensBuilt += token.Quantity
 			counters.ShipsBuilt += int64(token.Quantity)
-			counters.BuiltTonnage += int64(design.Spec.Mass) * int64(token.Quantity)
+			tonnage := int64(design.Spec.Mass) * int64(token.Quantity)
+			counters.BuiltTonnage += tonnage
+			counters.recordHull(design, HullStatistics{ShipsBuilt: int64(token.Quantity), BuiltTonnage: tonnage})
 			if id, err := strconv.Atoi(token.tags[assemblyTag]); err == nil && id > 0 {
 				if _, ok := player.Automation.FleetAssemblies[id]; ok {
 					fleet, err := t.buildFleet(player, planet, token.ShipToken, Tags{assemblyTag: token.tags[assemblyTag]}, nil)
@@ -2937,9 +2939,13 @@ func (t *turnGenerator) fleetBattle() {
 			salvageMinerals = salvageMinerals.Add(record.dumpedMinerals)
 			if salvageMinerals.Total() > 0 {
 				if planet == nil {
-					t.game.getOrCreateSalvage(record.Position, salvageOwner, salvageMinerals.ToCargo())
+					salvage := t.game.getOrCreateSalvage(record.Position, salvageOwner, salvageMinerals.ToCargo())
+					salvage.setBattleMinerals(salvage.battleMinerals().Add(salvageMinerals))
 				} else {
 					planet.Cargo = planet.Cargo.AddMineral(salvageMinerals)
+					if owner := t.game.getPlayer(planet.PlayerNum); owner != nil {
+						owner.recordRecoveredBattleMinerals(t.game.Year, salvageMinerals)
+					}
 				}
 			}
 

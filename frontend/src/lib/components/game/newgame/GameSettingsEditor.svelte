@@ -48,7 +48,7 @@
 		title="Beginner: Max Minerals"
 		name="maxMinerals"
 		bind:checked={settings.maxMinerals}
-		description="Make planets mineral-rich, easing mining and construction. Applies to every empire."
+		description="Most planets start at concentration 100 for each mineral, so their mines can produce equal amounts of ironium, boranium and germanium."
 	/>
 	<CheckboxInput
 		name="computerPlayersFormAlliances"

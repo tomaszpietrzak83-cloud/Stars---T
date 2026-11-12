@@ -12,7 +12,7 @@ beforeEach(()=>{context=makeContext();});
 it('persists and clears the planet crosshair without changing other automation',async()=>{
  get(context.player).playerOrders!.automation!.fleetRoles[4]='scout';
  render(PriorityPlanet,{num:17});
- const button=page.getByRole('button',{name:'Priority planet'});
+ const button=page.getByRole('button',{name:'Priority planet',exact:true});
  await button.click();
  await expect.element(button).toHaveAttribute('aria-pressed','true');
  expect(get(context.player).playerOrders!.automation!.priorityPlanets).toEqual({17:true});
@@ -25,7 +25,7 @@ it('persists and clears the planet crosshair without changing other automation',
 it('rolls back the crosshair after a server rejection',async()=>{
  context.updatePlayerOrders.mockRejectedValueOnce(new Error('Save failed'));
  render(PriorityPlanet,{num:17});
- await page.getByRole('button',{name:'Priority planet'}).click();
+ await page.getByRole('button',{name:'Priority planet',exact:true}).click();
  await expect.element(page.getByRole('alert')).toHaveTextContent('Save failed');
  expect(get(context.player).playerOrders!.automation!.priorityPlanets).toEqual({});
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import {
 		VictoryConditionAttainTechLevels,
 		VictoryConditionExceedsScore,
@@ -30,6 +31,7 @@
 </script>
 
 <div>
+	<div class="mb-2 flex items-center gap-2 font-semibold">Victory conditions <HelpHint label="Victory conditions" text="Enable the goals this game should check. The required count and minimum year below control when a player can win." /></div>
 	{#if victoryConditions}
 	<label class="cs-form-label justify-start">
 		<VictoryConditionCheckbox

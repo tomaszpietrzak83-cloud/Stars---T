@@ -1,15 +1,9 @@
 <script lang="ts">
-	import { onPointerKeyDown, onPointerKeyUp } from '#lib/services/Events.js';
-	import TextTooltip, {
-		type TextTooltipProps
-	} from '#lib/components/game/tooltips/TextTooltip.svelte';
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
-	import { showTooltip } from '#lib/services/Stores.js';
 	import { type Minefield, type MinefieldSpec, MinefieldType } from '#lib/types/cs-proto.js';
 	import { enumToString } from '#lib/types/Enums.js';
 	import { ownedBy } from '#lib/types/MapObject.js';
-	import { QuestionMarkCircle } from '@steeze-ui/heroicons';
-	import { Icon } from '@steeze-ui/svelte-icon';
 	import type { ChangeEventHandler } from 'svelte/elements';
 
 	const { cs, game, player, universe, updateMinefieldOrders } = getGameContext();
@@ -30,17 +24,6 @@
 		});
 	});
 
-	function onTooltip(e: PointerEvent) {
-		showTooltip<TextTooltipProps>(e.x, e.y, TextTooltip, {
-			text: 'Numbers in parenthesis are for fleets containing a ship with ram scoop engines. Note that the chance of hitting a mine goes up the % listed for EACH warp you exceed the safe speed.'
-		});
-	}
-
-	function onDetonateTooltip(e: PointerEvent) {
-		showTooltip<TextTooltipProps>(e.x, e.y, TextTooltip, {
-			text: 'Significantly increases minefield decay rate, but ALL ships in the field (friendly or enemy) will take damage each turn as though they hit a mine. Friendly mine layer ships are unaffected.'
-		});
-	}
 
 	// update the minefield to detonate on the server
 	const minefieldDetonateChecked: ChangeEventHandler<HTMLInputElement> = async (e) => {
@@ -97,40 +80,21 @@
 			<div class="w-40">Chance/l.y. of a Hit:</div>
 			<div>
 				{(stats.chanceOfHit * 100).toFixed(2)}%
+				<HelpHint label="Mine hit chance" text="The chance of a hit per light-year rises for each warp step above the field’s safe speed." example="At Warp 6 through a Warp 4 field, you are two warp steps above the safe speed." />
 			</div>
 		</div>
 		<div class="flex flex-row">
 			<div class="w-40">Dmg done to each ship:</div>
 			<div>
 				{stats.damagePerEngine} ({stats.damagePerEngineRs}) / engine
-				<span
-					role="button"
-					tabindex={0}
-					aria-label="Show minefield damage details"
-					onkeydown={onPointerKeyDown}
-					onkeyup={onPointerKeyUp}
-					class="cursor-help"
-					onpointerdown={(e) => onTooltip(e)}
-				>
-					<Icon src={QuestionMarkCircle} size="16" class=" cursor-help inline-block" />
-				</span>
+				<HelpHint label="Mine damage per engine" text="Parentheses show the damage for fleets with ram-scoop engines. The first number applies to other fleets." />
 			</div>
 		</div>
 		<div class="flex flex-row">
 			<div class="w-40">Min damage done to fleet:</div>
 			<div>
 				{stats.minDamagePerFleet} ({stats.minDamagePerFleetRs})
-				<span
-					role="button"
-					tabindex={0}
-					aria-label="Show minefield damage details"
-					onkeydown={onPointerKeyDown}
-					onkeyup={onPointerKeyUp}
-					class="cursor-help"
-					onpointerdown={(e) => onTooltip(e)}
-				>
-					<Icon src={QuestionMarkCircle} size="16" class=" cursor-help inline-block" />
-				</span>
+				<HelpHint label="Minimum mine damage" text="A mine hit deals at least this much damage to the fleet. Parentheses apply to fleets with ram-scoop engines." />
 			</div>
 		</div>
 		{#if spec && ownedBy(minefield, $player.num)}
@@ -150,17 +114,7 @@
 							type="checkbox"
 						/> Detonate
 					</label>
-					<span
-						role="button"
-						tabindex={0}
-						aria-label="Show minefield detonate details"
-						onkeydown={onPointerKeyDown}
-						onkeyup={onPointerKeyUp}
-						class="cursor-help ml-1"
-						onpointerdown={(e) => onDetonateTooltip(e)}
-					>
-						<Icon src={QuestionMarkCircle} size="16" class=" cursor-help inline-block" />
-					</span>
+					<HelpHint label="Detonate minefield" text="Detonation consumes mines and damages ships inside the field, including friendly ships. Friendly minelayers are exempt." />
 				</div>
 			{/if}
 		{/if}

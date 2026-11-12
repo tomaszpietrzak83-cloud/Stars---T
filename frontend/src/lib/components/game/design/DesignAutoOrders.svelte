@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { create } from '@bufbuild/protobuf';
 	import { FleetSchema, ShipDesignSchema, type ShipDesignSpec } from '#lib/types/cs-proto.js';
 	import { automationRoles, dedicatedMinesweeper } from '#lib/types/automationRoles.js';
@@ -21,7 +22,10 @@
 
 {#if !spec.starbase}
 	<section class="rounded border border-base-content/40 p-3 my-2" aria-label="Design Auto orders">
-		<label for="design-auto-orders" class="font-semibold">Auto orders after construction</label>
+		<div class="flex items-center gap-2">
+			<label for="design-auto-orders" class="font-semibold">Auto orders after construction</label>
+			<HelpHint label="Design Auto orders" text="New ships of this design start with the selected role. The list shows roles compatible with the design." />
+		</div>
 		<select
 			id="design-auto-orders"
 			class="select select-bordered w-full"

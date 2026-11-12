@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import type { MineralPacket } from '#lib/types/cs-proto.js';
 	import { distance, emptyVector } from '#lib/types/Vector.js';
@@ -37,6 +38,7 @@
 			<div class="w-28 mr-2">Traveling at Warp:</div>
 			<div>
 				{mineralPacket.warpSpeed}
+				<HelpHint label="Mineral packet speed" text="A mass driver can catch packets up to its safe receiving speed. Faster arrivals can damage the destination." />
 			</div>
 		</div>
 		<div class="flex flex-row">

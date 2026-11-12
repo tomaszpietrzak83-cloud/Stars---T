@@ -1,7 +1,6 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { enumToString } from '#lib/types/Enums.js';
-	import { QuestionMarkCircle } from '@steeze-ui/heroicons';
-	import { Icon } from '@steeze-ui/svelte-icon';
 	import { startCase } from 'lodash-es';
 	import type { HTMLSelectAttributes } from 'svelte/elements';
 	import { $enum as eu } from 'ts-enum-util';
@@ -16,6 +15,7 @@
 		title?: string | undefined;
 		tooltip?: string | undefined;
 		description?: string;
+		helpExample?: string;
 		enumType: T;
 		titleClass?: string;
 		typeTitle?: (type: TT) => string;
@@ -28,6 +28,7 @@
 		value = $bindable(),
 		tooltip,
 		description,
+		helpExample,
 		enumType,
 		titleClass = 'cs-label-text w-32 text-right',
 		typeFilter = (_: TT) => true,
@@ -41,8 +42,8 @@
 	let typeTitle = $derived(rest.typeTitle ?? defaultTypeTitleFunc);
 </script>
 
-<div class="w-full grow">
-	<label class="cs-form-label"
+<div class="flex w-full grow items-center gap-2">
+	<label class="cs-form-label min-w-0 grow"
 		><span class={titleClass}>{title}</span>
 		<select class="select ml-2 grow" {name} bind:value {...rest}>
 			{#each eu(enumType).getValues() as type (type)}
@@ -51,11 +52,8 @@
 				{/if}
 			{/each}
 		</select>
-		{#if tooltip}
-			<div class="tooltip tooltip-left mx-2" data-tip={tooltip}>
-				<Icon src={QuestionMarkCircle} size="16" class="cursor-help inline-block" />
-			</div>
-		{/if}
 	</label>
-	{#if description}<p class="text-xs opacity-75 ml-2 mb-2">{description}</p>{/if}
+	{#if tooltip || description}
+		<HelpHint label={title} text={tooltip ?? description ?? ''} example={helpExample} />
+	{/if}
 </div>

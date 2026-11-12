@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import {
 		WaypointTaskTransportAction,
 		type WaypointTransportTasks,
@@ -25,8 +26,8 @@
 <div class="grid grid-cols-4 mt-2">
 	<!-- headers -->
 	<div></div>
-	<div class="text-center font-semibold col-span-2">Action</div>
-	<div class="text-center font-semibold">Amount</div>
+	<div class="col-span-2 flex items-center justify-center gap-2 font-semibold">Action <HelpHint label="Transport actions" text="Choose a separate action for each cargo type. Use Load Dunnage to fill leftover space after the other load orders." /></div>
+	<div class="flex items-center justify-center gap-2 font-semibold">Amount <HelpHint label="Transport amount" text="Depending on the action, the number is a fixed quantity, a cargo target, or a percentage of fleet capacity." /></div>
 
 	{#each resources as { key, title, textClass } (key)}
 		<TransportTask

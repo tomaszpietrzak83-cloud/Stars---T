@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { TechField, type Race } from '#lib/types/cs-proto.js';
 	import { eeeTraits, eeeTraitCost, selectEEETrait } from '#lib/types/EEE.js';
 	let { race=$bindable(), readOnly=false }: { race: Race; readOnly?: boolean }=$props();
@@ -7,6 +8,7 @@
 </script>
 
 <section aria-label="EEE racial traits">
+	<div class="flex items-center gap-2 font-semibold">EEE racial traits <HelpHint label="EEE racial traits" text="Each trait changes your race’s advantage-point budget. Some traits affect each other’s price, and selecting a trait disables its opposite." /></div>
 	<p class="text-sm my-2">EEE cost: {total} points. Positive costs spend points; negative costs return them. IFE (+10), ARM (+15) and UR (+10) interactions are included below. IFE reduces the Inefficient Propulsion refund by 10 points. Selecting an opposing trait deselects its counterpart.</p>
 	<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
 		{#each eeeTraits as trait (trait.flag)}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { automationRoles, designAutoRole } from '#lib/types/automationRoles.js';
 	import { create } from '@bufbuild/protobuf';
@@ -120,7 +121,7 @@
 </script>
 
 <section class="max-w-6xl min-w-0 w-full mx-auto p-3" aria-label="Empire ship production">
-	<h1 class="text-2xl font-semibold">Ship production</h1>
+	<h1 class="text-2xl font-semibold flex items-center gap-2">Ship production <HelpHint label="Ship production" text="Review ship construction across colonies and place orders at eligible shipyards. Dock capacity limits which designs a yard can build." /></h1>
 	<p class="my-2">
 		Distribute new ships across your existing bases. Green batches finish this year; blue batches
 		need longer. Current concrete and paid orders stay ahead of new orders.

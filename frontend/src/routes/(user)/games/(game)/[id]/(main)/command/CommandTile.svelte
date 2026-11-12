@@ -1,16 +1,18 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import type { Snippet } from 'svelte';
 	import { onMount } from 'svelte';
 
 	type Props = {
 		title?: string;
 		sectionKey?: string;
+		help?: string;
 		// small buttons right after the title
 		actions?: Snippet;
 		children?: Snippet;
 	};
 
-	let { title = '', sectionKey, actions, children }: Props = $props();
+	let { title = '', sectionKey, help, actions, children }: Props = $props();
 	let collapsed = $state(false);
 	const storageKey = $derived('tomek-stars.command-section.' + (sectionKey ?? title));
 	onMount(() => {
@@ -32,11 +34,12 @@
 	<div class="card-body p-3 gap-0">
 		<!-- actions sit right beside the title, and the two are centered together -->
 		<div class="flex flex-row items-center justify-center gap-1.5 mb-1">
-			<button type="button" class="min-w-0 cursor-pointer" class:w-full={!actions} onclick={toggle} aria-expanded={!collapsed} aria-label={`${collapsed ? 'Expand' : 'Collapse'} ${title || sectionKey || 'section'}`}>
+			<button type="button" class="min-w-0 cursor-pointer" class:w-full={!actions && !help} onclick={toggle} aria-expanded={!collapsed} aria-label={`${collapsed ? 'Expand' : 'Collapse'} ${title || sectionKey || 'section'}`}>
 				<div class="truncate text-center text-lg font-semibold text-secondary" {title}>
 					<span aria-hidden="true">{collapsed ? '▸' : '▾'}</span> {title || 'Overview'}
 				</div>
 			</button>
+			{#if help}<HelpHint label={title} text={help} />{/if}
 			{#if actions}
 				<div class="flex-none flex flex-row items-center">
 					{@render actions()}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { clone, create } from '@bufbuild/protobuf';
 	import { TransportPolicySchema, type LogisticsAutomation } from '#lib/types/cs-proto.js';
 	let {
@@ -84,7 +85,7 @@
 </script>
 
 <fieldset class="border border-base-300 rounded p-3 my-4" disabled={busy}>
-	<legend class="font-bold px-1">Transport development and landings</legend>
+	<legend class="font-bold px-1">Transport development and landings <HelpHint label="Transport policy" text="Set population targets and when transports can prepare landings. Population percentages use colony capacity." example="A 20% target on a colony with capacity for 500,000 people means 100,000 residents." /></legend>
 	<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 		{#each fields as field (field.key)}
 			<label

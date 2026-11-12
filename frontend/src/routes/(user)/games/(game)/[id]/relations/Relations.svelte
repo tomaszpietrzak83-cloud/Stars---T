@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import ItemTitle from '#lib/components/ItemTitle.svelte';
 	import SectionHeader from '#lib/components/SectionHeader.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
@@ -20,7 +21,7 @@
 	}
 </script>
 
-<ItemTitle>Relations</ItemTitle>
+<ItemTitle>Relations <HelpHint label="Relations" text="Your relation settings affect who your fleets may attack and what information you share. Another empire can choose a different stance toward you." /></ItemTitle>
 
 <div class="flex flex-col justify-between gap-1">
 	{#each relations as relation, index (index)}

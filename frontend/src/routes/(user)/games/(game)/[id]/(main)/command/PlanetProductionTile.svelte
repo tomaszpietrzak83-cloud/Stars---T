@@ -43,7 +43,7 @@
 	};
 </script>
 
-<CommandTile title="Production">
+<CommandTile title="Production" help="Orders use this colony’s resources and local mineral stocks. Unfinished construction keeps its allocations for future years.">
 	<div class="bg-base-100 h-20 overflow-y-auto">
 		{#if planet.planetOrders.productionQueue}
 			<ul class="size-full">

@@ -37,22 +37,21 @@
 </script>
 
 <TextInput name="name" bind:value={name} required maxlength={MaxNameLength} />
-<EnumSelect name="primaryTarget" enumType={BattleTarget} bind:value={primaryTarget} />
+<EnumSelect name="primaryTarget" enumType={BattleTarget} bind:value={primaryTarget} description="The type of target your ships look for first during combat." />
 <EnumSelect
 	name="secondaryTarget"
+	description="The fallback target type when the primary target is unavailable."
+	helpExample="Choose Bombers first and Armed Ships as fallback to engage armed escorts when no bomber is in reach."
 	enumType={BattleTarget}
 	showEmpty={true}
 	typeTitle={battleTargetToString}
 	bind:value={secondaryTarget}
 />
-<EnumSelect name="tactic" enumType={BattleTactic} bind:value={tactic} />
+<EnumSelect name="tactic" enumType={BattleTactic} bind:value={tactic} description="Controls how a ship moves and engages during battle." />
 {#if BattleTacticDescriptions[tactic]}
 	<div class="w-full text-sm italic mb-2" data-type="tactic-description">
 		{BattleTacticDescriptions[tactic]}
 	</div>
 {/if}
-<EnumSelect name="attackWho" enumType={BattleAttackWho} bind:value={attackWho} />
-<CheckboxInput name="dumpCargo" bind:checked={dumpCargo} />
-<div class="w-full text-sm italic mb-2" data-type="dump-cargo-description">
-	Fleets jettison their mineral cargo when a battle starts. Colonists stay aboard.
-</div>
+<EnumSelect name="attackWho" enumType={BattleAttackWho} bind:value={attackWho} description="Controls which player relations the fleet is willing to attack." />
+<CheckboxInput name="dumpCargo" bind:checked={dumpCargo} description="Jettison mineral cargo when a battle starts to reduce combat mass. Colonists stay aboard." />
