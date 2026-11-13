@@ -35,18 +35,31 @@ func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) 
 	}
 	targets := []*Planet{}
 	landingScans := map[int]bool{}
+	bombardmentScans := map[int]bool{}
 	for _, f := range fleets {
+		if p.Automation.FleetRoles[f.Num] == "bomber" && f.Spec.Bomber && !f.Delete && !f.InAutomaticSafety() && !f.InDesignMaintenance() {
+			i := p.GetPlanetIntel(f.OrbitingPlanetNum)
+			if i != nil && i.Position == f.Position && !i.Spec.HasStarbase && i.Owned() &&
+				i.PlayerNum != p.Num && !p.IsFriend(i.PlayerNum) && (i.ReportAge > 1 || i.Cargo.Colonists == 0) {
+				bombardmentScans[i.Num] = true
+			}
+		}
 		if job := logisticsWork(f); job != nil && !f.Delete && !f.InDesignMaintenance() && p.Automation.FleetRoles[f.Num] == "freighter" && galleonLandingNeedsScan(f, job, p.GetPlanetIntel(job.DeliveryNum)) {
 			landingScans[job.DeliveryNum] = true
 		}
 	}
 	for _, i := range p.PlanetIntels {
-		if i != nil && (p.Automation.PriorityPlanets[i.Num] || landingScans[i.Num]) && i.PlayerNum != p.Num && (!i.Owned() || !p.IsFriend(i.PlayerNum)) && (i.ReportAge > 2 || recaptureEquipmentMissing(p, i)) && !i.Unexplored() {
+		if i != nil && i.PlayerNum != p.Num && (!i.Owned() || !p.IsFriend(i.PlayerNum)) && !i.Unexplored() &&
+			(bombardmentScans[i.Num] || (p.Automation.PriorityPlanets[i.Num] || landingScans[i.Num]) &&
+				(i.ReportAge > 2 || recaptureEquipmentMissing(p, i))) {
 			targets = append(targets, i)
 		}
 	}
 	rank := func(i *Planet) int {
 		value := 0
+		if bombardmentScans[i.Num] {
+			value += 2000
+		}
 		for _, f := range fleets {
 			if f.Delete || f.InDesignMaintenance() || f.InAutomaticSafety() {
 				continue
@@ -100,6 +113,9 @@ func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) 
 			if assigned[f.Num] {
 				continue
 			}
+			if bombardmentScans[target.Num] && scoutPlanetScanRadius(f) <= 0 {
+				continue
+			}
 			tries++
 			if tries > 6 {
 				break
@@ -132,7 +148,7 @@ func colonyReconActive(p *Player, f *Fleet) bool {
 	}
 	num, _ := strconv.Atoi(f.GetTag(priorityReconTag))
 	i := p.GetPlanetIntel(num)
-	if i == nil || i.ReportAge <= 2 && !recaptureEquipmentMissing(p, i) || i.PlayerNum == p.Num || i.Owned() && p.IsFriend(i.PlayerNum) {
+	if i == nil || i.PlayerNum == p.Num || i.Owned() && p.IsFriend(i.PlayerNum) {
 		return false
 	}
 	if f.Position.DistanceTo(i.Position) <= scoutPlanetScanRadius(f) {
