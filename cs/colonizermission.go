@@ -143,7 +143,7 @@ func landingTransport(p *Player, f *Fleet) bool {
 	return p.Automation.FleetRoles[f.Num] == "freighter" || colonizerPassengerCarrier(p, f)
 }
 
-func (t *turnGenerator) continueColonizerMission(p *Player, f *Fleet, job *colonizationJob, target *Planet) {
+func (t *turnGenerator) continueColonizerMission(p *Player, f *Fleet, job *colonizationJob, target *Planet) bool {
 	if fundedColonizerWaypoints(&t.game.Rules, p, f) {
 		if f.GetTag(tankerAwaitTag) == "" && !fuelNetworkManaged(f) {
 			delete(f.Tags, fuelStatusTag)
@@ -159,7 +159,7 @@ func (t *turnGenerator) continueColonizerMission(p *Player, f *Fleet, job *colon
 		job.Quality = colonyTargetQuality(p, target)
 		job.Score = colonyTargetScore(job.Quality, job.TravelYears)
 		writeColonizationJob(f, job)
-		return
+		return true
 	}
 	route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, target.Position, target.ToTarget(), automaticRoutePolicy{OneWay: true, MaxTurns: colonizationMaxYears})
 	if route == nil {
@@ -185,6 +185,7 @@ func (t *turnGenerator) continueColonizerMission(p *Player, f *Fleet, job *colon
 		}
 	}
 	writeColonizationJob(f, job)
+	return route != nil
 }
 
 // Validate the whole funded itinerary before retaining it. This avoids annual

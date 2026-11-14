@@ -420,6 +420,7 @@ func (t *cargoTransferer) settleByHandLoads(s *byHandSettlement) (results []byHa
 			status = CargoTransferStatusOwned
 		} else {
 			loaded = min(wanted, dest.GetCargo().GetAmount(cargoType))
+			t.recordSalvageLoad(s.player, dest, cargoType, loaded)
 			dest.SetCargo(dest.GetCargo().SubtractAmount(cargoType, loaded))
 		}
 		s.location.loaded[s.holder] = s.location.loaded[s.holder].AddAmount(cargoType, loaded)
@@ -583,7 +584,9 @@ func (t *cargoTransferer) correctByHandTarget(s *byHandSettlement, cargoType Car
 	if dest == nil {
 		return
 	}
-	dest.SetCargo(dest.GetCargo().AddAmount(cargoType, max(amount, -dest.GetCargo().GetAmount(cargoType))))
+	amount = max(amount, -dest.GetCargo().GetAmount(cargoType))
+	t.recordSalvageLoad(s.player, dest, cargoType, -amount)
+	dest.SetCargo(dest.GetCargo().AddAmount(cargoType, amount))
 	if salvage, ok := dest.(*Salvage); ok && salvage.Cargo == (Cargo{}) {
 		t.game.deleteSalvage(salvage)
 	}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
  import { clone, create } from '@bufbuild/protobuf';
  import { getGameContext } from '#lib/services/GameContext.js';
  import { LogisticsAutomationSchema } from '#lib/types/cs-proto.js';
@@ -21,4 +22,5 @@
  <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v6m0 10v6M1 12h6m10 0h6"/></svg>
  {selected?'Priority target':'Set priority'}
 </button>
+<HelpHint label="Priority planet" text="Promotes this world for colonization or capture. Fleet automation still checks fuel and threats. The priority clears when you own the planet." />
 {#if error}<p role="alert" class="text-error text-xs">{error}</p>{/if}

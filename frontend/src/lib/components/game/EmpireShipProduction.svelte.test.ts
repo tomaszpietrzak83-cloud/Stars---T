@@ -7,7 +7,8 @@ import { render } from 'vitest-browser-svelte';
 import {
 	PlayerSchema,
 	ShipDesignSchema,
-	ShipProductionResponseSchema
+	ShipProductionResponseSchema,
+	ShipyardProductionSchema
 } from '#lib/types/cs-proto.js';
 import EmpireShipProduction from './EmpireShipProduction.svelte';
 const state = vi.hoisted(() => ({ context: undefined as unknown }));
@@ -29,7 +30,8 @@ function response(quantity: number) {
 				capacityThisYear: 2,
 				thisYearQuantity: Math.min(2, quantity),
 				laterQuantity: Math.max(0, quantity - 4),
-				yearsToComplete: quantity > 4 ? 2 : 1
+				yearsToComplete: quantity > 4 ? 2 : 1,
+				reason: 'Ready'
 			},
 			{
 				planet: { mapObject: { num: 2, name: 'Beta' } },
@@ -62,6 +64,7 @@ function makeContext() {
 	};
 }
 beforeEach(() => {
+	sessionStorage.removeItem('cs.shipProduction.sort.1.1');
 	context = makeContext();
 	state.context = context;
 });
@@ -112,5 +115,89 @@ it('links to the planet queue and shows its production budget and mineral stock'
 	await expect.element(row.getByRole('link', { name: 'Alpha' }))
 		.toHaveAttribute('href', '/games/1/planets/1/production');
 	await expect.element(row.getByRole('cell', { name: '72', exact: true })).toBeVisible();
-	await expect.element(row.getByRole('cell', { name: '11 / 22 / 33', exact: true })).toBeVisible();
+	for (const stock of ['11', '22', '33']) {
+		await expect.element(row.getByRole('cell', { name: stock, exact: true })).toBeVisible();
+	}
+});
+
+it('uses compact headers and makes room for a long status on wide layouts', async () => {
+	const reason = 'Existing production orders remain after this year and must finish before new ships can be assigned.';
+	const preview = response(1);
+	preview.yards[0].reason = reason;
+	context.previewShipProduction.mockResolvedValue(preview);
+	const container = document.createElement('div');
+	container.style.width = '360px';
+	document.body.append(container);
+	try {
+		const view = render(EmpireShipProduction, { target: container });
+		const status = page.getByRole('cell', { name: reason, exact: true });
+		await expect.element(status).toHaveStyle({ whiteSpace: 'nowrap' });
+		const scroller = status.element().closest('table')!.parentElement!;
+		expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+		for (const [label, short] of [
+			['Queue resources', 'Res'],
+			['Ironium (kT)', 'I'],
+			['Boranium (kT)', 'B'],
+			['Germanium (kT)', 'G']
+		]) {
+			const button = page.getByRole('button', { name: label, exact: true });
+			await expect.element(button).toHaveTextContent(new RegExp(`^${short}`));
+			expect(button.element().closest('th')!.offsetWidth).toBeLessThan(60);
+		}
+
+		container.style.width = '1440px';
+		expect(container.firstElementChild!.getBoundingClientRect().width).toBe(1440);
+		expect(scroller.scrollWidth).toBe(scroller.clientWidth);
+		await view.unmount();
+	} finally {
+		container.remove();
+	}
+});
+
+it.each([
+	['Ironium (kT)', 'descending', 'Gamma', 'Alpha'],
+	['Boranium (kT)', 'descending', 'Alpha', 'Gamma'],
+	['Germanium (kT)', 'descending', 'Gamma', 'Alpha'],
+	['Queue resources', 'descending', 'Gamma', 'Alpha'],
+	['Status', 'ascending', 'Gamma', 'Alpha']
+])('sorts %s in both directions and remembers the choice on return', async (label, direction, first, second) => {
+	const preview = response(1);
+	preview.yards.push(
+		create(ShipyardProductionSchema, {
+			planet: {
+				mapObject: { num: 3, name: 'Gamma' },
+				spec: { resourcesPerYearAvailable: 100 },
+				cargo: { ironium: 100, boranium: 2, germanium: 40 }
+			},
+			reason: 'Existing orders'
+		})
+	);
+	context.previewShipProduction.mockResolvedValue(preview);
+	const view = render(EmpireShipProduction);
+	const table = page.getByRole('table', { name: 'Shipyard allocation' });
+	const yards = table.getByRole('link');
+	const column = table.getByRole('columnheader', { name: label });
+	const button = column.getByRole('button');
+	await expect.element(yards.nth(0)).toHaveTextContent('Alpha');
+	await expect.element(yards.nth(1)).toHaveTextContent('Beta');
+
+	await button.click();
+	await expect.element(column).toHaveAttribute('aria-sort', direction);
+	await expect.element(yards.nth(0)).toHaveTextContent(first);
+	await expect.element(yards.nth(1)).toHaveTextContent(second);
+	await expect.element(yards.nth(2)).toHaveTextContent('Beta');
+
+	await button.click();
+	const reversed = direction === 'ascending' ? 'descending' : 'ascending';
+	await expect.element(column).toHaveAttribute('aria-sort', reversed);
+	await expect.element(yards.nth(0)).toHaveTextContent(second);
+	await expect.element(yards.nth(1)).toHaveTextContent(first);
+	await expect.element(yards.nth(2)).toHaveTextContent('Beta');
+	expect(preview.yards.map((yard) => yard.planet?.mapObject?.name)).toEqual(['Alpha', 'Beta', 'Gamma']);
+	expect(context.previewShipProduction).toHaveBeenCalledTimes(1);
+
+	await view.unmount();
+	render(EmpireShipProduction);
+	await expect.element(column).toHaveAttribute('aria-sort', reversed);
+	await expect.element(yards.nth(0)).toHaveTextContent(second);
 });

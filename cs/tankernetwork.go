@@ -2,7 +2,6 @@ package cs
 
 import (
 	"fmt"
-	"math"
 	"slices"
 )
 
@@ -48,39 +47,6 @@ func (t *turnGenerator) tankerNetworkAnchors(player *Player) []Vector {
 	return result
 }
 
-func (t *turnGenerator) tankerAnchorValue(player *Player, tanker *Fleet, point Vector) float64 {
-	demand := 1.0
-	nearestDock := math.Inf(1)
-	for _, planet := range t.game.getPlanets(player.Num) {
-		distance := point.DistanceTo(planet.Position)
-		if planet.Spec.DockCapacity != 0 {
-			nearestDock = min(nearestDock, distance)
-		} else {
-			demand += 4 / (1 + distance/80)
-		}
-	}
-	for _, fleet := range t.game.getFleets(player.Num) {
-		if isAutomaticFleet(player, fleet) && player.Automation.FleetRoles[fleet.Num] != "tanker" && len(fleet.Waypoints) > 1 {
-			for _, wp := range fleet.Waypoints[1:] {
-				demand += 3 / (1 + segmentDistance(point, fleet.Position, wp.Position)/60)
-			}
-		}
-	}
-	// Less benefit next to an unlimited fixed fuel source.
-	demand *= min(1.0, 0.1+nearestDock/120)
-	for _, other := range t.game.getFleets(player.Num) {
-		if other == tanker || other.Delete || player.Automation.FleetRoles[other.Num] != "tanker" {
-			continue
-		}
-		center := other.Position
-		if job := readTankerJob(other); job != nil && job.Stage == "patrol" {
-			center = job.Anchor
-		}
-		demand /= 1 + 6*math.Exp(-float64(point.DistanceSquaredTo(center))/float64(120*120))
-	}
-	return demand
-}
-
 func (t *turnGenerator) patrolAutomaticTanker(player *Player, tanker *Fleet, job *automaticTankerJob) bool {
 	stock := max(1, tanker.Spec.FuelCapacity/3)
 	if tanker.Fuel < stock && tanker.Spec.FuelGeneration == 0 {
@@ -90,9 +56,12 @@ func (t *turnGenerator) patrolAutomaticTanker(player *Player, tanker *Fleet, job
 		var chosen *automaticTankerJob
 		best := 0.0
 		anchors := t.tankerNetworkAnchors(player)
+		scoreAnchor := t.tankerAnchorScorer(player, tanker)
+		rawValues := map[Vector]float64{}
 		values := map[Vector]float64{}
 		for _, point := range anchors {
-			values[point] = t.tankerAnchorValue(player, tanker, point) / (1 + point.DistanceTo(tanker.Position)/320)
+			rawValues[point] = scoreAnchor(point)
+			values[point] = rawValues[point] / (1 + point.DistanceTo(tanker.Position)/320)
 		}
 		slices.SortStableFunc(anchors, func(a, b Vector) int {
 			if values[a] > values[b] {
@@ -108,7 +77,7 @@ func (t *turnGenerator) patrolAutomaticTanker(player *Player, tanker *Fleet, job
 			if route == nil || route.WaitForFuel {
 				continue
 			}
-			value := t.tankerAnchorValue(player, tanker, point) / (1 + float64(route.Turns)/20)
+			value := rawValues[point] / (1 + float64(route.Turns)/20)
 			if value > best {
 				best = value
 				chosen = &automaticTankerJob{Stage: "patrol", Anchor: point, Position: point, PatrolYear: t.game.Year}

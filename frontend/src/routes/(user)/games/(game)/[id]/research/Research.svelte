@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import ItemTitle from '#lib/components/ItemTitle.svelte';
 	import SectionHeader from '#lib/components/SectionHeader.svelte';
 	import { CommandedPlayer, TechFields } from '#lib/types/Player.js';
@@ -82,14 +83,14 @@
 	class="stats stats-vertical sm:stats-horizontal sm:flex shadow-sm border border-base-200 w-full"
 >
 	<div class="stat place-items-center sm:grow">
-		<div class="stat-title">Spent Last Year</div>
+		<div class="stat-title flex items-center gap-2">Research Points Last Year <HelpHint label="Research points last year" text="Points include the race’s research modifiers and any points spread into other fields." /></div>
 		<div class="stat-figure"><Microscope class="size-8  fill-primary" /></div>
 		<div class="stat-value">
 			{$player.researchSpentLastYear}
 		</div>
 	</div>
 	<div class="grow stat place-items-center">
-		<div class="stat-title">Estimated Spending Next Year</div>
+		<div class="stat-title flex items-center gap-2">Estimated Spending Next Year <HelpHint label="Estimated research" text="Based on planetary research allocations and unused production resources from the estimated queues. The estimate can change as you edit orders." /></div>
 		<div class="stat-figure"><Microscope class="size-8  fill-warning" /></div>
 		<div class="stat-value">
 			{spec.resourcesPerYearResearchEstimated}

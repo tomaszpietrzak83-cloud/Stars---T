@@ -213,24 +213,30 @@ func (t *turnGenerator) planColonizationAutomation() {
 					continue
 				}
 			}
-			// A committed colony is retained across mode/priority changes and route
-			// problems. Only a newer ownership report cancels it before arrival.
+			// Keep a viable commitment across mode and priority changes. A blocked
+			// fleet can switch to a habitable colony if it can depart safely now.
+			blockedTarget := 0
 			if job.Kind == "colonize" && job.TargetNum != 0 && fleet.Cargo.Colonists > 0 {
 				if target := player.GetPlanetIntel(job.TargetNum); target != nil {
 					if !target.Owned() || target.ReportAge > 1 && (job.AssignedYear == 0 || t.game.Year-target.ReportAge <= job.AssignedYear) {
-						t.continueColonizerMission(player, fleet, job, target)
+						continuing := t.continueColonizerMission(player, fleet, job, target)
 						if colonizerTravelling(player, fleet, job) {
 							claimed[job.TargetNum] = fleet.Num
 						} else if claimed[job.TargetNum] == fleet.Num {
 							delete(claimed, job.TargetNum)
 						}
-						continue
+						if continuing {
+							continue
+						}
+						blockedTarget = job.TargetNum
 					}
 				}
 				if claimed[job.TargetNum] == fleet.Num {
 					delete(claimed, job.TargetNum)
 				}
-				job.TargetNum, job.Kind = 0, "passengers"
+				if blockedTarget == 0 {
+					job.TargetNum, job.Kind = 0, "passengers"
+				}
 			}
 			topUp := false
 			if fleet.Cargo.Colonists < fleet.Spec.CargoCapacity {
@@ -241,7 +247,7 @@ func (t *turnGenerator) planColonizationAutomation() {
 					}
 				}
 			}
-			if (fleet.Cargo.Colonists == 0 || topUp) && job.Kind != "passengers" {
+			if blockedTarget == 0 && (fleet.Cargo.Colonists == 0 || topUp) && job.Kind != "passengers" {
 				if !t.loadColonizer(player, fleet, job) {
 					writeColonizationJob(fleet, job)
 					continue
@@ -251,7 +257,10 @@ func (t *turnGenerator) planColonizationAutomation() {
 			var route *expeditionRoute
 			for _, priorityBand := range []int{2, 1, 0} {
 				for _, green := range []bool{true, false} {
-					if job.Mode == mode && job.Kind == "colonize" && (player.Automation.PriorityPlanets[job.TargetNum] || len(player.Automation.PriorityPlanets) == 0) {
+					if blockedTarget != 0 && !green {
+						continue
+					}
+					if blockedTarget == 0 && job.Mode == mode && job.Kind == "colonize" && (player.Automation.PriorityPlanets[job.TargetNum] || len(player.Automation.PriorityPlanets) == 0) {
 						if candidate := player.GetPlanetIntel(job.TargetNum); availableColonyPlanet(candidate) && greenColonyTarget(player, candidate) == green && (claimed[candidate.Num] == 0 || claimed[candidate.Num] == fleet.Num) {
 							route = planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, candidate.Position, candidate.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true})
 							if route != nil {
@@ -264,11 +273,11 @@ func (t *turnGenerator) planColonizationAutomation() {
 						bestQuality := 0
 						bestDistance := 0.0
 						for _, planet := range player.PlanetIntels {
-							if !availableColonyPlanet(planet) || expansionPriority(player, planet) != priorityBand || greenColonyTarget(player, planet) != green || claimed[planet.Num] != 0 && claimed[planet.Num] != fleet.Num {
+							if !availableColonyPlanet(planet) || planet.Num == blockedTarget || expansionPriority(player, planet) != priorityBand || greenColonyTarget(player, planet) != green || claimed[planet.Num] != 0 && claimed[planet.Num] != fleet.Num {
 								continue
 							}
 							candidate := planAutomaticRoute(&t.game.Rules, player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{OneWay: true})
-							if candidate == nil {
+							if candidate == nil || blockedTarget != 0 && candidate.WaitForFuel {
 								continue
 							}
 							quality := colonyTargetQuality(player, planet)
@@ -301,6 +310,9 @@ func (t *turnGenerator) planColonizationAutomation() {
 				delete(claimed, job.TargetNum)
 			}
 			if chosen == nil {
+				if blockedTarget != 0 {
+					continue
+				}
 				if _, home := t.colonizerReturn(player, fleet, colonizationMaxYears); home == nil && fleet.Cargo.Colonists > 0 {
 					job.Kind = "deliver-retire"
 					t.deliverRetiringColonizer(player, fleet, job)
@@ -326,6 +338,12 @@ func (t *turnGenerator) planColonizationAutomation() {
 				continue
 			}
 			delete(fleet.Tags, logisticsTag)
+			if blockedTarget != 0 {
+				delete(fleet.Tags, fuelRequestTag)
+				delete(fleet.Tags, fuelStatusTag)
+				delete(fleet.Tags, tankerAwaitTag)
+				delete(fleet.Tags, fuelAwaitResumeTag)
+			}
 			t.releaseEscorts(player, fleet)
 			job.TargetNum, job.Mode, job.Kind = chosen.Num, mode, "colonize"
 			job.AssignedYear = t.game.Year

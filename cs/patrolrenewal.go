@@ -75,16 +75,6 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 	for i := range policies {
 		policies[i] = automaticRoutePolicy{Fast: true, EconomicalPatrol: !urgent, MaxTurns: 20}
 	}
-	if job.RendezvousBy == 0 && !urgent {
-		candidates = slices.DeleteFunc(candidates, func(v Vector) bool {
-			for _, f := range group {
-				if v == f.Position {
-					return true
-				}
-			}
-			return false
-		})
-	}
 	if job.RendezvousBy != 0 {
 		// Do not move the finish line each turn.
 		candidates = []Vector{job.Rally}
@@ -110,11 +100,6 @@ func (t *turnGenerator) movingPatrolRally(p *Player, leader *Fleet, job *patrolJ
 	if ok {
 		if !job.ReliefStaging {
 			t.patrolGatheringCleanup(p, leader, enemy, job, group)
-		}
-		for _, f := range group {
-			if len(f.Waypoints) < 2 && !urgent && !t.screenPatrolRally(p, f, job.RendezvousBy) {
-				return false
-			}
 		}
 	}
 	return ok

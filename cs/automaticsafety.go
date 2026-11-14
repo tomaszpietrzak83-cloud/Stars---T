@@ -41,6 +41,9 @@ func interceptionThreat(player *Player, fleet *Fleet) int {
 	job := logisticsWork(fleet)
 	civilian := civilianTraffic(player, fleet) && !landingManaged(fleet) &&
 		(job == nil || job.Kind != "invade" && job.Kind != "invade-load")
+	if automaticMinesweeper(player, fleet) && reportedHostileOrbit(player, point) != nil {
+		return 1_000_000_000
+	}
 	return routeThreat(player, point, point, civilian)
 }
 

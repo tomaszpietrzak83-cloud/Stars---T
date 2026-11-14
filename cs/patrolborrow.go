@@ -25,7 +25,7 @@ func patrolNeededForColony(p *Player, f *Fleet) bool {
 			continue
 		}
 		enemy := p.GetFleetIntel(mission.Enemy, mission.Target)
-		if enemy != nil && f.Position.DistanceTo(enemy.Position) <= 2*f.StrategicSpeed(automaticMaxWarp(p, f))+3 && (patrolReportedBomber(p, enemy) || patrolReportedCombatant(p, enemy) || defenceReportedTransport(p, enemy)) {
+		if enemy != nil && enemy.ReportAge == 0 && f.Position.DistanceTo(patrolInterceptPosition(enemy)) <= f.StrategicSpeed(automaticMaxWarp(p, f))+3 && (patrolReportedBomber(p, enemy) || patrolReportedCombatant(p, enemy) || defenceReportedTransport(p, enemy)) {
 			return true
 		}
 	}

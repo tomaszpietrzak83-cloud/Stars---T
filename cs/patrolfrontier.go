@@ -80,9 +80,16 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 	}
 	localEnemy := false
 	for _, enemy := range p.FleetIntels {
-		if enemy != nil && !enemy.Delete && enemy.ReportAge == 0 && enemy.PlayerNum != p.Num && !p.IsFriend(enemy.PlayerNum) && enemy.Position.DistanceTo(anchor.Position) <= 100 {
+		if enemy != nil && !enemy.Delete && enemy.ReportAge == 0 && enemy.PlayerNum != p.Num && !p.IsFriend(enemy.PlayerNum) && enemy.Position.DistanceTo(anchor.Position) <= 100 &&
+			(!territorial || patrolReportedBomber(p, enemy) || patrolReportedCombatant(p, enemy) || defenceReportedTransport(p, enemy)) {
 			localEnemy = true
 			break
+		}
+	}
+	triedFront := territorial && !localEnemy
+	if triedFront {
+		if t.advancePatrolFront(p, f) {
+			return true
 		}
 	}
 	// Explicit planet priorities also allocate nearby defensive/escort cover.
@@ -130,7 +137,7 @@ func (t *turnGenerator) patrolFrontier(p *Player, f *Fleet) bool {
 			anchor = uncovered
 		}
 	}
-	if territorial && counts[anchor.Num] > 0 {
+	if territorial && counts[anchor.Num] > 0 && !triedFront {
 		// A sector already assigned to a free hunter can spare this fleet.
 		// Keep hunters near unguarded friendly worlds before opening a front.
 		return t.advancePatrolFront(p, f)

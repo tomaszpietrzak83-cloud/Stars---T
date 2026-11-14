@@ -20,14 +20,30 @@ func (t *turnGenerator) planColonyRecon(p *Player, f *Fleet, priorityOnly bool) 
 	var best *Planet
 	var route *expeditionRoute
 	score := math.Inf(1)
+	bomberTargets := map[int]bool{}
+	for _, bomber := range t.game.getFleets(p.Num) {
+		if automaticBomberAvailable(p, bomber) {
+			orders := readBomberOrders(bomber)
+			if orders.Stage == "recon" {
+				bomberTargets[bomberGoal(bomber)] = true
+			}
+			if orders.ReserveTarget > 0 {
+				bomberTargets[orders.ReserveTarget] = true
+			}
+		}
+	}
 	for _, planet := range p.PlanetIntels {
-		if planet == nil || planet.PlayerNum == p.Num || planet.Owned() && p.IsFriend(planet.PlayerNum) || planet.ReportAge <= 2 && !recaptureEquipmentMissing(p, planet) || planet.Unexplored() || !planet.Owned() && !p.Automation.PriorityPlanets[planet.Num] {
+		if planet == nil {
 			continue
 		}
-		if priorityOnly && !p.Automation.PriorityPlanets[planet.Num] {
+		bomberRecon := bomberTargets[planet.Num] && bomberNeedsOrbitalRecon(p, planet)
+		if planet.PlayerNum == p.Num || planet.Owned() && p.IsFriend(planet.PlayerNum) || !bomberRecon && planet.ReportAge <= 2 && !recaptureEquipmentMissing(p, planet) || planet.Unexplored() || !planet.Owned() && !p.Automation.PriorityPlanets[planet.Num] {
 			continue
 		}
-		if !p.Automation.PriorityPlanets[planet.Num] && (f.Spec.ScanRangePen <= 2 || planet.ReportAge < 5) {
+		if priorityOnly && !bomberRecon && !p.Automation.PriorityPlanets[planet.Num] {
+			continue
+		}
+		if !bomberRecon && !p.Automation.PriorityPlanets[planet.Num] && (f.Spec.ScanRangePen <= 2 || planet.ReportAge < 5) {
 			continue
 		}
 		claimed := false
@@ -54,11 +70,8 @@ func (t *turnGenerator) planColonyRecon(p *Player, f *Fleet, priorityOnly bool) 
 		if !p.Automation.PriorityPlanets[planet.Num] {
 			value += 100000 / float64(min(100, planet.ReportAge))
 		}
-		for _, bomber := range t.game.getFleets(p.Num) {
-			if !bomber.Delete && p.Automation.FleetRoles[bomber.Num] == "bomber" && bomberGoal(bomber) == planet.Num {
-				value /= 1e6
-				break
-			}
+		if bomberRecon {
+			value /= 1e6
 		}
 		if value < score || value == score && (best == nil || planet.Num < best.Num) {
 			best, route, score = planet, candidate, value

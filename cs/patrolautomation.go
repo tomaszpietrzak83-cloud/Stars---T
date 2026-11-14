@@ -194,10 +194,11 @@ func patrolAvailable(player *Player, f *Fleet) bool {
 	return f.GetTag(containmentTag) == "" && patrolOperational(player, f)
 }
 func patrolOperational(player *Player, f *Fleet) bool {
-	if landingManaged(f) {
+	defencePlanning := player.patrolEvaluator != nil && player.patrolEvaluator.PlanningUrgentDefence
+	if landingManaged(f) || f.GetTag(battleshipRallyTag) != "" && !defencePlanning {
 		return false
 	}
-	if f.GetTag(recaptureAssaultTag) != "" {
+	if f.GetTag(recaptureAssaultTag) != "" && (!defencePlanning || !pureAssaultBattleships(player, f)) {
 		return false
 	}
 	if fleetHasDedicatedMinesweeper(player, f) {
@@ -544,7 +545,7 @@ func (t *turnGenerator) planPatrolAutomation() {
 			return a < b
 		})
 		for _, fleet := range fleets {
-			if landingManaged(fleet) {
+			if landingManaged(fleet) || fleet.GetTag(battleshipRallyTag) != "" || fleet.GetTag(battleshipNextAssaultTag) != "" {
 				continue
 			}
 			job := readPatrolJob(fleet)

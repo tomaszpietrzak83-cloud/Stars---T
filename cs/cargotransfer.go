@@ -409,6 +409,9 @@ func (t *cargoTransferer) transferToDest(fleet *Fleet, dest CargoHolder, cargoTy
 		return CargoTransferStatusNone
 	}
 
+	if _, salvage := dest.(*Salvage); salvage && transferAmount < 0 {
+		t.recordSalvageLoad(t.game.getPlayer(fleet.PlayerNum), dest, cargoType, -transferAmount)
+	}
 	fleet.Cargo = fleet.Cargo.SubtractAmount(cargoType, transferAmount)
 	dest.SetCargo(dest.GetCargo().AddAmount(cargoType, transferAmount))
 	return CargoTransferStatusNone

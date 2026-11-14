@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import FuelRouteDetails from './FuelRouteDetails.svelte';
 	import TransportPolicySettings from './TransportPolicySettings.svelte';
 	import { clone, create } from '@bufbuild/protobuf';
@@ -227,7 +228,7 @@
 </script>
 
 <section class="bg-base-200 rounded-md p-3 mb-4" aria-label="Fleet automation">
-	<h2 class="font-semibold text-lg">Fleet automation</h2>
+	<h2 class="font-semibold text-lg flex items-center gap-2">Fleet automation <HelpHint label="Fleet automation" text="Assign selected fleets a role so they can plan recurring orders. Fleets set to manual follow your waypoints." /></h2>
 	<p class="text-sm my-2">
 		Bomber wolf packs and patrol groups form actual fleets for coordinated attacks. Split all
 		dissolves a temporary pack and restores its ships’ previous roles. Bomber scanner safety budgets
@@ -245,35 +246,41 @@
 		<summary class="font-semibold"
 			>Fuel network: {fuelBases.length} docks and {fuelTankers.length} tankers</summary
 		>
-		<label class="flex gap-2 my-2"
-			><input
-				type="checkbox"
-				class="checkbox"
-				disabled={busy || $readOnly}
-				checked={automation.serveTerraformingWorlds}
-				onchange={(e) =>
-					save((a) => {
-						a.serveTerraformingWorlds = e.currentTarget.checked;
-					})}
-			/>Serve worlds requiring terraforming</label
-		>
+		<div class="flex items-center gap-2">
+			<label class="flex gap-2 my-2"
+				><input
+					type="checkbox"
+					class="checkbox"
+					disabled={busy || $readOnly}
+					checked={automation.serveTerraformingWorlds}
+					onchange={(e) =>
+						save((a) => {
+							a.serveTerraformingWorlds = e.currentTarget.checked;
+						})}
+				/>Serve worlds requiring terraforming</label
+			>
+			<HelpHint label="Terraforming targets" text="Automatic colonizers and transports can consider hostile worlds that your current terraforming technology can make habitable." />
+		</div>
 		<p class="text-xs">
 			Colonizers and transports may select currently hostile worlds that your present terraforming
 			technology can make habitable. Claim Adjuster always accounts for instant terraforming. Other
 			races must pay for planetary terraforming.
 		</p>
-		<label class="flex gap-2 my-2"
-			><input
-				type="checkbox"
-				class="checkbox"
-				disabled={busy || $readOnly}
-				checked={automation.infrastructureTransport}
-				onchange={(e) =>
-					save((a) => {
-						a.infrastructureTransport = e.currentTarget.checked;
-					})}
-			/>Carry surplus installations on existing routes</label
-		>
+		<div class="flex items-center gap-2">
+			<label class="flex gap-2 my-2"
+				><input
+					type="checkbox"
+					class="checkbox"
+					disabled={busy || $readOnly}
+					checked={automation.infrastructureTransport}
+					onchange={(e) =>
+						save((a) => {
+							a.infrastructureTransport = e.currentTarget.checked;
+						})}
+				/>Carry surplus installations on existing routes</label
+			>
+			<HelpHint label="Installation transport" text="Freighters take spare installations along existing routes when the source has more than its reserve." />
+		</div>
 		<p class="text-xs">
 			Factories and mines retain the configured share of operating capacity; defenses retain a
 			fixed number of units. Installations use existing delivery routes, without dedicated collection trips.
@@ -343,7 +350,7 @@
 		delivery. Nearby patrols may share fuel. Red worlds remain eligible after green worlds.
 	</p>
 	<fieldset class="border border-base-300 rounded-md p-3 my-3">
-		<legend class="font-semibold">Automation settings</legend>
+		<legend class="font-semibold">Automation settings <HelpHint label="Automation settings" text="These policies apply across the empire. A fleet’s assigned role determines which policies it uses." /></legend>
 		<label class="block my-2"
 			>Scout maximum planned return time (turns)<input
 				class="input input-bordered w-full"
@@ -354,18 +361,21 @@
 				bind:value={scoutReturnTurns}
 			/></label
 		>
-		<label class="flex gap-2 my-2"
-			><input
-				class="checkbox"
-				type="checkbox"
-				checked={!automation.disableAutomaticRepair}
-				disabled={busy || $readOnly}
-				onchange={(event) =>
-					save((value) => {
-						value.disableAutomaticRepair = !event.currentTarget.checked;
-					})}
-			/>Withdraw the whole automatic fleet for repairs</label
-		>
+		<div class="flex items-center gap-2">
+			<label class="flex gap-2 my-2"
+				><input
+					class="checkbox"
+					type="checkbox"
+					checked={!automation.disableAutomaticRepair}
+					disabled={busy || $readOnly}
+					onchange={(event) =>
+						save((value) => {
+							value.disableAutomaticRepair = !event.currentTarget.checked;
+						})}
+				/>Withdraw the whole automatic fleet for repairs</label
+			>
+			<HelpHint label="Automatic repair" text="The most damaged ship stack determines whether the whole fleet withdraws. Its previous mission resumes after full repair." />
+		</div>
 		<label class="block my-2"
 			>Repair withdrawal at ship armour damage (%)<input
 				class="input input-bordered w-full"
@@ -388,18 +398,21 @@
 					})}
 			/>Evade detected interception courses</label
 		>
-		<label class="flex gap-2 my-2"
-			><input
-				class="checkbox"
-				type="checkbox"
-				checked={automation.automaticPackets}
-				disabled={busy || $readOnly}
-				onchange={(event) =>
-					save((value) => {
-						value.automaticPackets = event.currentTarget.checked;
-					})}
-			/>Supply shipyards by mineral packets between owned mass drivers</label
-		>
+		<div class="flex items-center gap-2">
+			<label class="flex gap-2 my-2"
+				><input
+					class="checkbox"
+					type="checkbox"
+					checked={automation.automaticPackets}
+					disabled={busy || $readOnly}
+					onchange={(event) =>
+						save((value) => {
+							value.automaticPackets = event.currentTarget.checked;
+						})}
+				/>Supply shipyards by mineral packets between owned mass drivers</label
+			>
+			<HelpHint label="Mineral packets" text="Shipyards can receive minerals from other owned worlds with mass drivers. Automatic launches respect the receiving driver’s safe speed." />
+		</div>
 		<p class="text-xs my-2">
 			Repairs use the most damaged ship stack, withdraw the whole fleet and resume its mission after
 			full repair. Nearby automatic tankers can provide a mobile workshop when it is faster than a
@@ -419,18 +432,21 @@
 					})}
 			/>Supply shipyard queues from surplus minerals</label
 		>
-		<label class="flex gap-2 my-2"
-			><input
-				class="checkbox"
-				type="checkbox"
-				checked={!automation.disableSalvage}
-				disabled={busy || $readOnly}
-				onchange={(event) =>
-					save((value) => {
-						value.disableSalvage = !event.currentTarget.checked;
-					})}
-			/>Collect known debris with automatic transports</label
-		>
+		<div class="flex items-center gap-2">
+			<label class="flex gap-2 my-2"
+				><input
+					class="checkbox"
+					type="checkbox"
+					checked={!automation.disableSalvage}
+					disabled={busy || $readOnly}
+					onchange={(event) =>
+						save((value) => {
+							value.disableSalvage = !event.currentTarget.checked;
+						})}
+				/>Collect known debris with automatic transports</label
+			>
+			<HelpHint label="Automatic salvage transports" text="Idle transports can collect known debris. Uncollected minerals decay over time." />
+		</div>
 		<label class="flex gap-2 my-2"
 			><input
 				class="checkbox"
@@ -556,18 +572,21 @@
 		queues from surplus stock and deliver minerals to owned shipyards. Routes near known armed
 		fleets wait for enough assigned escorts. No known threat does not guarantee safety.
 	</p>
-	<label class="flex gap-2 my-2"
-		><input
-			class="checkbox"
-			type="checkbox"
-			checked={automation.battleSalvage}
-			disabled={busy || $readOnly}
-			onchange={(event) =>
-				save((value) => {
-					value.battleSalvage = event.currentTarget.checked;
-				})}
-		/>Collect debris after victorious battles, up to available cargo capacity</label
-	>
+	<div class="flex items-center gap-2">
+		<label class="flex gap-2 my-2"
+			><input
+				class="checkbox"
+				type="checkbox"
+				checked={automation.battleSalvage}
+				disabled={busy || $readOnly}
+				onchange={(event) =>
+					save((value) => {
+						value.battleSalvage = event.currentTarget.checked;
+					})}
+			/>Collect debris after victorious battles, up to available cargo capacity</label
+		>
+		<HelpHint label="Combat fleet salvage" text="Surviving combat fleets can pick up debris at the battle site once armed enemies are gone. Each fleet is limited by its free cargo space." />
+	</div>
 	<label class="flex gap-2 my-2"
 		><input
 			class="checkbox"

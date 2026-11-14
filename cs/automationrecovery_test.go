@@ -62,11 +62,16 @@ func TestPatrolSelectsForwardObjectiveAndKeepsFundedRouteThroughFuelGuard(t *tes
 func TestBombingWolfPackMergesAndRestoresOriginalRolesAfterMission(t *testing.T) {
 	u := automaticBomberUniverse(t)
 	p, b, e := u.Player(1), u.Fleet("Bomber"), u.Fleet("Cover")
+	b.Tokens[0].Quantity = 2
+	require.NoError(t, u.Game.computeSpecs())
+	b.Tokens[0].design.Spec.Bomber = true
+	b.Spec.Bomber = true
+	b.Fuel = b.Spec.FuelCapacity
 	p.Automation.FleetRoles[e.Num] = "escort"
 	u.Run((*turnGenerator).planBomberEscorts, (*turnGenerator).planBombingWolfPacks)
 	require.NotNil(t, readBombingPack(b))
 	require.True(t, e.Delete)
-	require.Equal(t, 2, b.Spec.TotalShips)
+	require.Equal(t, 3, b.Spec.TotalShips)
 	u.Planet("Enemy").PlayerNum = p.Num
 	u.Run((*turnGenerator).finishBombingPacks)
 	roles := map[string]int{}
@@ -76,7 +81,7 @@ func TestBombingWolfPackMergesAndRestoresOriginalRolesAfterMission(t *testing.T)
 			require.Empty(t, f.GetTag(bombingPackTag))
 		}
 	}
-	require.Equal(t, 1, roles["bomber"])
+	require.Equal(t, 2, roles["bomber"])
 	require.Equal(t, 1, roles["escort"])
 }
 func TestPatrolRecruitsFreeEscortAgainstBomberAndRestoresItsRole(t *testing.T) {
@@ -105,6 +110,11 @@ func TestPatrolRecruitsFreeEscortAgainstBomberAndRestoresItsRole(t *testing.T) {
 func TestManualSplitAllRestoresWolfPackShipRoles(t *testing.T) {
 	u := automaticBomberUniverse(t)
 	p, b, e := u.Player(1), u.Fleet("Bomber"), u.Fleet("Cover")
+	b.Tokens[0].Quantity = 2
+	require.NoError(t, u.Game.computeSpecs())
+	b.Tokens[0].design.Spec.Bomber = true
+	b.Spec.Bomber = true
+	b.Fuel = b.Spec.FuelCapacity
 	p.Automation.FleetRoles[e.Num] = "escort"
 	u.Run((*turnGenerator).planBomberEscorts, (*turnGenerator).planBombingWolfPacks)
 	children, err := NewOrderer().SplitAll(&u.Game.Rules, p, u.Game.getFleets(p.Num), b)
@@ -114,7 +124,7 @@ func TestManualSplitAllRestoresWolfPackShipRoles(t *testing.T) {
 		roles[p.Automation.FleetRoles[f.Num]] += f.Spec.TotalShips
 		require.Empty(t, f.GetTag(bombingPackTag))
 	}
-	require.Equal(t, 1, roles["bomber"])
+	require.Equal(t, 2, roles["bomber"])
 	require.Equal(t, 1, roles["escort"])
 }
 func TestFullNativeTurnLoadsTransportAndStartsMovingImmediately(t *testing.T) {

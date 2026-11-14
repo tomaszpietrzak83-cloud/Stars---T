@@ -119,6 +119,7 @@
 						<li><a href={`/games/${$game.id}/players`}>Players</a></li>
 						<li><a href={`/games/${$game.id}/planets`}>Planets</a></li>
 						<li><a href={`/games/${$game.id}/fleets`}>Fleets</a></li>
+						<li><a href={`/games/${$game.id}/mine-sweeping`}>Mine Sweeping</a></li>
 						<li><a href={`/games/${$game.id}/notes`}>Notes</a></li>
 						<li><a href={`/games/${$game.id}/designs`}>Designs</a></li>
 						<li><a href={`/games/${$game.id}/messages`}>Messages</a></li>
@@ -176,6 +177,7 @@
 							<li class="md:hidden"><a href={`/games/${$game.id}/players`}>Players</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/planets`}>Planets</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/fleets`}>Fleets</a></li>
+							<li class="md:hidden"><a href={`/games/${$game.id}/mine-sweeping`}>Mine Sweeping</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/notes`}>Notes</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/designs`}>Designs</a></li>
 							<li class="md:hidden"><a href={`/games/${$game.id}/messages`}>Messages</a></li>

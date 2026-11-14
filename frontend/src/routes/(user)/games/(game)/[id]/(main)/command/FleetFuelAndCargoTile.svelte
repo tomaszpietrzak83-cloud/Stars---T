@@ -37,7 +37,7 @@
 </script>
 
 {#if fleet.spec}
-	<CommandTile title="Fuel & Cargo">
+	<CommandTile title="Fuel & Cargo" help="Cargo makes ships heavier. Check the remaining fuel before sending a loaded fleet on a long leg.">
 		<div class="flex justify-between my-1">
 			<div class="w-12 text-tile-item-title">Fuel</div>
 			<div class="ml-1 size-full">

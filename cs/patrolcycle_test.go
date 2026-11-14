@@ -33,12 +33,15 @@ func TestPatrolNativeStrongEnemyMergeKillDisperseCycle(t *testing.T) {
 		u.Game.Year++
 		u.Run((*turnGenerator).fleetInit)
 		u.Run((*turnGenerator).startPatrolEvaluation, (*turnGenerator).splitAutomaticCombatPools, (*turnGenerator).planPatrolAutomation, (*turnGenerator).planAutomaticSafety)
+		// Match the native turn pipeline: relief fleets first arrive, then
+		// physically merge at the encounter before any combat damage is dealt.
+		u.Run((*turnGenerator).fleetMove, (*turnGenerator).mergePatrolRendezvous, (*turnGenerator).mergeCompatibleCombatFleets)
 		for _, f := range u.Game.getFleets(1) {
 			if !f.Delete && !f.Starbase && f.Spec.TotalShips > 1 {
 				merged = true
 			}
 		}
-		u.Run((*turnGenerator).fleetMove, (*turnGenerator).fleetBattle, (*turnGenerator).fleetRepair)
+		u.Run((*turnGenerator).fleetBattle, (*turnGenerator).fleetRepair)
 		for _, b := range p.BattleRecords {
 			if b.Stats.ShipsDestroyedByPlayer[2] >= 2 {
 				killed = true

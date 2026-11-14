@@ -117,6 +117,24 @@ func TestColonizerPendingUpgradeDoesNotInterruptMission(t *testing.T) {
 	require.Equal(t, WaypointTaskColonize, f.Waypoints[len(f.Waypoints)-1].Task)
 }
 
+func TestBlockedColonizerSwitchesToReachableHabitableWorld(t *testing.T) {
+	u := colonizerUniverse(t)
+	p, f := u.Player(1), u.Fleet("Colony Ship")
+	old, near := u.Planet("Far"), u.Planet("Near")
+	old.Position = Vector{10_000_000, 0}
+	writeColonizationJob(f, &colonizationJob{Kind: "colonize", Mode: "auto", TargetNum: old.Num})
+	fuel, cargo := f.Fuel, f.Cargo
+
+	u.Run((*turnGenerator).planColonizationAutomation, (*turnGenerator).guardAutomaticFuel)
+
+	require.Equal(t, near.Num, readColonizationJob(f).TargetNum)
+	require.Equal(t, WaypointTaskColonize, f.Waypoints[len(f.Waypoints)-1].Task)
+	require.True(t, fundedColonizerWaypoints(&u.Game.Rules, p, f))
+	require.Nil(t, readAutomaticFuelRequest(f))
+	require.Equal(t, fuel, f.Fuel)
+	require.Equal(t, cargo, f.Cargo)
+}
+
 func TestColonizerReleasesLegacyRefitWithoutDroppingMission(t *testing.T) {
 	u := colonizerUniverse(t)
 	p, f := u.Player(1), u.Fleet("Colony Ship")

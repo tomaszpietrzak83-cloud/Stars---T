@@ -59,7 +59,7 @@ func (t *turnGenerator) findInvasionTransfer(player *Player, fleet *Fleet, prior
 			continue
 		}
 		staging := false
-		if priorityNeedsBombing(target) {
+		if priorityNeedsBombing(target) && !t.percentageBombingLanding(player, target) {
 			forecast := t.forecastLandingAfterBombing(player, target)
 			if forecast == nil {
 				continue
@@ -132,7 +132,7 @@ func (t *turnGenerator) loadAutomaticInvaders(player *Player, fleet *Fleet, job 
 		return
 	}
 	target := player.GetPlanetIntel(job.DeliveryNum)
-	if priorityNeedsBombing(target) && (!job.BombingStage || t.forecastLandingAfterBombing(player, target) == nil) {
+	if priorityNeedsBombing(target) && !t.percentageBombingLanding(player, target) && (!job.BombingStage || t.forecastLandingAfterBombing(player, target) == nil) {
 		if job.BombingStage {
 			delete(fleet.Tags, logisticsTag)
 			t.releaseEscorts(player, fleet)

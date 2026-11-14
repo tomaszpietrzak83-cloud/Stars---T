@@ -53,6 +53,52 @@ func TestRecaptureAssaultRecruitsAfterNewEnemyReinforcements(t *testing.T) {
 	require.True(t, ready, "physically available support should permit a new safe native assessment")
 }
 
+func TestRecapturePatrolReleasesAssaultWhenReconnaissanceExpires(t *testing.T) {
+	u := recaptureBaseUniverse(t)
+	p, f, target := u.Player(1), u.Fleet("Force"), u.Planet("Target")
+	f.SetTag(recaptureAssaultTag, strconv.Itoa(target.Num))
+	f.Waypoints = []Waypoint{{Position: f.Position}, {Position: target.Position, WarpSpeed: 5}}
+	u.Run((*turnGenerator).planRecaptureAssaults)
+	require.Empty(t, f.GetTag(recaptureAssaultTag), "an unconfirmed assault cannot own a patrol indefinitely")
+	require.True(t, patrolAvailable(p, f))
+	require.Len(t, f.Waypoints, 1, "the outdated assault route must also be cancelled")
+}
+
+func TestRecaptureAssaultReusesFinishedInterceptionAtUnmarkedLocalBase(t *testing.T) {
+	u := recaptureBaseUniverse(t)
+	p, f, scout, enemy := u.Player(1), u.Fleet("Force"), u.Fleet("Scout"), u.Fleet("Guards")
+	target := u.Planet("Target")
+	scout.Position = target.Position
+	u.Run((*turnGenerator).scanColonyReconContacts)
+	delete(p.Automation.PriorityPlanets, target.Num)
+	p.discoverer.discoverFleet(enemy, true)
+	job := patrolJob{Leader: f.Num, Grouped: true, Enemy: enemy.PlayerNum, Target: enemy.Num}
+	savePatrolJob(f, job)
+	u.Run((*turnGenerator).planRecaptureAssaults)
+	require.Empty(t, f.GetTag(recaptureAssaultTag), "the interception still has a reported target")
+	require.Equal(t, f.Num, readPatrolJob(f).Leader)
+
+	reserve := u.Fleet("Reserve")
+	reserve.Position = f.Position
+	reserve.Waypoints = []Waypoint{{Position: reserve.Position}}
+	p.Automation.FleetRoles[reserve.Num] = "patrol"
+	f.Tokens[0].Quantity = 5
+	reserve.Tokens[0].Quantity = 60
+	enemy.Tokens[0].Quantity = 15
+	require.NoError(t, u.Game.computeSpecs())
+	defenders := *enemy
+	defenders.Num += 100
+	defenders.Position = target.Position
+	p.FleetIntels = nil
+	p.discoverer.discoverDesign(enemy.Tokens[0].design, true)
+	p.discoverer.discoverFleet(&defenders, true)
+	u.Run((*turnGenerator).planRecaptureAssaults)
+	require.Equal(t, strconv.Itoa(target.Num), f.GetTag(recaptureAssaultTag))
+	require.Zero(t, readPatrolJob(f).Leader)
+	require.Equal(t, 65, f.Spec.TotalShips)
+	require.Equal(t, target.Position, f.Waypoints[len(f.Waypoints)-1].Position)
+}
+
 func TestRecaptureContactTransmitsOnlyPhysicalScannerEvidence(t *testing.T) {
 	u := recaptureBaseUniverse(t)
 	p, f, target := u.Player(1), u.Fleet("Scout"), u.Planet("Target")

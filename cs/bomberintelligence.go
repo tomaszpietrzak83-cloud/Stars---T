@@ -99,15 +99,29 @@ func bomberChaseThreat(p *Player, f *Fleet) int {
 	}
 	return power
 }
+func bomberNeedsOrbitalRecon(p *Player, planet *Planet) bool {
+	// Turn generation ages reports before planning. Age one is the report
+	// just produced by the preceding turn's scan.
+	return planet != nil && planet.Owned() && planet.PlayerNum != p.Num && !p.IsFriend(planet.PlayerNum) && planet.ReportAge > 1
+}
+
 func (t *turnGenerator) automaticBombingTarget(p *Player, f *Fleet) *Planet {
 	candidates := []*Planet{}
+	fleets := t.game.getFleets(p.Num)
 	for _, planet := range p.PlanetIntels {
-		if planet == nil || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || !priorityNeedsBombing(planet) && bombingDelegatedToLanding(&t.game.Rules, p, planet, t.game.getFleets(p.Num)) {
+		if planet == nil || planet.Spec.HasStarbase || !planet.Explored() || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) || bomberHandsOffToLanding(&t.game.Rules, p, f, planet, fleets) {
 			continue
 		}
 		candidates = append(candidates, planet)
 	}
 	owned := t.game.getPlanets(p.Num)
+	var nearbyBombers []*Fleet
+	for _, other := range fleets {
+		if other != f && automaticBomberAvailable(p, other) && other.Position.DistanceTo(f.Position) <= 100 &&
+			readBomberOrders(other).ReserveTarget == 0 {
+			nearbyBombers = append(nearbyBombers, other)
+		}
+	}
 	distances := map[int]float64{}
 	borderDistance := func(planet *Planet) float64 {
 		if cached, ok := distances[planet.Num]; ok {
@@ -118,25 +132,52 @@ func (t *turnGenerator) automaticBombingTarget(p *Player, f *Fleet) *Planet {
 			nearest = min(nearest, planet.Position.DistanceTo(colony.Position))
 		}
 		value := f.Position.DistanceTo(planet.Position) + nearest*.25
+		if planet.GetTag(landingPreparationTag) != "" {
+			value -= 150
+		}
+		if p.Automation.PriorityPlanets[planet.Num] {
+			value -= 75
+		}
+		for _, other := range nearbyBombers {
+			if bomberGoal(other) == planet.Num {
+				value -= 50
+				break
+			}
+		}
 		distances[planet.Num] = value
 		return value
 	}
 	sort.SliceStable(candidates, func(i, j int) bool {
-		a, b := p.Automation.PriorityPlanets[candidates[i].Num], p.Automation.PriorityPlanets[candidates[j].Num]
-		if a != b {
-			return a
-		}
 		x, y := borderDistance(candidates[i]), borderDistance(candidates[j])
 		if x == y {
 			return candidates[i].Num < candidates[j].Num
 		}
 		return x < y
 	})
-	for _, target := range candidates[:min(32, len(candidates))] {
+	var waitingForFuel, waitingForRecon *Planet
+	for _, target := range candidates {
 		route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, target.Position, target.ToTarget(), automaticRoutePolicy{AllowThreat: true, MinWarp: automaticCruiseWarp(p, f), MaxTurns: 20})
-		if route != nil {
+		if route == nil {
+			continue
+		}
+		if bomberNeedsOrbitalRecon(p, target) && target.Position != f.Position {
+			if waitingForRecon == nil {
+				waitingForRecon = target
+			}
+			continue
+		}
+		if !route.WaitForFuel {
 			return target
 		}
+		if waitingForFuel == nil {
+			waitingForFuel = target
+		}
+	}
+	if waitingForFuel != nil {
+		return waitingForFuel
+	}
+	if waitingForRecon != nil {
+		return waitingForRecon
 	}
 	if len(candidates) > 0 {
 		return candidates[0]

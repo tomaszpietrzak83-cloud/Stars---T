@@ -18,9 +18,9 @@ func sortedPatrolTargets(player *Player, fleet *Fleet) []*Fleet {
 		}
 	}
 	type targetRank struct {
-		priority, deadline  int
-		bomber, approaching bool
-		distance            float64
+		priority, deadline               int
+		bomber, approaching, territorial bool
+		distance                         float64
 	}
 	ranks := make(map[*Fleet]targetRank, len(enemies))
 	rank := func(enemy *Fleet) targetRank {
@@ -32,6 +32,7 @@ func sortedPatrolTargets(player *Player, fleet *Fleet) []*Fleet {
 		bombing, deadline := patrolColonyDeadlineAmong(player, enemy, colonies, defended)
 		value.deadline = deadline
 		value.priority = patrolTargetPriorityWithDeadline(player, enemy, value.approaching, bombing, deadline)
+		value.territorial = patrolTerritorialTarget(player, enemy)
 		value.bomber = patrolReportedBomber(player, enemy)
 		value.distance = fleet.Position.DistanceTo(enemy.Position)
 		ranks[enemy] = value
@@ -47,6 +48,9 @@ func sortedPatrolTargets(player *Player, fleet *Fleet) []*Fleet {
 		ri, rj := rank(enemies[i]), rank(enemies[j])
 		if ri.priority != rj.priority {
 			return ri.priority < rj.priority
+		}
+		if ri.priority == -1 && ri.territorial != rj.territorial {
+			return ri.territorial
 		}
 		if player.patrolEvaluator != nil {
 			di, dj := ri.deadline, rj.deadline
@@ -87,6 +91,13 @@ func patrolTargetPriority(p *Player, f *Fleet, approaching bool) int {
 	return patrolTargetPriorityWithDeadline(p, f, approaching, bombing, deadline)
 }
 
+func patrolTerritorialTarget(p *Player, f *Fleet) bool {
+	if e := p.patrolEvaluator; e != nil && e.TerritorialTargets != nil {
+		return e.TerritorialTargets[[2]int{f.PlayerNum, f.Num}]
+	}
+	return f.PlayerNum != p.Num && !p.IsFriend(f.PlayerNum) && patrolOwnTerritory(p, f.Position, 0)
+}
+
 func patrolTargetPriorityWithDeadline(p *Player, f *Fleet, approaching, bombing bool, deadline int) int {
 	if bombing {
 		return -4
@@ -100,7 +111,7 @@ func patrolTargetPriorityWithDeadline(p *Player, f *Fleet, approaching, bombing 
 	if priorityFleet(p, f) {
 		return -2
 	}
-	if slowPreySupport(p, f) != nil {
+	if patrolTerritorialTarget(p, f) || slowPreySupport(p, f) != nil {
 		return -1
 	}
 	if patrolReportedTransport(p, f) {

@@ -155,6 +155,12 @@ func (t *turnGenerator) planMinelayerInterceptions(p *Player) {
 				defencePatrolCommitted(p, f) || localPatrolReserve(f, t.game.Year) || f.carriesInfrastructure() {
 				continue
 			}
+			// Without a watching scout, the existing check below rejects every
+			// route taking more than one turn. An optimistic gate/travel bound
+			// can reject those fleets before expensive mine-detour return plans.
+			if !watched[key] && automaticGateTurnLowerBound(p, []*Fleet{f}, expeditionStations(p, f), f.Position, point, automaticMaxWarp(p, f)) > 1 {
+				continue
+			}
 			route := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, AllowThreat: true, MaxTurns: 6, MinWarp: automaticCruiseWarp(p, f)})
 			if route == nil || route.WaitForFuel || route.NetworkRequest != nil || route.Turns > 1 && !watched[key] {
 				continue

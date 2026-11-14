@@ -179,6 +179,11 @@ func (d *discover) discoverPlanet(rules *Rules, planet *Planet, penScanned, exac
 
 	// basic scanning a planet tells you who owns it and whether it has a starbase
 	// but you don't get hab/pop unless you own it
+	if intel.PlayerNum != planet.PlayerNum {
+		delete(intel.Tags, landingGroundReportTag)
+		delete(intel.Tags, landingPreparationTag)
+		delete(intel.Tags, landingRetryTag)
+	}
 	intel.PlayerNum = planet.PlayerNum
 	intel.Spec.HasStarbase = planet.Spec.HasStarbase
 	intel.Spec.HasStargate = planet.Spec.HasStargate

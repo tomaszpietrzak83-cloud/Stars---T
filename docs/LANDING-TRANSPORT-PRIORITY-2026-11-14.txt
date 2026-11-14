@@ -1,0 +1,58 @@
+Bounded landings and civilian transport priority
+================================================
+
+User requirement
+----------------
+Transporters primarily deliver colonists, minerals, factories, mines and
+defenses. Clear the orbital base, bombard the colony, then land a replaceable
+army. Reserve 200,000-400,000 people per target, not millions.
+
+Behavior
+--------
+Civilian logistics assigns work before recruitment of new landing transports,
+including when an older save enabled LandingsFirst. Existing civilian jobs and
+packed installation cargo remain ineligible for landing recruitment.
+
+A new army is only assembled for a reported base-free, softened target:
+at most 100,000 reported defenders with no reported ground defenses, or the
+existing percentage-bombing handoff threshold. Reconnaissance, orbital combat,
+route and fuel checks remain mandatory. An already weak colony does not need
+an artificial extra bombing round. Departure repeats the readiness check.
+
+Army requirements are bounded to 200,000-400,000 people. Recruitment counts
+loaded passengers and reserved pickups together; full small holds may round
+the requested amount upward but may not exceed 400,000. Large empty transport
+groups split into useful civilian-sized holds before recruitment. Pickup loads
+respect their reservation after a capacity change.
+
+Existing oversized armies and armies tied to bases or unsoftened colonies are
+released before civilian planning. The native split operation preserves real
+ships, cargo and fuel. Troops receive ordinary passenger deliveries according
+to colony demand and route availability; release does not teleport them home.
+Requests for orbital clearance and bombing live on player reports, without
+reserving transports. Bombers prefer these cleared objectives. Coordinated
+landing departures are recognized by bomber handoff.
+
+Four years without a change of leader position, loaded population or operation
+phase release a stalled army, with five years before recruitment for the same
+target. Old stationary saved operations are audited immediately using their
+recorded start year. These safeguards do not bypass military/fuel checks.
+
+Evidence
+--------
+Copied campaign input: game 21, Embers Beyond Eridanus, year 2500.
+The initial release test reduced reserved people from 9,660,000 to 253,000,
+returning 9,407,000 to civilian duties. All 2,652 own ships and 2,613,442 units
+of fleet fuel, and all onboard population, were preserved by release/splitting.
+Subsequent logistics planning produced four operations, all within the cap,
+and civilian routes carrying 980,700 people. This is planned movement, not a
+claim of completed passenger deliveries. The personal saved game was not
+advanced. Private evidence: ../audit-results/landing-bounded-copy.log.
+
+Focused native campaigns verify base destruction, actual bombing and capture,
+including a bomber pending retirement. Regression checks cover oversized army
+release/conservation, no recruitment before bombardment, capped reservations,
+and stalled-army release with a recruitment cooldown.
+
+Build, full-suite and final-copy verification are recorded separately in
+SUGGESTIONS-CHECKLIST.txt and ../audit-results/landing-bounded-*.log.

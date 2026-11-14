@@ -81,7 +81,7 @@ func (t *turnGenerator) invasionDestination(p *Player, f *Fleet, job *logisticsJ
 		job.BombingStage = true
 		job.LandingCleared = false
 	}
-	if target.ReportAge <= 2 && !priorityNeedsBombing(target) {
+	if target.ReportAge <= 2 && (!priorityNeedsBombing(target) || t.percentageBombingLanding(p, target)) {
 		job.BombingStage = false
 		job.LandingCleared = true
 		job.LandingTarget = target.Num

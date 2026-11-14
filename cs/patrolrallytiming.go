@@ -2,7 +2,6 @@ package cs
 
 import (
 	"math"
-	"slices"
 )
 
 // Fuel auditing must validate the scheduled speed, not replace it with the
@@ -57,29 +56,9 @@ func pacedPatrolRoute(rules *Rules, p *Player, f *Fleet, point Vector, route *ex
 	if best != nil {
 		return best
 	}
-	// Very close ships cannot stretch a one-unit leg by slowing down. Use a
-	// funded perimeter leg, then join the fixed rendezvous on the second turn.
-	for _, delta := range []Vector{{12, 0}, {0, 12}, {-12, 0}, {0, -12}} {
-		stage := point.Add(delta)
-		if stage == f.Position || knownRouteThreat(p, stage, stage) > 0 {
-			continue
-		}
-		out := planAutomaticRoute(rules, p, []*Fleet{f}, stage, MapObjectTarget{}, automaticRoutePolicy{Fast: true, MaxTurns: 1})
-		if out == nil || out.WaitForFuel || out.NetworkRequest != nil || out.Turns != 1 {
-			continue
-		}
-		arrival := *f
-		arrival.Position, arrival.Fuel = stage, f.Fuel-out.Fuel
-		if len(out.ArrivalFuel) > 0 {
-			arrival.Fuel = out.ArrivalFuel[0]
-		}
-		back := planAutomaticRoute(rules, p, []*Fleet{&arrival}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, MaxTurns: 1})
-		if back == nil || back.WaitForFuel || back.NetworkRequest != nil || back.Turns != 1 {
-			continue
-		}
-		return &expeditionRoute{Waypoints: append(slices.Clone(out.Waypoints), back.Waypoints[1:]...), Turns: 2, Fuel: out.Fuel + back.Fuel, ArrivalFuel: slices.Clone(back.ArrivalFuel)}
-	}
-	return nil
+	// Early arrival is valid for an assessed, bounded rendezvous. Do not
+	// manufacture a perimeter flight merely to keep a ship moving.
+	return route
 }
 
 func synchronizePatrolRally(rules *Rules, p *Player, group []*Fleet, target Vector, rally *patrolRally) bool {

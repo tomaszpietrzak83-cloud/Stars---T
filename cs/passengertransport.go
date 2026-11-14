@@ -405,8 +405,11 @@ func passengerCarrier(p *Player, f *Fleet) bool {
 	if p.Automation.FleetRoles[f.Num] == "freighter" {
 		return true
 	}
+	if colonizationMode(p.Automation.FleetRoles[f.Num]) == "" {
+		return false
+	}
 	job := readColonizationJob(f)
-	return colonizationMode(p.Automation.FleetRoles[f.Num]) != "" && job != nil && job.Kind == "passengers"
+	return job != nil && job.Kind == "passengers"
 }
 func colonizerPassengerCarrier(p *Player, f *Fleet) bool {
 	return passengerCarrier(p, f) && colonizationMode(p.Automation.FleetRoles[f.Num]) != ""

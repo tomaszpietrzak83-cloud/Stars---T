@@ -562,6 +562,19 @@ func (t *turnGenerator) resolveColonistDrops() {
 		for _, inv := range group {
 			if !planet.OwnedBy(inv.attacker.Num) {
 				inv.attacker.discoverer.discoverPlanet(&t.game.Rules, planet, false, false)
+				if winner < 0 && inv.defender != nil && inv.defender != inv.attacker && planet.OwnedBy(inv.defender.Num) {
+					if intel := inv.attacker.GetPlanetIntel(planet.Num); intel != nil {
+						multiplier := 0.0
+						if len(group) == 1 && inv.defendersKilled >= 100 {
+							// Defender casualties round down. The observed ratio
+							// is therefore a conservative estimate of resistance.
+							coverage := float64(inv.attackers-inv.attackersKilledByDefenses) / float64(inv.attackers)
+							power := int(float64(inv.attackers/100) * inv.attacker.Race.Spec.InvasionAttackBonus * coverage)
+							multiplier = float64(power) / float64(inv.defendersKilled/100)
+						}
+						intel.SetTag(landingGroundReportTag, fmt.Sprintf("%d:%d:%d:%g:%g", planet.PlayerNum, t.game.Year, planet.Cargo.Colonists, planet.Spec.DefenseCoverage, multiplier))
+					}
+				}
 			}
 		}
 		n = end
@@ -2080,7 +2093,9 @@ func (t *turnGenerator) planetProduction() error {
 			player.Stats.FleetsBuilt++
 			player.Stats.TokensBuilt += token.Quantity
 			counters.ShipsBuilt += int64(token.Quantity)
-			counters.BuiltTonnage += int64(design.Spec.Mass) * int64(token.Quantity)
+			tonnage := int64(design.Spec.Mass) * int64(token.Quantity)
+			counters.BuiltTonnage += tonnage
+			counters.recordHull(design, HullStatistics{ShipsBuilt: int64(token.Quantity), BuiltTonnage: tonnage})
 			if id, err := strconv.Atoi(token.tags[assemblyTag]); err == nil && id > 0 {
 				if _, ok := player.Automation.FleetAssemblies[id]; ok {
 					fleet, err := t.buildFleet(player, planet, token.ShipToken, Tags{assemblyTag: token.tags[assemblyTag]}, nil)
@@ -2937,9 +2952,13 @@ func (t *turnGenerator) fleetBattle() {
 			salvageMinerals = salvageMinerals.Add(record.dumpedMinerals)
 			if salvageMinerals.Total() > 0 {
 				if planet == nil {
-					t.game.getOrCreateSalvage(record.Position, salvageOwner, salvageMinerals.ToCargo())
+					salvage := t.game.getOrCreateSalvage(record.Position, salvageOwner, salvageMinerals.ToCargo())
+					salvage.setBattleMinerals(salvage.battleMinerals().Add(salvageMinerals))
 				} else {
 					planet.Cargo = planet.Cargo.AddMineral(salvageMinerals)
+					if owner := t.game.getPlayer(planet.PlayerNum); owner != nil {
+						owner.recordRecoveredBattleMinerals(t.game.Year, salvageMinerals)
+					}
 				}
 			}
 
@@ -3042,6 +3061,10 @@ func (t *turnGenerator) fleetBomb() {
 			if fleet, ok := mo.(*Fleet); ok {
 				fleetPlayer := t.game.getPlayer(fleet.PlayerNum)
 				willBomb := fleet.willAttack(fleetPlayer, planet.PlayerNum)
+				if willBomb && fleetPlayer.Automation.FleetRoles[fleet.Num] == "bomber" {
+					intel := fleetPlayer.GetPlanetIntel(planet.Num)
+					willBomb = intel == nil || !bomberHandsOffToLanding(&t.game.Rules, fleetPlayer, fleet, intel, t.game.getFleets(fleetPlayer.Num))
+				}
 				if fleet.Delete || len(fleet.Tokens) == 0 || fleet.OwnedBy(planetPlayer.Num) {
 					continue
 				}

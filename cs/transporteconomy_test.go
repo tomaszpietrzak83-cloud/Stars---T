@@ -204,7 +204,7 @@ func TestConfiguredLandingPrioritySelectsRecruitmentPass(t *testing.T) {
 	}
 }
 
-func TestUsefulAttritionDropReducesRealDefenders(t *testing.T) {
+func TestUsefulAttritionWaitsForBombardmentBeforeLanding(t *testing.T) {
 	u := landingOperationUniverse(t)
 	p, target := u.Player(1), u.Planet("Target")
 	target.Cargo.Colonists = 10000
@@ -230,11 +230,10 @@ func TestUsefulAttritionDropReducesRealDefenders(t *testing.T) {
 	u.Run(plan)
 	require.Equal(t, "scan", readLandingOperation(f).Phase)
 	u.Run((*turnGenerator).fleetMove, (*turnGenerator).scanLandingContacts, plan)
-	require.Equal(t, "assault", readLandingOperation(f).Phase)
-	u.Run((*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove, (*turnGenerator).resolveLandingDrops, (*turnGenerator).resolveColonistDrops)
-	require.Equal(t, 2, target.PlayerNum, "the attack is useful without capturing the planet")
-	require.Less(t, target.Cargo.Colonists, 10000)
-	require.Zero(t, f.Cargo.Colonists)
+	require.Equal(t, "scan", readLandingOperation(f).Phase, "useful attrition is not permission to skip bombardment")
+	require.Positive(t, f.Cargo.Colonists)
+	require.Equal(t, 10000, target.Cargo.Colonists)
+
 	target.Spec.DefenseCoverage = 1
 	require.False(t, usefulAttritionLanding(&u.Game.Rules, p, target, 2000), "do not repeatedly feed troops into overwhelming ground defenses")
 }

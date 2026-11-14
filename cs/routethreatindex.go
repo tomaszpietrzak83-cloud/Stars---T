@@ -51,6 +51,7 @@ type routeThreatIndex struct {
 	built         bool
 	margin        int
 	threats       []indexedRouteThreat
+	arrivalCells  map[Vector][]int
 	hostileOrbits map[Vector]*Planet
 	routes        map[routeThreatKey]int
 	mineLegs      map[routeMineKey][]routeMineObstacle

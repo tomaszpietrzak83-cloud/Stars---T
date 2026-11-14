@@ -111,7 +111,8 @@ func TestGatheringPatrolLeaderAndFollowerMoveTowardSharedPoint(t *testing.T) {
 func TestStatisticsCreditActualShooterAndRecordOwnLosses(t *testing.T) {
 	u := logisticsUniverse(t)
 	u.Game.Players = append(u.Game.Players, &Player{Num: 2}, &Player{Num: 3})
-	record := &BattleRecord{Tokens: []BattleRecordToken{{Num: 1, PlayerNum: 1, StartingQuantity: 1, Mass: 20}, {Num: 2, PlayerNum: 2, StartingQuantity: 2, Mass: 30}, {Num: 3, PlayerNum: 3, StartingQuantity: 1, Mass: 20}}, DestroyedTokens: []BattleRecordDestroyedToken{{Num: 2, PlayerNum: 2, Quantity: 2}}, ActionsPerRound: [][]BattleRecordTokenAction{{{TokenNum: 1, TargetNum: 2, TokensDestroyed: 2, Type: TokenActionBeamFire}}}}
+	destroyed := &ShipDesign{Hull: "Destroyer", Spec: ShipDesignSpec{Mass: 30}}
+	record := &BattleRecord{Tokens: []BattleRecordToken{{Num: 1, PlayerNum: 1, StartingQuantity: 1, Mass: 20}, {Num: 2, PlayerNum: 2, StartingQuantity: 2, Mass: 30}, {Num: 3, PlayerNum: 3, StartingQuantity: 1, Mass: 20}}, DestroyedTokens: []BattleRecordDestroyedToken{{Num: 2, PlayerNum: 2, Quantity: 2, design: destroyed}}, ActionsPerRound: [][]BattleRecordTokenAction{{{TokenNum: 1, TargetNum: 2, TokensDestroyed: 2, Type: TokenActionBeamFire}}}}
 	u.Run(func(tg *turnGenerator) {
 		tg.beginStatistics()
 		tg.recordBattleStatistics(record)
@@ -120,6 +121,8 @@ func TestStatisticsCreditActualShooterAndRecordOwnLosses(t *testing.T) {
 	c := u.Player(1).Stats.Accounting.Counters
 	require.Equal(t, int64(2), c.ShipsDestroyed)
 	require.Equal(t, int64(60), c.DestroyedTonnage)
+	require.Equal(t, HullStatistics{ShipsDestroyed: 2, DestroyedTonnage: 60}, c.Hulls["Destroyer"])
+	require.Equal(t, HullStatistics{ShipsLost: 2, LostTonnage: 60}, u.Player(2).Stats.Accounting.Counters.Hulls["Destroyer"])
 	require.Equal(t, int64(0), u.Player(3).Stats.Accounting.Counters.ShipsDestroyed)
 	require.Equal(t, int64(2), u.Player(2).Stats.Accounting.Counters.ShipsLost)
 	require.Len(t, u.Player(1).Stats.Accounting.History, 1)

@@ -204,3 +204,51 @@ func TestMinelayerPursuitShadowsAcrossTurnsAndRecruitsEscortResponse(t *testing.
 	require.True(t, recruited, "the patrol should add support after learning about the escort")
 	require.True(t, enemy.Delete, "the pursuit should end in a native kill")
 }
+
+func TestMinesweeperClearsFieldFromOutsideHostileOrbit(t *testing.T) {
+	u := minesweeperUniverse(t)
+	p, f := u.Player(1), u.Fleet("Sweeper")
+	point := Vector{60, 0}
+	f.Position = Vector{55, 0}
+	f.Waypoints = []Waypoint{{Position: f.Position}}
+	base := &Planet{MapObject: MapObject{Num: 99, PlayerNum: 2, Position: point}}
+	base.Spec.HasStarbase = true
+	p.PlanetIntels = append(p.PlanetIntels, base)
+	field := newMinefield(u.Player(2), MinefieldTypeHeavy, 100, 1, point)
+	u.Game.Universe.addMinefield(field)
+	report := *field
+	p.MinefieldIntels = []*Minefield{&report}
+	u.Run((*turnGenerator).planMinesweeperAutomation, (*turnGenerator).enforceAutomaticDeparture)
+	require.Len(t, f.Waypoints, 2)
+	require.Equal(t, Vector{59, 0}, f.Waypoints[1].Position)
+	u.Run((*turnGenerator).fleetMove, (*turnGenerator).fleetSweepMines)
+	require.True(t, field.Delete)
+	require.Equal(t, Vector{59, 0}, f.Position)
+}
+
+func TestMinesweeperCancelsLegacyHostileFleetWaypoint(t *testing.T) {
+	u := minesweeperUniverse(t)
+	p, f, enemy := u.Player(1), u.Fleet("Sweeper"), u.Fleet("Enemy")
+	f.Waypoints = []Waypoint{{Position: f.Position}, {Position: enemy.Position, MapObjectTarget: enemy.ToTarget(), WarpSpeed: 5}}
+	require.True(t, automaticMinesweeper(p, f))
+	u.Run((*turnGenerator).enforceAutomaticDeparture)
+	require.Len(t, f.Waypoints, 1)
+	require.Contains(t, f.GetTag(fuelStatusTag), "interception cancelled")
+}
+
+func TestMinesweeperCoversDistantFieldBeforeReinforcingNearField(t *testing.T) {
+	u := minesweeperUniverse(t)
+	p, lead := u.Player(1), u.Fleet("Sweeper")
+	near := newMinefield(u.Player(2), MinefieldTypeHeavy, 4000, 1, Vector{45, 0})
+	far := newMinefield(u.Player(2), MinefieldTypeStandard, 100, 2, Vector{130, 0})
+	spare := addTestMineSwap(t, u, lead, 99, far.Position)
+	for _, field := range []*Minefield{near, far} {
+		u.Game.Universe.addMinefield(field)
+		report := *field
+		p.MinefieldIntels = append(p.MinefieldIntels, &report)
+	}
+	lead.SetTag(minesweeperTargetTag, "2:1")
+	u.Run((*turnGenerator).planMinesweeperAutomation)
+	require.Equal(t, "2:1", lead.GetTag(minesweeperTargetTag))
+	require.Equal(t, "2:2", spare.GetTag(minesweeperTargetTag))
+}

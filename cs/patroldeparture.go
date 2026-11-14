@@ -5,9 +5,29 @@ import "fmt"
 // This is deliberately independent of mission labels: a rendezvous, old order,
 // pursuit or routine transit can end at the same position as a hostile fleet.
 func (t *turnGenerator) patrolDepartureConfirmed(p *Player, f *Fleet) bool {
-	if p.patrolEvaluator == nil || len(f.Waypoints) < 2 || f.InDesignMaintenance() {
+	if len(f.Waypoints) < 2 || f.InDesignMaintenance() {
 		return true
 	}
+	point := patrolDeparturePoint(f)
+	if planet := patrolHostileBaseNear(p, point); planet != nil {
+		return t.recaptureDepartureConfirmed(p, f, planet)
+	}
+	if p.patrolEvaluator == nil {
+		return true
+	}
+	return t.patrolMobileDepartureConfirmed(p, f, point)
+}
+
+func patrolHostileBaseNear(p *Player, point Vector) *Planet {
+	for _, planet := range p.PlanetIntels {
+		if planet != nil && planet.Owned() && planet.PlayerNum != p.Num && !p.IsFriend(planet.PlayerNum) && planet.Spec.HasStarbase && point.DistanceTo(planet.Position) <= 3 {
+			return planet
+		}
+	}
+	return nil
+}
+
+func patrolDeparturePoint(f *Fleet) Vector {
 	wp := f.Waypoints[1]
 	point := wp.Position
 	if wp.WarpSpeed != StargateWarpSpeed {
@@ -16,11 +36,11 @@ func (t *turnGenerator) patrolDepartureConfirmed(p *Player, f *Fleet) bool {
 			point = f.Position.ToFloat64().Add(point.Subtract(f.Position).Normalized().Scale(reach)).ToInt(true)
 		}
 	}
-	for _, planet := range p.PlanetIntels {
-		if planet != nil && planet.Owned() && planet.PlayerNum != p.Num && !p.IsFriend(planet.PlayerNum) && planet.Spec.HasStarbase && point.DistanceTo(planet.Position) <= 3 {
-			return t.recaptureDepartureConfirmed(p, f, planet)
-		}
-	}
+	return point
+}
+
+func (t *turnGenerator) patrolMobileDepartureConfirmed(p *Player, f *Fleet, point Vector) bool {
+	wp := f.Waypoints[1]
 	for _, report := range p.FleetIntels {
 		if report == nil || report.Delete || report.ReportAge != 0 || report.Starbase || report.PlayerNum == p.Num || p.IsFriend(report.PlayerNum) {
 			continue

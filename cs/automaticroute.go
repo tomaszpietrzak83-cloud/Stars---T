@@ -9,6 +9,8 @@ const fuelStatusTag = "automatic-fuel-status"
 const fuelRequestTag = "automatic-fuel-request"
 
 type automaticRoutePolicy struct {
+	// Shared only by return searches for the same immutable fleet/report snapshot.
+	returnLegCache   map[automaticLegCacheKey]bool
 	Fast             bool // Useful combat pursuit only; ordinary movement weighs fuel against travel time.
 	HighestWarp      bool // Escape: prefer the highest funded safe warp even on equal-ETA legs.
 	EconomicalPatrol bool
@@ -24,6 +26,11 @@ type automaticRoutePolicy struct {
 	RefuelRendezvous bool
 	// Colony ships are consumed by the Colonize task at their reserved target.
 	OneWay bool
+}
+
+type automaticLegCacheKey struct {
+	from, to Vector
+	warp     int
 }
 
 func automaticMaxWarp(player *Player, fleet *Fleet) int {
@@ -57,12 +64,15 @@ func automaticRouteLegSafe(rules *Rules, player *Player, from, to Vector, warp i
 	if len(strategicSpeed) > 0 {
 		step = strategicSpeed[0]
 	}
-	if !allowThreat {
-		if routeThreat(player, from, to, civilian) > 0 {
+	stop := automaticTurnEnd(from, to, step)
+	if sweep && (reportedHostileOrbit(player, to) != nil || reportedHostileOrbit(player, stop) != nil) {
+		return false
+	}
+	if !allowThreat || sweep {
+		if routeThreat(player, from, to, civilian || sweep) > 0 {
 			return false
 		}
-		stop := automaticTurnEnd(from, to, step)
-		if stop != to && routeThreat(player, from, stop, civilian) > 0 {
+		if stop != to && routeThreat(player, from, stop, civilian || sweep) > 0 {
 			return false
 		}
 	}
@@ -161,6 +171,7 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 	cruiseRequired := role == "scout" || role == "patrol" || passengerCruiseFleet(fleet)
 	automatic := isAutomaticFleet(player, fleet)
 	freeMovement := usefulFreePatrolMovement(player, fleet)
+	civilian, sweep := civilianTraffic(player, fleet), automaticMinesweeper(player, fleet)
 	for _, station := range stations {
 		if station.Position == position {
 			return 0
@@ -172,7 +183,7 @@ func automaticReturnFuel(rules *Rules, player *Player, fleet *Fleet, position Ve
 		safeAt := func(speed int) bool {
 			if safety[speed] == 0 {
 				safety[speed] = -1
-				if automaticFleetLegSafe(rules, player, fleet, position, station.Position, speed, allowThreat) {
+				if automaticRouteLegSafe(rules, player, position, station.Position, speed, allowThreat, civilian, sweep, fleet.StrategicSpeed(speed)) {
 					safety[speed] = 1
 				}
 			}
@@ -257,6 +268,11 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 			return fuel
 		}()}
 	}
+	// A mined endpoint cannot be reached by a non-sweeping final leg at any
+	// speed, even through a gate. Avoid planning its expensive return first.
+	if automaticDestinationMineBlocked(player, position, len(fleets) == 1 && automaticMinesweeper(player, fleets[0])) {
+		return nil
+	}
 	stations := expeditionStations(player, fleets[0])
 	if len(stations) == 0 && !policy.OneWay && !policy.RefuelRendezvous {
 		return nil
@@ -307,8 +323,19 @@ func planAutomaticRoute(rules *Rules, player *Player, fleets []*Fleet, position 
 		}
 	}
 	sweep := len(fleets) == 1 && automaticMinesweeper(player, fleets[0])
+	civilian := civilianTraffic(player, fleets[0])
 	legSafe := func(from, to Vector, warp int) bool {
-		return automaticRouteLegSafe(rules, player, from, to, warp, policy.AllowThreat, civilianTraffic(player, fleets[0]), sweep, fleets[0].StrategicSpeed(warp))
+		key := automaticLegCacheKey{from, to, warp}
+		if value, ok := policy.returnLegCache[key]; ok {
+			return value
+		}
+		value := automaticRouteLegSafe(rules, player, from, to, warp, policy.AllowThreat, civilian, sweep, fleets[0].StrategicSpeed(warp))
+		if policy.returnLegCache != nil {
+			if len(policy.returnLegCache) < 65536 {
+				policy.returnLegCache[key] = value
+			}
+		}
+		return value
 	}
 	// With no gate alternative a straight leg achieving the geometric minimum
 	// ETA cannot be improved by a dock detour. This keeps dense empires cheap.

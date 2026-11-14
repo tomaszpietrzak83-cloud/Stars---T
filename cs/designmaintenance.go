@@ -285,7 +285,18 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 		if assigned := t.game.getPlanet(work.PlanetNum); work.Stage == "scrap" && (assigned == nil || !assigned.OwnedBy(player.Num) || !assigned.Spec.HasStarbase) {
 			work.PlanetNum = 0
 		}
-		for _, planet := range t.game.Planets {
+		yards := slices.Clone(t.game.Planets)
+		lowerBounds := make(map[*Planet]int)
+		lowerBound := maintenanceTravelLowerBounder(player, fleet)
+		for _, yard := range yards {
+			if yard.OwnedBy(player.Num) && yard.Spec.HasStarbase {
+				lowerBounds[yard] = lowerBound(yard.Position)
+			}
+		}
+		// Forecasts do not reserve fuel or mutate orders. Try promising yards
+		// first; the original explicit turn/planet-number tie break still wins.
+		slices.SortStableFunc(yards, func(a, b *Planet) int { return lowerBounds[a] - lowerBounds[b] })
+		for _, planet := range yards {
 			if !planet.OwnedBy(player.Num) || !planet.Spec.HasStarbase {
 				continue
 			}
@@ -306,6 +317,15 @@ func (t *turnGenerator) fleetDesignMaintenance() {
 			}
 			if !fits {
 				continue
+			}
+			// Even an ideal fuel-free journey (including unrestricted gates)
+			// cannot improve an already selected yard beyond this lower bound.
+			// Preserve equal-time preference for the lower planet number.
+			if closest != nil {
+				lower := lowerBounds[planet]
+				if float64(lower) > best || float64(lower) == best && planet.Num >= closest.Num {
+					continue
+				}
 			}
 			route := t.planAutomaticMission(player, []*Fleet{fleet}, planet.Position, planet.MapObject.ToTarget(), automaticRoutePolicy{AllowThreat: true, EmergencyReturn: true, MaxTurns: 10000})
 			if route == nil {

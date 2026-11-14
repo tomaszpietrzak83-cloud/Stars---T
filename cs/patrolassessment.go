@@ -7,6 +7,8 @@ import (
 	"slices"
 )
 
+const patrolForecastBudgetExhausted = "Native forecast budget exhausted; concentration retained"
+
 type patrolAssessment struct {
 	Ready                           bool
 	Tactic                          BattleTactic
@@ -19,15 +21,17 @@ type patrolAssessment struct {
 // Per-player/per-orders-phase, deterministic work budget. Native samples have
 // independent seeds and cannot consume the real turn's RNG.
 type patrolEvaluator struct {
-	rules               *Rules
-	cache               map[[32]byte]patrolAssessment
-	Work, Battles, Hits int
-	Limit               int
-	Deferred            map[string]bool
-	DefencePlanned      bool
-	PlanningDefence     bool
-	DefenceMembers      map[int]bool
-	DefenceChecks       *patrolEvaluator
+	rules                 *Rules
+	cache                 map[[32]byte]patrolAssessment
+	Work, Battles, Hits   int
+	Limit                 int
+	Deferred              map[string]bool
+	DefencePlanned        bool
+	PlanningDefence       bool
+	PlanningUrgentDefence bool
+	DefenceMembers        map[int]bool
+	DefenceChecks         *patrolEvaluator
+	TerritorialTargets    map[[2]int]bool
 }
 
 func (t *turnGenerator) startPatrolEvaluation() {
@@ -37,6 +41,12 @@ func (t *turnGenerator) startPatrolEvaluation() {
 	for _, p := range t.automaticPlayers() {
 		p.patrolEvaluator = &patrolEvaluator{rules: &t.game.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 4096}
 		p.patrolQueue = makePatrolMissionQueue(p, t.game.Year-1)
+		p.patrolEvaluator.TerritorialTargets = map[[2]int]bool{}
+		for _, mission := range p.patrolQueue {
+			if mission.Kind == "attack" && mission.Territorial {
+				p.patrolEvaluator.TerritorialTargets[[2]int{mission.Enemy, mission.Target}] = true
+			}
+		}
 		t.bombardmentEvaluation[p.Num] = &patrolEvaluator{rules: &t.game.Rules, cache: map[[32]byte]patrolAssessment{}, Limit: 2048}
 	}
 }
@@ -106,6 +116,10 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		}
 	}
 	count, unknown := 0, false
+	zeroLoss := false
+	for _, f := range own {
+		zeroLoss = zeroLoss || hasAssaultBattleship(p, f) && slices.ContainsFunc(reports, func(report *Fleet) bool { return report.Starbase })
+	}
 	for _, report := range reports {
 		count += reportedFleetShips(report)
 		unknown = unknown || unknownFleetEquipment(p, report)
@@ -174,14 +188,14 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 			orbit = planet
 		}
 	}
-	raw, _ := json.Marshal([]any{inputs, point, horizon, merge, strict, p.Race, p.TechLevels, p.BattlePlans, stocks.ToMineral(), orbit, e.rules.BattleRules, e.rules.RepairRates})
+	raw, _ := json.Marshal([]any{inputs, point, horizon, merge, strict, zeroLoss, p.Race, p.TechLevels, p.BattlePlans, stocks.ToMineral(), orbit, e.rules.BattleRules, e.rules.RepairRates})
 	key := sha256.Sum256(raw)
 	if result, ok := e.cache[key]; ok {
 		e.Hits++
 		return result
 	}
 	if e.Work >= e.Limit {
-		return patrolAssessment{Reason: "Native forecast budget exhausted; concentration retained"}
+		return patrolAssessment{Reason: patrolForecastBudgetExhausted}
 	}
 	model, err := newPatrolBattleCopy(e.rules, p, modeled, reports)
 	if err != nil {
@@ -228,12 +242,12 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 			loss, damage, repair := 0.0, 0.0, 0
 			for seed := 0; seed < seeds; seed++ {
 				if e.Work+work > e.Limit {
-					return patrolAssessment{Reason: "Native forecast budget exhausted; concentration retained"}
+					return patrolAssessment{Reason: patrolForecastBudgetExhausted}
 				}
 				e.Work += work
 				e.Battles++
 				outcome := model.run(tactic, ep, int64(17011+seed*997))
-				if !outcome.safe(model.ownShips, model.ownValue, model.ownMass) || !merge && outcome.CivilianLost > 0 || strict && (outcome.DangerAfter > 0 || outcome.BombersAfter > 0 || outcome.StarbasesAfter > 0) {
+				if zeroLoss && outcome.LostShips > 0 || !outcome.safe(model.ownShips, model.ownValue, model.ownMass) || !merge && outcome.CivilianLost > 0 || strict && (outcome.DangerAfter > 0 || outcome.BombersAfter > 0 || outcome.StarbasesAfter > 0) {
 					return patrolAssessment{Reason: "Native forecast: ineffective mission, unsafe tonnage exchange, civilian losses or own count/value/mass loss exceeds 5%"}
 				}
 				result.LostShips = max(result.LostShips, outcome.LostShips)
@@ -251,8 +265,13 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 		return result
 	}
 	screened := []patrolAssessment{}
+	budgetExhausted := false
 	for _, tactic := range tactics {
 		result := sample(tactic, 2)
+		if result.Reason == patrolForecastBudgetExhausted {
+			budgetExhausted = true
+			break
+		}
 		if result.Ready {
 			screened = append(screened, result)
 		}
@@ -277,10 +296,16 @@ func (e *patrolEvaluator) assessFormations(p *Player, own []*Fleet, reports []*F
 			seeds = 64
 		}
 		result := sample(candidate.Tactic, seeds)
+		if result.Reason == patrolForecastBudgetExhausted {
+			budgetExhausted = true
+		}
 		if result.Ready {
 			best = result
 			break
 		}
+	}
+	if !best.Ready && budgetExhausted {
+		return patrolAssessment{Reason: patrolForecastBudgetExhausted}
 	}
 	if e.Work < e.Limit {
 		e.cache[key] = best

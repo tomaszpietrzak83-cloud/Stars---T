@@ -1,0 +1,66 @@
+Embers tanker/logistics performance - 2026-11-13
+
+Scope: performance only. Prepare colonies, traffic corridors and other tanker
+anchors once per tanker decision, retaining exact original floating-point
+operation order. Reuse raw anchor values after route checks. Rebuild the scorer
+for each tanker so prior assignments remain visible. Anchor candidates, stable
+sort, first-32 routing limit, fuel reserves and physical combat merges unchanged.
+
+Logistics: bounded, synchronized, sharded cache keyed by complete order JSON.
+At most 4096 entries; keys above 8192 bytes bypass cache. Invalid JSON retains
+original behavior. Every read returns an independent value copy. Changed orders
+miss automatically. Cargo and aggregate reservations are always read live.
+
+Copied archived Embers input, game 21 year 2497, same computer:
+  Before: 491.4640594 seconds (8m11.464s).
+  After:  263.4852264 seconds (4m23.485s).
+  Reduction: 46.39%; approximately 1.87 times faster.
+  Earlier baseline: 498.408206 seconds.
+These are single complete GenerateTurn measurements, not a guarantee for future
+turns. Other verification/build activity ran during part of the measurements.
+
+Complete output comparison: zero gameplay differences across 1 game, 13 players,
+4032 fleets, 896 planets, 556 starbases, and all remaining object collections.
+Only createdAt/updatedAt, ship-design report ordering and contiguous player-
+discovery message ordering are normalized by the existing comparison tool.
+Fresh original output also matches the previous original output after those
+same normalizations.
+
+Microbenchmarks (same fixture):
+  500 anchor scores: 44.269 ms -> 1.911 ms; allocations 40023 -> 104;
+  allocated bytes 5930278 -> 33439, including preparation per decision.
+  Order decoding: 2395 ns -> 154.5 ns; allocated bytes 288 -> 144.
+  These fragment-level ratios do not represent whole-turn acceleration.
+
+Verification:
+  Exact float-bit comparison against frozen original scorer, including order
+  mutations and scorer refresh; JSON equivalence, independent returned copies,
+  invalid/null/large orders, concurrent cache access, bounded storage, and live
+  cargo/order reservation updates PASS.
+  Full cs suite: 3124 tests/subtests PASS; additional reservation test PASS.
+  Full server suite: 156 tests/subtests PASS; db:124, db/generated:15 PASS.
+  Native/WASM/compiled frontend build and isolated runtime smoke PASS.
+
+Concurrent update handling:
+A separate bomber reconnaissance/concentration/landing update was staged while
+this benchmark ran. It was preserved rather than overwritten. Its later native
+release already contains both performance functions; its full native core suite
+and native/WASM/UI smoke passed (bomber-scout-1113 evidence). Installed that newer
+combined release. The timing/equality comparison above isolates this performance
+change BEFORE the separately authorized bomber behavior changes; it is not an
+identical-output claim for those additional gameplay changes.
+
+Save safety:
+All benchmark turns used second temporary copies of the archived input. No test
+output was restored to the live game. Live production orders changed during the
+tests through the player's browser; those changes were retained. All 20 SQLite
+table fingerprints match immediately before installation (server stopped), after
+file installation, and after server restart. Both campaigns remain at their
+original years: Embers 2498 and The Broken Dominion 2508, WaitingForPlayers.
+Authenticated read-only live smoke PASS, zero turns submitted.
+
+Installed SHA256:
+  Native: 435bc79eaf53134a13b58c7d9fd2d1af4d3188c1e175d2c75dd5fcbaaafdc398
+  WASM: dee521e123cea0f8c8518ea520534cc00ecfe97c8868e391861057ce5de834ed
+Evidence: ../audit-results/perf-1113-tankers/ and bomber-scout-1113-*.
+No broad commit/publication: unrelated working-tree changes were preserved.

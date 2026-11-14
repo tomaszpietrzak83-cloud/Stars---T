@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { clone, create } from '@bufbuild/protobuf';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { FleetAssemblySchema, LogisticsAutomationSchema, type Fleet, type FleetAssembly } from '#lib/types/cs-proto.js';
@@ -43,7 +44,7 @@
 </script>
 
 <section class="bg-base-200 rounded-md p-3 mb-4" aria-label="Fleet composer">
-	<h2 class="font-semibold text-lg">Fleet composition and assembly</h2>
+	<h2 class="font-semibold text-lg flex items-center gap-2">Fleet composition and assembly <HelpHint label="Fleet assembly" text="Choose a rally station and target quantities. Selected source fleets can contribute ships, and shipyards can build the missing ones when enabled." /></h2>
 	<p class="text-sm my-2">Choose a composition, existing ships and a rally station. Only the required ships are taken from selected fleets. Shipyards can build missing ships, and reinforcements follow the main fleet. Reports arrive at 70% and 100%. Completed orders do not replace subsequent losses.</p>
 	<button class="btn btn-primary btn-sm" disabled={busy || !stations.length || plans.length >= 32} onclick={() => start()}>Create fleet composition</button>
 	{#if !stations.length}<p class="text-sm my-2">An owned station is required as the rally point.</p>{/if}

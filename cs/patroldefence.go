@@ -11,7 +11,17 @@ func (t *turnGenerator) planUrgentPatrolDefence(p *Player) {
 	}
 	e.DefencePlanned, e.PlanningDefence = true, true
 	e.DefenceMembers = map[int]bool{}
-	defer func() { e.PlanningDefence = false }()
+	defer func() {
+		e.PlanningDefence = false
+		e.PlanningUrgentDefence = false
+		for _, f := range t.game.getFleets(p.Num) {
+			if e.DefenceMembers[f.Num] && pureAssaultBattleships(p, f) {
+				delete(f.Tags, battleshipRallyTag)
+				delete(f.Tags, recaptureAssaultTag)
+				delete(f.Tags, battleshipNextAssaultTag)
+			}
+		}
+	}()
 	launched := t.launchAssembledPatrolDefence(p)
 	tasks := []patrolMission{}
 	covered := map[Vector]bool{}
@@ -27,7 +37,8 @@ func (t *turnGenerator) planUrgentPatrolDefence(p *Player) {
 			covered[patrolInterceptPosition(enemy)] = true
 			continue
 		}
-		if urgentPatrolTarget(p, enemy) || priorityFleet(p, enemy) {
+		if urgentPatrolTarget(p, enemy) || priorityFleet(p, enemy) ||
+			mission.Territorial && (patrolReportedCombatant(p, enemy) || patrolReportedBomber(p, enemy) || patrolReportedTransport(p, enemy)) {
 			tasks = append(tasks, mission)
 		}
 	}
@@ -43,6 +54,7 @@ func (t *turnGenerator) planUrgentPatrolDefence(p *Player) {
 				break
 			}
 			enemy := patrolEnemy(p, patrolJob{Enemy: mission.Enemy, Target: mission.Target})
+			e.PlanningUrgentDefence = urgentPatrolTarget(p, enemy)
 			point := patrolInterceptPosition(enemy)
 			if covered[point] {
 				// The existing force was forecast against all reported ships at

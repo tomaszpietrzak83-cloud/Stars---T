@@ -102,7 +102,7 @@
 </script>
 
 {#if fleet.fleetOrders.waypoints}
-	<CommandTile title="Fleet Waypoints">
+	<CommandTile title="Fleet Waypoints" help="Waypoints are visited in order. The first row is the current location or the waypoint the fleet is already processing.">
 		<div class="bg-base-100 h-20 overflow-y-auto">
 			<ul class="size-full">
 				{#each fleet.fleetOrders.waypoints as wp, index (index)}

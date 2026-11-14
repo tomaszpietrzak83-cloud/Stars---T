@@ -1,5 +1,7 @@
 package cs
 
+import "maps"
+
 // Statistics are event-based, persisted in the existing stats JSON column.
 // Old saves start detailed tracking on the first newly generated turn.
 type PlayerAccounting struct {
@@ -11,31 +13,44 @@ type StatisticsYear struct {
 	Year     int                `json:"year"`
 	Counters StatisticsCounters `json:"counters"`
 }
+type HullStatistics struct {
+	ShipsDestroyed   int64 `json:"shipsDestroyed,omitempty"`
+	DestroyedTonnage int64 `json:"destroyedTonnage,omitempty"`
+	ShipsLost        int64 `json:"shipsLost,omitempty"`
+	LostTonnage      int64 `json:"lostTonnage,omitempty"`
+	ShipsBuilt       int64 `json:"shipsBuilt,omitempty"`
+	BuiltTonnage     int64 `json:"builtTonnage,omitempty"`
+}
+
 type StatisticsCounters struct {
-	ShipsDestroyed             int64 `json:"shipsDestroyed,omitempty"`
-	DestroyedTonnage           int64 `json:"destroyedTonnage,omitempty"`
-	ShipsLost                  int64 `json:"shipsLost,omitempty"`
-	LostTonnage                int64 `json:"lostTonnage,omitempty"`
-	ShipsBuilt                 int64 `json:"shipsBuilt,omitempty"`
-	BuiltTonnage               int64 `json:"builtTonnage,omitempty"`
-	ShipsScrapped              int64 `json:"shipsScrapped,omitempty"`
-	ScrappedTonnage            int64 `json:"scrappedTonnage,omitempty"`
-	BattlesFought              int64 `json:"battlesFought,omitempty"`
-	BattlesWon                 int64 `json:"battlesWon,omitempty"`
-	ResourcesProduced          int64 `json:"resourcesProduced,omitempty"`
-	ProductionResourcesSpent   int64 `json:"productionResourcesSpent,omitempty"`
-	ResearchResourcesSpent     int64 `json:"researchResourcesSpent,omitempty"`
-	AllocationRefundsResources int64 `json:"allocationRefundsResources,omitempty"`
-	IroniumSpent               int64 `json:"ironiumSpent,omitempty"`
-	BoraniumSpent              int64 `json:"boraniumSpent,omitempty"`
-	GermaniumSpent             int64 `json:"germaniumSpent,omitempty"`
-	IroniumMined               int64 `json:"ironiumMined,omitempty"`
-	BoraniumMined              int64 `json:"boraniumMined,omitempty"`
-	GermaniumMined             int64 `json:"germaniumMined,omitempty"`
-	FactoriesBuilt             int64 `json:"factoriesBuilt,omitempty"`
-	MinesBuilt                 int64 `json:"minesBuilt,omitempty"`
-	DefensesBuilt              int64 `json:"defensesBuilt,omitempty"`
-	MineralsSalvaged           int64 `json:"mineralsSalvaged,omitempty"`
+	ShipsDestroyed             int64                     `json:"shipsDestroyed,omitempty"`
+	DestroyedTonnage           int64                     `json:"destroyedTonnage,omitempty"`
+	ShipsLost                  int64                     `json:"shipsLost,omitempty"`
+	LostTonnage                int64                     `json:"lostTonnage,omitempty"`
+	ShipsBuilt                 int64                     `json:"shipsBuilt,omitempty"`
+	BuiltTonnage               int64                     `json:"builtTonnage,omitempty"`
+	ShipsScrapped              int64                     `json:"shipsScrapped,omitempty"`
+	ScrappedTonnage            int64                     `json:"scrappedTonnage,omitempty"`
+	BattlesFought              int64                     `json:"battlesFought,omitempty"`
+	BattlesWon                 int64                     `json:"battlesWon,omitempty"`
+	ResourcesProduced          int64                     `json:"resourcesProduced,omitempty"`
+	ProductionResourcesSpent   int64                     `json:"productionResourcesSpent,omitempty"`
+	ResearchResourcesSpent     int64                     `json:"researchResourcesSpent,omitempty"`
+	AllocationRefundsResources int64                     `json:"allocationRefundsResources,omitempty"`
+	IroniumSpent               int64                     `json:"ironiumSpent,omitempty"`
+	BoraniumSpent              int64                     `json:"boraniumSpent,omitempty"`
+	GermaniumSpent             int64                     `json:"germaniumSpent,omitempty"`
+	IroniumMined               int64                     `json:"ironiumMined,omitempty"`
+	BoraniumMined              int64                     `json:"boraniumMined,omitempty"`
+	GermaniumMined             int64                     `json:"germaniumMined,omitempty"`
+	FactoriesBuilt             int64                     `json:"factoriesBuilt,omitempty"`
+	MinesBuilt                 int64                     `json:"minesBuilt,omitempty"`
+	DefensesBuilt              int64                     `json:"defensesBuilt,omitempty"`
+	MineralsSalvaged           int64                     `json:"mineralsSalvaged,omitempty"`
+	Hulls                      map[string]HullStatistics `json:"hulls,omitempty"`
+	IroniumSalvaged            int64                     `json:"ironiumSalvaged,omitempty"`
+	BoraniumSalvaged           int64                     `json:"boraniumSalvaged,omitempty"`
+	GermaniumSalvaged          int64                     `json:"germaniumSalvaged,omitempty"`
 }
 
 func (p *Player) accounting(year int) *StatisticsCounters {
@@ -47,7 +62,44 @@ func (p *Player) accounting(year int) *StatisticsCounters {
 	}
 	return &p.Stats.Accounting.Counters
 }
+func (c *StatisticsCounters) recordHull(design *ShipDesign, delta HullStatistics) {
+	if design == nil || design.Hull == "" {
+		return
+	}
+	if c.Hulls == nil {
+		c.Hulls = make(map[string]HullStatistics)
+	}
+	old := c.Hulls[design.Hull]
+	old.ShipsDestroyed += delta.ShipsDestroyed
+	old.DestroyedTonnage += delta.DestroyedTonnage
+	old.ShipsLost += delta.ShipsLost
+	old.LostTonnage += delta.LostTonnage
+	old.ShipsBuilt += delta.ShipsBuilt
+	old.BuiltTonnage += delta.BuiltTonnage
+	c.Hulls[design.Hull] = old
+}
+
+func hullDifference(a, b HullStatistics) HullStatistics {
+	return HullStatistics{
+		ShipsDestroyed:   a.ShipsDestroyed - b.ShipsDestroyed,
+		DestroyedTonnage: a.DestroyedTonnage - b.DestroyedTonnage,
+		ShipsLost:        a.ShipsLost - b.ShipsLost,
+		LostTonnage:      a.LostTonnage - b.LostTonnage,
+		ShipsBuilt:       a.ShipsBuilt - b.ShipsBuilt,
+		BuiltTonnage:     a.BuiltTonnage - b.BuiltTonnage,
+	}
+}
+
 func statisticsDifference(a, b StatisticsCounters) StatisticsCounters {
+	var hulls map[string]HullStatistics
+	for hull, after := range a.Hulls {
+		if delta := hullDifference(after, b.Hulls[hull]); delta != (HullStatistics{}) {
+			if hulls == nil {
+				hulls = make(map[string]HullStatistics)
+			}
+			hulls[hull] = delta
+		}
+	}
 	return StatisticsCounters{
 		ShipsDestroyed:             a.ShipsDestroyed - b.ShipsDestroyed,
 		DestroyedTonnage:           a.DestroyedTonnage - b.DestroyedTonnage,
@@ -72,13 +124,19 @@ func statisticsDifference(a, b StatisticsCounters) StatisticsCounters {
 		FactoriesBuilt:             a.FactoriesBuilt - b.FactoriesBuilt,
 		MinesBuilt:                 a.MinesBuilt - b.MinesBuilt,
 		DefensesBuilt:              a.DefensesBuilt - b.DefensesBuilt,
+		Hulls:                      hulls,
+		IroniumSalvaged:            a.IroniumSalvaged - b.IroniumSalvaged,
+		BoraniumSalvaged:           a.BoraniumSalvaged - b.BoraniumSalvaged,
+		GermaniumSalvaged:          a.GermaniumSalvaged - b.GermaniumSalvaged,
 		MineralsSalvaged:           a.MineralsSalvaged - b.MineralsSalvaged,
 	}
 }
 func (t *turnGenerator) beginStatistics() {
 	t.statisticsBefore = map[int]StatisticsCounters{}
 	for _, p := range t.game.Players {
-		t.statisticsBefore[p.Num] = *p.accounting(t.game.Year)
+		before := *p.accounting(t.game.Year)
+		before.Hulls = maps.Clone(before.Hulls)
+		t.statisticsBefore[p.Num] = before
 	}
 }
 func (t *turnGenerator) finishStatistics() {
@@ -110,6 +168,17 @@ func recordProductionSpending(c *StatisticsCounters, delta Cost) {
 	c.BoraniumSpent += int64(max(0, delta.Boranium))
 	c.GermaniumSpent += int64(max(0, delta.Germanium))
 }
+func (p *Player) recordRecoveredBattleMinerals(year int, minerals Mineral) {
+	if minerals == (Mineral{}) {
+		return
+	}
+	c := p.accounting(year)
+	c.MineralsSalvaged += int64(minerals.Total())
+	c.IroniumSalvaged += int64(minerals.Ironium)
+	c.BoraniumSalvaged += int64(minerals.Boranium)
+	c.GermaniumSalvaged += int64(minerals.Germanium)
+}
+
 func (t *turnGenerator) recordBattleStatistics(record *BattleRecord) {
 	tokens := map[int]BattleRecordToken{}
 	survivors := map[int]int{}
@@ -117,6 +186,7 @@ func (t *turnGenerator) recordBattleStatistics(record *BattleRecord) {
 		tokens[token.Num] = token
 		survivors[token.PlayerNum] += token.StartingQuantity
 	}
+	destroyedDesigns := make(map[int]*ShipDesign, len(record.DestroyedTokens))
 	for _, dead := range record.DestroyedTokens {
 		p := t.game.getPlayer(dead.PlayerNum)
 		if p == nil {
@@ -124,11 +194,18 @@ func (t *turnGenerator) recordBattleStatistics(record *BattleRecord) {
 		}
 		c := p.accounting(t.game.Year)
 		c.ShipsLost += int64(dead.Quantity)
-		mass := tokens[dead.Num].Mass
-		if dead.design != nil {
-			mass = dead.design.Spec.Mass
+		design := dead.design
+		if design == nil {
+			design = p.GetDesign(tokens[dead.Num].DesignNum)
 		}
-		c.LostTonnage += int64(mass) * int64(dead.Quantity)
+		mass := tokens[dead.Num].Mass
+		if design != nil {
+			mass = design.Spec.Mass
+			destroyedDesigns[dead.Num] = design
+		}
+		tonnage := int64(mass) * int64(dead.Quantity)
+		c.LostTonnage += tonnage
+		c.recordHull(design, HullStatistics{ShipsLost: int64(dead.Quantity), LostTonnage: tonnage})
 		survivors[dead.PlayerNum] -= dead.Quantity
 	}
 	for _, round := range record.ActionsPerRound {
@@ -148,13 +225,13 @@ func (t *turnGenerator) recordBattleStatistics(record *BattleRecord) {
 			c := p.accounting(t.game.Year)
 			c.ShipsDestroyed += int64(action.TokensDestroyed)
 			mass := target.Mass
-			for _, dead := range record.DestroyedTokens {
-				if dead.Num == target.Num && dead.design != nil {
-					mass = dead.design.Spec.Mass
-					break
-				}
+			design := destroyedDesigns[target.Num]
+			if design != nil {
+				mass = design.Spec.Mass
 			}
-			c.DestroyedTonnage += int64(mass) * int64(action.TokensDestroyed)
+			tonnage := int64(mass) * int64(action.TokensDestroyed)
+			c.DestroyedTonnage += tonnage
+			c.recordHull(design, HullStatistics{ShipsDestroyed: int64(action.TokensDestroyed), DestroyedTonnage: tonnage})
 		}
 	}
 	for owner, alive := range survivors {

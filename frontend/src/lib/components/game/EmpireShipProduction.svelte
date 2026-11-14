@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import { automationRoles, designAutoRole } from '#lib/types/automationRoles.js';
 	import { create } from '@bufbuild/protobuf';
@@ -25,6 +26,67 @@
 		success = $state('');
 	let request = 0;
 	let refresh = $state(0);
+	const minerals = [
+		{ key: 'ironium', short: 'I', label: 'Ironium', color: 'text-ironium' },
+		{ key: 'boranium', short: 'B', label: 'Boranium', color: 'text-boranium' },
+		{ key: 'germanium', short: 'G', label: 'Germanium', color: 'text-germanium' }
+	] as const;
+	type MineralKey = (typeof minerals)[number]['key'];
+	type SortKey = MineralKey | 'resources' | 'status';
+	type SortDirection = 'ascending' | 'descending';
+	let sortKey = $state<SortKey>();
+	let sortDirection = $state<SortDirection>('descending');
+	const sortStorageKey = $derived(`cs.shipProduction.sort.${$game.id}.${$player.num}`);
+	$effect(() => {
+		const storageKey = sortStorageKey;
+		let saved: string | null = null;
+		try {
+			saved = sessionStorage.getItem(storageKey);
+		} catch {
+			// Sorting is still available when browser storage is disabled.
+		}
+		const [key, direction] = saved?.split(':') ?? [];
+		sortKey = key === 'resources' || key === 'status'
+			? key
+			: minerals.find((mineral) => mineral.key === key)?.key;
+		sortDirection = direction === 'ascending' ? 'ascending' : 'descending';
+	});
+
+	function sortValue(yard: ShipProductionResponse['yards'][number], key: SortKey) {
+		if (key === 'resources') return yard.planet?.spec?.resourcesPerYearAvailable;
+		if (key === 'status') return yard.reason || undefined;
+		return yard.planet?.cargo?.[key];
+	}
+
+	let sortedYards = $derived.by(() => {
+		const yards = plan?.yards ?? [];
+		const key = sortKey;
+		const direction = sortDirection === 'ascending' ? 1 : -1;
+		if (!key) return yards;
+		return yards.toSorted((a, b) => {
+			const left = sortValue(a, key);
+			const right = sortValue(b, key);
+			if (left === undefined) return right === undefined ? 0 : 1;
+			if (right === undefined) return -1;
+			const comparison = typeof left === 'number' && typeof right === 'number'
+				? left - right
+				: String(left).localeCompare(String(right));
+			return direction * comparison;
+		});
+	});
+	function sortBy(key: SortKey) {
+		if (sortKey === key) {
+			sortDirection = sortDirection === 'descending' ? 'ascending' : 'descending';
+		} else {
+			sortDirection = key === 'status' ? 'ascending' : 'descending';
+		}
+		sortKey = key;
+		try {
+			sessionStorage.setItem(sortStorageKey, `${key}:${sortDirection}`);
+		} catch {
+			// Keep the current sort even when browser storage is disabled.
+		}
+	}
 	let design = $derived(designs.find((d) => d.num === designNum));
 	let roles = $derived(
 		automationRoles(
@@ -119,8 +181,22 @@
 	}
 </script>
 
-<section class="max-w-6xl min-w-0 w-full mx-auto p-3" aria-label="Empire ship production">
-	<h1 class="text-2xl font-semibold">Ship production</h1>
+{#snippet sortHeader(key: SortKey, label: string, short?: string)}
+	<th scope="col" aria-sort={sortKey === key ? sortDirection : undefined}
+		class:w-px={short} class:px-1={short}>
+		<button type="button" class="btn btn-ghost btn-xs whitespace-nowrap" class:px-1={short}
+			aria-label={short ? label : undefined} title={short ? label : undefined}
+			onclick={() => sortBy(key)}>
+			{short ?? label}
+			<span aria-hidden="true">{sortKey === key
+				? (sortDirection === 'descending' ? '↓' : '↑')
+				: '↕'}</span>
+		</button>
+	</th>
+{/snippet}
+
+<section class="min-w-0 w-full p-3" aria-label="Empire ship production">
+	<h1 class="text-2xl font-semibold flex items-center gap-2">Ship production <HelpHint label="Ship production" text="Review ship construction across colonies and place orders at eligible shipyards. Dock capacity limits which designs a yard can build." /></h1>
 	<p class="my-2">
 		Distribute new ships across your existing bases. Green batches finish this year; blue batches
 		need longer. Current concrete and paid orders stay ahead of new orders.
@@ -204,14 +280,22 @@
 		{#if !plan.yards.length}<p>No owned bases are available.</p>{/if}
 		<div class="overflow-x-auto">
 			<table class="table table-sm" aria-label="Shipyard allocation">
-				<thead
-					><tr
-						><th>Base</th><th>Queue resources</th><th>I/B/G on hand (kT)</th><th>Free this year</th><th>Green batch</th><th>Blue batch</th><th
-							>Completion</th
-						><th>Status</th></tr
-					></thead
-				><tbody>
-					{#each plan.yards as yard (yard.planet?.mapObject?.num)}
+				<thead>
+					<tr>
+						<th>Base</th>
+						{@render sortHeader('resources', 'Queue resources', 'Res')}
+						{#each minerals as mineral (mineral.key)}
+							{@render sortHeader(mineral.key, `${mineral.label} (kT)`, mineral.short)}
+						{/each}
+						<th>Free this year</th>
+						<th>Green batch</th>
+						<th>Blue batch</th>
+						<th>Completion</th>
+						{@render sortHeader('status', 'Status')}
+					</tr>
+				</thead>
+				<tbody>
+					{#each sortedYards as yard (yard.planet?.mapObject?.num)}
 						{@const planet = yard.planet}
 						{@const mapObject = planet?.mapObject}
 						<tr>
@@ -222,16 +306,10 @@
 									</a>
 								{/if}
 							</td>
-							<td>{planet?.spec?.resourcesPerYearAvailable ?? '—'}</td>
-							<td class="whitespace-nowrap">
-								{#if planet?.cargo}
-									<span class="text-ironium">{planet.cargo.ironium}</span> /
-									<span class="text-boranium">{planet.cargo.boranium}</span> /
-									<span class="text-germanium">{planet.cargo.germanium}</span>
-								{:else}
-									—
-								{/if}
-							</td>
+							<td class="px-1 text-right">{planet?.spec?.resourcesPerYearAvailable ?? '—'}</td>
+							{#each minerals as mineral (mineral.key)}
+								<td class={`px-1 text-right ${mineral.color}`}>{planet?.cargo?.[mineral.key] ?? '—'}</td>
+							{/each}
 							<td>{yard.capacityThisYear}</td>
 							<td class="text-success font-bold" data-type="current-year-ships"
 								>{yard.thisYearQuantity || '—'}</td
@@ -246,7 +324,7 @@
 									? `${yard.yearsToComplete} ${yard.yearsToComplete === 1 ? 'year' : 'years'}`
 									: '—'}</td
 							>
-							<td>{yard.reason}</td>
+							<td class="whitespace-nowrap">{yard.reason}</td>
 						</tr>{/each}
 				</tbody>
 			</table>

@@ -2819,6 +2819,16 @@ func (c *ProtoConverter) csGameWithPlayersToPCraig_starsv1GameWithPlayers(source
 	}
 	return &craig_starsv1GameWithPlayers
 }
+func (c *ProtoConverter) csHullStatisticsToPCraig_starsv1HullStatistics(source cs.HullStatistics) *v1.HullStatistics {
+	var craig_starsv1HullStatistics v1.HullStatistics
+	craig_starsv1HullStatistics.ShipsDestroyed = source.ShipsDestroyed
+	craig_starsv1HullStatistics.DestroyedTonnage = source.DestroyedTonnage
+	craig_starsv1HullStatistics.ShipsLost = source.ShipsLost
+	craig_starsv1HullStatistics.LostTonnage = source.LostTonnage
+	craig_starsv1HullStatistics.ShipsBuilt = source.ShipsBuilt
+	craig_starsv1HullStatistics.BuiltTonnage = source.BuiltTonnage
+	return &craig_starsv1HullStatistics
+}
 func (c *ProtoConverter) csJammerCapToPCraig_starsv1JammerCap(source cs.JammerCap) *v1.JammerCap {
 	var craig_starsv1JammerCap v1.JammerCap
 	craig_starsv1JammerCap.Ship = source.Ship
@@ -3214,6 +3224,15 @@ func (c *ProtoConverter) csStatisticsCountersToPCraig_starsv1StatisticsCounters(
 	craig_starsv1StatisticsCounters.MinesBuilt = source.MinesBuilt
 	craig_starsv1StatisticsCounters.DefensesBuilt = source.DefensesBuilt
 	craig_starsv1StatisticsCounters.MineralsSalvaged = source.MineralsSalvaged
+	if source.Hulls != nil {
+		craig_starsv1StatisticsCounters.Hulls = make(map[string]*v1.HullStatistics, len(source.Hulls))
+		for key, value := range source.Hulls {
+			craig_starsv1StatisticsCounters.Hulls[key] = c.csHullStatisticsToPCraig_starsv1HullStatistics(value)
+		}
+	}
+	craig_starsv1StatisticsCounters.IroniumSalvaged = source.IroniumSalvaged
+	craig_starsv1StatisticsCounters.BoraniumSalvaged = source.BoraniumSalvaged
+	craig_starsv1StatisticsCounters.GermaniumSalvaged = source.GermaniumSalvaged
 	return &craig_starsv1StatisticsCounters
 }
 func (c *ProtoConverter) csStatisticsYearToPCraig_starsv1StatisticsYear(source cs.StatisticsYear) *v1.StatisticsYear {
@@ -3776,6 +3795,18 @@ func (c *ProtoConverter) pCraig_starsv1GameDBObjectToCsGameDBObject(source *v1.G
 	}
 	return csGameDBObject
 }
+func (c *ProtoConverter) pCraig_starsv1HullStatisticsToCsHullStatistics(source *v1.HullStatistics) cs.HullStatistics {
+	var csHullStatistics cs.HullStatistics
+	if source != nil {
+		csHullStatistics.ShipsDestroyed = (*source).ShipsDestroyed
+		csHullStatistics.DestroyedTonnage = (*source).DestroyedTonnage
+		csHullStatistics.ShipsLost = (*source).ShipsLost
+		csHullStatistics.LostTonnage = (*source).LostTonnage
+		csHullStatistics.ShipsBuilt = (*source).ShipsBuilt
+		csHullStatistics.BuiltTonnage = (*source).BuiltTonnage
+	}
+	return csHullStatistics
+}
 func (c *ProtoConverter) pCraig_starsv1JammerCapToCsJammerCap(source *v1.JammerCap) cs.JammerCap {
 	var csJammerCap cs.JammerCap
 	if source != nil {
@@ -4328,6 +4359,15 @@ func (c *ProtoConverter) pCraig_starsv1StatisticsCountersToCsStatisticsCounters(
 		csStatisticsCounters.MinesBuilt = (*source).MinesBuilt
 		csStatisticsCounters.DefensesBuilt = (*source).DefensesBuilt
 		csStatisticsCounters.MineralsSalvaged = (*source).MineralsSalvaged
+		if (*source).Hulls != nil {
+			csStatisticsCounters.Hulls = make(map[string]cs.HullStatistics, len((*source).Hulls))
+			for key, value := range (*source).Hulls {
+				csStatisticsCounters.Hulls[key] = c.pCraig_starsv1HullStatisticsToCsHullStatistics(value)
+			}
+		}
+		csStatisticsCounters.IroniumSalvaged = (*source).IroniumSalvaged
+		csStatisticsCounters.BoraniumSalvaged = (*source).BoraniumSalvaged
+		csStatisticsCounters.GermaniumSalvaged = (*source).GermaniumSalvaged
 	}
 	return csStatisticsCounters
 }

@@ -203,7 +203,7 @@ func TestColonizerAtDestinationDoesNotWaitForUnnecessaryFuel(t *testing.T) {
 	require.Equal(t, p.Num, u.Planet("Near").PlayerNum)
 }
 
-func TestBestColonizerKeepsUnreachableMissionWithoutReservingWorld(t *testing.T) {
+func TestBestColonizerKeepsUnreachableMissionWithoutHabitableAlternative(t *testing.T) {
 	u := colonizerUniverse(t)
 	p, f := u.Player(1), u.Fleet("Colony Ship")
 	p.Automation.FleetRoles[f.Num] = "colonizer:best"
@@ -219,6 +219,7 @@ func TestBestColonizerKeepsUnreachableMissionWithoutReservingWorld(t *testing.T)
 	writeColonizationJob(f, &colonizationJob{TargetNum: far.Num, Mode: "best", Kind: "colonize"})
 	near := u.Planet("Near")
 	near.Position = f.Position
+	near.Hab = Hab{1, 1, 1}
 	u.Run((*turnGenerator).planColonizationAutomation)
 	require.Equal(t, far.Num, readColonizationJob(f).TargetNum)
 	require.False(t, colonizerTravelling(p, f, readColonizationJob(f)))

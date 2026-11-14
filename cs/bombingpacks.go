@@ -104,7 +104,11 @@ func (t *turnGenerator) finishBombingPacks() {
 				continue
 			}
 			target := p.GetPlanetIntel(pack.Target)
-			done := target == nil || !target.Owned() || target.PlayerNum == p.Num || p.IsFriend(target.PlayerNum) || !priorityNeedsBombing(target) && bombingDelegatedToLanding(&t.game.Rules, p, target, t.game.getFleets(p.Num))
+			if bomberShipCount(f) < 2 {
+				t.dissolveBombingPack(p, f, pack)
+				continue
+			}
+			done := target == nil || !target.Owned() || target.PlayerNum == p.Num || p.IsFriend(target.PlayerNum) || bomberHandsOffToLanding(&t.game.Rules, p, f, target, t.game.getFleets(p.Num))
 			if done || p.Automation.FleetRoles[f.Num] != "bomber" || t.bombingPackHasSurplusCover(p, f, pack) {
 				t.dissolveBombingPack(p, f, pack)
 			}
@@ -124,7 +128,8 @@ func (t *turnGenerator) followBombingRally(p *Player, f *Fleet) bool {
 		return false
 	}
 	leader := t.game.getFleet(p.Num, rally.Leader)
-	if rally.Until < t.game.Year || leader == nil || leader.Delete || leader.InAutomaticSafety() {
+	target := p.GetPlanetIntel(rally.Target)
+	if rally.Until < t.game.Year || leader == nil || leader.Delete || leader.InAutomaticSafety() || target != nil && (target.Spec.HasStarbase || bomberNeedsOrbitalRecon(p, target)) {
 		delete(f.Tags, bombingRallyTag)
 		return false
 	}
@@ -167,7 +172,7 @@ func (t *turnGenerator) planBombingWolfPacks() {
 			if goal == 0 || leader.Delete || leader.InAutomaticSafety() || leader.InDesignMaintenance() || fuelNetworkManaged(leader) || leader.GetTag(tankerAwaitTag) != "" || p.Automation.FleetRoles[leader.Num] != "bomber" {
 				continue
 			}
-			if target := p.GetPlanetIntel(goal); target != nil && target.Spec.HasStarbase && leader.Position != target.Position {
+			if target := p.GetPlanetIntel(goal); target != nil && (target.Spec.HasStarbase || bomberNeedsOrbitalRecon(p, target)) && leader.Position != target.Position {
 				continue
 			}
 			members := []*Fleet{leader}
@@ -216,7 +221,11 @@ func (t *turnGenerator) planBombingWolfPacks() {
 					}
 				}
 			}
-			if len(members) < 2 {
+			bombers := 0
+			for _, member := range members {
+				bombers += bomberShipCount(member)
+			}
+			if len(members) < 2 || bombers < 2 {
 				continue
 			}
 			pack := bombingPack{Target: goal}

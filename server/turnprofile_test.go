@@ -6,11 +6,15 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
+	"net"
+	"net/http"
+	httpprof "net/http/pprof"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -33,6 +37,13 @@ func TestTurnProfileOnCopiedBackup(t *testing.T) {
 	require.NoError(t, err)
 	hash := sha256.Sum256(raw)
 	destination := filepath.Join(t.TempDir(), "profile.db")
+	if retained := os.Getenv("STARS_PROFILE_DATABASE"); retained != "" {
+		destination, err = filepath.Abs(retained)
+		require.NoError(t, err)
+		require.Contains(t, strings.ToLower(filepath.ToSlash(destination)), "/audit-results/")
+		_, err := os.Stat(destination)
+		require.True(t, os.IsNotExist(err), "never overwrite an existing retained database")
+	}
 	require.NoError(t, os.WriteFile(destination, raw, 0600))
 	raw = nil
 	t.Cleanup(func() {
@@ -64,19 +75,73 @@ func TestTurnProfileOnCopiedBackup(t *testing.T) {
 	before, err := conn.NewReadClient().GetGame(t.Context(), id)
 	require.NoError(t, err)
 	require.NotNil(t, before)
+	if port := os.Getenv("STARS_PROFILE_PORT"); port != "" {
+		listener, err := net.Listen("tcp", "127.0.0.1:"+port)
+		require.NoError(t, err)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/debug/pprof/profile", httpprof.Profile)
+		mux.Handle("/debug/pprof/goroutine", httpprof.Handler("goroutine"))
+		server := &http.Server{Handler: mux}
+		go server.Serve(listener)
+		defer server.Close()
+	}
 	var profile *os.File
+	var stopProfile func()
 	if os.Getenv("STARS_PROFILE_CPU") != "" {
 		profile, err = os.Create(filepath.Join(out, "turn.cpu"))
 		require.NoError(t, err)
-		require.NoError(t, pprof.StartCPUProfile(profile))
-		defer profile.Close()
-		defer pprof.StopCPUProfile()
+		var mu sync.Mutex
+		active, stopped := false, false
+		startProfile := func() {
+			mu.Lock()
+			defer mu.Unlock()
+			if !stopped {
+				if err := pprof.StartCPUProfile(profile); err != nil {
+					t.Error(err)
+					return
+				}
+				active = true
+			}
+		}
+		stopProfile = func() {
+			mu.Lock()
+			defer mu.Unlock()
+			if !stopped {
+				stopped = true
+				if active {
+					pprof.StopCPUProfile()
+				}
+				profile.Close()
+			}
+		}
+		defer stopProfile()
+		delay := time.Duration(0)
+		if raw := os.Getenv("STARS_PROFILE_DELAY"); raw != "" {
+			delay, err = time.ParseDuration(raw)
+			require.NoError(t, err)
+			require.GreaterOrEqual(t, delay, time.Duration(0))
+		}
+		if delay > 0 {
+			timer := time.AfterFunc(delay, startProfile)
+			defer timer.Stop()
+		} else {
+			startProfile()
+		}
+		// A bounded capture remains readable even if a pathological turn runs
+		// for many minutes. It never interrupts the simulated turn.
+		if duration := os.Getenv("STARS_PROFILE_DURATION"); duration != "" {
+			limit, err := time.ParseDuration(duration)
+			require.NoError(t, err)
+			require.Positive(t, limit)
+			timer := time.AfterFunc(delay+limit, stopProfile)
+			defer timer.Stop()
+		}
 	}
 	started := time.Now()
 	result, err := NewGameRunner(conn, cfg).GenerateTurn(id)
 	elapsed := time.Since(started)
 	if profile != nil {
-		pprof.StopCPUProfile()
+		stopProfile()
 	}
 	require.NoError(t, err)
 	require.Equal(t, TurnGenerated, result)

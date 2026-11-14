@@ -50,14 +50,18 @@ func runNativeRecaptureCampaign(t *testing.T, pending bool) {
 		b.SetTag(bomberTag, string(raw))
 	}
 	u.Game.Rules.ResetSeed(4231)
-	refreshed, cleared, bombed, jointCapture := false, false, false, false
+	refreshed, cleared, bombed := false, false, false
 	for n := 0; n < 14 && target.PlayerNum != p.Num; n++ {
 		prior := target.Cargo.Colonists
-		baseBefore := target.Spec.HasStarbase
 		u.GenerateTurn()
 		refreshed = refreshed || p.GetPlanetIntel(target.Num).ReportAge == 0
 		cleared = cleared || !target.Spec.HasStarbase
-		jointCapture = jointCapture || baseBefore && !target.Spec.HasStarbase && target.PlayerNum == p.Num
+		for _, f := range u.Game.getFleets(1) {
+			if op := readLandingOperation(f); op != nil && !f.Delete {
+				require.LessOrEqual(t, u.turn.landingReservedTroops(p, f), landingArmyLimit)
+				require.False(t, target.Spec.HasStarbase, "transports must wait for orbital clearance")
+			}
+		}
 		bombed = bombed || target.PlayerNum != p.Num && target.Cargo.Colonists < prior
 		if pending && target.PlayerNum != p.Num {
 			require.False(t, b.InDesignMaintenance(), "a pending retirement must not interrupt ongoing bombardment")
@@ -68,7 +72,7 @@ func runNativeRecaptureCampaign(t *testing.T, pending bool) {
 	}
 	require.True(t, refreshed)
 	require.True(t, cleared)
-	require.True(t, bombed || jointCapture, "bombardment softens the target unless separate fleets can clear the base and land together")
+	require.True(t, bombed, "bombardment must soften the target before occupation")
 	require.Equal(t, p.Num, target.PlayerNum, "fresh reconnaissance must lead through base destruction and bombing to a native landing")
 	require.Positive(t, target.Cargo.Colonists)
 	require.False(t, u.Fleet("Carrier").Spec.HasWeapons, "orbital assault did not merge warships into the carrier")

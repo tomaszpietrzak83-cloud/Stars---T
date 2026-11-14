@@ -8,8 +8,12 @@ import (
 // Completed armies return useful individual holds to civilian logistics rather
 // than waiting for one colony to fill a huge merged fleet again.
 func (t *turnGenerator) disperseEmptyLandingTransports(p *Player, leader *Fleet) {
+	t.disperseLandingTransports(p, leader, false)
+}
+
+func (t *turnGenerator) disperseLandingTransports(p *Player, leader *Fleet, loaded bool) {
 	colonyGroup := leader.GetTag("landing-colonizer-roles") != "" || colonizationMode(p.Automation.FleetRoles[leader.Num]) != ""
-	if leader.Delete || leader.CargoMass() != 0 && !colonyGroup || leader.Spec.HasWeapons || !landingTransport(p, leader) {
+	if leader.Delete || leader.CargoMass() != 0 && !colonyGroup && !loaded || leader.Spec.HasWeapons || !landingTransport(p, leader) {
 		return
 	}
 	roles := map[int]string{}
@@ -62,7 +66,7 @@ func usefulAttritionLanding(rules *Rules, p *Player, target *Planet, troops int)
 	}
 	survival := max(0, 1-target.Spec.DefenseCoverage*rules.InvasionDefenseCoverageFactor)
 	kills := float64(troops) * p.Race.Spec.InvasionAttackBonus * survival / reportedInvasionDefense(rules)
-	return kills >= float64(max(500, target.Cargo.Colonists/10)) && kills >= float64(troops)/4
+	return kills >= float64(max(500, target.Cargo.Colonists/10)) && kills >= float64(troops)/5
 }
 
 // A loaded army need not remain tied to an unavailable orbital assault. Only
@@ -74,7 +78,7 @@ func (t *turnGenerator) retargetBlockedLanding(p *Player, leader *Fleet, op *lan
 	}
 	candidates := []*Planet{}
 	for _, target := range p.PlanetIntels {
-		if target == nil || target.Num == op.Target || target.Spec.HasStarbase || !invasionCandidate(p, target) || t.landingTargetClaimed(p, target.Num) || landingRequirement(&t.game.Rules, p, target) > leader.Cargo.Colonists || leader.Position.DistanceTo(target.Position) > 2*leader.StrategicSpeed(automaticMaxWarp(p, leader)) {
+		if !t.landingPrepared(p, target) || target.Num == op.Target || target.Spec.HasStarbase || !invasionCandidate(p, target) || t.landingTargetClaimed(p, target.Num) || t.landingRequirement(p, target) > leader.Cargo.Colonists || leader.Position.DistanceTo(target.Position) > 2*leader.StrategicSpeed(automaticMaxWarp(p, leader)) {
 			continue
 		}
 		candidates = append(candidates, target)
@@ -117,10 +121,16 @@ func (t *turnGenerator) retargetBlockedLanding(p *Player, leader *Fleet, op *lan
 		if !ready {
 			continue
 		}
-		op.Target, op.Owner, op.Need = target.Num, target.PlayerNum, landingRequirement(&t.game.Rules, p, target)
+		t.releaseLandingBaseRecon(p, op)
+		op.Target, op.Owner, op.Need = target.Num, target.PlayerNum, t.landingArmyNeed(p, target)
 		op.Started = t.game.Year
+		op.BaseRallyBy = 0
+		op.BaseRallyRetryYear = 0
 		op.Rally, op.Phase, op.Base, op.ScanYear = rally, "gather", false, 0
 		for _, f := range members {
+			if !landingManaged(f) {
+				continue
+			}
 			if job := logisticsWork(f); job != nil {
 				job.DeliveryNum = target.Num
 				if job.Kind == "landing-rally" {

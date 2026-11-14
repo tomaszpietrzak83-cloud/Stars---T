@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
  import {clone,create} from '@bufbuild/protobuf';
  import {ResearchTaxPolicySchema,type LogisticsAutomation} from '#lib/types/cs-proto.js';
  let {automation,busy=false,onSave}:{automation:LogisticsAutomation,busy?:boolean,onSave:(change:(value:LogisticsAutomation)=>void)=>Promise<void>}=$props();
@@ -10,7 +11,7 @@
  let valid=$derived(policy.leftoverUntil>=0 && policy.mediumThreshold>=policy.leftoverUntil && policy.largeThreshold>policy.mediumThreshold && policy.largeThreshold<=100000000 && maturePercent>=0 && maturePercent<=100 && [policy.smallPercent,policy.mediumPercent,policy.largePercent].every(rate=>rate>=0&&rate<=100));
 </script>
 <fieldset class="border border-base-300 rounded-md p-3 my-3" aria-label="Automatic colony research tax">
- <legend class="font-semibold">Automatic colony research tax</legend>
+ <legend class="font-semibold">Automatic colony research tax <HelpHint label="Automatic colony research tax" text="Set the research share by colony size. Colonies below the leftover threshold spend on their production queues first." example="A 15% tax reserves 150 of a 1,000-resource colony budget for research." /></legend>
  <label class="flex gap-2 my-2"><input class="checkbox" type="checkbox" bind:checked={policy.enabled} disabled={busy} />Enable automatic colony research tax</label>
  <label class="block my-2">Colony size measured by<select class="select select-sm w-full" aria-label="Research tax size basis" value={policy.basis||'population'} onchange={e=>changeBasis(e.currentTarget.value)}><option value="population">Population (people)</option><option value="resources">Annual resource production</option></select></label>
  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">

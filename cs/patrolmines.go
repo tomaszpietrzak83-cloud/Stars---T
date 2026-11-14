@@ -73,20 +73,39 @@ func minesweeperSafeWarp(rules *Rules, p *Player, f *Fleet, field *Minefield) in
 
 func (t *turnGenerator) minesweeperCentreLeg(p *Player, f *Fleet, field *Minefield) *expeditionRoute {
 	rules := &t.game.Rules
-	if f.Position == field.Position {
-		return planAutomaticRoute(rules, p, []*Fleet{f}, field.Position, MapObjectTarget{}, automaticRoutePolicy{})
+	goal := field.Position
+	if p.getPlanetIntelAt(goal) != nil {
+		// A position one light-year from the centre leaves at most one
+		// unsweepable mine, below the engine's field removal threshold.
+		offsets := []Vector{{X: 1}, {X: -1}, {Y: 1}, {Y: -1}}
+		slices.SortStableFunc(offsets, func(a, b Vector) int {
+			return f.Position.Subtract(goal.Add(a)).LengthSquared() - f.Position.Subtract(goal.Add(b)).LengthSquared()
+		})
+		for _, offset := range offsets {
+			point := goal.Add(offset)
+			if p.getPlanetIntelAt(point) == nil && routeThreat(p, point, point, true) == 0 {
+				goal = point
+				break
+			}
+		}
+		if goal == field.Position {
+			return nil
+		}
+	}
+	if f.Position == goal {
+		return planAutomaticRoute(rules, p, []*Fleet{f}, goal, MapObjectTarget{}, automaticRoutePolicy{})
 	}
 	stations := expeditionStations(p, f)
 	for warp := minesweeperSafeWarp(rules, p, f, field); warp > 0; warp-- {
 		step := f.StrategicSpeed(warp)
-		point := automaticTurnEnd(f.Position, field.Position, step)
+		point := automaticTurnEnd(f.Position, goal, step)
 		if f.Position.DistanceTo(point) > step {
 			// Map coordinates are integral. Round inward if the native
 			// endpoint would put the route budget just over one turn.
-			point = automaticTurnEnd(f.Position, field.Position, max(0, step-1))
+			point = automaticTurnEnd(f.Position, goal, max(0, step-1))
 		}
 		distance := f.Position.DistanceTo(point)
-		if distance == 0 || distance > step || point.DistanceTo(field.Position) >= field.Radius() || !automaticFleetLegSafe(rules, p, f, f.Position, point, warp, false) {
+		if distance == 0 || distance > step || p.getPlanetIntelAt(point) != nil || point.DistanceTo(field.Position) >= field.Radius() || !automaticFleetLegSafe(rules, p, f, f.Position, point, warp, false) {
 			continue
 		}
 		reserve := automaticReturnFuel(rules, p, f, point, stations, false)
@@ -116,10 +135,37 @@ func (t *turnGenerator) applyMinesweeperRoute(p *Player, f *Fleet, best *Minefie
 // Both legs budget actual fuel and the final return, with no fictional top-up.
 func (t *turnGenerator) minesweeperApproach(p *Player, f *Fleet, field *Minefield) *expeditionRoute {
 	direction := f.Position.Subtract(field.Position).Normalized()
-	outside := field.Position.ToFloat64().Add(direction.Scale(field.Radius() + 2)).ToInt(true)
+	for _, angle := range []float64{0, math.Pi / 4, -math.Pi / 4, math.Pi / 2, -math.Pi / 2, math.Pi} {
+		sine, cosine := math.Sincos(angle)
+		offset := VectorFloat64{X: direction.X*cosine - direction.Y*sine, Y: direction.X*sine + direction.Y*cosine}
+		outside := field.Position.ToFloat64().Add(offset.Scale(field.Radius() + 2)).ToInt(true)
+		if p.getPlanetIntelAt(outside) != nil {
+			continue
+		}
+		if route := t.minesweeperApproachVia(p, f, field, outside); route != nil {
+			return route
+		}
+	}
+	return nil
+}
+
+func (t *turnGenerator) minesweeperApproachVia(p *Player, f *Fleet, field *Minefield, outside Vector) *expeditionRoute {
 	approach := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, outside, MapObjectTarget{}, automaticRoutePolicy{EconomicalPatrol: true, MaxTurns: 20})
 	if approach == nil || approach.WaitForFuel {
 		return nil
+	}
+	for i, waypoint := range approach.Waypoints[1:] {
+		from := approach.Waypoints[i].Position
+		if waypoint.WarpSpeed == StargateWarpSpeed || waypoint.WarpSpeed <= 0 {
+			return nil
+		}
+		for from != waypoint.Position {
+			end := automaticTurnEnd(from, waypoint.Position, f.StrategicSpeed(waypoint.WarpSpeed))
+			if end == from || p.getPlanetIntelAt(end) != nil {
+				return nil
+			}
+			from = end
+		}
 	}
 	arrival := *f
 	arrival.Position = outside

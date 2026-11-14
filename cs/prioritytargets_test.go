@@ -24,6 +24,21 @@ func TestPriorityFleetDirectsPatrolBeyondOrdinaryLocalRadius(t *testing.T) {
 	require.True(t, patrolCanAttack(p, f))
 }
 
+func TestPatrolPrefersUnmarkedFleetInOwnTerritory(t *testing.T) {
+	u := logisticsUniverse(t)
+	p, f := u.Player(1), u.Fleet("Escort")
+	local, outside := patrolTestEnemy(0, p), patrolTestEnemy(0, p)
+	local.Num, outside.Num = 10, 11
+	local.Position, outside.Position = Vector{10, 0}, Vector{160, 0}
+	f.Position = outside.Position
+	p.FleetIntels = []*Fleet{outside, local}
+	u.Run(func(tg *turnGenerator) {
+		tg.startPatrolEvaluation()
+		require.Equal(t, local.Num, sortedPatrolTargets(p, f)[0].Num)
+		require.Less(t, patrolMissionRank(p, local), patrolMissionRank(p, outside))
+	})
+}
+
 func TestPriorityFleetRetargetsExistingPatrolAndSurvivesLostContact(t *testing.T) {
 	u := logisticsUniverse(t)
 	p, f := u.Player(1), u.Fleet("Escort")

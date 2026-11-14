@@ -1,0 +1,79 @@
+Embers maintenance/fuel planning optimization - 2026-11-13
+
+Authorized recovery: interrupt the active game 21 year 2498 generation, preserve
+submitted orders, compute a single isolated turn and restore exactly year 2499.
+A SQLite backup was taken before stopping the owned server and UI, followed by
+an authoritative stopped-server backup. All live/input table fingerprints
+matched. The original input is retained privately in audit-results/perf-1113-fuel.
+
+Diagnosis:
+The live run had not finished after more than 25 minutes. Split-fleet log lines
+were not proof that splitting itself was the main cost. Three 20-second CPU
+samples of the isolated reference attributed about 84-95% of sampled CPU to
+fuel-network searches under fleetDesignMaintenance/planAutomaticMission.
+The saved player has 1248 fleets containing designs marked for maintenance;
+92 of these are at an owned starbase. Among the player's non-starbase fleets,
+1316 specs report free speed 7, 635 speed 6, 16 speed 5 and 21 speed 1. Free
+movement already works; repeated search for a faster feasible route and choice
+of rebuilding yard caused the excessive work.
+
+Changes (no gameplay rule changes):
+1. Exact visited-node bit sets and projected-mask buckets for fuel-network
+   dominance comparisons. Hash collisions only add exact comparisons. Preserve
+   heap order, rejected labels, the 20000 expansion limit, finite donor fuel,
+   route tie breaks and all movement/safety checks.
+2. Within one patrol dispersal fuel-balancing call, share return reserve results
+   for identical single-ship patrol states and actual design pointers. Identity
+   fields alone are normalized. Tags, cargo, fuel, spec, damage, orders and other
+   serialized state remain in the key. No cache survives the call, and all
+   reserve calculations finish before the original fuel transfer loop starts.
+3. Visit promising maintenance yards first and skip a yard only when an
+   optimistic travel lower bound cannot beat the incumbent. The bound ignores
+   fuel, threats, mines and gate restrictions, so it cannot reject a faster
+   feasible journey. Original shortest-time/lowest-planet-number selection is
+   preserved. Forecasts neither reserve fuel nor apply fleet orders.
+Physical pre-combat merges, engine free speeds, fuel use and stock are unchanged.
+
+Completed copied turn 2498 -> 2499:
+  GenerateTurn: 419.1977829 s (6m59.198s).
+  Simulation: 410.6822019 s; AI orders: 0.0616903 s;
+  database commit: 6.6841628 s; result archive: 0.5074528 s.
+  Reference stopped incomplete after 1286.173 s.
+  An intermediate route-index-only candidate was stopped incomplete.
+There is no full original-vs-final output equality claim because the reference
+never completed. Measurements ran alongside verification activity. The previous
+4m23 benchmark concerned year 2497 -> 2498, a different turn and workload.
+
+Equivalence/verification:
+- Frozen original full maintenance function vs optimized: 18 combinations of
+  starting position, fuel and gate availability; full fleet/planet JSON matches.
+- Original vs indexed fuel-network search: 96 role/fuel/policy/any-dock cases.
+- 4000 generated label sequences with mask collisions and duplicate visited-node
+  entries: exact dominance and active-label counts match the independent oracle.
+- Frozen original patrol fuel transfers match optimized transfers; distinct
+  cargo, fuel, tags and specs stay distinct cache keys.
+- Full engine suite: 3131 tests/subtests PASS. Full server: 156 PASS. DB:124 PASS;
+  generated DB:15 PASS. Includes free-engine and physical pre-battle merge tests.
+- Rebuilt native server, WASM and compiled interface; isolated API/UI/WASM PASS.
+
+Restoration and deployment:
+SQLite integrity PASS. All unrelated campaign/account table fingerprints match
+input exactly. Before restoring, the live database still matched the protected
+input. Restored completed DB through SQLite backup API, then compared every
+live table to the completed output and checked integrity again. Result archive
+2499 copied alongside the existing campaign archives. Prior executables,
+pending update, WASM, index and checksums retained in deployment-before.
+Preserved concurrent existing gameplay/UI changes already present before this
+optimization; no broad Git commit/publication of the mixed working tree.
+Live authenticated read verifies Embers 2499, WaitingForPlayers; zero additional
+turns submitted. The Broken Dominion remains 2508. Original backup retained.
+
+Installed hashes:
+8ae77ff92beea6c32c527765ecde8b35e4d2328e277deb7db388391afb9af575  windows/stars-local.exe
+f85514d33463fb806b804114598817c63f3abc8dcb59a0d6693683b2df5e98ef  frontend/src/lib/wasm/cs.wasm
+
+Remaining cost: a later optimized CPU sample moves to convoy/logistics route
+planning, return-route appending and departure fuel guards. This is evidence for
+future profiling, not grounds to remove safety/fuel rules or physical merges.
+Evidence: ../audit-results/perf-1113-fuel/ (private backup, profiles, reports,
+reference/test logs, full regression JSONL, build/smoke and deployment logs).

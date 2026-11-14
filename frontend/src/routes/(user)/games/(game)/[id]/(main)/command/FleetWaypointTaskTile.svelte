@@ -149,7 +149,7 @@
 </script>
 
 {#if $commandedFleet && $selectedWaypoint}
-	<CommandTile title="Waypoint Task">
+	<CommandTile title="Waypoint Task" help="A task runs at the selected waypoint. Use Transport to set what to load or unload after reaching the target.">
 		<div class="flex justify-between">
 			<div class="my-auto text-tile-item-title">Target</div>
 			<div>

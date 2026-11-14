@@ -17,7 +17,23 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 		blocked := map[int]bool{}
 		relief := t.patrolReliefDepartures(player)
 		for _, fleet := range t.game.getFleets(player.Num) {
-			if relief[fleet.Num] || !isAutomaticFleet(player, fleet) || len(fleet.Waypoints) < 2 {
+			if relief[fleet.Num] || !isAutomaticFleet(player, fleet) {
+				continue
+			}
+			sweeper := automaticMinesweeper(player, fleet)
+			if sweeper {
+				setMinesweeperBattlePlan(player, fleet)
+				if len(fleet.Waypoints) > 1 {
+					wp := fleet.Waypoints[1]
+					if wp.TargetType == MapObjectTypeFleet && wp.TargetPlayerNum != player.Num && !player.IsFriend(wp.TargetPlayerNum) {
+						holdAutomaticFleet(player, fleet, "Minesweeper interception cancelled; awaiting a safe sweeping route")
+					}
+				}
+				if len(fleet.Waypoints) < 2 && reportedHostileOrbit(player, fleet.Position) != nil {
+					t.routeEmergencyReturn(player, fleet)
+				}
+			}
+			if len(fleet.Waypoints) < 2 {
 				continue
 			}
 			wp := fleet.Waypoints[1]
@@ -49,8 +65,8 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				}
 			}
 			if player.Automation.FleetRoles[fleet.Num] == "bomber" && !fleet.InAutomaticSafety() && !fleet.InDesignMaintenance() {
-				if target := player.GetPlanetIntel(wp.TargetNum); wp.TargetType == MapObjectTypePlanet && target != nil && target.Owned() && target.PlayerNum != player.Num && !player.IsFriend(target.PlayerNum) && target.Spec.HasStarbase {
-					holdAutomaticFleet(player, fleet, "Bombardment awaits confirmed orbital base destruction")
+				if target := player.GetPlanetIntel(wp.TargetNum); wp.TargetType == MapObjectTypePlanet && target != nil && target.Owned() && target.PlayerNum != player.Num && !player.IsFriend(target.PlayerNum) && (target.Spec.HasStarbase || bomberNeedsOrbitalRecon(player, target)) {
+					holdAutomaticFleet(player, fleet, "Bombardment awaits fresh confirmation of orbital clearance")
 					continue
 				}
 			}
@@ -62,8 +78,10 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 					continue
 				}
 			}
-			if player.Automation.FleetRoles[fleet.Num] == "patrol" {
-				if !landingCover && !t.patrolDepartureConfirmed(player, fleet) {
+			baseRecon := t.landingBaseReconDeparture(player, fleet)
+			role := player.Automation.FleetRoles[fleet.Num]
+			if (role == "patrol" || role == "escort") && !baseRecon || fleet.GetTag(landingRaidTag) != "" {
+				if (!landingCover || patrolHostileBaseNear(player, patrolDeparturePoint(fleet)) != nil) && !t.patrolDepartureConfirmed(player, fleet) {
 					t.rememberBlockedPatrolDeparture(player, fleet)
 					holdAutomaticFleet(player, fleet, "Departure cancelled: reported encounter exceeds the confirmed combat force")
 					continue
@@ -81,7 +99,7 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 				}
 				continue
 			}
-			allowThreat := landingCover || landingScout(player, fleet) || readLandingOperation(fleet) != nil && readLandingOperation(fleet).Phase == "assault" || fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
+			allowThreat := landingCover || fleet.GetTag(landingRaidTag) != "" || landingScout(player, fleet) || readLandingOperation(fleet) != nil && readLandingOperation(fleet).Phase == "assault" || fleet.GetTag(emergencyRiskTag) != "" || combatAutonomy(player, fleet) || scoutReconActive(player, fleet) || colonyReconActive(player, fleet) || patrolCanAttack(player, fleet) || fleet.InAutomaticSafety() || fleet.GetTag(escortTag) != "" || len(convoyMembers(player, fleet, t.game.getFleets(player.Num))) > 1 || assemblyLeaderCanAdvance(player, fleet)
 			if job := logisticsWork(fleet); !allowThreat && job != nil && job.Kind == "invade" && !job.BombingStage && job.Position == wp.Position && convoyThreat(player, fleet, wp.Position) > 0 {
 				allowThreat = t.deliveryEscortReady(player, fleet, wp.Position)
 			}
@@ -100,10 +118,20 @@ func (t *turnGenerator) enforceAutomaticDeparture() {
 					}
 				}
 			}
+			if sweeper && fleet.GetTag(minesweeperTargetTag) != "" {
+				stop := automaticTurnEnd(fleet.Position, wp.Position, fleet.StrategicSpeed(wp.WarpSpeed))
+				if player.getPlanetIntelAt(stop) != nil {
+					delete(fleet.Tags, minesweeperTargetTag)
+					holdAutomaticFleet(player, fleet, "Sweeping approach cancelled: arrival would enter orbit")
+					t.routeEmergencyReturn(player, fleet)
+					continue
+				}
+			}
 			valid := true
 			if wp.WarpSpeed == StargateWarpSpeed {
 				valid = fleet.CanJump(player, fleet.Position.DistanceTo(wp.Position), player.GetPlanetIntel(fleet.OrbitingPlanetNum), player.GetPlanetIntel(wp.TargetNum)) &&
-					automaticMineLegSafe(&t.game.Rules, player, wp.Position, wp.Position, 1, 0, false)
+					automaticMineLegSafe(&t.game.Rules, player, wp.Position, wp.Position, 1, 0, false) &&
+					(!sweeper || reportedHostileOrbit(player, wp.Position) == nil && routeThreat(player, wp.Position, wp.Position, true) == 0)
 			} else {
 				valid = wp.WarpSpeed > 0 && wp.WarpSpeed <= automaticMaxWarp(player, fleet) && automaticFleetLegSafe(&t.game.Rules, player, fleet, fleet.Position, wp.Position, wp.WarpSpeed, allowThreat)
 				reserve := automaticReturnFuel(&t.game.Rules, player, fleet, wp.Position, expeditionStations(player, fleet), allowThreat, automaticReturnLimit(player, fleet, wp.MapObjectTarget))

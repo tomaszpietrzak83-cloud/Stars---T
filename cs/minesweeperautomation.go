@@ -1,6 +1,7 @@
 package cs
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -101,7 +102,6 @@ func (t *turnGenerator) prepareDedicatedMinesweepers() {
 }
 
 const minesweeperTargetTag = "minesweeper-target"
-const minesweeperTerritoryBand = 50.0
 
 func minefieldAssignmentKey(field *Minefield) string {
 	return fmt.Sprintf("%d:%d", field.PlayerNum, field.Num)
@@ -154,64 +154,38 @@ func (t *turnGenerator) planMinesweeperAutomation() {
 			return a.Num - b.Num
 		})
 		assigned := map[int]bool{}
-		// Finish the nearest known 50-ly band before opening the next one.
-		if len(fields) > 0 {
-			start := 0
-			band := math.Floor(minesweeperTerritoryDistance(p, fields[start]) / minesweeperTerritoryBand)
-			end := start + 1
-			for end < len(fields) && math.Floor(minesweeperTerritoryDistance(p, fields[end])/minesweeperTerritoryBand) == band {
-				end++
-			}
-			reserved := map[string][]sweepArrival{}
-			// Preserve a working assignment, including across save/reload.
-			for _, f := range available {
-				for _, field := range fields[start:end] {
-					key := minefieldAssignmentKey(field)
-					if len(reserved[key]) != 0 || f.GetTag(minesweeperTargetTag) != key {
-						continue
-					}
-					if route := t.minesweeperFieldRoute(p, f, field); route != nil {
-						t.applyMinesweeperRoute(p, f, field, route)
-						assigned[f.Num] = true
-						reserved[key] = append(reserved[key], newSweepArrival(&t.game.Rules, p, field, f, route))
-						break
-					}
-				}
-			}
-			for _, field := range fields[start:end] {
-				key := minefieldAssignmentKey(field)
-				if len(reserved[key]) != 0 {
-					continue
-				}
-				candidates := slices.Clone(available)
-				slices.SortFunc(candidates, func(a, b *Fleet) int {
-					da, db := a.Position.DistanceTo(field.Position), b.Position.DistanceTo(field.Position)
-					if da < db {
+		reserved := map[string][]sweepArrival{}
+		// Cover fields in territory order before spending spare fleets on reinforcement.
+		for _, field := range fields {
+			key := minefieldAssignmentKey(field)
+			candidates := slices.Clone(available)
+			slices.SortStableFunc(candidates, func(a, b *Fleet) int {
+				keepsA := a.GetTag(minesweeperTargetTag) == key
+				keepsB := b.GetTag(minesweeperTargetTag) == key
+				if keepsA != keepsB {
+					if keepsA {
 						return -1
 					}
-					if da > db {
-						return 1
-					}
-					return a.Num - b.Num
-				})
-				for _, f := range candidates {
-					if assigned[f.Num] {
-						continue
-					}
-					if route := t.minesweeperFieldRoute(p, f, field); route != nil {
-						t.applyMinesweeperRoute(p, f, field, route)
-						assigned[f.Num] = true
-						reserved[key] = append(reserved[key], newSweepArrival(&t.game.Rules, p, field, f, route))
-						break
-					}
+					return 1
+				}
+				return cmp.Compare(a.Position.DistanceTo(field.Position), b.Position.DistanceTo(field.Position))
+			})
+			for _, f := range candidates {
+				if assigned[f.Num] {
+					continue
+				}
+				if route := t.minesweeperFieldRoute(p, f, field); route != nil {
+					t.applyMinesweeperRoute(p, f, field, route)
+					assigned[f.Num] = true
+					reserved[key] = []sweepArrival{newSweepArrival(&t.game.Rules, p, field, f, route)}
+					break
 				}
 			}
-			for _, field := range fields[start:end] {
-				key := minefieldAssignmentKey(field)
-				group := reserved[key]
-				if len(group) != 0 && field.NumMines > group[0].capacity {
-					t.reinforceMinefield(p, field, group, available, assigned)
-				}
+		}
+		for _, field := range fields {
+			group := reserved[minefieldAssignmentKey(field)]
+			if len(group) != 0 && field.NumMines > group[0].capacity {
+				t.reinforceMinefield(p, field, group, available, assigned)
 			}
 		}
 		for _, f := range available {
@@ -220,7 +194,7 @@ func (t *turnGenerator) planMinesweeperAutomation() {
 			}
 			delete(f.Tags, minesweeperTargetTag)
 			if len(assigned) > 0 {
-				holdAutomaticFleet(p, f, "Minesweeper reserve: no safe reinforcement would shorten clearing in the current band")
+				holdAutomaticFleet(p, f, "Minesweeper reserve: no safe reinforcement would shorten clearing")
 				continue
 			}
 			var best *expeditionRoute
@@ -234,7 +208,7 @@ func (t *turnGenerator) planMinesweeperAutomation() {
 				applyExpeditionRoute(p, f, best)
 				status := "No reported hostile minefields; returning to a dock, not sweeping"
 				if len(fields) > 0 {
-					status = "Nearest territory clearing band is unreachable with current fuel or route; returning to a dock"
+					status = "Reported fields are unreachable with current fuel or route; returning to a dock"
 				}
 				f.SetTag(fuelStatusTag, status)
 			} else {

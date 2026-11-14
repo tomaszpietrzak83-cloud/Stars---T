@@ -6,7 +6,7 @@ import (
 )
 
 func recaptureEquipmentMissing(p *Player, planet *Planet) bool {
-	if planet == nil || !p.Automation.PriorityPlanets[planet.Num] || !planet.Spec.HasStarbase || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) {
+	if planet == nil || !planet.Spec.HasStarbase || !planet.Owned() || planet.PlayerNum == p.Num || p.IsFriend(planet.PlayerNum) {
 		return false
 	}
 	d := p.GetShipDesignIntel(planet.PlayerNum, planet.Spec.StarbaseDesignNum)
@@ -34,10 +34,22 @@ func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) 
 		return assigned
 	}
 	targets := []*Planet{}
+	hasBattleships := slices.ContainsFunc(fleets, func(f *Fleet) bool {
+		role := p.Automation.FleetRoles[f.Num]
+		return !f.Delete && (role == "patrol" || role == "escort") && pureAssaultBattleships(p, f)
+	})
 	landingScans := map[int]bool{}
+	assaultScans := map[int]bool{}
+	var followup []*Fleet
 	bombardmentScans := map[int]bool{}
 	for _, f := range fleets {
-		if p.Automation.FleetRoles[f.Num] == "bomber" && f.Spec.Bomber && !f.Delete && !f.InAutomaticSafety() && !f.InDesignMaintenance() {
+		if !f.Delete && f.GetTag(battleshipNextAssaultTag) != "" && pureAssaultBattleships(p, f) {
+			followup = append(followup, f)
+		}
+		if _, target := battleshipRally(f); target != 0 && !f.Delete && pureAssaultBattleships(p, f) {
+			assaultScans[target] = true
+		}
+		if automaticBomberAvailable(p, f) && f.Spec.Bomber {
 			i := p.GetPlanetIntel(f.OrbitingPlanetNum)
 			if i != nil && i.Position == f.Position && !i.Spec.HasStarbase && i.Owned() &&
 				i.PlayerNum != p.Num && !p.IsFriend(i.PlayerNum) && (i.ReportAge > 1 || i.Cargo.Colonists == 0) {
@@ -50,15 +62,28 @@ func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) 
 	}
 	for _, i := range p.PlanetIntels {
 		if i != nil && i.PlayerNum != p.Num && (!i.Owned() || !p.IsFriend(i.PlayerNum)) && !i.Unexplored() &&
-			(bombardmentScans[i.Num] || (p.Automation.PriorityPlanets[i.Num] || landingScans[i.Num]) &&
+			(bombardmentScans[i.Num] || assaultScans[i.Num] && i.Spec.HasStarbase && i.ReportAge >= 1 || (i.GetTag(landingPreparationTag) != "" || p.Automation.PriorityPlanets[i.Num] || landingScans[i.Num] || i.Spec.HasStarbase && (hasBattleships || patrolOwnTerritory(p, i.Position, i.Num))) &&
 				(i.ReportAge > 2 || recaptureEquipmentMissing(p, i))) {
 			targets = append(targets, i)
 		}
 	}
 	rank := func(i *Planet) int {
 		value := 0
+		if assaultScans[i.Num] {
+			value += 4000
+		}
 		if bombardmentScans[i.Num] {
 			value += 2000
+		}
+		if i.Spec.HasStarbase && patrolOwnTerritory(p, i.Position, i.Num) {
+			value += 100
+		}
+		if i.Spec.HasStarbase && len(followup) > 0 {
+			nearest := 250.0
+			for _, f := range followup {
+				nearest = min(nearest, f.Position.DistanceTo(i.Position))
+			}
+			value += int((250 - nearest) * 10)
 		}
 		for _, f := range fleets {
 			if f.Delete || f.InDesignMaintenance() || f.InAutomaticSafety() {
@@ -121,6 +146,9 @@ func (t *turnGenerator) planRecaptureReconnaissance(p *Player, fleets []*Fleet) 
 				break
 			}
 			position := scoutColonyScanPoint(p, f, target)
+			if (assaultScans[target.Num] || len(followup) > 0) && target.Spec.HasStarbase {
+				position = target.Position
+			}
 			dest := target.ToTarget()
 			if position != target.Position {
 				dest = MapObjectTarget{}
@@ -179,6 +207,9 @@ func (t *turnGenerator) scanColonyReconContacts() {
 				t.log.Warn("colony reconnaissance", "error", err)
 			}
 			if f.Position == planet.Position && planet.Starbase != nil {
+				if err := p.discoverer.discoverPlanetStarbase(planet); err != nil {
+					t.log.Warn("orbital reconnaissance", "error", err)
+				}
 				for _, token := range planet.Starbase.Tokens {
 					if token.design != nil {
 						p.discoverer.discoverDesign(token.design, true)

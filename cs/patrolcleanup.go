@@ -35,7 +35,10 @@ func (t *turnGenerator) patrolGatheringCleanup(p *Player, leader, main *Fleet, j
 			continue
 		}
 		for _, enemy := range sortedPatrolTargets(p, f) {
-			if enemy == main || reportedFleetShips(enemy) > 3 || patrolNeedsRecon(p, enemy) || patrolMissionRank(p, enemy) < patrolMissionRank(p, main) {
+			// A higher-priority nearby target is not a reason to reject a safe
+			// cleanup. Claims, urgent defence and the original deadline still
+			// prevent stealing another patrol's work or delaying the main mission.
+			if enemy == main || reportedFleetShips(enemy) > 3 || patrolNeedsRecon(p, enemy) {
 				continue
 			}
 			claimed := false
@@ -49,23 +52,8 @@ func (t *turnGenerator) patrolGatheringCleanup(p *Player, leader, main *Fleet, j
 			if claimed {
 				continue
 			}
-			point := patrolInterceptPosition(enemy)
-			out := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, AllowThreat: true, MaxTurns: 1, MinWarp: automaticCruiseWarp(p, f)})
-			if out == nil || out.WaitForFuel {
-				continue
-			}
-			forecast := p.patrolEvaluator.assess(p, []*Fleet{f}, enemy, point, 1)
-			if !forecast.Ready || forecast.PeakDamage > .1 {
-				continue
-			}
-			arrival := *f
-			arrival.Position = point
-			arrival.Fuel = f.Fuel - out.Fuel
-			if len(out.ArrivalFuel) > 0 {
-				arrival.Fuel = out.ArrivalFuel[0]
-			}
-			back := planAutomaticRoute(&t.game.Rules, p, []*Fleet{&arrival}, rally, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: allowed})
-			if back == nil || back.WaitForFuel || out.Turns+back.Turns > allowed {
+			out, forecast := t.patrolCleanupRoute(p, f, enemy, rally, allowed)
+			if out == nil {
 				continue
 			}
 			j.RendezvousBy, j.CleanupUsed = by, true
@@ -80,4 +68,23 @@ func (t *turnGenerator) patrolGatheringCleanup(p *Player, leader, main *Fleet, j
 			break
 		}
 	}
+}
+
+func (t *turnGenerator) patrolCleanupRoute(p *Player, f, enemy *Fleet, rally Vector, allowed int) (*expeditionRoute, patrolAssessment) {
+	point := patrolInterceptPosition(enemy)
+	out := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, AllowThreat: true, MaxTurns: 1, MinWarp: automaticCruiseWarp(p, f)})
+	if out == nil || out.WaitForFuel || len(out.ArrivalFuel) == 0 || hostileOrbitalBase(p, point) {
+		return nil, patrolAssessment{}
+	}
+	arrival := *f
+	arrival.Position, arrival.Fuel = point, out.ArrivalFuel[0]
+	back := planAutomaticRoute(&t.game.Rules, p, []*Fleet{&arrival}, rally, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: allowed})
+	if back == nil || back.WaitForFuel || out.Turns+back.Turns > allowed {
+		return nil, patrolAssessment{}
+	}
+	forecast := t.defensiveEvaluator(p).assess(p, []*Fleet{f}, enemy, point, 1)
+	if !forecast.Ready || forecast.PeakDamage > .1 {
+		return nil, patrolAssessment{}
+	}
+	return out, forecast
 }

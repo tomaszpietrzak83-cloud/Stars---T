@@ -19,6 +19,17 @@ func mineObstructsNavigation(player *Player, field *Minefield) bool {
 	return field != nil && !field.Delete && field.NumMines > 0 && (field.PlayerNum != player.Num || field.Detonate)
 }
 
+// Every final leg (including a gate arrival) is rejected inside these fields.
+// Keep boundary cases in the exact geometry path to preserve floating-point ties.
+func automaticDestinationMineBlocked(player *Player, destination Vector, sweep bool) bool {
+	for _, field := range player.MinefieldIntels {
+		if mineObstructsNavigation(player, field) && (!sweep || field.Detonate) && destination.DistanceTo(field.Position) < automaticMineClearance(field)-1e-7 {
+			return true
+		}
+	}
+	return false
+}
+
 type routeMineKey struct{ from, to Vector }
 type routeMineObstacle struct {
 	field                                     *Minefield
@@ -134,12 +145,16 @@ func mineDetourPoints(player *Player, from, to Vector) []Vector {
 func mineDetourReturnFuel(rules *Rules, player *Player, fleet *Fleet, from Vector, stations []*Planet, allowThreat bool, limit, best int) int {
 	probe := *fleet
 	probe.Position, probe.Fuel = from, fleet.Spec.FuelCapacity
+	// Every destination search uses this same probe and immutable reports.
+	// Dock-to-dock and mine-detour edges otherwise repeat for every return dock.
+	legCache := make(map[automaticLegCacheKey]bool)
 	for _, station := range stations {
 		if automaticMineLegSafe(rules, player, from, station.Position, automaticMaxWarp(player, fleet), 0, false) {
 			continue
 		}
 		route := planAutomaticRoute(rules, player, []*Fleet{&probe}, station.Position, station.ToTarget(), automaticRoutePolicy{
 			OneWay: true, AllowThreat: allowThreat, MaxTurns: limit, EmergencyReturn: true,
+			returnLegCache: legCache,
 		})
 		if route == nil || route.WaitForFuel {
 			continue

@@ -144,11 +144,7 @@ func logisticsWork(fleet *Fleet) *logisticsJob {
 	if raw == "" {
 		return nil
 	}
-	job := &logisticsJob{}
-	if json.Unmarshal([]byte(raw), job) != nil {
-		return nil
-	}
-	return job
+	return decodedLogisticsWork(raw)
 }
 func saveLogisticsWork(fleet *Fleet, job *logisticsJob) {
 	data, _ := json.Marshal(job)
@@ -309,6 +305,7 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 			index.built = true
 			index.margin = player.Automation.escortMargin()
 			index.threats = nil
+			index.arrivalCells = nil
 			clear(index.routes)
 			for _, intel := range player.FleetIntels {
 				if intel == nil || intel.Delete || intel.ReportAge != 0 || intel.PlayerNum == player.Num || player.IsFriend(intel.PlayerNum) || !patrolReportedCombatant(player, intel) {
@@ -325,9 +322,21 @@ func routeThreat(player *Player, from, to Vector, civilian bool) int {
 			return value
 		}
 		total := 0
-		for _, threat := range index.threats {
-			if threat.threatensRoute(player, to, civilian) {
-				total = min(1_000_000_000, total+threat.power)
+		if civilian {
+			for _, threat := range index.threats {
+				if threat.threatensRoute(player, to, true) {
+					total = min(1_000_000_000, total+threat.power)
+				}
+			}
+		} else {
+			if index.arrivalCells == nil {
+				index.buildArrivalCells()
+			}
+			for _, i := range index.arrivalCells[arrivalCellAt(to)] {
+				threat := index.threats[i]
+				if threat.threatensRoute(player, to, false) {
+					total = min(1_000_000_000, total+threat.power)
+				}
 			}
 		}
 		if civilian && total > 0 && defendedCivilianDestination(player, to, total) {
@@ -543,6 +552,7 @@ func (t *turnGenerator) prepareConvoyWithMinimum(player *Player, fleet *Fleet, j
 
 func (t *turnGenerator) planLogisticsAutomation() {
 	t.updateOccupationSupport()
+	t.releaseBlockedLandings()
 	for _, p := range t.automaticPlayers() {
 		for _, f := range slices.Clone(t.game.getFleets(p.Num)) {
 			if op := readLandingOperation(f); !f.Delete && op != nil && (op.Phase == "landed" || op.Phase == "cancelled") {
@@ -550,9 +560,8 @@ func (t *turnGenerator) planLogisticsAutomation() {
 			}
 		}
 	}
-	// Each player selects the early or late landing-planning pass.
-	t.planLandingOperationsForPriority(true)
-	defer t.planLandingOperationsForPriority(false)
+	// Assign civilian cargo, passenger and installation deliveries first.
+	defer t.planLandingOperations()
 	for _, player := range t.automaticPlayers() {
 		for _, escort := range t.game.getFleets(player.Num) {
 			if escort.GetTag(escortStagingTag) == "" && readTankerJob(escort) == nil && !fuelNetworkManaged(escort) && player.Automation.FleetRoles[escort.Num] == "escort" && escort.GetTag(escortTag) == "" && !escort.InAutomaticSafety() && !escort.InDesignMaintenance() {
@@ -814,7 +823,7 @@ func (t *turnGenerator) collectBattleSalvage() {
 			// losses. Leave navigation and the fleet's role to its existing orders.
 			for _, fleet := range record.fleets {
 				if fleet.PlayerNum == player.Num && !fleet.Delete && !fleet.Starbase && fleet.Position == record.Position && fleet.Spec.HasWeapons && fleet.CargoMass() < fleet.Spec.CargoCapacity && !fleet.InDesignMaintenance() {
-					player.accounting(t.game.Year).MineralsSalvaged += int64(takeMinerals(fleet, &salvage.Cargo))
+					t.recoverSalvage(player, fleet, salvage)
 				}
 			}
 			if salvage.Cargo.ToMineral().Total() == 0 {
@@ -855,7 +864,7 @@ func (t *turnGenerator) resolveLogisticsAutomation() {
 			case "salvage":
 				salvage := t.game.getSalvage(job.TargetNum)
 				if salvage != nil && !salvage.Delete && salvage.Position == fleet.Position {
-					takeMinerals(fleet, &salvage.Cargo)
+					t.recoverSalvage(player, fleet, salvage)
 					if salvage.Cargo.ToMineral().Total() == 0 {
 						t.game.deleteSalvage(salvage)
 					}

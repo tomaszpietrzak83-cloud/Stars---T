@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { getGameContext } from '#lib/services/GameContext.js';
 	import PlanetViewStateHab from './PlanetViewStateHab.svelte';
 	import PlanetViewStateInfluence from './PlanetViewStateInfluence.svelte';
@@ -36,7 +37,7 @@
 <!-- everything is in the same order as the toolbar, in rows narrow enough for the menu -->
 <div class="flex flex-col bg-base-200">
 	{#if !hideViews}
-		<div class="menu-title">Planet View</div>
+		<div class="menu-title flex items-center gap-2">Planet View <HelpHint label="Planet views" text="Switch between surface stocks, mineral concentration, habitability, population, production and territorial influence. Surface stocks can be loaded now. Concentration affects future mining." /></div>
 		<div class="flex flex-row justify-center w-full">
 			<div class="size-9">
 				<PlanetViewStatesNormal />
@@ -61,7 +62,7 @@
 			</div>
 		</div>
 	{/if}
-	<div class="menu-title">Scanners</div>
+	<div class="menu-title flex items-center gap-2">Scanners <HelpHint label="Scanner coverage" text="The rings show scanner reach. Cloaked ships can be harder to detect. Adjusting the coverage display changes the map view only." /></div>
 	<div class="flex flex-row justify-center items-center w-full">
 		<div class="size-10">
 			<FilterScanners />

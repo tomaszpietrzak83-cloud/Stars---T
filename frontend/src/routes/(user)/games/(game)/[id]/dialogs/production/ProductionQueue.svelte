@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { asyncToVoidWrapper } from '#lib/asyncToVoid.js';
 	import CostComponent from '#lib/components/game/Cost.svelte';
 	import ProductionQueueItemLine from '#lib/components/game/ProductionQueueItemLine.svelte';
@@ -783,6 +784,7 @@
 							type="checkbox"
 						/> Contributes Only Leftover to Research
 					</label>
+					<HelpHint label="Production leftovers" text="The colony spends on its queue first and gives research whatever resources remain." example="With 100 resources and 80 used by the queue, this colony contributes 20 to research." />
 				</div>
 				<div class="w-1/2 flex flex-row flex-wrap justify-between sm:justify-end">
 					{#if onPrev}

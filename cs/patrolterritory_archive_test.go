@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -69,6 +70,100 @@ func TestArchivedTerritorialPatrolTurns(t *testing.T) {
 			tg := newTurnGenerator(g)
 			require.NoError(t, g.computeSpecs())
 			p := g.getPlayer(1)
+			if os.Getenv("STARS_SWEEPER_FULL_REPLAY") == "1" {
+				for range 3 {
+					require.NoError(t, tg.generateTurn())
+					logArchivedMineSwap(t, g, p)
+					t.Logf("FULL year=%d battles=%d", g.Year, len(p.BattleRecords))
+					removeDeleted(g.Universe)
+					g.buildMaps(g.Players)
+				}
+				return
+			}
+			if os.Getenv("STARS_SWEEPER_COVERAGE_REPLAY") == "1" {
+				for range 3 {
+					g.Year++
+					tg.fleetInit()
+					tg.enablePlanningThreatIndex()
+					tg.prepareDedicatedMinesweepers()
+					tg.planMinesweeperAutomation()
+					planned := map[string]int{}
+					for _, f := range g.getFleets(p.Num) {
+						planned[f.GetTag(minesweeperTargetTag)]++
+					}
+					tg.enforceAutomaticDeparture()
+					fields := map[string]int{}
+					for _, field := range p.MinefieldIntels {
+						if reportedHostileMinefield(p, field) {
+							fields[minefieldAssignmentKey(field)] = 0
+						}
+					}
+					for _, f := range g.getFleets(p.Num) {
+						key := f.GetTag(minesweeperTargetTag)
+						if _, known := fields[key]; known && automaticMinesweeper(p, f) && !f.InAutomaticSafety() && !f.InDesignMaintenance() && f.GetTag("maintenance-pending") == "" && f.GetTag(patrolMineSweepTag) != "" {
+							fields[key]++
+						}
+					}
+					covered, reinforced := 0, 0
+					for key, count := range fields {
+						if count > 0 {
+							covered++
+						} else {
+							t.Logf("UNCOVERED year=%d field=%s planned=%d", g.Year, key, planned[key])
+							if g.Year == 2501 && os.Getenv("STARS_SWEEPER_DIAG") == "1" {
+								for _, field := range p.MinefieldIntels {
+									if minefieldAssignmentKey(field) == key {
+										logSweeperRouteDiagnostic(t, &tg, p, field)
+									}
+								}
+							}
+						}
+						if count > 1 {
+							reinforced++
+						}
+					}
+					t.Logf("COVERAGE year=%d covered=%d total=%d reinforced=%d", g.Year, covered, len(fields), reinforced)
+					tg.disablePlanningThreatIndex()
+					// Reproduce movement and sweeping with the archived opposition held in place.
+					for _, f := range g.Fleets {
+						if f.PlayerNum != p.Num || !automaticMinesweeper(p, f) {
+							f.Waypoints = []Waypoint{{Position: f.Position}}
+						}
+					}
+					tg.fleetMove()
+					for _, f := range g.getFleets(p.Num) {
+						if automaticMinesweeper(p, f) && f.GetTag(patrolMineSweepTag) != "" {
+							require.Nil(t, p.getPlanetIntelAt(f.Position), "sweeper #%d ended in orbit", f.Num)
+						}
+					}
+					tg.fleetSweepMines()
+					logArchivedMineSwap(t, g, p)
+					removeDeleted(g.Universe)
+					g.buildMaps(g.Players)
+				}
+				return
+			}
+			if os.Getenv("STARS_SWEEPER_ROUTE_REPLAY") == "1" {
+				g.Year++
+				tg.fleetInit()
+				tg.enablePlanningThreatIndex()
+				tg.prepareDedicatedMinesweepers()
+				tg.planMinesweeperAutomation()
+				tg.planAutomaticSafety()
+				tg.enforceAutomaticDeparture()
+				for _, num := range []int{216, 867} {
+					f := g.getFleet(p.Num, num)
+					require.NotNil(t, f)
+					end := f.Position
+					if len(f.Waypoints) > 1 {
+						wp := f.Waypoints[1]
+						end = automaticTurnEnd(f.Position, wp.Position, f.StrategicSpeed(wp.WarpSpeed))
+					}
+					require.Nil(t, reportedHostileOrbit(p, end), "fleet #%d ends its move at a hostile orbit", num)
+					t.Logf("SWEEP ROUTE #%d from=%v end=%v", num, f.Position, end)
+				}
+				return
+			}
 			for _, m := range makePatrolMissionQueue(p, year) {
 				if m.Kind != "attack" {
 					continue
@@ -172,6 +267,21 @@ func logArchivedMineSwap(t *testing.T, g *FullGame, p *Player) {
 		mines += n
 	}
 	t.Logf("SWEEP year=%d mines=%d targets=%v rebuild=%d pending=%d reserve=%d remaining=%v", g.Year, mines, targets, rebuilding, deferred, reserve, remaining)
+	lost, exposed := 0, 0
+	for _, battle := range p.BattleRecords {
+		for _, token := range battle.DestroyedTokens {
+			if d := p.GetDesign(token.DesignNum); token.PlayerNum == p.Num && d != nil && dedicatedMinesweeperSpec(d.Spec) {
+				lost += token.Quantity
+				t.Logf("SWEEPER LOSS year=%d design=%s count=%d planet=%d position=%v", g.Year, d.Name, token.Quantity, battle.PlanetNum, battle.Position)
+			}
+		}
+	}
+	for _, fleet := range g.getFleets(p.Num) {
+		if !fleet.Delete && automaticMinesweeper(p, fleet) && reportedHostileOrbit(p, fleet.Position) != nil {
+			exposed++
+		}
+	}
+	t.Logf("SWEEPER SAFETY year=%d losses=%d ending at reported hostile orbits=%d", g.Year, lost, exposed)
 }
 
 func logMinelayerPursuit(t *testing.T, g *FullGame, p *Player) {
@@ -205,4 +315,55 @@ func logMinelayerPursuit(t *testing.T, g *FullGame, p *Player) {
 		}
 	}
 	t.Logf("PURSUIT %d watched=%v patrols=%v", g.Year, watched, patrols)
+}
+
+func logSweeperRouteDiagnostic(t *testing.T, tg *turnGenerator, p *Player, field *Minefield) {
+	probes, routes, oneWayOnly, orbit, entry := 0, 0, 0, 0, 0
+	rules := &tg.game.Rules
+	for _, f := range tg.game.getFleets(p.Num) {
+		if !automaticMinesweeper(p, f) || f.Delete || f.InAutomaticSafety() || f.InDesignMaintenance() || f.GetTag(minesweeperTargetTag) != "" || !f.willAttack(p, field.PlayerNum) {
+			continue
+		}
+		direction := f.Position.Subtract(field.Position).Normalized()
+		for _, angle := range []float64{0, math.Pi / 4, -math.Pi / 4, math.Pi / 2, -math.Pi / 2, math.Pi} {
+			sine, cosine := math.Sincos(angle)
+			offset := VectorFloat64{X: direction.X*cosine - direction.Y*sine, Y: direction.X*sine + direction.Y*cosine}
+			rim := field.Position.ToFloat64().Add(offset.Scale(field.Radius() + 2)).ToInt(true)
+			probes++
+			route := planAutomaticRoute(rules, p, []*Fleet{f}, rim, MapObjectTarget{}, automaticRoutePolicy{EconomicalPatrol: true, MaxTurns: 20})
+			if route == nil || route.WaitForFuel {
+				if trial := planAutomaticRoute(rules, p, []*Fleet{f}, rim, MapObjectTarget{}, automaticRoutePolicy{EconomicalPatrol: true, MaxTurns: 20, OneWay: true}); trial != nil && !trial.WaitForFuel {
+					oneWayOnly++
+				}
+				continue
+			}
+			routes++
+			blocked := p.getPlanetIntelAt(rim) != nil
+			for i, wp := range route.Waypoints[1:] {
+				from := route.Waypoints[i].Position
+				if wp.WarpSpeed == StargateWarpSpeed || wp.WarpSpeed <= 0 {
+					blocked = true
+					break
+				}
+				for from != wp.Position {
+					end := automaticTurnEnd(from, wp.Position, f.StrategicSpeed(wp.WarpSpeed))
+					if end == from || p.getPlanetIntelAt(end) != nil {
+						blocked = true
+						break
+					}
+					from = end
+				}
+			}
+			if blocked {
+				orbit++
+				continue
+			}
+			arrival := *f
+			arrival.Position, arrival.Fuel = rim, route.ArrivalFuel[0]
+			if tg.minesweeperCentreLeg(p, &arrival, field) == nil {
+				entry++
+			}
+		}
+	}
+	t.Logf("DIAG field=%s probes=%d fundedRim=%d oneWayOnly=%d forbiddenOrbitOrGate=%d blockedEntry=%d", minefieldAssignmentKey(field), probes, routes, oneWayOnly, orbit, entry)
 }

@@ -38,8 +38,18 @@ type fuelNetworkLabel struct {
 	node, turns, burned int
 	fuel                []int
 	visited             []int
+	visitedMask         uint64
+	visitedBits         []uint64
 	legs                []fuelNetworkLeg
 	discarded           bool
+}
+
+// Edge geometry and full-tank feasibility are immutable during one search.
+// Labels still retain their own fuel, donor usage, visited nodes and ordering.
+type fuelNetworkEdgeKey struct{ from, to, warp int }
+type fuelNetworkEdge struct {
+	valid                      bool
+	required, fullLeft, burned []int
 }
 type fuelNetworkQueue []*fuelNetworkLabel
 
@@ -66,6 +76,25 @@ func fuelLabelDominates(a, b *fuelNetworkLabel) bool {
 		if fuel < b.fuel[i] {
 			return false
 		}
+	}
+	// Search labels carry exact bit sets. Hand-built/reference labels retain
+	// the original list implementation, keeping the independent oracle usable.
+	if a.visitedBits != nil && b.visitedBits != nil {
+		if a.visitedMask&^b.visitedMask != 0 {
+			return false
+		}
+		for i, bits := range a.visitedBits {
+			if i >= len(b.visitedBits) {
+				if bits != 0 {
+					return false
+				}
+				continue
+			}
+			if bits&^b.visitedBits[i] != 0 {
+				return false
+			}
+		}
+		return true
 	}
 	for _, node := range a.visited {
 		if !slices.Contains(b.visited, node) {
@@ -161,11 +190,17 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 		nodes[at].donors = append(nodes[at].donors, donor)
 		nodes[at].stocks = append(nodes[at].stocks, stock)
 	}
-	first := &fuelNetworkLabel{node: 0, fuel: initial, visited: []int{0}}
-	labels := make([][]*fuelNetworkLabel, len(nodes))
-	labels[0] = []*fuelNetworkLabel{first}
+	first := &fuelNetworkLabel{node: 0, fuel: initial, visited: []int{0}, visitedMask: 1, visitedBits: make([]uint64, (len(nodes)+63)/64)}
+	first.visitedBits[0] = 1
+	labels := make([]fuelLabelIndex, len(nodes))
+	for i := range labels {
+		labels[i] = make(fuelLabelIndex)
+	}
+	labels[0].insert(first)
 	queue := &fuelNetworkQueue{first}
 	heap.Init(queue)
+	edges := make(map[fuelNetworkEdgeKey]fuelNetworkEdge)
+	civilian, sweep := civilianTraffic(player, fleets[0]), automaticMinesweeper(player, fleets[0])
 	for expanded := 0; queue.Len() > 0 && expanded < 20000; expanded++ {
 		current := heap.Pop(queue).(*fuelNetworkLabel)
 		if current.discarded {
@@ -176,7 +211,7 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 		}
 		from := nodes[current.node]
 		for next, to := range nodes {
-			if endAtDock && next == 1 && to.dock == nil || next == 0 || next == current.node || slices.Contains(current.visited, next) {
+			if endAtDock && next == 1 && to.dock == nil || next == 0 || next == current.node || (current.visitedBits[next/64]&(uint64(1)<<(next%64))) != 0 {
 				continue
 			}
 			distance := from.position.DistanceTo(to.position)
@@ -203,11 +238,35 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 				if current.turns+turns > maxTurns {
 					continue
 				}
-				if warp == StargateWarpSpeed {
-					if !automaticLegSafe(rules, player, to.position, to.position, 1, policy.AllowThreat) {
-						continue
+				key := fuelNetworkEdgeKey{current.node, next, warp}
+				edge, cached := edges[key]
+				if !cached {
+					if warp == StargateWarpSpeed {
+						edge.valid = automaticLegSafe(rules, player, to.position, to.position, 1, policy.AllowThreat)
+					} else {
+						edge.valid = automaticRouteLegSafe(rules, player, from.position, to.position, warp, policy.AllowThreat, civilian, sweep, fleets[0].StrategicSpeed(warp))
 					}
-				} else if !automaticFleetLegSafe(rules, player, fleets[0], from.position, to.position, warp, policy.AllowThreat) {
+					if edge.valid {
+						edge.required, edge.fullLeft, edge.burned = make([]int, len(fleets)), make([]int, len(fleets)), make([]int, len(fleets))
+						for i, fleet := range budgets {
+							endReserve := 0
+							if next == 1 {
+								endReserve = reserve[i]
+							}
+							required, left, burned, ok := automaticLegFuel(player, fleet, warp, distance, fleet.Spec.FuelCapacity, endReserve)
+							if !ok {
+								edge.valid = false
+								break
+							}
+							edge.required[i], edge.fullLeft[i], edge.burned[i] = required, left, burned
+						}
+					}
+					if len(edges) >= 16384 {
+						clear(edges)
+					}
+					edges[key] = edge
+				}
+				if !edge.valid {
 					continue
 				}
 				leg := fuelNetworkLeg{From: from.position, To: to.position, Target: to.target, Warp: warp, RefuelDock: to.dock != nil, DockWait: distance == 0 && to.dock != nil, Required: make([]int, len(fleets)), Reserve: make([]int, len(fleets))}
@@ -218,11 +277,7 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 					if next == 1 {
 						leg.Reserve[i] = reserve[i]
 					}
-					required, _, _, ok := automaticLegFuel(player, fleet, warp, distance, fleet.Spec.FuelCapacity, leg.Reserve[i])
-					if !ok {
-						valid = false
-						break
-					}
+					required := edge.required[i]
 					leg.Required[i] = required
 					available := current.fuel[i]
 					if from.dock != nil {
@@ -236,7 +291,10 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 						missing += required - available
 						available = required
 					}
-					_, left, burned, ok := automaticLegFuel(player, fleet, warp, distance, available, leg.Reserve[i])
+					left, burned, ok := edge.fullLeft[i], edge.burned[i], true
+					if available != fleet.Spec.FuelCapacity {
+						_, left, burned, ok = automaticLegFuel(player, fleet, warp, distance, available, leg.Reserve[i])
+					}
 					if !ok {
 						valid = false
 						break
@@ -257,23 +315,15 @@ func planFuelNetworkRoute(rules *Rules, player *Player, fleets, donors []*Fleet,
 				if missing > 0 {
 					continue
 				}
-				candidate := &fuelNetworkLabel{node: next, turns: current.turns + turns, burned: current.burned + cost, fuel: fuel, visited: append(slices.Clone(current.visited), next), legs: append(slices.Clone(current.legs), leg)}
-				dominated := false
-				for _, old := range labels[next] {
-					if !old.discarded && fuelLabelDominates(old, candidate) {
-						dominated = true
-						break
-					}
-				}
-				if dominated {
+				candidate := &fuelNetworkLabel{node: next, turns: current.turns + turns, burned: current.burned + cost, fuel: fuel, visited: append(slices.Clone(current.visited), next)}
+				candidate.visitedMask = current.visitedMask | uint64(1)<<(next%64)
+				candidate.visitedBits = slices.Clone(current.visitedBits)
+				candidate.visitedBits[next/64] |= uint64(1) << (next % 64)
+				if labels[next].dominates(candidate) {
 					continue
 				}
-				for _, old := range labels[next] {
-					if !old.discarded && fuelLabelDominates(candidate, old) {
-						old.discarded = true
-					}
-				}
-				labels[next] = append(labels[next], candidate)
+				labels[next].insert(candidate)
+				candidate.legs = append(slices.Clone(current.legs), leg)
 				heap.Push(queue, candidate)
 			}
 		}

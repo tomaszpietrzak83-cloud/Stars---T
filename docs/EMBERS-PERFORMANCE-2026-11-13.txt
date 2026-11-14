@@ -1,0 +1,91 @@
+Embers Beyond Eridanus: turn performance and recovery, 2026-11-13
+
+Input and authorization
+Game 21, year 2497; 13 players, 896 planets, 4,652 fleet/base rows.
+The user authorized stopping the active turn, calculating exactly one turn on
+an isolated copy, restoring it in place, and fixing confirmed bugs. Physical
+merging of identical ships before combat remains an explicit requirement.
+The original backend was stopped only after a consistent SQLite backup existed.
+All tables in that backup matched the stopped live database logically.
+
+Observed result
+The final copied turn completed successfully in 498.408206 seconds (8m18.408s).
+Load 0.860s; submitted-order archive 0.349s; simulation 493.552s; AI 0.063s;
+database commit 3.196s; result archive 0.265s. Output year: 2498.
+A reference build containing only the arrival spatial index, before the main
+route optimizations, remained incomplete after 2067.181 seconds (34m27.181s)
+and was stopped. This is a lower bound, not a completed baseline duration.
+These are single observations on a Windows machine also running validation;
+they are not an alternating benchmark series or a promise for subsequent turns.
+No claim of complete output identity with the interrupted reference is made.
+
+Implemented performance changes
+- Conservative spatial filtering of military arrival threats, preserving report
+  order and the exact final geometry predicate. Civilian rules are unchanged.
+- Per-search fuel-network edge safety/full-tank calculation reuse, with bounded
+  storage. Fuel allocations, visited nodes, queue ordering, expansion limits and
+  tie breakers remain unchanged.
+- Remove discarded labels only from dominance comparisons; retain their heap
+  entries and expansion accounting. Copy route histories only for accepted labels.
+- Avoid colonization JSON decoding for unrelated roles; classify traffic once
+  within immutable route/return calculations.
+- Use the existing optimistic gate-aware travel bound to skip unwatched
+  minelayer interceptions that already required arrival within one turn.
+- Share exact leg-safety results between the return-dock searches of one unchanged
+  fleet/report snapshot. The 65,536-entry maximum is a cache limit, not a search
+  limit; a full cache still computes uncached answers normally.
+- Reject strictly interior mined destinations before planning an impossible
+  return. Keep sweeper exceptions, gate checks, starting-at-destination behavior
+  and numerical boundary cases in their existing exact paths.
+
+Confirmed bug and merge regression
+Cleanup incorrectly skipped a nearby target because its mission rank was higher
+than the main target. Diagnostics demonstrated funded, zero-loss, deadline-safe
+interceptions. Removed that rejection; claims, reconnaissance, urgent defence,
+fuel/return checks, damage threshold and rendezvous deadline still apply.
+The old patrol-cycle test omitted the native post-movement/pre-battle merge
+phases. It now executes them and still explicitly requires physical merging,
+an actual enemy kill, and subsequent dispersal. It was NOT weakened to accept
+separate fleets arriving together. Production already invokes these merge phases.
+
+Validation
+Final engine suite: 3,121 passing tests/subtests, zero failures (102.226s).
+Final server suite: PASS (431.859s); database packages: PASS.
+Independent route references cover 192 original routing cases, 192 shared-return
+cases, 64 mined-endpoint cases, 96 fuel-network scenarios and 24 minelayer cases.
+Arrival filtering compares exact matching report order over 16,072 destinations.
+Native executable, WASM and compiled frontend build successfully. Isolated HTTP
+smoke checks native API, compiled HTML and WASM delivery. Final source hashes
+were recorded and verified unchanged before installation.
+The initial broad ./... invocation additionally encountered an unrelated mixed
+package directory under tmp; this is not reported as a successful broad command.
+Its three engine failures were investigated and resolved as described above.
+
+Recovery checks
+The completed database passes SQLite integrity_check and has game21/year2498 in
+WaitingForPlayers. Every unrelated game/account table row matches the input;
+only game21 rows and normal autoincrement sequence changes are permitted.
+Restore uses SQLite's backup API with the live backend stopped, and verifies
+the complete restored database against the completed copy before restarting.
+Original input and pre-install binaries/UI manifest are retained privately.
+No private database, reports, tokens, CPU profiles or runtime tools are published.
+
+Remaining opportunities
+Later profiling identifies tanker anchor scoring: it repeatedly classifies fleets
+and decodes tanker jobs for each candidate position. An immutable scoring snapshot
+per tanker can preserve summation order while avoiding that repetition. This is
+a follow-up candidate, not part of the installed change.
+Logistics/shipyard demand also repeatedly decodes logistics orders. Scope caches
+to an immutable calculation or key them by exact tag contents; orders change
+during the turn, so a stale whole-turn cache would be incorrect.
+The timing is dominated by simulation, not disk writes or graphical rendering.
+
+Private evidence: D:/Developer/Stars/audit-results/perf-1113/
+Key files: embers-endpoint.log, embers-endpoint/phases.log,
+reference-interrupted.json, engine-endpoint.jsonl, server-endpoint.log,
+verified-source-manifest.json, deployment.log, live-verification.json.
+
+Deployment completed and live verified: Embers2498, GAME_STATE_WAITING_FOR_PLAYERS.
+Native SHA256: e3c1ae9202206edce1877d06397b07745465674a66d437a0e73535b11256294b
+WASM SHA256: 3fb3fe63395827d8412d0e2128b119f6bd72bdfd70cdd7ecf13680e5ab0104be
+Both windows/dist native files and the manifest are synchronized.

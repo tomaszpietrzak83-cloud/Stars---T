@@ -15,7 +15,7 @@ func landingOperationUniverse(t *testing.T) *testUniverse {
 	for n := 0; n < 16; n++ {
 		fleets = append(fleets, ScenarioFleet{Name: fmt.Sprint("Transport", n), Design: DesignTeamster.Name, Quantity: 3, At: "Home"})
 	}
-	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignTeamster, DesignSpaceStation, DesignLongRangeScout, DesignBattleBeam), Fleets: fleets}, {Designs: Designs(DesignBattleBeam, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Enemy", Design: DesignBattleBeam.Name, Position: Vector{500, 500}}}}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name, Cargo: Cargo{Colonists: 50000}}, {Name: "Target", Owner: 2, Position: Vector{70, 0}, Cargo: Cargo{Colonists: 1500}}}})
+	u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignTeamster, DesignSpaceStation, DesignLongRangeScout, DesignBattleBeam), Fleets: fleets}, {Designs: Designs(DesignBattleBeam, DesignSpaceStation), Fleets: []ScenarioFleet{{Name: "Enemy", Design: DesignBattleBeam.Name, Position: Vector{500, 500}}}}}, Planets: []ScenarioPlanet{{Name: "Home", Owner: 1, Starbase: DesignSpaceStation.Name, Cargo: Cargo{Colonists: 50000}}, {Name: "Target", Owner: 2, Position: Vector{70, 0}, Cargo: Cargo{Colonists: 900}}}})
 	p := u.Player(1)
 	p.Automation.FleetRoles = map[int]string{}
 	p.Automation.DisableMineralSupply = true
@@ -46,6 +46,46 @@ func landingLeader(u *testUniverse) *Fleet {
 	return nil
 }
 
+func TestLandingRetryUsesObservedGroundSurvivors(t *testing.T) {
+	u := landingOperationUniverse(t)
+	p, target := u.Player(1), u.Planet("Target")
+	target.Cargo.Colonists = 9000
+	target.Spec.DefenseCoverage = 0
+	intel := p.GetPlanetIntel(target.Num)
+	intel.Cargo.Colonists = target.Cargo.Colonists
+	intel.Spec.DefenseCoverage = 0
+	u.Run(func(tg *turnGenerator) {
+		require.Equal(t, 2500, tg.landingRequirement(p, intel))
+		tg.colonistDrops.addInvasion(invasion{
+			planet: target, attacker: p, defender: u.Player(2), attackers: 250000,
+		})
+		tg.resolveColonistDrops()
+		require.Equal(t, 2, target.PlayerNum)
+		require.Less(t, target.Cargo.Colonists, 9000)
+		require.NotEmpty(t, intel.GetTag(landingGroundReportTag))
+		need := tg.landingRequirement(p, intel)
+		require.Greater(t, need, 2500)
+		require.Less(t, need, 2*target.Cargo.Colonists)
+	})
+}
+
+func TestLandingReadyArmyReleasesDistantTransports(t *testing.T) {
+	u := landingOperationUniverse(t)
+	p := u.Player(1)
+	leader, late := u.Fleet("Transport0"), u.Fleet("Transport1")
+	target := p.GetPlanetIntel(u.Planet("Target").Num)
+	op := &landingOperation{Target: target.Num, Phase: "gather", Rally: leader.Position, Need: 100}
+	leader.Cargo.Colonists = op.Need
+	late.Position.X += 200
+	late.Cargo.Colonists = 50
+	late.SetTag(landingMemberTag, fmt.Sprint(leader.Num))
+	saveLogisticsWork(late, &logisticsJob{Kind: "landing-rally", DeliveryNum: target.Num})
+	u.Run(func(tg *turnGenerator) { tg.advanceLandingOperation(p, leader, op, target) })
+	require.False(t, landingManaged(late))
+	require.Nil(t, logisticsWork(late))
+	require.Equal(t, 50, late.Cargo.Colonists)
+}
+
 func TestLandingOperationLoadsMergesScansAndDropsOver250K(t *testing.T) {
 	u := landingOperationUniverse(t)
 	p := u.Player(1)
@@ -60,7 +100,8 @@ func TestLandingOperationLoadsMergesScansAndDropsOver250K(t *testing.T) {
 	for _, f := range u.turn.landingMembers(p, leader) {
 		loaded += f.Cargo.Colonists
 	}
-	require.Greater(t, loaded, 2500)
+	require.GreaterOrEqual(t, loaded, 2000)
+	require.LessOrEqual(t, loaded, landingArmyLimit)
 	require.Equal(t, initial-loaded, u.Planet("Home").Cargo.Colonists)
 	// Real movement to the rendezvous, then native merging; scout must not
 	// clear an orbit just because a planning tag or old report exists.
@@ -78,10 +119,9 @@ func TestLandingOperationLoadsMergesScansAndDropsOver250K(t *testing.T) {
 	u.Run((*turnGenerator).fleetMove, (*turnGenerator).scanLandingContacts)
 	require.Equal(t, target.Position, u.Fleet("Scout").Position)
 	require.NotZero(t, readLandingOperation(leader).ScanYear)
-	// Recon does not veto the landing because ground defenses or population
-	// differ from the preparation estimate.
-	target.Defenses = 10
-	target.Spec.DefenseCoverage = .1
+	// The refreshed, bombarded target is ready for the bounded occupation force.
+	target.Defenses = 0
+	target.Spec.DefenseCoverage = 0
 	u.Run((*turnGenerator).planLandingOperations)
 	require.Equal(t, "assault", readLandingOperation(leader).Phase)
 	require.False(t, u.Fleet("Cover").Delete, "the patrol keeps its own fleet")
@@ -146,6 +186,8 @@ func TestTransportCrossingCourseDoesNotEvadeButMeetingDoes(t *testing.T) {
 
 func TestLandingOperationCompletesInFullNativeTurns(t *testing.T) {
 	u := landingOperationUniverse(t)
+	u.Planet("Target").Cargo.Colonists = 100
+	u.Player(1).GetPlanetIntel(u.Planet("Target").Num).Cargo.Colonists = 100
 	startYear := u.Game.Year
 	seenGather, seenScan, landed := false, false, false
 	for range 30 {
@@ -341,18 +383,12 @@ func TestLandingBaseDiscoveryHoldsArmyAndRequestsPatrolAssault(t *testing.T) {
 	target.Spec.StarbaseDesignNum = base.Tokens[0].DesignNum
 	u.Fleet("Scout").Position = target.Position
 	u.Run((*turnGenerator).scanLandingContacts, (*turnGenerator).planLandingOperations)
-	require.Equal(t, "base", readLandingOperation(leader).Phase)
-	require.Positive(t, leader.Cargo.Colonists)
-	require.Equal(t, readLandingOperation(leader).Rally, leader.Position)
-	require.True(t, landingBaseRequested(p, target.Num, u.Game.getFleets(1)))
-	require.True(t, intel.Spec.HasStarbase)
-	// A later physical scout observation confirms destruction. The operation
-	// returns to reconnaissance and retries, preserving the loaded army.
-	target.Starbase = nil
-	target.Spec.HasStarbase = false
-	u.Run((*turnGenerator).scanLandingContacts, (*turnGenerator).planLandingOperations)
-	require.Equal(t, "scan", readLandingOperation(leader).Phase)
-	require.Positive(t, leader.Cargo.Colonists)
+	require.Nil(t, readLandingOperation(leader), "newly discovered base releases the civilian transports")
+	require.NotEmpty(t, intel.GetTag(landingPreparationTag), "base removal remains a military objective")
+	for _, f := range u.Game.getFleets(1) {
+		require.False(t, landingManaged(f))
+	}
+
 }
 
 func TestLandingLoadsOvercrowdedSourceBeforeScoutOrGuardsExist(t *testing.T) {
@@ -371,7 +407,8 @@ func TestLandingLoadsOvercrowdedSourceBeforeScoutOrGuardsExist(t *testing.T) {
 	for _, f := range u.turn.landingMembers(p, leader) {
 		loaded += f.Cargo.Colonists
 	}
-	require.Greater(t, loaded, 2500)
+	require.GreaterOrEqual(t, loaded, 2000)
+	require.LessOrEqual(t, loaded, landingArmyLimit)
 	require.Equal(t, 0, readLandingOperation(leader).Scout)
 	require.Equal(t, "gather", readLandingOperation(leader).Phase)
 }

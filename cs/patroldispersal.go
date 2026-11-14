@@ -117,38 +117,6 @@ func (t *turnGenerator) assignSoloPatrolWithRecon(p *Player, f *Fleet, needsReco
 	return false
 }
 
-// Early arrivals cover the perimeter while peers approach. Every leg is funded
-// and must permit return by the original deadline. If this is impossible the
-// caller abandons the assembly instead of turning it into an indefinite wait.
-func (t *turnGenerator) screenPatrolRally(p *Player, f *Fleet, by int) bool {
-	j := readPatrolJob(f)
-	remaining := by - t.game.Year
-	if remaining < 2 {
-		return false
-	}
-	for _, delta := range []Vector{{12, 0}, {0, 12}, {-12, 0}, {0, -12}} {
-		point := j.Rally.Add(delta)
-		out := planAutomaticRoute(&t.game.Rules, p, []*Fleet{f}, point, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: 1})
-		if out == nil || out.WaitForFuel {
-			continue
-		}
-		arrival := *f
-		arrival.Position, arrival.Fuel = point, f.Fuel-out.Fuel
-		if len(out.ArrivalFuel) > 0 {
-			arrival.Fuel = out.ArrivalFuel[0]
-		}
-		back := planAutomaticRoute(&t.game.Rules, p, []*Fleet{&arrival}, j.Rally, MapObjectTarget{}, automaticRoutePolicy{Fast: true, EconomicalPatrol: true, MaxTurns: remaining - out.Turns})
-		if back == nil || back.WaitForFuel || out.Turns+back.Turns > remaining {
-			continue
-		}
-		applyExpeditionRoute(p, f, out)
-		j.Status = "Covering rendezvous perimeter; return before attack deadline"
-		savePatrolJob(f, j)
-		return true
-	}
-	return false
-}
-
 // Fill the nearest-to-full tanks with fuel left after every ship's return
 // reserve. SplitAll distributes fuel first; this step conserves that total.
 func (t *turnGenerator) balanceDispersedPatrolFuel(p *Player, ships []*Fleet) {
@@ -157,11 +125,19 @@ func (t *turnGenerator) balanceDispersedPatrolFuel(p *Player, ships []*Fleet) {
 	}
 	ships = slices.Clone(ships)
 	reserves := map[*Fleet]int{}
+	shared := map[patrolReturnKey]int{}
 	for _, f := range ships {
 		if f.Delete || f.Spec.TotalShips != 1 || f.Position != ships[0].Position || p.Automation.FleetRoles[f.Num] != "patrol" {
 			continue
 		}
-		reserve := automaticReturnFuel(&t.game.Rules, p, f, f.Position, expeditionStations(p, f), false)
+		key, cacheable := dispersedPatrolReturnKey(f)
+		reserve, found := shared[key]
+		if !cacheable || !found {
+			reserve = automaticReturnFuel(&t.game.Rules, p, f, f.Position, expeditionStations(p, f), false)
+			if cacheable {
+				shared[key] = reserve
+			}
+		}
 		if f.Fuel >= reserve {
 			reserves[f] = reserve
 		}

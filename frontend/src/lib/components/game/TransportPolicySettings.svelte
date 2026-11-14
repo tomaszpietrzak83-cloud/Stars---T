@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HelpHint from '#lib/components/game/HelpHint.svelte';
 	import { clone, create } from '@bufbuild/protobuf';
 	import { TransportPolicySchema, type LogisticsAutomation } from '#lib/types/cs-proto.js';
 	let {
@@ -50,7 +51,7 @@
 			key: 'attritionMinimumPeople',
 			label: 'Minimum weakening landing (people)',
 			fallback: 200000,
-			max: 10000000,
+			max: 400000,
 			step: 100
 		},
 		{
@@ -84,7 +85,7 @@
 </script>
 
 <fieldset class="border border-base-300 rounded p-3 my-4" disabled={busy}>
-	<legend class="font-bold px-1">Transport development and landings</legend>
+	<legend class="font-bold px-1">Transport development and landings <HelpHint label="Transport policy" text="Set population targets and when transports can prepare landings. Population percentages use colony capacity." example="A 20% target on a colony with capacity for 500,000 people means 100,000 residents." /></legend>
 	<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 		{#each fields as field (field.key)}
 			<label
@@ -100,14 +101,8 @@
 			>
 		{/each}
 	</div>
-	<label class="flex gap-2 my-3"
-		><input
-			type="checkbox"
-			class="checkbox"
-			checked={!policy.landingsFirst}
-			onchange={(e) => (policy.landingsFirst = !e.currentTarget.checked)}
-		/>Supply colonies and shipyards before preparing new landings</label
-	>
+	<p class="text-sm my-3">Civilian deliveries always come first: colonists, minerals, factories,
+		mines and defenses. Landing armies reserve 200,000-400,000 colonists per target.</p>
 	<label class="flex gap-2 my-3"
 		><input
 			type="checkbox"
@@ -140,8 +135,9 @@
 	</p>
 	<p class="text-xs my-3">
 		Transports depart with full useful loads. Installations travel on existing supply routes.
-		Landing groups still need reconnaissance and a clear or adequately protected orbit; a hostile
-		base blocks the drop. Weakening landings must also cause meaningful expected losses.
+		Orbital bases are cleared first, then bombers soften the planet before transports assemble.
+		Landings still require reconnaissance and a safe orbit. Armies that make no progress for four
+		years return to civilian duties. Weakening landings must also cause meaningful expected losses.
 	</p>
 	{#if !valid}<p class="text-error text-sm" role="alert">
 			Enter whole numbers within the displayed limits; landing population must be a multiple of 100.

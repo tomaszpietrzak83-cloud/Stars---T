@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestPatrolRallySynchronizesActualArrivalWithoutIdleTurn(t *testing.T) {
+func TestPatrolRallyAllowsEarlyArrivalWithoutPerimeterDetour(t *testing.T) {
 	for _, start := range []int{30, 39} {
 		t.Run(strconv.Itoa(start), func(t *testing.T) {
 			u := newTestUniverse(t, TestScenario{Players: []ScenarioPlayer{{Designs: Designs(DesignDestroyerDelta, DesignSpaceStation), Fleets: []ScenarioFleet{
@@ -42,10 +42,11 @@ func TestPatrolRallySynchronizesActualArrivalWithoutIdleTurn(t *testing.T) {
 				f.Fuel = fuel
 			}
 			u.Run((*turnGenerator).startPatrolEvaluation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove)
-			for _, f := range group {
-				require.NotEqual(t, point, f.Position, "no early arrival should trigger cancellation of the pack")
-				require.Greater(t, len(f.Waypoints), 1)
+			if start == 39 {
+				require.Equal(t, point, group[0].Position, "a nearby member may wait at the real rendezvous")
+				require.Len(t, group[0].Waypoints, 1, "no invented perimeter leg")
 			}
+			require.NotEqual(t, point, group[1].Position)
 			u.Game.Year++
 			u.Run((*turnGenerator).fleetInit, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove)
 			for _, f := range group {
@@ -55,7 +56,7 @@ func TestPatrolRallySynchronizesActualArrivalWithoutIdleTurn(t *testing.T) {
 	}
 }
 
-func TestPatrolRallyRespectsNativeArrivalTolerance(t *testing.T) {
+func TestPatrolRallyNativeEarlyArrivalDoesNotInventDetour(t *testing.T) {
 	for _, start := range []Vector{{35, -16}, {44, 16}} {
 		t.Run(start.String(), func(t *testing.T) {
 			design := Designs(DesignDestroyerDelta)[0]
@@ -77,7 +78,8 @@ func TestPatrolRallyRespectsNativeArrivalTolerance(t *testing.T) {
 			savePatrolJob(f, patrolJob{Provisional: true, Leader: f.Num, Enemy: 2, Target: enemy.Num, Rally: point, RendezvousBy: u.Game.Year + 2})
 			applyExpeditionRoute(p, f, route)
 			u.Run((*turnGenerator).startPatrolEvaluation, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove)
-			require.NotEqual(t, point, f.Position, "native arrival tolerance must not create an early waiting ship")
+			require.Equal(t, point, f.Position, "native early arrival is allowed at the actual rendezvous")
+			require.Len(t, f.Waypoints, 1, "do not add an artificial flight to delay arrival")
 			u.Game.Year++
 			u.Run((*turnGenerator).fleetInit, (*turnGenerator).guardAutomaticFuel, (*turnGenerator).enforceAutomaticDeparture, (*turnGenerator).fleetMove)
 			require.Equal(t, point, f.Position)
